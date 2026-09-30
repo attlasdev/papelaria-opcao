@@ -1,0 +1,107 @@
+L OGO T ypograph y
+HEADING
+Heading / Heading 1
+Int er - Medium
+48 p x f ont siz e
+The quick br o wn f o x jumps o v er t he lazy dog
+Heading / Heading 2
+Int er - Medium
+32 p x f ont siz e
+The quick br o wn f o x jumps o v er t he lazy dog
+Heading / Heading 3
+Int er - Medium
+28 p x f ont siz e
+The quick br o wn f o x jumps o v er t he lazy dog
+Heading / Heading 4
+Int er - Medium
+2 4 p x f ont siz e
+The quick br o wn f o x jumps o v er t he lazy dog
+Heading / Heading 5
+Int er - Medium
+20 p x f ont siz e
+The quick br o wn f o x jumps o v er t he lazy dog
+BOD Y
+Body / Extr a Lar ge
+Int er - SemiBold
+20 p x f ont siz e
+Ther e ar e man y v ariations of passages of Lor em Ipsum 
+a v ailable,  but t he majority ha v e suff er ed alt er ation in some 
+f orm which don't look e v en slight ly belie v able.
+Body / Extr a Lar ge
+Int er - Medium
+20 p x f ont siz e
+Ther e ar e man y v ariations of passages of Lor em Ipsum 
+a v ailable,  but t he majority ha v e suff er ed alt er ation in some 
+f orm which don't look e v en slight ly belie v able.
+Body / Extr a Lar ge
+Int er - R egular
+20 p x f ont siz e
+Ther e ar e man y v ariations of passages of L or em Ipsum 
+a v aila b le ,  b ut t he ma j ority ha v e suff er ed alt eration in some 
+f orm w hi c h don ' t loo k  e v en slight ly b elie v a b le .
+Body / Lar ge
+Int er - SemiBold
+1 8 p x f ont siz e
+Ther e ar e man y v ariations of passages of Lor em Ipsum a v ailable,  
+but t he majority ha v e suff er ed alt er ation in some f orm which don't 
+look e v en slight ly belie v able.
+Body / Lar ge
+Int er - Medium
+1 8 p x f ont siz e
+Ther e ar e man y v ariations of passages of Lor em Ipsum a v ailable,  
+but t he majority ha v e suff er ed alt er ation in some f orm which don't 
+look e v en slight ly belie v able.
+Body / Lar ge
+Int er - R egular
+1 8 p x f ont siz e
+Ther e ar e man y v ariations of passages of L or em Ipsum a v aila b le ,  
+b ut t he ma j ority ha v e suff er ed alt eration in some f orm w hi c h don ' t 
+loo k  e v en slight ly b elie v a b le .
+Body / M edium
+Int er - SemiBold
+16  p x f ont siz e
+Ther e ar e man y v ariations of passages of Lor em Ipsum a v ailable,  but t he 
+majority ha v e suff er ed alt er ation in some f orm which don't look e v en 
+slight ly belie v able.
+Body / M edium
+Int er - Medium
+16  p x f ont siz e
+Ther e ar e man y v ariations of passages of Lor em Ipsum a v ailable,  but t he 
+majority ha v e suff er ed alt er ation in some f orm which don't look e v en 
+slight ly belie v able.
+Body / M edium
+Int er - R egular
+16  p x f ont siz e
+Ther e ar e man y v ariations of passages of L or em Ipsum a v aila b le ,  b ut t he 
+ma j ority ha v e suff er ed alt eration in some f orm w hi c h don ' t loo k  e v en slight ly 
+b elie v a b le .
+Body / S mall
+Int er - SemiBold
+1 4 p x f ont siz e
+Ther e ar e man y v ariations of passages of Lor em Ipsum a v ailable,  but t he majority 
+ha v e suff er ed alt er ation in some f orm which don't look e v en slight ly belie v able.
+Body / S mall
+Int er - Medium
+1 4 p x f ont siz e
+Ther e ar e man y v ariations of passages of Lor em Ipsum a v ailable,  but t he majority 
+ha v e suff er ed alt er ation in some f orm which don't look e v en slight ly belie v able.
+Body / S mall
+Int er - R egular
+1 4 p x f ont siz e
+Ther e ar e man y v ariations of passages of L or em Ipsum a v aila b le ,  b ut t he ma j ority ha v e 
+suff er ed alt eration in some f orm w hi c h don ' t loo k  e v en slight ly b elie v a b le .
+Body / Extr a S mall
+Int er - SemiBold
+1 2 p x f ont siz e
+Ther e ar e man y v ariations of passages of Lor em Ipsum a v ailable,  but t he majority ha v e suff er ed 
+alt er ation in some f orm which don't look e v en slight ly belie v able.
+Body / Extr a S mall
+Int er - Medium
+1 2 p x f ont siz e
+Ther e ar e man y v ariations of passages of Lor em Ipsum a v ailable,  but t he majority ha v e suff er ed 
+alt er ation in some f orm which don't look e v en slight ly belie v able.
+Body / Extr a S mall
+Int er - R egular
+1 2 p x f ont siz e
+Ther e ar e man y v ariations of passages of L or em Ipsum a v aila b le ,  b ut t he ma j ority ha v e suff er ed 
+alt eration in some f orm w hi c h don ' t loo k  e v en slight ly b elie v a b le .

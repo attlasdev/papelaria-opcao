@@ -1,0 +1,27 @@
+/*
+ * Tipografia: Inter (arquivo local, ver base/fontes.css).
+ * Escala do DESIGN.md: título 28, seção 20, corpo 14, rótulo 12.
+ * Cada tamanho traz a altura de linha junto (--text-*--line-height).
+ */
+@theme static {
+  --font-sans: 'Inter Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'Cascadia Mono', 'Consolas', ui-monospace, monospace;
+
+  --text-titulo: 28px;
+  --text-titulo--line-height: 1.2;
+  --text-secao: 20px;
+  --text-secao--line-height: 1.3;
+  --text-destaque: 16px;
+  --text-destaque--line-height: 1.4;
+  --text-corpo: 14px;
+  --text-corpo--line-height: 1.5;
+  --text-rotulo: 12px;
+  --text-rotulo--line-height: 1.4;
+  --text-miudo: 11px;
+  --text-miudo--line-height: 1.35;
+
+  --font-weight-normal: 400;
+  --font-weight-medio: 500;
+  --font-weight-forte: 600;
+  --font-weight-negrito: 700;
+}

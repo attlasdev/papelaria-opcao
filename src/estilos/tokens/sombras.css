@@ -1,0 +1,6 @@
+/* Sombras: a interface é plana; sombra só em algo que flutua sobre a tela. */
+@theme static {
+  --shadow-flutuante: 0 4px 16px rgb(0 0 0 / 0.14);
+  --shadow-gaveta: -8px 0 24px rgb(0 0 0 / 0.12);
+  --shadow-elevado: 0 1px 2px rgb(0 0 0 / 0.08); /* opção ativa de um grupo de filtros */
+}

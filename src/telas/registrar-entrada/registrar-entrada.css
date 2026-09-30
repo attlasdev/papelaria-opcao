@@ -1,0 +1,213 @@
+.registrar-entrada__trilha-link:hover,
+.registrar-entrada__ajuste:hover {
+  text-decoration: underline;
+}
+
+.registrar-entrada__ajuste {
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+/* Dados da entrada */
+.registrar-entrada__dados {
+  margin-bottom: var(--espaco-4);
+}
+
+.registrar-entrada__campos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espaco-4);
+}
+
+/* Leitor de código de barras no topo da lista */
+.registrar-entrada__bipe {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  flex-wrap: wrap;
+  font-size: var(--text-corpo);
+  font-weight: var(--font-weight-normal);
+}
+
+.registrar-entrada__leitor {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  width: 420px;
+  height: 40px;
+  padding: 0 var(--espaco-3);
+  border: 2px solid var(--color-tinta);
+  border-radius: var(--radius-pequeno);
+}
+
+.registrar-entrada__leitor--erro {
+  border-color: var(--color-saida);
+}
+
+.registrar-entrada__leitor input {
+  flex: 1;
+  min-width: 0;
+  outline: none;
+}
+
+.registrar-entrada__sugestoes {
+  display: grid;
+  flex-basis: 100%;
+  width: min(520px, 100%);
+  max-height: 220px;
+  overflow-y: auto;
+  padding: var(--espaco-1);
+  border: 1px solid var(--color-borda-forte);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-superficie);
+}
+
+.registrar-entrada__sugestao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  width: 100%;
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--radius-pequeno);
+  text-align: left;
+}
+
+.registrar-entrada__sugestao:hover,
+.registrar-entrada__sugestao--ativa {
+  background: var(--color-superficie-2);
+}
+
+.registrar-entrada__sugestao strong { font-weight: var(--font-weight-medio); }
+.registrar-entrada__sugestao span,
+.registrar-entrada__sem-resultados { font-size: var(--text-rotulo); color: var(--color-texto-suave); }
+.registrar-entrada__sem-resultados { padding: var(--espaco-3); }
+
+.registrar-entrada__erro {
+  flex-basis: 100%;
+  font-size: var(--text-rotulo);
+  color: var(--color-saida);
+}
+
+/* Lista de itens */
+/* Muitas colunas numéricas: espaçamento um pouco menor para caber sem rolar. */
+.tabela.registrar-entrada__tabela th,
+.tabela.registrar-entrada__tabela td {
+  padding-left: var(--espaco-3);
+  padding-right: var(--espaco-3);
+}
+
+.registrar-entrada__produto {
+  overflow: hidden;
+  max-width: 240px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.registrar-entrada__qtd {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  height: 32px;
+  padding: 0 var(--espaco-2);
+  border: 1px solid var(--color-borda-forte);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-superficie);
+  font-weight: var(--font-weight-forte);
+}
+
+.registrar-entrada__qtd > span:first-child {
+  color: var(--color-entrada);
+}
+
+.registrar-entrada__qtd input {
+  width: 48px;
+  outline: none;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.registrar-entrada__qtd > span:last-child {
+  font-size: var(--text-miudo);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-texto-suave);
+}
+
+.registrar-entrada__novo {
+  font-weight: var(--font-weight-forte);
+  color: var(--color-entrada);
+}
+
+.registrar-entrada__total {
+  font-weight: var(--font-weight-forte);
+}
+
+.registrar-entrada__vazio {
+  padding: var(--espaco-8);
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+/* Rodapé: nota, resumo e botões */
+.registrar-entrada__rodape {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espaco-6);
+  margin-top: var(--espaco-4);
+}
+
+.registrar-entrada__nota {
+  display: flex;
+  gap: var(--espaco-2);
+  max-width: 520px;
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.registrar-entrada__resumo {
+  display: flex;
+  gap: var(--espaco-6);
+  padding: var(--espaco-3) var(--espaco-6);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-medio);
+  background: var(--color-superficie);
+}
+
+.registrar-entrada__resumo dt {
+  font-size: var(--text-miudo);
+  color: var(--color-texto-suave);
+  white-space: nowrap;
+}
+
+.registrar-entrada__resumo dd {
+  font-size: var(--text-destaque);
+  font-weight: var(--font-weight-negrito);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.registrar-entrada__acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-6);
+}
+
+@media (max-width: 1080px) {
+  .registrar-entrada__campos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .registrar-entrada__rodape {
+    flex-direction: column;
+  }
+}
+
+
+/* Com o leitor ligado, o painel do laser ocupa a largura toda do cabeçalho. */
+.painel__titulo:has(.painel-leitor) {
+  flex: 1;
+}
+
+.registrar-entrada__completar { cursor: pointer; }
+.registrar-entrada__completar:hover .selo-compacto { text-decoration: underline; }

@@ -1,0 +1,25 @@
+/*
+ * O preflight do Tailwind já zera margens e bordas. Aqui fica só o que ele não faz
+ * e que o aplicativo de mesa precisa.
+ */
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    min-width: 900px; /* janela mínima do app */
+    overflow: hidden; /* a rolagem acontece dentro da área de conteúdo */
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+}

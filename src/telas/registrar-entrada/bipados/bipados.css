@@ -1,0 +1,145 @@
+/* Bloco de códigos bipados: altura fixa, rola por dentro, último bipe no topo. */
+.bipados {
+  margin: var(--espaco-4) var(--espaco-6);
+  border: 1.5px dashed var(--color-borda-forte);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-superficie);
+}
+
+.bipados__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-bottom: 1px solid var(--color-borda);
+  background: var(--color-fundo);
+  font-size: var(--text-corpo);
+}
+
+.bipados__topo strong { font-weight: var(--font-weight-medio); }
+.bipados__acoes { display: flex; gap: var(--espaco-2); }
+.bipados__titulo { display: flex; align-items: baseline; gap: var(--espaco-3); min-width: 0; }
+.bipados__aviso { font-size: var(--text-rotulo); color: var(--color-atencao-texto); }
+
+.bipados__lista {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.bipados__linha {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px 170px 140px 36px;
+  align-items: center;
+  gap: var(--espaco-3);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-bottom: 1px solid var(--color-borda);
+  animation: bipados-chegou 1.2s ease-out;
+}
+
+.bipados__linha:last-child { border-bottom: 0; }
+
+/* Linha recém-bipada: verde suave com um fio à esquerda, o mesmo verde do visor. */
+@keyframes bipados-chegou {
+  from { background: var(--color-ok-fundo); box-shadow: inset 3px 0 0 var(--color-entrada); }
+  to { background: transparent; box-shadow: inset 3px 0 0 transparent; }
+}
+
+.bipados__produto {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.bipados__produto .selo-compacto { flex: 0 0 96px; }
+
+.bipados__produto small {
+  flex-shrink: 0;
+  font-size: var(--text-miudo);
+  color: var(--color-texto-suave);
+}
+
+.bipados__descricao {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bipados__campo {
+  height: 32px;
+  padding: 0 var(--espaco-2);
+  border: 1px solid var(--color-borda-forte);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-superficie);
+}
+
+.bipados__campo:focus-within,
+.bipados__nome:focus { border-color: var(--color-tinta); outline: none; }
+
+.bipados__nome { flex: 1; min-width: 0; }
+
+/* Unidade e quantidade fundidas num campo só: uma borda, divisória no meio. */
+.bipados__par {
+  display: flex;
+  align-items: stretch;
+  width: fit-content;
+  height: 36px;
+  border: 1px solid var(--color-borda-forte);
+  border-radius: var(--radius-medio);
+  background: var(--color-superficie);
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.bipados__par:hover { border-color: var(--color-texto-apagado); }
+.bipados__par:focus-within {
+  border-color: var(--color-tinta);
+  box-shadow: 0 0 0 3px rgb(0 0 0 / 0.06);
+}
+
+.bipados__unidade {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--color-borda);
+  background: var(--color-fundo);
+  font-weight: var(--font-weight-medio);
+}
+
+/* Seta própria, com respiro: a do navegador fica colada na borda. */
+.bipados__unidade select {
+  height: 100%;
+  width: 116px;
+  padding: 0 36px 0 var(--espaco-4);
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.bipados__unidade svg {
+  position: absolute;
+  right: var(--espaco-3);
+  pointer-events: none;
+  color: var(--color-texto-suave);
+}
+
+.bipados__unidade--fixa {
+  width: 116px;
+  padding: 0 var(--espaco-4);
+  color: var(--color-texto-suave);
+}
+
+.bipados__numero {
+  width: 72px;
+  padding: 0 var(--espaco-4);
+  outline: none;
+  text-align: right;
+  font-weight: var(--font-weight-forte);
+  font-variant-numeric: tabular-nums;
+}
+
+.bipados__situacao { font-size: var(--text-rotulo); color: var(--color-texto-suave); }
+.bipados__situacao--pronto { color: var(--color-entrada); font-weight: var(--font-weight-medio); }
+.bipados__situacao--aguardando { color: var(--color-atencao-texto); font-weight: var(--font-weight-medio); }

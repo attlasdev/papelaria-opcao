@@ -1,0 +1,84 @@
+.tabela-rolagem {
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-corpo);
+}
+
+.tabela th {
+  height: 40px;
+  padding: 0 var(--espaco-4);
+  background: var(--color-fundo);
+  border-bottom: 1px solid var(--color-borda);
+  font-size: var(--text-miudo);
+  font-weight: var(--font-weight-forte);
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--color-texto-suave);
+  white-space: nowrap;
+}
+
+.tabela td {
+  height: 56px;
+  padding: var(--espaco-2) var(--espaco-4);
+  border-bottom: 1px solid var(--color-borda);
+  vertical-align: middle;
+}
+
+.tabela tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tabela tbody tr:hover {
+  background: var(--color-fundo);
+}
+
+.tabela .linha--atencao,
+.tabela .linha--atencao:hover {
+  background: var(--color-linha-atencao);
+}
+
+.tabela .linha--critica,
+.tabela .linha--critica:hover {
+  background: var(--color-linha-critica);
+}
+
+.tabela .celula--numero {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tabela .celula--centro {
+  text-align: center;
+}
+
+.tabela .celula--acoes {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tabela .celula--acoes > * + * {
+  margin-left: var(--espaco-1);
+}
+
+.tabela .celula--acoes > .botao + .botao {
+  margin-left: var(--espaco-2);
+}
+
+/* Texto principal e linha secundária dentro de uma célula */
+.celula-principal {
+  display: block;
+  font-weight: var(--font-weight-medio);
+}
+
+.celula-secundaria {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}

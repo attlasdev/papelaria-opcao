@@ -1,0 +1,47 @@
+.filtros {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-medio);
+  background: var(--color-superficie-2);
+}
+
+.filtros__opcao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 var(--espaco-3);
+  border-radius: 7px;
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-medio);
+  color: var(--color-texto-suave);
+  white-space: nowrap;
+}
+
+.filtros__opcao:hover {
+  color: var(--color-tinta);
+}
+
+.filtros__opcao--ativa,
+.filtros__opcao--ativa:hover {
+  background: var(--color-superficie);
+  color: var(--color-tinta);
+  font-weight: var(--font-weight-forte);
+  box-shadow: var(--shadow-elevado);
+}
+
+.filtros__contagem {
+  min-width: 20px;
+  padding: 0 5px;
+  border-radius: var(--radius-total);
+  background: var(--color-superficie-2);
+  font-size: var(--text-miudo);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.filtros__opcao--ativa .filtros__contagem {
+  background: var(--color-tinta);
+  color: var(--color-superficie);
+}

@@ -1,0 +1,7 @@
+.rascunhos-notas__link:hover { text-decoration: underline; }
+
+.rascunhos-notas__vazio {
+  padding: var(--espaco-8);
+  text-align: center;
+  color: var(--color-texto-suave);
+}

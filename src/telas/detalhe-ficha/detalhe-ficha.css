@@ -1,0 +1,157 @@
+.detalhe-ficha {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+  gap: var(--espaco-4);
+}
+
+.detalhe-ficha__principal {
+  display: grid;
+  gap: var(--espaco-4);
+  min-width: 0;
+}
+
+.detalhe-ficha__link:hover {
+  text-decoration: underline;
+}
+
+.detalhe-ficha__dados {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-4);
+}
+
+/* Janela do Início: uma linha só com cliente, data, pagamento e situação */
+.detalhe-ficha__dados--4 {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.detalhe-ficha__dados dt,
+.detalhe-ficha__resumo {
+  color: var(--color-texto-suave);
+  font-size: var(--text-rotulo);
+}
+
+.detalhe-ficha__dados dd {
+  margin-top: var(--espaco-1);
+  overflow-wrap: anywhere;
+  font-weight: var(--font-weight-medio);
+}
+
+.detalhe-ficha__resumo {
+  white-space: nowrap;
+}
+
+.detalhe-ficha__valor {
+  font-weight: var(--font-weight-forte);
+}
+
+.detalhe-ficha__total {
+  display: block;
+  font-size: var(--text-secao);
+  font-weight: var(--font-weight-forte);
+}
+
+.detalhe-ficha__lateral {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+/* Notinha: quanto já entrou e quanto falta */
+.detalhe-ficha__saldo:not(:empty) {
+  margin-top: var(--espaco-3);
+  padding-top: var(--espaco-3);
+  border-top: 1px solid var(--color-borda);
+}
+
+.detalhe-ficha__pagamentos li {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  padding: var(--espaco-2) 0;
+}
+
+.detalhe-ficha__pagamento-meio {
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--color-texto-suave);
+}
+
+.detalhe-ficha__pagamento-texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.detalhe-ficha__saldo div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  padding: var(--espaco-1) 0;
+}
+
+.detalhe-ficha__saldo dt {
+  color: var(--color-texto-suave);
+}
+
+.detalhe-ficha__saldo dd {
+  font-weight: var(--font-weight-forte);
+  font-variant-numeric: tabular-nums;
+}
+
+.detalhe-ficha__saldo .detalhe-ficha__aberto {
+  color: var(--color-atencao-texto);
+}
+
+.detalhe-ficha__pagamentos li + li {
+  border-top: 1px solid var(--color-borda);
+}
+
+.detalhe-ficha__pagamentos strong,
+.detalhe-ficha__pagamentos small {
+  display: block;
+}
+
+.detalhe-ficha__pagamentos small {
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+@media (max-width: 1080px) {
+  .detalhe-ficha {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Outras notinhas do mesmo cliente: faixa discreta acima dos dados da ficha */
+.detalhe-ficha__outras {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  padding: var(--espaco-3) var(--espaco-4);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-medio);
+  background: var(--color-atencao-fundo);
+  color: var(--color-atencao-texto);
+}
+
+.detalhe-ficha__outras--atraso {
+  background: var(--color-critico-fundo);
+  color: var(--color-critico-texto);
+}
+
+.detalhe-ficha__outras p {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-rotulo);
+  color: var(--color-tinta);
+}
+
+.detalhe-ficha__outras .botao {
+  flex: none;
+}
+
+.detalhe-ficha__aviso:not(:empty) {
+  margin-bottom: var(--espaco-4);
+}

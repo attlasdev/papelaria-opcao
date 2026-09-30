@@ -1,0 +1,138 @@
+.barra-lateral {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: var(--espaco-4);
+  background: var(--color-superficie);
+  border-right: 1px solid var(--color-borda);
+  user-select: none;
+}
+
+/* Marca */
+.barra-lateral__marca {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-height: 72px;
+  padding: var(--espaco-1) var(--espaco-2);
+  margin-bottom: var(--espaco-6);
+}
+
+.barra-lateral--compacta .barra-lateral__marca { padding-right: 0; }
+
+.barra-lateral__item:focus-visible,
+.barra-lateral__criar:focus-visible,
+.barra-lateral__operador:focus-visible { outline: 2px solid var(--color-tinta); outline-offset: 2px; }
+
+.barra-lateral--compacta .barra-lateral__nome,
+.barra-lateral--compacta .barra-lateral__item span,
+.barra-lateral--compacta .barra-lateral__criar span,
+.barra-lateral--compacta .barra-lateral__operador span { display: none; }
+
+.barra-lateral__logo {
+  width: 34px;
+  height: 52px;
+  object-fit: contain;
+  flex: none;
+}
+
+.barra-lateral__nome {
+  white-space: nowrap;
+}
+
+.barra-lateral__nome strong {
+  display: flex;
+  flex-direction: column;
+  font-size: 19px;
+  font-weight: var(--font-weight-negrito);
+  line-height: 1.12;
+}
+
+/* Seções */
+.barra-lateral__menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+}
+
+.barra-lateral__item {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  height: 40px;
+  padding: 0 var(--espaco-3);
+  border-radius: var(--radius-pequeno);
+  font-size: var(--text-corpo);
+  font-weight: var(--font-weight-medio);
+  color: var(--color-texto-suave);
+  transition: background-color 120ms, color 120ms;
+}
+
+.barra-lateral__item:hover {
+  background: var(--color-fundo);
+  color: var(--color-tinta);
+}
+
+.barra-lateral__item--ativo,
+.barra-lateral__item--ativo:hover {
+  background: var(--color-selecao);
+  color: var(--color-tinta);
+  font-weight: var(--font-weight-forte);
+  box-shadow: inset 3px 0 0 var(--color-tinta);
+}
+
+/* Rodapé: criar ficha e operador */
+.barra-lateral__rodape {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  margin-top: auto;
+  padding-top: var(--espaco-4);
+  border-top: 1px solid var(--color-borda);
+}
+
+.barra-lateral__criar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--espaco-2);
+  height: 44px;
+  padding-inline: var(--espaco-3);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-tinta);
+  color: var(--color-superficie);
+  font-weight: var(--font-weight-forte);
+  transition: background-color 120ms;
+}
+
+.barra-lateral__criar:hover {
+  background: var(--color-tinta-suave);
+}
+
+/* Aberta, ícone e texto ficam no centro do botão. Recolhida, o ícone continua
+   ancorado à esquerda para não saltar enquanto a barra muda de largura. */
+.barra-lateral:not(.barra-lateral--compacta) .barra-lateral__criar {
+  justify-content: center;
+}
+
+.barra-lateral__operador {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: 48px;
+  padding: 0 var(--espaco-2);
+  border-radius: var(--radius-pequeno);
+  font-size: var(--text-destaque);
+  font-weight: var(--font-weight-medio);
+  color: var(--color-tinta);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.barra-lateral__operador:hover {
+  background: var(--color-fundo);
+}
+
+.barra-lateral__operador .icone { flex: none; }

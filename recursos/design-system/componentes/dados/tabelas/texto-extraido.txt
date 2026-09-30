@@ -1,0 +1,36 @@
+L OGO T able
+Base
+John Doe Call Mail NAME
+Heading
+Name Email Phone Cat egor y Location Gender Action
+Companies Name Industr y Location Status
+T ask Name Due Dat e Label Status Member
+Tit le Status Open Rat e T otal Clicks Bounce rat e R eply Rat e
+ID Dat e Client Compan y Pa yment Status Action
+R o ws
+John Doe johndoe@gmail.com
+Pr oduct Hunt W eb Design
+Cr eat e Mont hly R e v enue R ecap f or All Pr od u
+ct Linear
+15 Jan 2023
+S tar t a b log t o r each y our cr eativ e p e
+ak
+2 4%
+1 4 2 9 5112 16 / 0 8/ 2013 Jenn y Wilson
+(671) 555-0110 Cust omers
+New Y ork City , NY A ctiv e
+S cheduled
+Int ernal Document Mark eting
+2 4%
+Abst er go L t d .
+2 4%
+$ 2 . 120
+Austin
+A ctiv e
+P EN DI N G
+Male
+2 4%
+Call Mail
+T ask List
+Mont hly Pr oduct Discussion Due Dat e 2 4  Jan 2023 Int ernal Mark eting U r gent
+U ploading N e w It ems t o Mark etplace Due Dat e 0 9  Jan 2023 R epor t Document Mark eting

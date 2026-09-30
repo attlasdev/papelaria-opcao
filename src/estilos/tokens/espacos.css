@@ -1,0 +1,20 @@
+/*
+ * Espaços (DESIGN.md): 4, 8, 12, 16, 24, 32. E as medidas fixas da moldura.
+ * Os nomes com número (--espaco-4 = 16px) evitam adivinhar o que "md" quer dizer.
+ */
+@theme static {
+  --spacing: 4px; /* base do Tailwind: p-1 = 4px, p-4 = 16px */
+
+  --espaco-1: 4px;
+  --espaco-2: 8px;
+  --espaco-3: 12px;
+  --espaco-4: 16px;
+  --espaco-6: 24px;
+  --espaco-8: 32px;
+
+  --largura-barra-lateral: 256px;
+  --largura-barra-lateral-compacta: 80px;
+  --altura-cabecalho: 64px;
+  --altura-controle: 36px;       /* botão e campo padrão */
+  --altura-controle-pequeno: 28px;
+}

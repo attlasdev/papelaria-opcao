@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Financeiro — Balcão Papelaria Opção</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "warning": "#8A5A00",
+            "muted": "#4B4B4B",
+            "primary": "#000000",
+            "on-secondary-fixed-variant": "#4d4800",
+            "on-background": "#1b1b1b",
+            "brand-accent": "#FEF003",
+            "surface-dim": "#dadada",
+            "on-tertiary-fixed": "#1b1b1b",
+            "on-surface-variant": "#4c4546",
+            "secondary-fixed": "#f4e700",
+            "tertiary-fixed": "#e2e2e2",
+            "on-primary-fixed-variant": "#474747",
+            "inverse-on-surface": "#f1f1f1",
+            "ink": "#000000",
+            "inverse-surface": "#303030",
+            "border": "#E8E8E8",
+            "background": "#f9f9f9",
+            "on-primary-container": "#848484",
+            "on-secondary-fixed": "#1f1c00",
+            "on-secondary-container": "#6b6500",
+            "outline-variant": "#cfc4c5",
+            "surface-tint": "#5e5e5e",
+            "on-error": "#ffffff",
+            "surface": "#FFFFFF",
+            "on-primary-fixed": "#1b1b1b",
+            "on-error-container": "#93000a",
+            "error-container": "#ffdad6",
+            "secondary-fixed-dim": "#d6ca00",
+            "primary-fixed": "#e2e2e2",
+            "on-secondary": "#ffffff",
+            "danger": "#EA0B11",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-high": "#e8e8e8",
+            "tertiary-fixed-dim": "#c6c6c6",
+            "secondary-container": "#f1e400",
+            "tertiary-container": "#1b1b1b",
+            "secondary": "#666000",
+            "error": "#ba1a1a",
+            "on-primary": "#ffffff",
+            "primary-fixed-dim": "#c6c6c6",
+            "canvas": "#F9F9F9",
+            "surface-variant": "#e2e2e2",
+            "surface-container-low": "#f3f3f3",
+            "on-surface": "#1b1b1b",
+            "inverse-primary": "#c6c6c6",
+            "surface-container-highest": "#e2e2e2",
+            "success": "#176B4D",
+            "tertiary": "#000000",
+            "primary-container": "#1b1b1b",
+            "on-tertiary": "#ffffff",
+            "surface-container": "#eeeeee",
+            "on-tertiary-fixed-variant": "#474747",
+            "surface-bright": "#f9f9f9",
+            "on-tertiary-container": "#848484",
+            "outline": "#7e7576"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xxl": "32px",
+            "gutter": "12px",
+            "lg": "16px",
+            "sm": "8px",
+            "xs": "4px",
+            "space-xl": "24px",
+            "xl": "24px",
+            "space-lg": "16px",
+            "xxl": "32px",
+            "space-md": "12px",
+            "md": "12px",
+            "space-xs": "4px",
+            "margin": "16px",
+            "space-sm": "8px"
+          },
+          "fontFamily": {
+            "body-sm": ["Inter"],
+            "heading": ["Inter"],
+            "headline-md": ["Inter"],
+            "section": ["Inter"],
+            "body-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "label": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body": ["Inter"],
+            "label-md": ["Inter"]
+          },
+          "fontSize": {
+            "body-sm": ["12px", { "lineHeight": "17px", "fontWeight": "400" }],
+            "heading": ["28px", { "lineHeight": "1.2", "fontWeight": "500" }],
+            "headline-md": ["20px", { "lineHeight": "26px", "fontWeight": "500" }],
+            "section": ["20px", { "lineHeight": "1.3", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+            "label-sm": ["10px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "label": ["12px", { "lineHeight": "1.4", "fontWeight": "600" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "fontWeight": "500" }],
+            "body": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+            "label-md": ["12px", { "lineHeight": "17px", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+<link rel="stylesheet" href="../ajustes.css"></head>
+<body class="bg-canvas text-ink antialiased flex min-h-screen overflow-x-hidden selection:bg-brand-accent selection:text-ink">
+<!-- SIDEBAR NAVIGATION COMPONENT (Shared Components JSON Anchor) -->
+<aside class="fixed left-0 top-0 h-screen w-64 flex flex-col z-30 bg-surface border-r border-border select-none">
+<div class="w-64 h-full flex flex-col justify-between p-4">
+<!-- Top Section: Brand + Menu -->
+<div class="flex flex-col gap-6">
+<!-- Brand Identification -->
+<div class="po-brand">
+          <img class="po-logo" src="../assets/logo-original.svg" alt="">
+          <div class="po-brand-copy"><strong>Papelaria Opção</strong><span>Terminal Balcão #01</span></div>
+        </div><!-- Navigation Tabs: Exact JSON labels & icons -->
+<nav class="flex flex-col gap-1">
+<!-- Tab 1: Início -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink hover:bg-canvas rounded-lg transition-colors duration-150 active:scale-[0.99]" href="../in_cio_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-label-md font-label-md">Início</span>
+</a>
+<!-- Tab 2: Clientes -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink hover:bg-canvas rounded-lg transition-colors duration-150 active:scale-[0.99]" href="../clientes_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="text-label-md font-label-md">Clientes</span>
+</a>
+<!-- Tab 3: Financeiro (ACTIVE TAB per Context & Requirements) -->
+<a class="flex items-center gap-3 px-3 py-2 bg-brand-accent text-ink font-semibold rounded-lg shadow-none active:scale-[0.99] transition-transform duration-100" href="#">
+<span class="material-symbols-outlined font-semibold" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="text-label-md font-label-md font-semibold text-ink">Financeiro</span>
+</a>
+<!-- Tab 4: Estoque -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink hover:bg-canvas rounded-lg transition-colors duration-150 active:scale-[0.99]" href="../estoque_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="text-label-md font-label-md">Estoque</span>
+</a>
+<!-- Tab 5: Notas fiscais -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink hover:bg-canvas rounded-lg transition-colors duration-150 active:scale-[0.99]" href="../notas_fiscais_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="text-label-md font-label-md">Notas fiscais</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Section: CTA & Footer Operator Metadata -->
+<div class="flex flex-col gap-3 pt-4 border-t border-border">
+<!-- CTA: Criar ficha -->
+<button class="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-brand-accent text-ink rounded-lg font-label-md text-label-md hover:brightness-95 active:scale-[0.98] transition-all duration-150 po-sidebar-cta" data-ir="../criar_ficha_de_venda_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-[18px]" data-icon="point_of_sale">point_of_sale</span>
+<span>Criar ficha</span>
+</button>
+<!-- Footer User Metadata -->
+<div class="flex flex-col gap-1 text-muted text-body-sm font-body-sm px-1 mt-1">
+<div class="flex items-center gap-2.5 py-1">
+<span class="material-symbols-outlined text-[18px] text-ink" data-icon="account_circle">account_circle</span>
+<span class="truncate">Operador: João Silva</span>
+</div>
+<div class="flex items-center gap-2.5 py-1">
+<span class="material-symbols-outlined text-[18px] text-success" data-icon="cloud_done">cloud_done</span>
+<span class="text-muted">Protótipo local</span>
+<span class="ml-auto w-2 h-2 rounded-full bg-success"></span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- TOP APP BAR COMPONENT (Shared Components JSON Anchor) -->
+<header class="fixed top-0 right-0 left-64 h-16 z-20 bg-surface border-b border-border select-none po-finance-header">
+<div class="flex justify-between items-center h-full px-6 w-full">
+<!-- Left side: Page Title Context & Quick Search Input -->
+<div class="flex items-center gap-6">
+<div>
+<h1 class="text-headline-md font-headline-md font-bold text-ink tracking-tight">Financeiro</h1>
+</div>
+<!-- Quick Search -->
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted text-[18px]" data-icon="search">search</span>
+<input class="w-full pl-9 pr-3 py-1.5 bg-surface border border-border rounded-md text-body-md font-body-md text-ink placeholder:text-muted placeholder:text-body-sm focus:border-ink focus:ring-0 focus:outline-none transition-colors" placeholder="Buscar por ficha, origem ou valor..." type="text">
+</div>
+</div>
+<!-- Right side: System sync status & Primary Action Buttons -->
+<div class="flex items-center gap-3">
+<!-- Sync Indicator -->
+<!-- Notification Icon -->
+<button class="w-8 h-8 rounded-md border border-border bg-surface text-ink flex items-center justify-center hover:bg-canvas transition-colors active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]" data-icon="notifications">notifications</span>
+</button>
+<!-- Secondary Action: Exportar período (a definir) -->
+<button class="flex items-center gap-2 px-3 py-2 bg-surface border border-border rounded-md text-label-md font-label-md text-ink hover:bg-canvas active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="file_download">file_download</span>
+<span>Exportar período</span>
+</button>
+<!-- Primary Action: + Registrar movimento -->
+<button class="flex items-center gap-2 px-3.5 py-2 bg-primary text-surface rounded-md text-label-md font-label-md hover:bg-neutral-800 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+<span>+ Registrar movimento</span>
+</button>
+</div>
+</div>
+</header>
+<!-- MAIN CANVAS -->
+<main class="ml-64 mt-16 p-6 w-[calc(100%-16rem)] flex flex-col gap-6">
+<!-- TOP CONTROL ROW: Period Segmented Switcher & Quick Context -->
+<div class="flex items-center justify-between po-finance-period">
+<div class="flex items-center gap-3">
+<span class="text-label-md font-label-md text-muted">Visualização por período:</span>
+<!-- Requisito 3: Segmented Pill Exclusivo (Dia, Semana, Mês, Ano) -->
+<div class="inline-flex p-1 bg-surface-container-high rounded-lg border border-border">
+<button class="px-4 py-1 rounded-md text-label-md font-label-md bg-surface text-ink shadow-sm transition-colors">
+            Dia
+          </button>
+<button class="px-4 py-1 rounded-md text-label-md font-label-md text-muted hover:text-ink transition-colors">
+            Semana
+          </button>
+<button class="px-4 py-1 rounded-md text-label-md font-label-md text-muted hover:text-ink transition-colors">
+            Mês
+          </button>
+<button class="px-4 py-1 rounded-md text-label-md font-label-md text-muted hover:text-ink transition-colors">
+            Ano
+          </button>
+</div>
+<span class="text-body-sm font-body-sm text-muted pl-2">Data base: 24 de Outubro de 2024 (Hoje)</span>
+</div>
+<div class="flex items-center gap-2 text-body-sm font-body-sm text-muted">
+<span class="w-2 h-2 rounded-full bg-success"></span>
+<span>Exemplo de movimentações</span>
+</div>
+</div>
+<!-- REQUISITO 4: CARDS DE RESUMO (Clean, crisp borders #E8E8E8, white surfaces) -->
+<div class="grid grid-cols-4 gap-4 po-finance-summary">
+<!-- Card 1: Total Entradas -->
+<div class="bg-surface p-4 rounded-xl border border-border flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-label-md font-label-md text-muted">Total Entradas</span>
+<span class="w-7 h-7 rounded-md bg-canvas border border-border flex items-center justify-center text-success">
+<span class="material-symbols-outlined text-[18px]" data-icon="arrow_downward">arrow_downward</span>
+</span>
+</div>
+<div class="mt-3">
+<div class="text-heading font-heading font-bold text-success tracking-tight">R$ 2.468,60</div>
+<div class="text-body-sm font-body-sm text-muted mt-1 flex items-center gap-1.5">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-success"></span>
+<span>Movimentos de exemplo</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Total Saídas -->
+<div class="bg-surface p-4 rounded-xl border border-border flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-label-md font-label-md text-muted">Total Saídas</span>
+<span class="w-7 h-7 rounded-md bg-canvas border border-border flex items-center justify-center text-danger">
+<span class="material-symbols-outlined text-[18px]" data-icon="arrow_upward">arrow_upward</span>
+</span>
+</div>
+<div class="mt-3">
+<div class="text-heading font-heading font-bold text-danger tracking-tight">R$ 385,00</div>
+<div class="text-body-sm font-body-sm text-muted mt-1 flex items-center gap-1.5">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-danger"></span>
+<span>3 saídas no dia</span>
+</div>
+</div>
+</div>
+<!-- Card 3: Entradas menos saídas -->
+<div class="bg-surface p-4 rounded-xl border border-border flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-label-md font-label-md text-muted">Entradas menos saídas</span>
+<span class="w-7 h-7 rounded-md bg-canvas border border-border flex items-center justify-center text-ink">
+<span class="material-symbols-outlined text-[18px]" data-icon="account_balance">account_balance</span>
+</span>
+</div>
+<div class="mt-3">
+<div class="text-heading font-heading font-bold text-ink tracking-tight">R$ 2.083,60</div>
+<div class="text-body-sm font-body-sm text-muted mt-1 flex items-center gap-1.5">
+<span class="text-success font-semibold">+84,3%</span>
+<span>resultado líquido do caixa</span>
+</div>
+</div>
+</div>
+<!-- Card 4: Meio de Pagamento Mais Frequente -->
+<div class="bg-surface p-4 rounded-xl border border-border flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="text-label-md font-label-md text-muted">Meio Mais Frequente</span>
+<span class="w-7 h-7 rounded-md bg-canvas border border-border flex items-center justify-center text-ink">
+<span class="material-symbols-outlined text-[18px]" data-icon="payments">payments</span>
+</span>
+</div>
+<div class="mt-3">
+<div class="text-heading font-heading font-bold text-ink tracking-tight flex items-baseline gap-2">
+<span class=" po-badge">Pix</span>
+<span class="text-label-md font-label-md text-muted font-normal">(56% do volume)</span>
+</div>
+<div class="text-body-sm font-body-sm text-muted mt-1 flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-ink"></span>
+<span>R$ 1.382,00 recebidos hoje</span>
+</div>
+</div>
+</div>
+</div>
+<!-- REQUISITO 5: GRÁFICO SIMPLES DE COMPARAÇÃO DE MOVIMENTOS -->
+<div class="bg-surface p-5 rounded-xl border border-border">
+<div class="flex items-center justify-between pb-3 border-b border-border">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-muted text-[20px]" data-icon="bar_chart">bar_chart</span>
+<h2 class="text-section font-section font-semibold text-ink">Comparação de Fluxo Operacional (Horário / Turno)</h2>
+</div>
+<div class="flex items-center gap-4 text-body-sm font-body-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-sm bg-success"></span>
+<span class="text-muted">Entradas (R$ 2.468,60)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-sm bg-danger"></span>
+<span class="text-muted">Saídas (R$ 385,00)</span>
+</div>
+</div>
+</div>
+<!-- Barras horizontais segmentadas por faixas de horário de balcão -->
+<div class="mt-4 flex flex-col gap-3">
+<!-- Turno 08:00 - 11:00 -->
+<div class="grid grid-cols-12 items-center gap-3">
+<span class="col-span-2 text-body-sm font-body-sm text-muted">08:00 - 11:00 (Abertura)</span>
+<div class="col-span-8 flex flex-col gap-1">
+<!-- Entradas -->
+<div class="flex items-center gap-2">
+<div class="h-3 rounded-sm bg-success" style="width: 32%;"></div>
+<span class="text-label-sm font-label-sm text-success">R$ 540,20</span>
+</div>
+<!-- Saídas -->
+<div class="flex items-center gap-2">
+<div class="h-3 rounded-sm bg-danger" style="width: 5%;"></div>
+<span class="text-label-sm font-label-sm text-danger">R$ 35,00 (Troco)</span>
+</div>
+</div>
+<span class="col-span-2 text-right text-label-md font-label-md text-ink">Líquido: R$ 505,20</span>
+</div>
+<div class="w-full h-px bg-canvas"></div>
+<!-- Turno 11:00 - 14:00 (Pico Almoço) -->
+<div class="grid grid-cols-12 items-center gap-3">
+<span class="col-span-2 text-body-sm font-body-sm text-muted">11:00 - 14:00 (Pico Balcão)</span>
+<div class="col-span-8 flex flex-col gap-1">
+<!-- Entradas -->
+<div class="flex items-center gap-2">
+<div class="h-3 rounded-sm bg-success" style="width: 74%;"></div>
+<span class="text-label-sm font-label-sm text-success">R$ 1.240,50</span>
+</div>
+<!-- Saídas -->
+<div class="flex items-center gap-2">
+<div class="h-3 rounded-sm bg-danger" style="width: 20%;"></div>
+<span class="text-label-sm font-label-sm text-danger">R$ 300,00 (Retirada para cofre)</span>
+</div>
+</div>
+<span class="col-span-2 text-right text-label-md font-label-md text-ink">Líquido: R$ 940,50</span>
+</div>
+<div class="w-full h-px bg-canvas"></div>
+<!-- Turno 14:00 - Atual -->
+<div class="grid grid-cols-12 items-center gap-3">
+<span class="col-span-2 text-body-sm font-body-sm text-muted">14:00 - Atual (Tarde)</span>
+<div class="col-span-8 flex flex-col gap-1">
+<!-- Entradas -->
+<div class="flex items-center gap-2">
+<div class="h-3 rounded-sm bg-success" style="width: 42%;"></div>
+<span class="text-label-sm font-label-sm text-success">R$ 687,90</span>
+</div>
+<!-- Saídas -->
+<div class="flex items-center gap-2">
+<div class="h-3 rounded-sm bg-danger" style="width: 6%;"></div>
+<span class="text-label-sm font-label-sm text-danger">R$ 50,00 (Despesa local)</span>
+</div>
+</div>
+<span class="col-span-2 text-right text-label-md font-label-md text-ink">Líquido: R$ 637,90</span>
+</div>
+</div>
+</div>
+<!-- REQUISITO 6 & 7: TABELA DETALHADA E FILTROS RÁPIDOS -->
+<div class="bg-surface rounded-xl border border-border flex flex-col overflow-hidden">
+<!-- Table Header Bar: Title + Quick Payment Filters -->
+<div class="p-4 flex items-center justify-between border-b border-border bg-surface">
+<div class="flex items-center gap-3">
+<h3 class="text-headline-md font-headline-md font-semibold text-ink">Movimentações do Caixa</h3>
+<span class="px-2 py-0.5 rounded-full bg-canvas border border-border text-label-sm font-label-sm text-muted">
+            31 registros no dia
+          </span>
+</div>
+<!-- Requisito 6: Filtros rápidos (Todos, Pix, Cartão, Dinheiro) com contadores limpos -->
+<div class="flex items-center gap-1.5">
+<button class="px-3 py-1.5 rounded-md text-label-md font-label-md bg-primary text-surface flex items-center gap-1.5 shadow-none transition-colors">
+<span>Todos</span>
+<span class="px-1.5 py-0.2 bg-neutral-800 text-surface text-label-sm rounded-full">31</span>
+</button>
+<button class="px-3 py-1.5 rounded-md text-label-md font-label-md bg-canvas border border-border text-muted hover:text-ink hover:bg-surface-container transition-colors flex items-center gap-1.5">
+<span class=" po-badge">Pix</span>
+<span class="px-1.5 py-0.2 bg-surface text-ink text-label-sm rounded-full border border-border">18</span>
+</button>
+<button class="px-3 py-1.5 rounded-md text-label-md font-label-md bg-canvas border border-border text-muted hover:text-ink hover:bg-surface-container transition-colors flex items-center gap-1.5">
+<span>Cartão</span>
+<span class="px-1.5 py-0.2 bg-surface text-ink text-label-sm rounded-full border border-border">9</span>
+</button>
+<button class="px-3 py-1.5 rounded-md text-label-md font-label-md bg-canvas border border-border text-muted hover:text-ink hover:bg-surface-container transition-colors flex items-center gap-1.5">
+<span class=" po-badge">Dinheiro</span>
+<span class="px-1.5 py-0.2 bg-surface text-ink text-label-sm rounded-full border border-border">4</span>
+</button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="overflow-x-auto po-table-scroll">
+<table class="w-full text-left border-collapse po-table">
+<thead>
+<tr class="border-b border-border bg-canvas text-label-sm font-label-sm text-muted uppercase tracking-wider">
+<th class="py-3 px-4">Horário / Data</th>
+<th class="py-3 px-4">Descrição / Origem</th>
+<th class="py-3 px-4">Categoria / Tipo</th>
+<th class="py-3 px-4">Meio de Pagamento</th>
+<th class="py-3 px-4">Fluxo</th>
+<th class="py-3 px-4 text-right">Valor (R$)</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border text-body-md font-body-md">
+<!-- Linha 1: Recebimento com Ficha Vinculada (Exemplo explícito #1043) -->
+<tr class="hover:bg-canvas transition-colors">
+<td class="py-3 px-4 text-body-sm font-body-sm text-muted whitespace-nowrap">
+                14:42 <span class="text-surface-dim">•</span> 24/10/2024
+              </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-muted" data-icon="receipt">receipt</span>
+<span class="font-medium text-ink">Venda de Material Escolar e Sulfite</span>
+</div>
+<div class="text-body-sm font-body-sm text-muted">Balcão 01 — Atendente João Silva</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-surface text-label-sm font-label-sm text-ink">
+<span class="material-symbols-outlined text-[14px]" data-icon="link">link</span>
+                  Ficha #1043
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 text-body-sm font-body-sm text-ink">
+<span class="w-2 h-2 rounded-full bg-ink"></span>
+                  Pix Balcão
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-label-sm font-label-sm font-semibold text-success bg-[#176B4D]/10">
+<span class="material-symbols-outlined text-[14px]" data-icon="arrow_downward">arrow_downward</span>
+                  Entrada
+                </span>
+</td>
+<td class="py-3 px-4 text-right font-medium text-success whitespace-nowrap">
+                + R$ 152,20
+              </td>
+</tr>
+<!-- Linha 2: Recebimento com Ficha Vinculada (Exemplo explícito #1042) -->
+<tr class="hover:bg-canvas transition-colors">
+<td class="py-3 px-4 text-body-sm font-body-sm text-muted whitespace-nowrap">
+                14:15 <span class="text-surface-dim">•</span> 24/10/2024
+              </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-muted" data-icon="receipt">receipt</span>
+<span class="font-medium text-ink">Mochila Escolar + Cadernos 10 Matérias</span>
+</div>
+<div class="text-body-sm font-body-sm text-muted">Balcão 01 — Atendente João Silva</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-surface text-label-sm font-label-sm text-ink">
+<span class="material-symbols-outlined text-[14px]" data-icon="link">link</span>
+                  Ficha #1042
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 text-body-sm font-body-sm text-ink po-badge">
+<span class="w-2 h-2 rounded-full bg-ink"></span>
+                  Cartão Débito
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-label-sm font-label-sm font-semibold text-success bg-[#176B4D]/10">
+<span class="material-symbols-outlined text-[14px]" data-icon="arrow_downward">arrow_downward</span>
+                  Entrada
+                </span>
+</td>
+<td class="py-3 px-4 text-right font-medium text-success whitespace-nowrap">
+                + R$ 289,90
+              </td>
+</tr>
+<!-- Linha 3: Saída de caixa (retirada para cofre) -->
+<tr class="hover:bg-canvas transition-colors bg-surface-container-low/40">
+<td class="py-3 px-4 text-body-sm font-body-sm text-muted whitespace-nowrap">
+                13:30 <span class="text-surface-dim">•</span> 24/10/2024
+              </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-danger" data-icon="safe">lock</span>
+<span class="font-medium text-ink">Retirada de caixa para o cofre</span>
+</div>
+<div class="text-body-sm font-body-sm text-muted">Autorização Gerencial #04 / Fechamento de Turno</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface border border-border text-label-sm font-label-sm text-muted">
+                  Saída de caixa
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 text-body-sm font-body-sm text-ink">
+<span class="w-2 h-2 rounded-full bg-ink"></span>
+                  Dinheiro Físico
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-label-sm font-label-sm font-semibold text-danger bg-[#EA0B11]/10">
+<span class="material-symbols-outlined text-[14px]" data-icon="arrow_upward">arrow_upward</span>
+                  Saída
+                </span>
+</td>
+<td class="py-3 px-4 text-right font-medium text-danger whitespace-nowrap">
+                - R$ 300,00
+              </td>
+</tr>
+<!-- Linha 4: Pagamento avulso / Externo sem ficha vinculada (Serviço de cópias / ajuste de balcão) -->
+<tr class="hover:bg-canvas transition-colors">
+<td class="py-3 px-4 text-body-sm font-body-sm text-muted whitespace-nowrap">
+                12:45 <span class="text-surface-dim">•</span> 24/10/2024
+              </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-muted" data-icon="content_copy">content_copy</span>
+<span class="font-medium text-ink">Serviço de Cópias e Plastificação Avulsa</span>
+</div>
+<div class="text-body-sm font-body-sm text-muted">Lançamento de balcão imediato sem cadastro prévio</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface border border-dashed border-border text-label-sm font-label-sm text-muted">
+                  Avulso s/ Ficha
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 text-body-sm font-body-sm text-ink">
+<span class="w-2 h-2 rounded-full bg-ink"></span>
+                  Pix Balcão
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-label-sm font-label-sm font-semibold text-success bg-[#176B4D]/10">
+<span class="material-symbols-outlined text-[14px]" data-icon="arrow_downward">arrow_downward</span>
+                  Entrada
+                </span>
+</td>
+<td class="py-3 px-4 text-right font-medium text-success whitespace-nowrap">
+                + R$ 26,00
+              </td>
+</tr>
+<!-- Linha 5: Saída/Despesa local miúda de balcão -->
+<tr class="hover:bg-canvas transition-colors">
+<td class="py-3 px-4 text-body-sm font-body-sm text-muted whitespace-nowrap">
+                10:20 <span class="text-surface-dim">•</span> 24/10/2024
+              </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-muted" data-icon="cleaning_services">cleaning_services</span>
+<span class="font-medium text-ink">Despesa Miúda de Balcão — Material de Limpeza Rápida</span>
+</div>
+<div class="text-body-sm font-body-sm text-muted">Comprovante anexado no caixa físico</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface border border-border text-label-sm font-label-sm text-muted">
+                  Despesa Balcão
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 text-body-sm font-body-sm text-ink">
+<span class="w-2 h-2 rounded-full bg-ink"></span>
+                  Dinheiro Físico
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-label-sm font-label-sm font-semibold text-danger bg-[#EA0B11]/10">
+<span class="material-symbols-outlined text-[14px]" data-icon="arrow_upward">arrow_upward</span>
+                  Saída
+                </span>
+</td>
+<td class="py-3 px-4 text-right font-medium text-danger whitespace-nowrap">
+                - R$ 50,00
+              </td>
+</tr>
+<!-- Linha 6: Recebimento com Ficha Vinculada (Exemplo #1041) -->
+<tr class="hover:bg-canvas transition-colors">
+<td class="py-3 px-4 text-body-sm font-body-sm text-muted whitespace-nowrap">
+                09:50 <span class="text-surface-dim">•</span> 24/10/2024
+              </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-muted" data-icon="receipt">receipt</span>
+<span class="font-medium text-ink">Artigos de Papelaria Técnica e Desenho</span>
+</div>
+<div class="text-body-sm font-body-sm text-muted">Balcão 01 — Atendente João Silva</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-border bg-surface text-label-sm font-label-sm text-ink">
+<span class="material-symbols-outlined text-[14px]" data-icon="link">link</span>
+                  Ficha #1041
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 text-body-sm font-body-sm text-ink">
+<span class="w-2 h-2 rounded-full bg-ink"></span>
+                  Cartão Crédito (1x)
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-label-sm font-label-sm font-semibold text-success bg-[#176B4D]/10">
+<span class="material-symbols-outlined text-[14px]" data-icon="arrow_downward">arrow_downward</span>
+                  Entrada
+                </span>
+</td>
+<td class="py-3 px-4 text-right font-medium text-success whitespace-nowrap">
+                + R$ 215,40
+              </td>
+</tr>
+<!-- Linha 7: Despesa troco / Saída de ajuste de abertura -->
+<tr class="hover:bg-canvas transition-colors">
+<td class="py-3 px-4 text-body-sm font-body-sm text-muted whitespace-nowrap">
+                08:12 <span class="text-surface-dim">•</span> 24/10/2024
+              </td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-muted" data-icon="currency_exchange">currency_exchange</span>
+<span class="font-medium text-ink">Despesa Troco / Fundo de Moedas</span>
+</div>
+<div class="text-body-sm font-body-sm text-muted">Reposição de troco balcão inicial</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface border border-border text-label-sm font-label-sm text-muted">
+                  Despesa Troco
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1.5 text-body-sm font-body-sm text-ink">
+<span class="w-2 h-2 rounded-full bg-ink"></span>
+                  Dinheiro Físico
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-label-sm font-label-sm font-semibold text-danger bg-[#EA0B11]/10">
+<span class="material-symbols-outlined text-[14px]" data-icon="arrow_upward">arrow_upward</span>
+                  Saída
+                </span>
+</td>
+<td class="py-3 px-4 text-right font-medium text-danger whitespace-nowrap">
+                - R$ 35,00
+              </td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- REQUISITO 7: Nota explicativa ou legenda de rodapé obrigatória -->
+<div class="p-4 bg-canvas border-t border-border flex items-center justify-between">
+<div class="flex items-center gap-2 text-body-sm font-body-sm text-muted">
+<span class="material-symbols-outlined text-muted text-[18px]" data-icon="info">info</span>
+<span class="text-body-sm font-body-sm text-muted">
+            Cada recebimento é contabilizado uma única vez. Pagamentos registrados em ficha de venda não duplicam lançamentos financeiros. Relatório operacional de balcão (não substitui escrituração contábil definitiva).
+          </span>
+</div>
+<div class="flex items-center gap-3 text-label-sm font-label-sm text-muted flex-shrink-0">
+<span>Página 1 de 1</span>
+<div class="flex gap-1">
+<button class="w-7 h-7 rounded border border-border bg-surface flex items-center justify-center text-muted disabled:opacity-50" disabled>
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-7 h-7 rounded border border-border bg-surface flex items-center justify-center text-muted disabled:opacity-50" disabled>
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script src="../navegacao.js"></script></body></html>

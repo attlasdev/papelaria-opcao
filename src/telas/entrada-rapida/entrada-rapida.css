@@ -1,0 +1,15 @@
+.entrada-rapida__produto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  margin-bottom: var(--espaco-5);
+}
+.entrada-rapida__produto strong { font-size: var(--text-destaque); font-weight: var(--font-weight-forte); }
+.entrada-rapida__produto span { font-size: var(--text-rotulo); color: var(--color-texto-suave); }
+.entrada-rapida__campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--espaco-4); }
+.entrada-rapida__saldo { display: flex; flex-direction: column; gap: var(--espaco-2); min-width: 0; }
+.entrada-rapida__saldo > span { font-size: var(--text-rotulo); font-weight: var(--font-weight-medio); }
+.entrada-rapida__saldo strong { font-size: var(--text-destaque); }
+.entrada-rapida__nota { margin-top: var(--espaco-5); color: var(--color-texto-suave); font-size: var(--text-rotulo); }
+.entrada-rapida__nota a { color: var(--color-texto); text-decoration: underline; }
+@media (max-width: 700px) { .entrada-rapida__campos { grid-template-columns: minmax(0, 1fr); } }

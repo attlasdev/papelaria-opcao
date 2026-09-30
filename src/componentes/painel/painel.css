@@ -1,0 +1,137 @@
+.painel {
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-grande);
+  overflow: hidden;
+}
+
+.painel__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  flex-wrap: wrap;
+  padding: var(--espaco-4) var(--espaco-6);
+  border-bottom: 1px solid var(--color-borda);
+}
+
+.painel__titulo {
+  font-size: var(--text-destaque);
+  line-height: var(--text-destaque--line-height);
+  font-weight: var(--font-weight-forte);
+}
+
+.painel__acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  flex-wrap: wrap;
+}
+
+.painel__corpo {
+  padding: var(--espaco-6);
+}
+
+.painel--colado > .painel__corpo {
+  padding: 0;
+}
+
+/* Cartão de resumo: ícone grande à esquerda, rótulo, valor e nota à direita. */
+/* O cartão mede a si mesmo (container): estreito, compacta ícone e número. */
+.cartao-resumo-caixa {
+  container-type: inline-size;
+}
+
+.cartao-resumo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-4);
+  height: 100%;
+  padding: var(--espaco-4) var(--espaco-6);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-grande);
+}
+
+/* Ícone solto, sem fundo: só o desenho, na cor escura do tom. */
+.cartao-resumo__icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.cartao-resumo__icone--ok { color: var(--color-ok-texto); }
+.cartao-resumo__icone--atencao { color: var(--color-atencao-texto); }
+.cartao-resumo__icone--critico { color: var(--color-critico-texto); }
+.cartao-resumo__icone--neutro { color: var(--color-neutro-texto); }
+
+.cartao-resumo__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  min-width: 0;
+}
+
+.cartao-resumo__rotulo {
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-medio);
+  color: var(--color-texto-suave);
+}
+
+.cartao-resumo__valor {
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: var(--font-weight-forte);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cartao-resumo__valor--entrada { color: var(--color-entrada); }
+.cartao-resumo__valor--saida { color: var(--color-saida); }
+
+.cartao-resumo__nota {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  flex-wrap: wrap;
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+@container (max-width: 280px) {
+  .cartao-resumo {
+    gap: var(--espaco-3);
+    padding: var(--espaco-4);
+  }
+
+  .cartao-resumo__icone .icone {
+    width: 30px;
+    height: 30px;
+  }
+
+  .cartao-resumo__valor {
+    font-size: 20px;
+  }
+}
+
+/* Variação: seta + texto, verde se subiu, vermelho se caiu. */
+.cartao-resumo__variacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: var(--radius-selo);
+  font-weight: var(--font-weight-forte);
+  white-space: nowrap;
+}
+
+.cartao-resumo__variacao--alta { background: var(--color-ok-fundo); color: var(--color-ok-texto); }
+.cartao-resumo__variacao--baixa { background: var(--color-critico-fundo); color: var(--color-critico-texto); }
+
+/* Grade de cartões de resumo, lado a lado */
+.grade-resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--espaco-4);
+  margin-bottom: var(--espaco-6);
+}

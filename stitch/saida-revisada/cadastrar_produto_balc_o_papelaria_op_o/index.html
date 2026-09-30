@@ -1,0 +1,445 @@
+<!doctype html>
+<html class="h-full bg-canvas" lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Cadastrar Produto | Papelaria Opção</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS with custom theme config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-lowest": "#ffffff",
+            "on-secondary": "#ffffff",
+            "on-primary-container": "#848484",
+            "surface": "#FFFFFF",
+            "on-background": "#1b1b1b",
+            "tertiary-container": "#1b1b1b",
+            "on-primary": "#ffffff",
+            "on-secondary-fixed-variant": "#4d4800",
+            "on-error": "#ffffff",
+            "inverse-primary": "#c6c6c6",
+            "on-surface-variant": "#4c4546",
+            "surface-container-low": "#f3f3f3",
+            "danger": "#EA0B11",
+            "error-container": "#ffdad6",
+            "on-primary-fixed": "#1b1b1b",
+            "surface-bright": "#f9f9f9",
+            "secondary-fixed": "#f4e700",
+            "on-primary-fixed-variant": "#474747",
+            "warning": "#8A5A00",
+            "surface-container-high": "#e8e8e8",
+            "surface-tint": "#5e5e5e",
+            "surface-dim": "#dadada",
+            "outline-variant": "#cfc4c5",
+            "on-tertiary": "#ffffff",
+            "canvas": "#F9F9F9",
+            "inverse-surface": "#303030",
+            "background": "#f9f9f9",
+            "error": "#ba1a1a",
+            "tertiary": "#000000",
+            "secondary-container": "#f1e400",
+            "primary-fixed": "#e2e2e2",
+            "primary": "#000000",
+            "ink": "#000000",
+            "muted": "#4B4B4B",
+            "outline": "#7e7576",
+            "surface-container": "#eeeeee",
+            "secondary": "#666000",
+            "on-error-container": "#93000a",
+            "primary-fixed-dim": "#c6c6c6",
+            "on-secondary-container": "#6b6500",
+            "on-tertiary-fixed": "#1b1b1b",
+            "on-tertiary-container": "#848484",
+            "primary-container": "#1b1b1b",
+            "tertiary-fixed-dim": "#c6c6c6",
+            "secondary-fixed-dim": "#d6ca00",
+            "surface-variant": "#e2e2e2",
+            "tertiary-fixed": "#e2e2e2",
+            "inverse-on-surface": "#f1f1f1",
+            "surface-container-highest": "#e2e2e2",
+            "on-secondary-fixed": "#1f1c00",
+            "on-tertiary-fixed-variant": "#474747",
+            "brand-accent": "#FEF003",
+            "on-surface": "#1b1b1b",
+            "border": "#E8E8E8",
+            "success": "#176B4D"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xxl": "32px",
+            "xl": "24px",
+            "space-xs": "4px",
+            "lg": "16px",
+            "md": "12px",
+            "space-sm": "8px",
+            "space-md": "12px",
+            "gutter": "12px",
+            "xs": "4px",
+            "space-lg": "16px",
+            "margin": "16px",
+            "sm": "8px",
+            "xxl": "32px",
+            "space-xl": "24px"
+          },
+          "fontFamily": {
+            "label": ["Inter"],
+            "section": ["Inter"],
+            "label-md": ["Inter"],
+            "body": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "heading": ["Inter"],
+            "label-sm": ["Inter"]
+          },
+          "fontSize": {
+            "label": ["12px", { "lineHeight": "1.4", "fontWeight": "600" }],
+            "section": ["20px", { "lineHeight": "1.3", "fontWeight": "500" }],
+            "label-md": ["12px", { "lineHeight": "17px", "fontWeight": "600" }],
+            "body": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+            "headline-md": ["20px", { "lineHeight": "26px", "fontWeight": "500" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "fontWeight": "500" }],
+            "body-sm": ["12px", { "lineHeight": "17px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+            "heading": ["28px", { "lineHeight": "1.2", "fontWeight": "500" }],
+            "label-sm": ["10px", { "lineHeight": "14px", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<link rel="stylesheet" href="../ajustes.css"></head>
+<body class="h-full bg-canvas text-ink font-body select-none overflow-hidden antialiased">
+<!-- BACKGROUND: Estoque Workspace Shell (Simulated Active View) -->
+<div class="fixed inset-0 flex flex-col pointer-events-none filter blur-[2px] opacity-40">
+<!-- Top Bar Simulation -->
+<header class="h-16 bg-surface border-b border-border pl-64 pr-6 flex items-center justify-between">
+<div class="flex items-center gap-3 po-product-header">
+<img class="po-logo" src="../assets/logo-original.svg" alt=""><span class="font-headline-md text-headline-md font-bold text-ink">Papelaria Opção</span>
+<span class="text-label-sm font-label-sm bg-border text-muted px-2 py-0.5 rounded">Terminal Balcão #01</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-64 h-9 bg-canvas rounded-lg border border-border"></div>
+<div class="w-36 h-9 bg-ink rounded-lg"></div>
+</div>
+</header>
+<!-- App Body Layout -->
+<div class="flex flex-1 overflow-hidden">
+<!-- Sidebar Simulation -->
+<aside class="w-64 h-full bg-surface border-r border-border p-4 flex flex-col justify-between">
+<div class="space-y-1">
+<div class="h-10 rounded-lg bg-surface flex items-center px-3 gap-3 text-muted">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-body-sm font-body-sm">Início</span>
+</div>
+<div class="h-10 rounded-lg bg-surface flex items-center px-3 gap-3 text-muted">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="text-body-sm font-body-sm">Clientes</span>
+</div>
+<div class="h-10 rounded-lg bg-surface flex items-center px-3 gap-3 text-muted">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="text-body-sm font-body-sm">Financeiro</span>
+</div>
+<div class="h-10 rounded-lg bg-brand-accent text-ink font-semibold flex items-center px-3 gap-3">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="text-body-sm font-body-sm">Estoque</span>
+</div>
+<div class="h-10 rounded-lg bg-surface flex items-center px-3 gap-3 text-muted">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="text-body-sm font-body-sm">Notas fiscais</span>
+</div>
+</div>
+</aside>
+<!-- Main Inventory Canvas (Underlay) -->
+<main class="flex-1 p-6 space-y-4 bg-canvas">
+<div class="flex justify-between items-center bg-surface p-4 rounded-xl border border-border">
+<div class="h-6 w-48 bg-border rounded"></div>
+<div class="h-8 w-32 bg-border rounded"></div>
+</div>
+<div class="bg-surface rounded-xl border border-border p-4 h-96">
+<div class="grid grid-cols-6 gap-4 border-b border-border pb-3">
+<div class="h-4 bg-border rounded"></div>
+<div class="h-4 bg-border rounded col-span-2"></div>
+<div class="h-4 bg-border rounded"></div>
+<div class="h-4 bg-border rounded"></div>
+<div class="h-4 bg-border rounded"></div>
+</div>
+</div>
+</main>
+</div>
+</div>
+<!-- MODAL BACKDROP OVERLAY -->
+<div class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+<!-- MODAL CONTAINER (FOCUSED COUNTER POS WORKFLOW) -->
+<div class="w-full max-w-5xl max-h-[92vh] bg-surface rounded-xl border border-border flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150" style="box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);">
+<!-- MODAL HEADER -->
+<div class="px-6 py-4 bg-surface border-b border-border flex items-center justify-between shrink-0">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-canvas border border-border flex items-center justify-center text-ink">
+<span class="material-symbols-outlined text-headline-md" data-icon="inventory_2">inventory_2</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md font-bold text-ink tracking-tight">Cadastrar Novo Produto</h2>
+<span class="font-label-sm text-label-sm bg-surface-container-high px-2 py-0.5 rounded text-ink font-semibold">Balcão &amp; Vendas</span>
+</div>
+<p class="font-body-sm text-body-sm text-muted">Preencha as informações básicas para disponibilizar o item no estoque e na frente de caixa.</p>
+</div>
+</div>
+<!-- Quick Top Actions -->
+<div class="flex items-center gap-2">
+<div class="h-6 w-px bg-border mx-1"></div>
+<button aria-label="Fechar modal" class="w-9 h-9 flex items-center justify-center rounded-lg text-muted hover:text-ink hover:bg-canvas transition-colors" type="button" data-ir="../estoque_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+</div>
+<!-- MODAL SCROLLABLE CONTENT BODY -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6 bg-canvas">
+<!-- PAINEL 1: DADOS PRINCIPAIS -->
+<section class="bg-surface border border-border rounded-xl p-5 space-y-4">
+<div class="flex items-center justify-between pb-3 border-b border-border">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-brand-accent"></span>
+<h3 class="font-label text-label font-bold text-ink">Dados principais</h3>
+</div>
+<span class="font-label-sm text-label-sm text-muted">Campos identificadores imediatos</span>
+</div>
+<!-- Fields Grid -->
+<div class="grid grid-cols-12 gap-4">
+<!-- Código Interno -->
+<div class="col-span-12 md:col-span-3">
+<label class="block font-label-sm text-label-sm text-muted mb-1">
+                Código Interno (Auto)
+              </label>
+<div class="relative flex items-center">
+<input class="w-full bg-canvas text-ink font-label-md text-label-md border border-border rounded-md px-3 py-2 cursor-not-allowed font-mono focus:ring-0 focus:outline-none" readonly type="text" value="EST-0028">
+<span class="absolute right-2.5 text-muted font-label-sm text-label-sm bg-surface-container-high px-1.5 py-0.5 rounded">Fixo</span>
+</div>
+</div>
+<!-- Código de Barras / EAN -->
+<div class="col-span-12 md:col-span-9">
+<div class="flex justify-between items-center mb-1">
+<label class="font-label-sm text-label-sm text-ink font-semibold">
+                  Código de Barras / EAN-13 <span class="text-muted font-normal">(Pressione F2 para bipar)</span>
+</label>
+<label class="flex items-center gap-1.5 cursor-pointer text-label-sm font-label-sm text-muted hover:text-ink">
+<input class="rounded border-border text-ink focus:ring-ink" id="no-barcode" type="checkbox">
+                  Sem código de barras (Item avulso / fracionado)
+                </label>
+</div>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-muted pointer-events-none">
+<span class="material-symbols-outlined text-[18px]" data-icon="barcode_scanner">barcode_scanner</span>
+</span>
+<input class="w-full bg-surface text-ink font-body-md text-body-md border border-border rounded-md pl-10 pr-32 py-2 focus:border-ink focus:outline-none focus:ring-0" id="barcode-input" placeholder="Bipe o produto com o leitor ou digite o código EAN-13..." type="text">
+
+</div>
+<p class="font-body-sm text-body-sm text-muted mt-1">Deixe em branco se for papel avulso, impressão ou serviço de encadernação.</p>
+</div>
+<!-- Descrição Completa -->
+<div class="col-span-12">
+<label class="block font-label-sm text-label-sm text-ink font-semibold mb-1">
+                Nome do produto <span class="text-danger">*</span>
+</label>
+<input class="w-full bg-surface text-ink font-body-md text-body-md border border-border rounded-md px-3 py-2.5 focus:border-ink focus:outline-none focus:ring-0 font-medium" placeholder="Ex.: Caderno Espiral Tilibra Capa Dura 10 Matérias 200 Fls" required="" type="text" value="Caderno Espiral Tilibra Capa Dura 10 Matérias 200 Fls">
+</div>
+<!-- Categoria & Departamento -->
+<div class="col-span-12 md:col-span-7">
+<label class="block font-label-sm text-label-sm text-ink font-semibold mb-1">
+                Categoria / Departamento <span class="text-danger">*</span>
+</label>
+<select class="w-full bg-surface text-ink font-body-md text-body-md border border-border rounded-md px-3 py-2 focus:border-ink focus:outline-none focus:ring-0">
+<option selected value="cadernos">Cadernos &amp; Agendas</option>
+<option value="escrita">Escrita &amp; Canetas</option>
+<option value="papeis">Papéis &amp; Sulfite</option>
+<option value="escolar">Escolar</option>
+<option value="artesanato">Artesanato</option>
+<option value="escritorio">Escritório &amp; Arquivo</option>
+</select>
+</div>
+<!-- Unidade de Medida -->
+<div class="col-span-12 md:col-span-5">
+<label class="block font-label-sm text-label-sm text-ink font-semibold mb-1">
+                Unidade base <span class="text-danger">*</span>
+</label>
+<select class="w-full bg-surface text-ink font-body-md text-body-md border border-border rounded-md px-3 py-2 focus:border-ink focus:outline-none focus:ring-0">
+<option selected value="un">un - Unidade</option>
+<option value="pct">pct - Pacote</option>
+<option value="cx">cx - Caixa</option>
+<option value="fl">fl - Folha</option>
+<option value="mt">mt - Metro</option>
+</select>
+</div>
+</div>
+</section>
+<!-- PAINEL 2: PRECIFICAÇÃO E CONTROLE DE ESTOQUE -->
+<section class="bg-surface border border-border rounded-xl p-5 space-y-4">
+<div class="flex items-center justify-between pb-3 border-b border-border">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-brand-accent"></span>
+<h3 class="font-label text-label font-bold text-ink">Precificação e Controle de Estoque</h3>
+</div>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-success bg-surface-container-low px-2 py-0.5 rounded border border-border">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+              Campos comerciais
+            </div>
+</div>
+<div class="grid grid-cols-12 gap-4">
+<!-- Preço de Custo -->
+<div class="col-span-12 sm:col-span-4">
+<label class="block font-label-sm text-label-sm text-muted mb-1">
+                Preço de Custo Fornecedor (R$)
+              </label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-muted font-mono text-body-sm font-body-sm">R$</span>
+<input class="w-full text-right bg-surface text-ink font-mono font-medium font-body-md text-body-md border border-border rounded-md pr-3 pl-9 py-2 focus:border-ink focus:outline-none focus:ring-0" type="text" value="15,56">
+</div>
+</div>
+<!-- Preço de Venda Balcão (Destacado) -->
+<div class="col-span-12 sm:col-span-4">
+<label class="block font-label-sm text-label-sm text-ink font-bold mb-1 flex items-center justify-between">
+<span>Preço de venda <span class="text-danger">*</span></span>
+<span class="text-[10px] bg-brand-accent px-1.5 py-0.2 rounded text-ink font-bold">Frente de Caixa</span>
+</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 font-bold text-ink font-mono">R$</span>
+<input class="w-full text-right bg-surface text-ink font-mono font-bold text-[18px] border-2 border-ink rounded-md pr-3 pl-10 py-1.5 focus:outline-none" type="text" value="24,90">
+</div>
+</div>
+<!-- Divisor sutil -->
+<div class="col-span-12 border-t border-border my-1"></div>
+<!-- Estoque Inicial -->
+<div class="col-span-12 sm:col-span-4">
+<label class="block font-label-sm text-label-sm text-ink font-semibold mb-1">
+                Quantidade inicial
+</label>
+<input class="w-full text-right bg-surface text-ink font-mono font-body-md text-body-md border border-border rounded-md px-3 py-2 focus:border-ink focus:outline-none focus:ring-0" min="0" type="number" value="50">
+<p class="font-body-sm text-body-sm text-muted mt-1">Quantidade física contada no balcão.</p>
+</div>
+<!-- Estoque Mínimo -->
+<div class="col-span-12 sm:col-span-4">
+<div class="flex items-center justify-between mb-1">
+<label class="font-label-sm text-label-sm text-ink font-semibold">
+                  Estoque Mínimo (Alerta)
+                </label>
+<span class="material-symbols-outlined text-[15px] text-warning" data-icon="warning">warning</span>
+</div>
+<input class="w-full text-right bg-surface text-ink font-mono font-body-md text-body-md border border-border rounded-md px-3 py-2 focus:border-ink focus:outline-none focus:ring-0" min="0" type="number" value="15">
+<p class="font-body-sm text-body-sm text-muted mt-1">Gera alerta no balcão quando o saldo atingir esta quantidade.</p>
+</div>
+<!-- Localização no Balcão -->
+<div class="col-span-12 sm:col-span-4">
+<label class="block font-label-sm text-label-sm text-ink font-semibold mb-1">
+                Localização / Prateleira
+              </label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-muted">
+<span class="material-symbols-outlined text-[16px]" data-icon="grid_view">grid_view</span>
+</span>
+<input class="w-full bg-surface text-ink font-body-md text-body-md border border-border rounded-md pl-9 pr-3 py-2 focus:border-ink focus:outline-none focus:ring-0" placeholder="Ex.: Prateleira B-03, Gaveta 2" type="text" value="Prateleira B-03, Gaveta 2">
+</div>
+<p class="font-body-sm text-body-sm text-muted mt-1">Facilita busca imediata por outro atendente.</p>
+</div>
+</div>
+</section>
+
+<section class="bg-surface border border-border rounded-xl p-5">
+  <h3 class="font-label text-label font-bold text-ink">Dados complementares</h3>
+  <p class="text-body-sm text-muted mt-1">Preencha apenas o que ajuda a identificar e repor o produto. Estes campos são opcionais.</p>
+  <div class="grid grid-cols-2 gap-4 mt-4">
+    <label>Marca<input class="w-full border border-border rounded-md px-3 py-2" type="text"></label>
+    <label>Fornecedor<input class="w-full border border-border rounded-md px-3 py-2" type="text"></label>
+    <label>Características<input class="w-full border border-border rounded-md px-3 py-2" type="text" placeholder="Cor, tamanho, gramatura..."></label>
+    <label>Descrição adicional<input class="w-full border border-border rounded-md px-3 py-2" type="text"></label>
+  </div>
+  <label class="block mt-4"><input type="checkbox" checked> Controla estoque</label>
+  <details class="mt-4"><summary class="cursor-pointer font-semibold">Apresentação em caixa ou pacote</summary>
+    <p class="text-body-sm text-muted mt-2">Opcional. O saldo continua na unidade base.</p>
+  </details>
+  <details class="mt-4"><summary class="cursor-pointer font-semibold">Dados fiscais reservados</summary>
+    <p class="text-body-sm text-muted mt-2">Campos e regras fiscais serão definidos com a contabilidade. Não há CFOP padrão do produto nesta etapa.</p>
+  </details>
+</section>
+<!-- MODAL STICKY FOOTER BAR -->
+<footer class="px-6 py-3.5 bg-surface border-t border-border flex items-center justify-between shrink-0">
+<!-- Left: Status Indicator & Shortcuts -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-2.5 py-1 bg-surface-container-low rounded-md border border-border">
+<span class="w-2 h-2 rounded-full bg-success"></span>
+<span class="font-label-sm text-label-sm font-semibold text-ink">Confira nome, categoria, unidade e preço</span>
+</div>
+<div class="hidden lg:flex items-center gap-3 text-muted text-label-sm font-label-sm border-l border-border pl-4">
+<span class="inline-flex items-center gap-1">
+<kbd class="px-1.5 py-0.5 bg-canvas border border-border rounded text-[10px] font-mono text-ink">F10</kbd> Salvar
+            </span>
+<span class="inline-flex items-center gap-1">
+<kbd class="px-1.5 py-0.5 bg-canvas border border-border rounded text-[10px] font-mono text-ink">Esc</kbd> Fechar
+            </span>
+<span class="inline-flex items-center gap-1">
+<kbd class="px-1.5 py-0.5 bg-canvas border border-border rounded text-[10px] font-mono text-ink">F2</kbd> Ler Código
+            </span>
+</div>
+</div>
+<!-- Right: Action Buttons Group -->
+<div class="flex items-center gap-3">
+<button class="h-10 px-4 rounded-lg border border-border bg-surface hover:bg-canvas text-ink font-label-md text-label-md transition-colors duration-150 active:scale-[0.98]" type="button" data-ir="../estoque_balc_o_papelaria_op_o/">
+            Cancelar
+          </button>
+<button class="h-10 px-4 rounded-lg border border-border bg-surface hover:bg-canvas text-ink font-label-md text-label-md transition-colors duration-150 flex items-center gap-1.5 active:scale-[0.98]" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="save">save</span>
+            Salvar como Rascunho
+          </button>
+</div>
+</footer>
+</div>
+</div>
+<!-- Inline Lightweight Micro-Interactions -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const barcodeInput = document.getElementById('barcode-input');
+      const noBarcodeCheckbox = document.getElementById('no-barcode');
+
+      if (noBarcodeCheckbox && barcodeInput) {
+        noBarcodeCheckbox.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            barcodeInput.value = '';
+            barcodeInput.placeholder = 'Item sem código de barras (Venda direta no balcão)';
+            barcodeInput.disabled = true;
+            barcodeInput.classList.add('bg-canvas', 'cursor-not-allowed');
+          } else {
+            barcodeInput.placeholder = 'Bipe o produto com o leitor ou digite o código EAN-13...';
+            barcodeInput.disabled = false;
+            barcodeInput.classList.remove('bg-canvas', 'cursor-not-allowed');
+            barcodeInput.focus();
+          }
+        });
+      }
+
+      // Keyboard Shortcut listener (F10 Save / Esc Close)
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'F10') {
+          e.preventDefault();
+          alert('Ação F10: Produto Cadastrado com Sucesso no Estoque!');
+        } else if (e.key === 'Escape') {
+          console.log('Esc pressionado: Fechar modal.');
+        }
+      });
+    });
+  </script>
+</div><script src="../navegacao.js"></script></body></html>

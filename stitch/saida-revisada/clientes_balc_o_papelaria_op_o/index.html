@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Clientes | Papelaria Opção - Terminal Balcão</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration Verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-fixed-dim": "#d6ca00",
+            "on-tertiary-fixed": "#1b1b1b",
+            "inverse-primary": "#c6c6c6",
+            "on-surface": "#1b1b1b",
+            "on-primary": "#ffffff",
+            "on-background": "#1b1b1b",
+            "primary-fixed-dim": "#c6c6c6",
+            "on-primary-container": "#848484",
+            "on-error": "#ffffff",
+            "tertiary-fixed": "#e2e2e2",
+            "inverse-surface": "#303030",
+            "error-container": "#ffdad6",
+            "secondary-fixed": "#f4e700",
+            "secondary": "#666000",
+            "surface-container-lowest": "#ffffff",
+            "muted": "#4B4B4B",
+            "surface-container-highest": "#e2e2e2",
+            "surface-container": "#eeeeee",
+            "canvas": "#F9F9F9",
+            "border": "#E8E8E8",
+            "surface-bright": "#f9f9f9",
+            "ink": "#000000",
+            "primary-container": "#1b1b1b",
+            "on-secondary-fixed": "#1f1c00",
+            "outline": "#7e7576",
+            "on-secondary": "#ffffff",
+            "on-tertiary-fixed-variant": "#474747",
+            "on-primary-fixed": "#1b1b1b",
+            "on-surface-variant": "#4c4546",
+            "tertiary-container": "#1b1b1b",
+            "tertiary": "#000000",
+            "outline-variant": "#cfc4c5",
+            "on-secondary-fixed-variant": "#4d4800",
+            "error": "#ba1a1a",
+            "warning": "#8A5A00",
+            "on-primary-fixed-variant": "#474747",
+            "on-secondary-container": "#6b6500",
+            "surface-container-high": "#e8e8e8",
+            "inverse-on-surface": "#f1f1f1",
+            "secondary-container": "#f1e400",
+            "surface": "#FFFFFF",
+            "tertiary-fixed-dim": "#c6c6c6",
+            "brand-accent": "#FEF003",
+            "surface-variant": "#e2e2e2",
+            "background": "#f9f9f9",
+            "danger": "#EA0B11",
+            "primary": "#000000",
+            "surface-container-low": "#f3f3f3",
+            "on-tertiary": "#ffffff",
+            "surface-tint": "#5e5e5e",
+            "primary-fixed": "#e2e2e2",
+            "surface-dim": "#dadada",
+            "success": "#176B4D",
+            "on-error-container": "#93000a",
+            "on-tertiary-container": "#848484"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "gutter": "12px",
+            "margin": "16px",
+            "sm": "8px",
+            "space-lg": "16px",
+            "space-xs": "4px",
+            "space-md": "12px",
+            "md": "12px",
+            "xs": "4px",
+            "xl": "24px",
+            "xxl": "32px",
+            "lg": "16px",
+            "space-sm": "8px",
+            "space-xxl": "32px",
+            "space-xl": "24px"
+          },
+          "fontFamily": {
+            "label": ["Inter"],
+            "body-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "headline-md": ["Inter"],
+            "section": ["Inter"],
+            "label-sm": ["Inter"],
+            "body": ["Inter"],
+            "headline-lg": ["Inter"],
+            "heading": ["Inter"]
+          },
+          "fontSize": {
+            "label": ["12px", { "lineHeight": "1.4", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "17px", "fontWeight": "400" }],
+            "label-md": ["12px", { "lineHeight": "17px", "fontWeight": "600" }],
+            "headline-md": ["20px", { "lineHeight": "26px", "fontWeight": "500" }],
+            "section": ["20px", { "lineHeight": "1.3", "fontWeight": "500" }],
+            "label-sm": ["10px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "body": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "fontWeight": "500" }],
+            "heading": ["28px", { "lineHeight": "1.2", "fontWeight": "500" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .num-tabular {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+<link rel="stylesheet" href="../ajustes.css"></head>
+<body class="bg-canvas text-ink font-body text-body antialiased min-h-screen selection:bg-brand-accent selection:text-ink">
+<!-- ==================== FIXED SIDEBAR ==================== -->
+<!-- Derived from JSON: SideNavBar (Fixed left, width 64/256px, item Clientes active with #FEF003) -->
+<aside class="fixed left-0 top-0 h-screen w-64 flex flex-col z-30 bg-surface dark:bg-inverse-surface border-r border-border dark:border-outline-variant select-none">
+<div class="w-64 h-full flex flex-col justify-between p-4">
+<!-- Upper Section: Brand + Navigation -->
+<div class="flex flex-col gap-5">
+<!-- Brand Header with Logo Emblem -->
+<div class="po-brand">
+          <img class="po-logo" src="../assets/logo-original.svg" alt="">
+          <div class="po-brand-copy"><strong>Papelaria Opção</strong><span>Terminal Balcão #01</span></div>
+        </div><!-- Navigation Tabs from JSON -->
+<!-- Exact JSON Tab Labels: ["Início", "Clientes", "Financeiro", "Estoque", "Notas fiscais"] -->
+<!-- Tab active according to lock rules: "Clientes" -->
+<nav class="flex flex-col gap-1">
+<!-- Início (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted dark:text-surface-dim hover:text-ink dark:hover:text-surface rounded-lg hover:bg-canvas dark:hover:bg-primary-container transition-colors duration-150 active:scale-[0.99]" href="../in_cio_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-muted" data-icon="home">home</span>
+<span class="text-label-md font-label-md">Início</span>
+</a>
+<!-- Clientes (Active: style_active_navigation = "bg-brand-accent text-ink font-semibold rounded-lg") -->
+<a class="flex items-center gap-3 px-3 py-2 bg-brand-accent text-ink font-semibold rounded-lg shadow-sm active:scale-[0.99] transition-transform duration-100" href="#">
+<span class="material-symbols-outlined text-ink" data-icon="group" data-weight="fill" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-label-md font-label-md text-ink">Clientes</span>
+</a>
+<!-- Financeiro (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted dark:text-surface-dim hover:text-ink dark:hover:text-surface rounded-lg hover:bg-canvas dark:hover:bg-primary-container transition-colors duration-150 active:scale-[0.99]" href="../financeiro_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-muted" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="text-label-md font-label-md">Financeiro</span>
+</a>
+<!-- Estoque (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted dark:text-surface-dim hover:text-ink dark:hover:text-surface rounded-lg hover:bg-canvas dark:hover:bg-primary-container transition-colors duration-150 active:scale-[0.99]" href="../estoque_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-muted" data-icon="inventory_2">inventory_2</span>
+<span class="text-label-md font-label-md">Estoque</span>
+</a>
+<!-- Notas fiscais (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted dark:text-surface-dim hover:text-ink dark:hover:text-surface rounded-lg hover:bg-canvas dark:hover:bg-primary-container transition-colors duration-150 active:scale-[0.99]" href="../notas_fiscais_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-muted" data-icon="receipt_long">receipt_long</span>
+<span class="text-label-md font-label-md">Notas fiscais</span>
+</a>
+</nav>
+<!-- CTA from JSON: "Criar ficha" -->
+</div>
+<!-- Footer Section: Operator & Sync -->
+<div class="flex flex-col gap-2 pt-3 border-t border-border">
+<button class="w-full flex items-center justify-center gap-2 bg-brand-accent hover:bg-secondary-fixed text-ink font-label-md text-label-md px-3 py-2.5 rounded-lg border border-border transition-colors active:scale-[0.98] po-sidebar-cta" data-ir="../criar_ficha_de_venda_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" data-icon="shopping_cart_checkout">shopping_cart_checkout</span>
+<span>Criar ficha</span>
+</button>
+<!-- JSON footer_tab_labels: ["Operador: João Silva", "Protótipo local"] -->
+<div class="flex items-center gap-2 px-2 py-1 text-ink rounded-lg bg-canvas border border-border">
+<span class="material-symbols-outlined text-ink" data-icon="account_circle">account_circle</span>
+<div class="flex flex-col min-w-0">
+<span class="text-label-md font-label-md truncate">Operador: João Silva</span>
+<span class="text-label-sm font-label-sm text-muted">Balcão 01 • Turno Tarde</span>
+</div>
+</div>
+<div class="flex items-center justify-between px-2 py-1.5 text-muted hover:text-ink transition-colors text-body-sm font-body-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-success text-[18px]" data-icon="cloud_done">cloud_done</span>
+<span class="text-label-sm font-label-sm">Protótipo local</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-success"></span>
+</div>
+</div>
+</div>
+</aside>
+<!-- ==================== FIXED TOP NAV BAR ==================== -->
+<!-- Derived from JSON: TopNavBar (Search on left, trailing actions, profile, fixed at top) -->
+<header class="fixed top-0 right-0 left-64 h-16 z-20 bg-surface dark:bg-inverse-surface border-b border-border dark:border-outline-variant flex justify-between items-center px-6">
+<!-- Left: Global Quick Search with Command shortcut -->
+<div class="flex items-center gap-3 w-96">
+<div class="relative w-full">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted">
+<span class="material-symbols-outlined text-[18px]" data-icon="search">search</span>
+</span>
+<input class="w-full pl-9 pr-14 py-1.5 bg-canvas border border-border rounded-md text-body-sm font-body-sm text-ink placeholder:text-muted focus:outline-none focus:border-ink transition-all" placeholder="Busca rápida no sistema..." type="text">
+<div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+<kbd class="px-1.5 py-0.5 text-[10px] font-semibold text-muted bg-surface border border-border rounded shadow-2xs">Ctrl+K</kbd>
+</div>
+</div>
+</div>
+<!-- Right: Actions & Operator Status -->
+<div class="flex items-center gap-3">
+<!-- Sync indicator -->
+<!-- Notifications Icon Action -->
+<button class="w-8 h-8 flex items-center justify-center rounded border border-border text-muted hover:text-ink hover:bg-canvas transition-colors relative" title="Notificações">
+<span class="material-symbols-outlined text-[18px]" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-danger rounded-full"></span>
+</button>
+<div class="h-5 w-px bg-border mx-1"></div>
+<!-- Primary Action: + Cadastrar novo cliente -->
+<button class="flex items-center gap-1.5 bg-ink hover:bg-primary-container text-on-primary text-label-md font-label-md px-3.5 py-2 rounded-lg transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]" data-icon="person_add">person_add</span>
+<span>+ Cadastrar novo cliente</span>
+</button>
+<!-- Profile Avatar Container -->
+<div class="flex items-center gap-2 pl-2 border-l border-border">
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-border flex items-center justify-center text-ink font-semibold text-label-md" title="Foto do Operador de Caixa">
+          JS
+        </div>
+</div>
+</div>
+</header>
+<!-- ==================== MAIN WORK CANVAS ==================== -->
+<main class="ml-64 pt-16 min-h-screen bg-canvas pb-12">
+<div class="p-6 max-w-[1400px] mx-auto flex flex-col gap-5">
+<!-- Breadcrumb & Title Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-3 pt-2">
+<div>
+<div class="flex items-center gap-1.5 text-label-sm font-label-sm text-muted mb-1">
+<span>Terminal Balcão</span>
+<span>/</span>
+<span class="text-ink font-semibold">Carteira de Clientes</span>
+</div>
+<h1 class="text-headline-lg font-headline-lg font-bold text-ink tracking-tight">Clientes</h1>
+<p class="text-body-sm font-body-sm text-muted mt-0.5">
+            Consulte clientes cadastrados e o histórico de suas compras.
+          </p>
+</div>
+<!-- Quick Summary Metrics (Bento-style strip) -->
+<div class="flex items-center gap-2">
+<div class="px-3 py-1.5 bg-surface border border-border rounded-lg flex items-center gap-2.5">
+<span class="text-label-sm font-label-sm text-muted">Total na base</span>
+<span class="text-label-md font-label-md font-bold text-ink num-tabular">148</span>
+</div>
+<div class="px-3 py-1.5 bg-surface border border-border rounded-lg flex items-center gap-2.5">
+<span class="w-2 h-2 rounded-full bg-warning"></span>
+<span class="text-label-sm font-label-sm text-muted">Faturas pendentes</span>
+<span class="text-label-md font-label-md font-bold text-ink num-tabular">12</span>
+</div>
+<div class="px-3 py-1.5 bg-surface border border-border rounded-lg flex items-center gap-2.5">
+<span class="w-2 h-2 rounded-full bg-danger"></span>
+<span class="text-label-sm font-label-sm text-muted">Em atraso</span>
+<span class="text-label-md font-label-md font-bold text-danger num-tabular">4</span>
+</div>
+</div>
+</div>
+<!-- Control Toolbar: Search + Filter Tabs + Order Indicator -->
+<div class="bg-surface border border-border rounded-xl p-3 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+<!-- Search bar with magnifying glass -->
+<div class="relative flex-1 max-w-xl">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted">
+<span class="material-symbols-outlined text-[18px]" data-icon="search">search</span>
+</span>
+<input class="w-full pl-9 pr-4 py-2 bg-canvas border border-border rounded-lg text-body-sm font-body-sm text-ink placeholder:text-muted focus:outline-none focus:border-ink transition-all" placeholder="Buscar cliente por nome, CPF/CNPJ ou telefone..." type="text">
+</div>
+<!-- Filter Tabs (Pill controls) -->
+<div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+<!-- Todos (Active) -->
+<button class="px-3 py-1.5 rounded-lg text-label-md font-label-md bg-ink text-on-primary border border-ink flex items-center gap-1.5 transition-all">
+<span>Todos</span>
+<span class="text-[11px] bg-muted px-1.5 py-0.2 rounded-full text-surface">148</span>
+</button>
+<!-- Com pendências -->
+<button class="px-3 py-1.5 rounded-lg text-label-md font-label-md bg-canvas hover:bg-surface border border-border text-muted hover:text-ink flex items-center gap-1.5 transition-all">
+<span class="w-1.5 h-1.5 rounded-full bg-warning"></span>
+<span>Com pendências</span>
+<span class="text-[11px] bg-surface-container-high px-1.5 py-0.2 rounded-full text-ink font-bold">12</span>
+</button>
+<!-- Com vencidos -->
+<button class="px-3 py-1.5 rounded-lg text-label-md font-label-md bg-canvas hover:bg-surface border border-border text-muted hover:text-ink flex items-center gap-1.5 transition-all">
+<span class="w-1.5 h-1.5 rounded-full bg-danger"></span>
+<span>Com vencidos</span>
+<span class="text-[11px] bg-error-container text-danger px-1.5 py-0.2 rounded-full font-bold">4</span>
+</button>
+<div class="h-4 w-px bg-border mx-1"></div>
+<!-- Sort Indicator: Alphabetical (A-Z) -->
+<div class="flex items-center gap-1 px-2.5 py-1.5 bg-canvas border border-border rounded-lg text-label-sm font-label-sm text-muted cursor-pointer hover:text-ink">
+<span class="material-symbols-outlined text-[16px]" data-icon="sort_by_alpha">sort_by_alpha</span>
+<span>Ordem: <strong>A-Z</strong></span>
+</div>
+<!-- Filter button -->
+<button class="p-1.5 bg-canvas hover:bg-surface border border-border rounded-lg text-muted hover:text-ink" title="Mais filtros">
+<span class="material-symbols-outlined text-[18px]" data-icon="tune">tune</span>
+</button>
+</div>
+</div>
+<!-- ==================== TABLE OF CLIENTS ==================== -->
+<div class="bg-surface border border-border rounded-xl shadow-xs overflow-hidden">
+<div class="overflow-x-auto po-table-scroll">
+<table class="w-full text-left border-collapse po-table">
+<!-- Table Header -->
+<thead>
+<tr class="border-b border-border bg-canvas/70 text-label-sm font-label-sm text-muted uppercase tracking-wider select-none">
+<th class="py-3 px-4 w-12 text-center">
+<input class="rounded border-border text-ink focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox">
+</th>
+<th class="py-3 px-4 w-28">CÓDIGO/ID</th>
+<th class="py-3 px-4">CLIENTE</th>
+<th class="py-3 px-4">DOCUMENTO / CONTATO</th>
+<th class="py-3 px-4 text-center">TOTAL DE COMPRAS</th>
+<th class="py-3 px-4">SITUAÇÃO DAS COMPRAS</th>
+<th class="py-3 px-4 text-right">AÇÕES</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border text-body-sm font-body-sm">
+<!-- ================= ROW 1: EXPANDED CLIENT (Mariana Costa) ================= -->
+<tr class="bg-surface hover:bg-canvas/50 transition-colors border-l-4 border-l-ink">
+<td class="py-3.5 px-4 text-center">
+<input checked class="rounded border-border text-ink focus:ring-0 cursor-pointer" type="checkbox">
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 font-mono text-label-sm font-label-sm bg-canvas border border-border rounded text-ink font-bold">
+                    CLI-0104
+                  </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-brand-accent/40 border border-border flex items-center justify-center font-bold text-label-md text-ink flex-shrink-0">
+                      MC
+                    </div>
+<div>
+<div class="font-semibold text-ink leading-tight">Mariana Costa</div>
+<div class="text-[11px] text-muted">Cliente desde Mar/2022</div>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col leading-tight">
+<span class="font-mono text-[11px] text-ink">CPF: ***.452.198-**</span>
+<span class="text-muted text-[11px] flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[13px]" data-icon="call">call</span>
+                      (11) 98452-1100
+                    </span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-center">
+<span class="font-semibold text-ink num-tabular">18 compras</span>
+</td>
+<td class="py-3.5 px-4">
+<!-- Purchase status: Em dia -->
+<span class="po-status po-status--pendente"><strong>Com pendências</strong><small>Vence em 12 dias</small></span>
+</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded border border-border bg-surface hover:bg-canvas text-ink transition-colors flex items-center gap-1" data-ir="../detalhe_do_cliente_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-[14px]" data-icon="edit_note">edit_note</span>
+<span>Ficha</span>
+</button>
+<!-- Expand/Collapse active indicator -->
+<button class="p-1 rounded text-ink bg-canvas border border-border" title="Recolher compras">
+<span class="material-symbols-outlined text-[18px]" data-icon="expand_less">expand_less</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- EXPANDED SUBPANEL: Exactly & At Most 3 Recent Purchases + Prominent View Full History Link -->
+<tr class="bg-canvas/60 border-l-4 border-l-ink">
+<td class="p-0" colspan="7">
+<div class="py-3 px-6 ml-8 mr-4 my-2 bg-surface rounded-lg border border-border shadow-2xs">
+<div class="flex items-center justify-between pb-2 mb-2 border-b border-border">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-ink" data-icon="history">history</span>
+<span class="text-label-md font-label-md text-ink">3 Compras Mais Recentes da Cliente</span>
+<span class="text-[11px] text-muted">(Histórico imediato de balcão)</span>
+</div>
+<span class="text-label-sm font-label-sm text-muted">Mariana Costa • CLI-0104</span>
+</div>
+<!-- List of 3 exact transactions -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+<!-- Item 1: Compra #1043 -->
+<div class="p-3 bg-canvas border border-border rounded-md flex flex-col justify-between hover:border-ink/30 transition-colors">
+<div>
+<div class="flex items-center justify-between">
+<span class="font-mono text-label-sm font-label-sm font-bold text-ink">Compra #1043</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#176B4D]/10 text-success">
+                              Pago
+                            </span>
+</div>
+<div class="text-[11px] text-muted mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" data-icon="schedule">schedule</span>
+                            Hoje, 14:32
+                          </div>
+<div class="mt-2 text-headline-md font-headline-md font-bold text-ink num-tabular">
+                            R$ 152,20
+                          </div>
+</div>
+<div class="pt-2 mt-2 border-t border-border/60 flex items-center justify-between">
+<span class="text-[11px] text-muted">Dinheiro</span>
+<button class="text-label-sm font-label-sm text-ink hover:underline font-semibold flex items-center gap-0.5">
+                            [Abrir ficha]
+                          </button>
+</div>
+</div>
+<!-- Item 2: Compra #0998 -->
+<div class="p-3 bg-canvas border border-border rounded-md flex flex-col justify-between hover:border-ink/30 transition-colors">
+<div>
+<div class="flex items-center justify-between">
+<span class="font-mono text-label-sm font-label-sm font-bold text-ink">Compra #0998</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#176B4D]/10 text-success">
+                              Pago
+                            </span>
+</div>
+<div class="text-[11px] text-muted mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" data-icon="calendar_today">calendar_today</span>
+                            18/10/2023
+                          </div>
+<div class="mt-2 text-headline-md font-headline-md font-bold text-ink num-tabular">
+                            R$ 84,50
+                          </div>
+</div>
+<div class="pt-2 mt-2 border-t border-border/60 flex items-center justify-between">
+<span class="text-[11px] text-muted">Pix</span>
+<button class="text-label-sm font-label-sm text-ink hover:underline font-semibold flex items-center gap-0.5">
+                            [Abrir ficha]
+                          </button>
+</div>
+</div>
+<!-- Item 3: Compra #0942 -->
+<div class="p-3 bg-canvas border border-border rounded-md flex flex-col justify-between hover:border-ink/30 transition-colors">
+<div>
+<div class="flex items-center justify-between">
+<span class="font-mono text-label-sm font-label-sm font-bold text-ink">Compra #0942</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#176B4D]/10 text-success">
+                              Pago
+                            </span>
+</div>
+<div class="text-[11px] text-muted mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]" data-icon="calendar_today">calendar_today</span>
+                            05/10/2023
+                          </div>
+<div class="mt-2 text-headline-md font-headline-md font-bold text-ink num-tabular">
+                            R$ 230,00
+                          </div>
+</div>
+<div class="pt-2 mt-2 border-t border-border/60 flex items-center justify-between">
+<span class="text-[11px] text-muted">Pagamento futuro</span>
+<button class="text-label-sm font-label-sm text-ink hover:underline font-semibold flex items-center gap-0.5">
+                            [Abrir ficha]
+                          </button>
+</div>
+</div>
+</div>
+<!-- Prominent Link to Full Client Detail / History -->
+<div class="mt-3 pt-2.5 border-t border-border flex items-center justify-between">
+<span class="text-body-sm font-body-sm text-muted">
+                        Total acumulado histórico: <strong class="text-ink">R$ 2.418,90</strong>
+</span>
+<a class="inline-flex items-center gap-1 text-label-md font-label-md text-ink bg-brand-accent hover:bg-secondary-fixed px-3 py-1.5 rounded border border-border font-bold transition-all shadow-2xs" href="../detalhe_do_cliente_balc_o_papelaria_op_o/">
+<span>Ver histórico completo (18 compras)</span>
+<span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+</td>
+</tr>
+<!-- ================= ROW 2: Colégio Monteiro Lobato ================= -->
+<tr class="hover:bg-canvas/50 transition-colors">
+<td class="py-3.5 px-4 text-center">
+<input class="rounded border-border text-ink focus:ring-0 cursor-pointer" type="checkbox">
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 font-mono text-label-sm font-label-sm bg-canvas border border-border rounded text-ink">
+                    CLI-0105
+                  </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-border flex items-center justify-center font-bold text-label-md text-ink flex-shrink-0">
+                      ML
+                    </div>
+<div>
+<div class="font-semibold text-ink leading-tight">Colégio Monteiro Lobato</div>
+<div class="text-[11px] text-muted">Resp: Diretoria Adm.</div>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col leading-tight">
+<span class="font-mono text-[11px] text-ink">CNPJ: 12.345.678/0001-90</span>
+<span class="text-muted text-[11px] flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[13px]" data-icon="call">call</span>
+                      (11) 3214-5500
+                    </span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-center">
+<span class="font-semibold text-ink num-tabular">42 compras</span>
+</td>
+<td class="py-3.5 px-4">
+<!-- Purchase status: Com pendências (Fatura a vencer em 5 dias) -->
+<span class="po-status po-status--pendente"><strong>Com pendências</strong><small>Vence em 5 dias</small></span>
+</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded border border-border bg-surface hover:bg-canvas text-ink transition-colors flex items-center gap-1" data-ir="../detalhe_do_cliente_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-[14px]" data-icon="visibility">visibility</span>
+<span>Ver</span>
+</button>
+<!-- Expand Button [v] -->
+<button class="p-1 rounded text-muted hover:text-ink hover:bg-canvas border border-transparent hover:border-border transition-colors" title="Expandir compras">
+<span class="material-symbols-outlined text-[18px]" data-icon="expand_more">expand_more</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ================= ROW 3: Carlos Eduardo Santos ================= -->
+<tr class="hover:bg-canvas/50 transition-colors">
+<td class="py-3.5 px-4 text-center">
+<input class="rounded border-border text-ink focus:ring-0 cursor-pointer" type="checkbox">
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 font-mono text-label-sm font-label-sm bg-canvas border border-border rounded text-ink">
+                    CLI-0106
+                  </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-border flex items-center justify-center font-bold text-label-md text-ink flex-shrink-0">
+                      CS
+                    </div>
+<div>
+<div class="font-semibold text-ink leading-tight">Carlos Eduardo Santos</div>
+<div class="text-[11px] text-muted">Atendido no Balcão</div>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col leading-tight">
+<span class="font-mono text-[11px] text-ink">CPF: ***.781.902-**</span>
+<span class="text-muted text-[11px] flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[13px]" data-icon="call">call</span>
+                      (11) 97123-4455
+                    </span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-center">
+<span class="font-semibold text-ink num-tabular">7 compras</span>
+</td>
+<td class="py-3.5 px-4">
+<!-- Purchase status: Com vencidos (1 compra em atraso) -->
+<span class="po-status po-status--vencido"><strong>Com vencidos</strong><small>1 compra em atraso</small></span>
+</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded border border-border bg-surface hover:bg-canvas text-ink transition-colors flex items-center gap-1" data-ir="../detalhe_do_cliente_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-[14px]" data-icon="visibility">visibility</span>
+<span>Ver</span>
+</button>
+<!-- Expand Button [v] -->
+<button class="p-1 rounded text-muted hover:text-ink hover:bg-canvas border border-transparent hover:border-border transition-colors" title="Expandir compras">
+<span class="material-symbols-outlined text-[18px]" data-icon="expand_more">expand_more</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ================= ROW 4: Ana Beatriz Nogueira ================= -->
+<tr class="hover:bg-canvas/50 transition-colors">
+<td class="py-3.5 px-4 text-center">
+<input class="rounded border-border text-ink focus:ring-0 cursor-pointer" type="checkbox">
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 font-mono text-label-sm font-label-sm bg-canvas border border-border rounded text-ink">
+                    CLI-0107
+                  </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-border flex items-center justify-center font-bold text-label-md text-ink flex-shrink-0">
+                      AN
+                    </div>
+<div>
+<div class="font-semibold text-ink leading-tight">Ana Beatriz Nogueira</div>
+<div class="text-[11px] text-muted">Cliente Frequente</div>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col leading-tight">
+<span class="font-mono text-[11px] text-ink">CPF: ***.312.449-**</span>
+<span class="text-muted text-[11px] flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[13px]" data-icon="call">call</span>
+                      (11) 99876-5432
+                    </span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-center">
+<span class="font-semibold text-ink num-tabular">12 compras</span>
+</td>
+<td class="py-3.5 px-4">
+<!-- Purchase status: Em dia -->
+<span class="po-status po-status--em-dia"><strong>Em dia</strong></span>
+</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded border border-border bg-surface hover:bg-canvas text-ink transition-colors flex items-center gap-1" data-ir="../detalhe_do_cliente_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-[14px]" data-icon="visibility">visibility</span>
+<span>Ver</span>
+</button>
+<!-- Expand Button [v] -->
+<button class="p-1 rounded text-muted hover:text-ink hover:bg-canvas border border-transparent hover:border-border transition-colors" title="Expandir compras">
+<span class="material-symbols-outlined text-[18px]" data-icon="expand_more">expand_more</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ================= ROW 5: Papel e Arte Gráfica ME ================= -->
+<tr class="hover:bg-canvas/50 transition-colors">
+<td class="py-3.5 px-4 text-center">
+<input class="rounded border-border text-ink focus:ring-0 cursor-pointer" type="checkbox">
+</td>
+<td class="py-3.5 px-4">
+<span class="px-2 py-0.5 font-mono text-label-sm font-label-sm bg-canvas border border-border rounded text-ink">
+                    CLI-0108
+                  </span>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-border flex items-center justify-center font-bold text-label-md text-ink flex-shrink-0">
+                      PA
+                    </div>
+<div>
+<div class="font-semibold text-ink leading-tight">Papel e Arte Gráfica ME</div>
+<div class="text-[11px] text-muted">Faturamento Mensal</div>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-col leading-tight">
+<span class="font-mono text-[11px] text-ink">CNPJ: 98.765.432/0001-11</span>
+<span class="text-muted text-[11px] flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[13px]" data-icon="call">call</span>
+                      (11) 4002-8922
+                    </span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-center">
+<span class="font-semibold text-ink num-tabular">29 compras</span>
+</td>
+<td class="py-3.5 px-4">
+<!-- Purchase status: Em dia -->
+<span class="po-status po-status--em-dia"><strong>Em dia</strong></span>
+</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded border border-border bg-surface hover:bg-canvas text-ink transition-colors flex items-center gap-1" data-ir="../detalhe_do_cliente_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-[14px]" data-icon="visibility">visibility</span>
+<span>Ver</span>
+</button>
+<!-- Expand Button [v] -->
+<button class="p-1 rounded text-muted hover:text-ink hover:bg-canvas border border-transparent hover:border-border transition-colors" title="Expandir compras">
+<span class="material-symbols-outlined text-[18px]" data-icon="expand_more">expand_more</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- ==================== SUBTLE PAGINATION FOOTER ==================== -->
+<div class="py-3 px-6 bg-surface border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-body-sm font-body-sm">
+<div class="text-muted text-label-sm font-label-sm">
+            Mostrando <strong class="text-ink">5</strong> de <strong class="text-ink">148</strong> clientes
+          </div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-md border border-border bg-canvas text-muted hover:text-ink hover:bg-surface text-label-sm font-label-sm transition-colors flex items-center gap-1 disabled:opacity-50" disabled>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_left">chevron_left</span>
+<span>Anterior</span>
+</button>
+<!-- Numeric Page Pills -->
+<div class="flex items-center gap-1">
+<button class="w-7 h-7 rounded text-label-sm font-label-sm bg-ink text-on-primary font-bold">1</button>
+<button class="w-7 h-7 rounded text-label-sm font-label-sm hover:bg-canvas text-muted hover:text-ink border border-transparent hover:border-border">2</button>
+<button class="w-7 h-7 rounded text-label-sm font-label-sm hover:bg-canvas text-muted hover:text-ink border border-transparent hover:border-border">3</button>
+<span class="text-muted px-1 text-xs">...</span>
+<button class="w-7 h-7 rounded text-label-sm font-label-sm hover:bg-canvas text-muted hover:text-ink border border-transparent hover:border-border">30</button>
+</div>
+<button class="px-3 py-1.5 rounded-md border border-border bg-canvas text-ink hover:bg-surface text-label-sm font-label-sm transition-colors flex items-center gap-1">
+<span>Próxima</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Quick Desk Footer Reminder (Neutral, high ergonomics) -->
+<div class="flex items-center justify-between text-[11px] text-muted px-2">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-accent"></span>
+<span>A situação de pendência ou vencimento descreve as compras e títulos financeiros do balcão.</span>
+</div>
+<div>
+          Atalhos de teclado: <kbd class="px-1 py-0.5 bg-surface border border-border rounded">F2</kbd> Nova Venda | <kbd class="px-1 py-0.5 bg-surface border border-border rounded">F4</kbd> Buscar Cliente
+        </div>
+</div>
+</div>
+</main>
+<!-- Interactive script for keyboard shortcuts and row expansion micro-interaction -->
+<script>
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const input = document.querySelector('input[placeholder*="Busca rápida"]');
+        if (input) input.focus();
+      }
+    });
+  </script>
+<script src="../navegacao.js"></script></body></html>

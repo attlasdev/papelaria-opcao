@@ -1,0 +1,20 @@
+/*
+ * Ponto de entrada dos estilos globais. Só importa; não escreva regra aqui.
+ *
+ *   tokens/  valores do sistema (cor, fonte, espaço, raio, sombra)
+ *   base/    fonte local, reset e aparência dos elementos soltos
+ *
+ * O estilo de cada componente fica ao lado dele: src/componentes/<nome>/<nome>.css
+ * e o de cada tela em src/telas/<tela>/<tela>.css.
+ */
+@import 'tailwindcss';
+
+@import './tokens/cores.css';
+@import './tokens/tipografia.css';
+@import './tokens/espacos.css';
+@import './tokens/raios.css';
+@import './tokens/sombras.css';
+
+@import './base/fontes.css';
+@import './base/reset.css';
+@import './base/elementos.css';

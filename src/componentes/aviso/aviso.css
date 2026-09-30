@@ -1,0 +1,25 @@
+.aviso {
+  position: fixed;
+  left: 50%;
+  bottom: var(--espaco-6);
+  z-index: 50;
+  transform: translateX(-50%);
+  padding: 10px var(--espaco-4);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-tinta);
+  color: var(--color-superficie);
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-medio);
+  box-shadow: var(--shadow-flutuante);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms;
+}
+
+.aviso--visivel {
+  opacity: 1;
+}
+
+.aviso:empty {
+  display: none;
+}

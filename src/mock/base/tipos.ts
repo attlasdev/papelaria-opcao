@@ -1,0 +1,135 @@
+/**
+ * A base local da demonstração. Guarda só fatos; situação, totais e resumos
+ * são calculados em derivados.ts, para nenhuma tela ter uma cópia que envelhece.
+ */
+export const VERSAO_BASE = 1
+
+export type Meio = 'dinheiro' | 'pix' | 'cartao'
+export type FormaVenda = Meio | 'notinha'
+export type Grupo = 'papeis' | 'escrita' | 'cadernos' | 'escritorio' | 'artes'
+
+export type Cliente = {
+  id: string // CLI-0104
+  nome: string
+  documento: string // mascarado; "Sem documento" quando não informado
+  telefone: string
+  email: string
+  endereco: string // "Rua, nº - Bairro - Cidade/UF" ou ""
+  descricao: string // "Cliente frequente"
+  desde: string // YYYY-MM-DD
+}
+
+/**
+ * Como o produto é vendido, e portanto contado no estoque. MVP: só o que existe
+ * em toda papelaria. Folha avulsa conta como unidade.
+ */
+export type Unidade = 'un' | 'pct' | 'cx'
+
+export type Produto = {
+  codigo: string // EST-0021
+  codigoBarras?: string
+  descricao: string
+  categoria: string
+  grupo: Grupo
+  unidade: Unidade
+  preco: number // centavos
+  saldo: number
+  minimo: number
+  /** Opcionais do cadastro. Custo em centavos. */
+  custo?: number
+  localizacao?: string
+  marca?: string
+  caracteristicas?: string
+  descricaoAdicional?: string
+  /** Como costuma vir do fornecedor: caixa ou pacote com tantas unidades. Só informativo. */
+  /** `pacotes`: por caixa. `unidades`: por pacote se houver pacotes, senão por embalagem. */
+  conteudo?: { embalagem: 'cx' | 'pct'; pacotes?: number; unidades?: number }
+  /**
+   * Cadastrado às pressas numa venda: só o essencial, saldo sem contagem. Fica
+   * marcado até alguém completar o cadastro e contar a prateleira no Estoque.
+   */
+  cadastroRapido?: true
+  /** Fora de linha: some da venda e da lista, mas o histórico continua citando. */
+  inativo?: true
+}
+
+export type ItemVenda = { codigo: string; descricao: string; quantidade: number; preco: number }
+
+/** Um dinheiro que entrou por causa de uma ficha. */
+export type Pagamento = {
+  data: string
+  horario: string
+  meio: Meio
+  valor: number
+  /** Notinha: parte paga no ato da venda. */
+  entrada?: boolean
+  /** Rótulo mais preciso do meio, como "Cartão crédito (2x)". */
+  rotulo?: string
+}
+
+export type Ficha = {
+  id: string // '1043'
+  clienteId: string | null // null = venda sem identificação
+  data: string
+  horario: string
+  operador: string
+  itens: ItemVenda[]
+  desconto: number
+  total: number // já com desconto
+  forma: FormaVenda
+  /** À vista: um pagamento na hora. Notinha: entrada e recebimentos, em ordem. */
+  pagamentos: Pagamento[]
+  vencimento?: string // só notinha
+}
+
+/** Lançamento manual do caixa (despesa, retirada, troco, recebimento avulso). */
+export type MovimentoCaixa = {
+  id: string
+  data: string
+  horario: string
+  descricao: string
+  origem: string
+  categoria: string
+  meio: Meio
+  valor: number // negativo = saída
+}
+
+export type MovimentoEstoque = {
+  id: string
+  data: string // ISO com hora, para ordenar
+  produto: string
+  descricao: string
+  tipo: 'Entrada' | 'Ajuste' | 'Venda'
+  antes: number
+  depois: number
+  motivo: string
+}
+
+/** Ficha em andamento guardada para retomar depois. */
+export type RascunhoFicha = {
+  clienteId: string | null
+  semIdentificacao: boolean
+  itens: { codigo: string; quantidade: number }[]
+  desconto: number
+  forma: FormaVenda
+  recebido: number
+  prepararNota: boolean
+  vencimento: string
+  entrada: number
+  meioEntrada: Meio
+}
+
+export type Base = {
+  versao: number
+  criadaEm: string
+  operador: string
+  clientes: Cliente[]
+  produtos: Produto[]
+  fichas: Ficha[]
+  movimentosCaixa: MovimentoCaixa[]
+  movimentosEstoque: MovimentoEstoque[]
+  rascunhosNota: string[] // ids de ficha
+  rascunhoFicha: RascunhoFicha | null
+  /** Aviso do sino já lido: id → assinatura do texto lido. Mudou o texto, volta a ser novo. */
+  avisosLidos: Record<string, string>
+}

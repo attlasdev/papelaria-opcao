@@ -1,0 +1,7 @@
+.registrar-movimento { max-width: 820px; }
+.registrar-movimento__link:hover { text-decoration: underline; }
+.registrar-movimento__campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--espaco-4); }
+.registrar-movimento__largo { grid-column: 1 / -1; }
+.registrar-movimento__nota { margin-top: var(--espaco-4); color: var(--color-texto-suave); font-size: var(--text-rotulo); }
+.registrar-movimento__acoes { display: flex; justify-content: flex-end; gap: var(--espaco-3); margin-top: var(--espaco-4); }
+@media (max-width: 700px) { .registrar-movimento__campos { grid-template-columns: minmax(0, 1fr); } }

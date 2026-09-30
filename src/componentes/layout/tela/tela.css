@@ -1,0 +1,273 @@
+.tela {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+}
+
+/* Cabeçalho */
+.tela__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  flex: none;
+  height: var(--altura-cabecalho);
+  padding: 0 var(--espaco-6) 0 calc(var(--espaco-6) + var(--altura-controle) + var(--espaco-3));
+  background: var(--color-superficie);
+  border-bottom: 1px solid var(--color-borda);
+}
+
+.tela__busca {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  flex: 0 1 440px;
+  min-width: 0;
+  margin-left: auto;
+  max-width: 440px;
+  height: var(--altura-controle);
+  padding: 0 var(--espaco-2) 0 var(--espaco-3);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-fundo);
+  color: var(--color-texto-suave);
+}
+
+.tela__busca:focus-within {
+  border-color: var(--color-tinta);
+  background: var(--color-superficie);
+}
+
+.tela__busca input {
+  flex: 1;
+  min-width: 0;
+  outline: none;
+  color: var(--color-tinta);
+}
+
+.tela__busca input::placeholder {
+  color: var(--color-texto-suave);
+}
+
+.tela__busca kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-selo);
+  background: var(--color-superficie);
+  font-family: var(--font-sans);
+  font-size: var(--text-miudo);
+  white-space: nowrap;
+}
+
+.tela__cabecalho-acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.tela__icone-botao {
+  display: grid;
+  place-items: center;
+  width: var(--altura-controle);
+  height: var(--altura-controle);
+  border-radius: var(--radius-pequeno);
+  color: var(--color-texto-suave);
+}
+
+.tela__icone-botao:hover {
+  background: var(--color-fundo);
+  color: var(--color-tinta);
+}
+
+.tela__notificacoes-area { position: relative; }
+
+/* Quantas pendências o sino tem: notinhas em atraso e estoque baixo */
+.tela__icone-botao { position: relative; }
+
+.tela__notificacoes-contagem {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-total);
+  background: var(--color-saida);
+  color: var(--color-superficie);
+  font-size: var(--text-miudo);
+  font-weight: var(--font-weight-forte);
+  line-height: 1;
+}
+.tela__notificacoes {
+  position: absolute;
+  top: calc(100% + var(--espaco-2));
+  right: 0;
+  z-index: 20;
+  display: grid;
+  gap: var(--espaco-2);
+  width: min(360px, calc(100vw - var(--largura-barra-lateral-atual) - var(--espaco-6)));
+  padding: var(--espaco-4);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-medio);
+  background: var(--color-superficie);
+  box-shadow: var(--shadow-flutuante);
+}
+.tela__notificacoes-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espaco-2);
+  padding: 0 var(--espaco-2);
+}
+
+.tela__notificacoes-topo h2 { font-size: var(--text-destaque); font-weight: var(--font-weight-forte); }
+.tela__notificacoes-topo span { font-size: var(--text-rotulo); color: var(--color-texto-suave); }
+
+.tela__notificacoes-lidas {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  padding: var(--espaco-1) var(--espaco-2);
+  border-radius: var(--radius-pequeno);
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-forte);
+  white-space: nowrap;
+}
+
+.tela__notificacoes-lidas:hover { background: var(--color-superficie-2); }
+
+/* Lista com divisória fina entre avisos; rola se passar da altura da janela */
+.tela__notificacoes-lista {
+  max-height: min(480px, calc(100vh - 160px));
+  overflow-y: auto;
+}
+
+.tela__notificacoes-lista li + li { border-top: 1px solid var(--color-borda); }
+
+.tela__aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+  padding: var(--espaco-3) var(--espaco-2);
+  border-radius: var(--radius-pequeno);
+}
+
+.tela__aviso:hover { background: var(--color-superficie-2); }
+
+/* Já lido: some a cor do ícone e o texto fica mais leve; a pendência segue na lista */
+.tela__aviso--lido .tela__aviso-icone { background: var(--color-superficie-2); color: var(--color-texto-apagado); }
+.tela__aviso--lido .tela__aviso-texto strong { font-weight: var(--font-weight-medio); color: var(--color-texto-suave); }
+.tela__aviso--lido .tela__aviso-texto small { color: var(--color-texto-apagado); }
+
+/* Ponto de "novo" ao lado do título */
+.tela__aviso-novo {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: var(--espaco-2);
+  border-radius: var(--radius-total);
+  background: var(--color-saida);
+  vertical-align: middle;
+}
+
+/* Ícone num círculo na cor do tom: vermelho para atraso e zerado, laranja para prazo e baixo */
+.tela__aviso-icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-total);
+}
+
+.tela__aviso-icone--critico { background: var(--color-critico-fundo); color: var(--color-critico-texto); }
+.tela__aviso-icone--atencao { background: var(--color-atencao-fundo); color: var(--color-atencao-texto); }
+.tela__aviso-icone--neutro { background: var(--color-neutro-fundo); color: var(--color-neutro-texto); }
+
+.tela__aviso-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tela__aviso-texto strong { font-size: var(--text-rotulo); font-weight: var(--font-weight-forte); }
+
+.tela__aviso-texto small {
+  overflow: hidden;
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tela__notificacoes-vazio {
+  padding: var(--espaco-2);
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+/* Conteúdo */
+.tela__voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  margin-bottom: var(--espaco-4);
+  min-height: 40px;
+  padding: var(--espaco-2) var(--espaco-3);
+  border: 1px solid var(--color-borda-forte);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-superficie);
+  font-size: var(--text-corpo);
+  font-weight: var(--font-weight-forte);
+  color: var(--color-tinta);
+}
+
+.tela__voltar:hover {
+  background: var(--color-superficie-2);
+}
+
+.tela__conteudo {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-gutter: stable; /* espaço da barra já reservado: abrir/fechar conteúdo não desloca o layout */
+  padding: var(--espaco-6) var(--espaco-8) var(--espaco-8);
+}
+
+.tela__titulo-linha {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--espaco-6);
+}
+
+.tela__trilha {
+  margin-bottom: var(--espaco-1);
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.tela__titulo {
+  font-size: var(--text-titulo);
+  line-height: var(--text-titulo--line-height);
+  font-weight: var(--font-weight-forte);
+  letter-spacing: -0.01em;
+}
+
+.tela__subtitulo {
+  margin-top: 2px;
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.tela__titulo-acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  flex-wrap: wrap;
+}

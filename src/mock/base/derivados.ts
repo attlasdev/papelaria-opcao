@@ -1,0 +1,328 @@
+import { dataCurta, reais } from '../../formatar'
+import { rotas } from '../../rotas-caminhos'
+import { diasEntre, noPeriodo, periodoAnterior, type Periodo } from './datas'
+import type { Base, Cliente, Ficha, Meio, Produto } from './tipos'
+
+/**
+ * Tudo o que se calcula a partir da base. Funções puras: recebem a base e a
+ * data de hoje e devolvem o que a tela mostra. Nenhuma guarda cópia.
+ */
+
+export type SituacaoNotinha = 'pago' | 'pendente' | 'vencido'
+export type SituacaoCliente = 'em-dia' | 'pendente' | 'vencido'
+export type Notinha = { ficha: Ficha; pago: number; emAberto: number; situacao: SituacaoNotinha; detalhe?: string }
+
+export const ROTULO_SEM_IDENTIFICACAO = 'Não identificado'
+
+export const NOME_MEIO = { dinheiro: 'Dinheiro', pix: 'Pix', cartao: 'Cartão' } as const
+
+export function nomeCliente(base: Base, clienteId: string | null) {
+  if (!clienteId) return ROTULO_SEM_IDENTIFICACAO
+  return base.clientes.find((c) => c.id === clienteId)?.nome ?? 'Cliente removido'
+}
+
+export function resumoItens(ficha: Ficha) {
+  return ficha.itens.map((i) => `${i.descricao} (${i.quantidade}x)`).join(', ')
+}
+
+export function contagemItens(ficha: Ficha) {
+  const unidades = ficha.itens.reduce((t, i) => t + i.quantidade, 0)
+  return `${ficha.itens.length} ${ficha.itens.length === 1 ? 'tipo de item' : 'tipos de itens'} · ${unidades} ${unidades === 1 ? 'unidade' : 'unidades'}`
+}
+
+export function rotuloForma(ficha: Ficha) {
+  if (ficha.forma === 'notinha') return 'Notinha'
+  return ficha.pagamentos[0]?.rotulo ?? NOME_MEIO[ficha.forma]
+}
+
+/** Mais recente primeiro. */
+export function porDataDecrescente(a: { data: string; horario: string }, b: { data: string; horario: string }) {
+  return `${b.data} ${b.horario}`.localeCompare(`${a.data} ${a.horario}`)
+}
+
+function textoPrazo(vencimento: string, hoje: string) {
+  const dias = diasEntre(hoje, vencimento)
+  if (dias === 0) return 'Vence hoje'
+  if (dias > 0) return `Vence em ${dias} ${dias === 1 ? 'dia' : 'dias'}`
+  return `Venceu há ${-dias} ${dias === -1 ? 'dia' : 'dias'}`
+}
+
+export function notinha(ficha: Ficha, hoje: string): Notinha | null {
+  if (ficha.forma !== 'notinha') return null
+  const pago = ficha.pagamentos.reduce((t, p) => t + p.valor, 0)
+  const emAberto = Math.max(0, ficha.total - pago)
+  if (emAberto === 0) {
+    const ultimo = ficha.pagamentos[ficha.pagamentos.length - 1]
+    return { ficha, pago, emAberto, situacao: 'pago', detalhe: ultimo ? `Quitada em ${dataCurta(ultimo.data)}` : undefined }
+  }
+  const vencimento = ficha.vencimento ?? hoje
+  const situacao: SituacaoNotinha = diasEntre(hoje, vencimento) < 0 ? 'vencido' : 'pendente'
+  // Só o prazo: cabe na segunda linha do selo. O valor em aberto a tela mostra à parte.
+  return { ficha, pago, emAberto, situacao, detalhe: textoPrazo(vencimento, hoje) }
+}
+
+/** Situação de qualquer ficha: à vista é sempre paga. */
+export function situacaoDaFicha(ficha: Ficha, hoje: string): { situacao: SituacaoNotinha; detalhe?: string } {
+  const n = notinha(ficha, hoje)
+  return n ? { situacao: n.situacao, detalhe: n.detalhe } : { situacao: 'pago' }
+}
+
+export function notinhasDoCliente(base: Base, clienteId: string, hoje: string) {
+  return base.fichas
+    .filter((f) => f.clienteId === clienteId)
+    .map((f) => notinha(f, hoje))
+    .filter((n): n is Notinha => n !== null)
+}
+
+export function resumoDoCliente(base: Base, clienteId: string, hoje: string) {
+  const fichas = base.fichas.filter((f) => f.clienteId === clienteId).sort(porDataDecrescente)
+  const totalComprado = fichas.reduce((t, f) => t + f.total, 0)
+  const abertas = fichas.map((f) => notinha(f, hoje)).filter((n): n is Notinha => n !== null && n.emAberto > 0)
+  const emAberto = abertas.reduce((t, n) => t + n.emAberto, 0)
+  const situacao: SituacaoCliente = abertas.some((n) => n.situacao === 'vencido') ? 'vencido' : abertas.length ? 'pendente' : 'em-dia'
+  return {
+    fichas,
+    totalComprado,
+    ticketMedio: fichas.length ? Math.round(totalComprado / fichas.length) : 0,
+    abertas,
+    emAberto,
+    situacao,
+    detalheSituacao: abertas.length ? `${reais(emAberto)} em aberto` : undefined,
+  }
+}
+
+export type ResumoCliente = ReturnType<typeof resumoDoCliente>
+
+export type Abatimento = { id: string; valor: number; quita: boolean }
+
+/** Divide um valor entre notinhas, da mais antiga para a mais nova. */
+export function distribuir(notinhas: Notinha[], valor: number): Abatimento[] {
+  let resto = valor
+  return [...notinhas]
+    .sort((a, b) => porDataDecrescente(b.ficha, a.ficha) || a.ficha.id.localeCompare(b.ficha.id))
+    .map((n) => {
+      const abatido = Math.min(resto, n.emAberto)
+      resto -= abatido
+      return { id: n.ficha.id, valor: abatido, quita: abatido === n.emAberto }
+    })
+    .filter((a) => a.valor > 0)
+}
+
+export type LinhaFinanceiro = {
+  id: string
+  data: string
+  horario: string
+  descricao: string
+  origem: string
+  ficha?: string
+  categoria: string
+  meio: Meio
+  meioRotulo: string
+  valor: number
+}
+
+/**
+ * O Financeiro lê os pagamentos das fichas (um registro por dinheiro recebido)
+ * e os lançamentos manuais. Notinha só aparece quando alguém paga.
+ */
+export function movimentosFinanceiro(base: Base): LinhaFinanceiro[] {
+  const daVenda = base.fichas.flatMap((f) => f.pagamentos.map((p, indice) => ({
+    id: `${f.id}-${indice}`,
+    data: p.data,
+    horario: p.horario,
+    descricao: f.forma !== 'notinha' ? `Venda da ficha #${f.id}` : p.entrada ? `Entrada da notinha #${f.id}` : `Recebimento da notinha #${f.id}`,
+    origem: `Balcão · ${nomeCliente(base, f.clienteId)}`,
+    ficha: f.id,
+    categoria: f.forma === 'notinha' ? 'Recebimento de notinha' : 'Venda',
+    meio: p.meio,
+    meioRotulo: p.rotulo ?? NOME_MEIO[p.meio],
+    valor: p.valor,
+  })))
+  const manuais = base.movimentosCaixa.map((m) => ({ ...m, meioRotulo: NOME_MEIO[m.meio] }))
+  return [...daVenda, ...manuais].sort(porDataDecrescente)
+}
+
+export type Variacao = { texto: string; direcao: 'alta' | 'baixa' }
+
+function variacaoPercentual(atual: number, anterior: number): Variacao | undefined {
+  if (anterior === 0) return undefined
+  const pct = ((atual - anterior) / anterior) * 100
+  return { texto: `${pct >= 0 ? '+' : ''}${pct.toFixed(1).replace('.', ',')}%`, direcao: pct >= 0 ? 'alta' : 'baixa' }
+}
+
+export function resumoFinanceiro(linhas: LinhaFinanceiro[], periodo: Periodo, referencia: string) {
+  const doPeriodo = linhas.filter((l) => noPeriodo(l.data, periodo, referencia))
+  const anterior = periodoAnterior(periodo, referencia)
+  const entradasDe = (ls: LinhaFinanceiro[]) => ls.filter((l) => l.valor > 0).reduce((t, l) => t + l.valor, 0)
+  const entradas = entradasDe(doPeriodo)
+  const saidasLista = doPeriodo.filter((l) => l.valor < 0)
+  const saidas = saidasLista.reduce((t, l) => t - l.valor, 0)
+  const porMeio = (['pix', 'cartao', 'dinheiro'] as const).map((meio) => ({
+    meio,
+    valor: doPeriodo.filter((l) => l.valor > 0 && l.meio === meio).reduce((t, l) => t + l.valor, 0),
+  }))
+  const maior = [...porMeio].sort((a, b) => b.valor - a.valor)[0]
+  return {
+    entradas,
+    saidas,
+    quantidadeSaidas: saidasLista.length,
+    liquido: entradas - saidas,
+    variacao: variacaoPercentual(entradas, entradasDe(linhas.filter((l) => noPeriodo(l.data, periodo, anterior)))),
+    meioMaisUsado: maior.valor > 0 ? { ...maior, participacao: Math.round((maior.valor / entradas) * 100) } : undefined,
+    contagem: {
+      todos: doPeriodo.length,
+      pix: doPeriodo.filter((l) => l.meio === 'pix').length,
+      cartao: doPeriodo.filter((l) => l.meio === 'cartao').length,
+      dinheiro: doPeriodo.filter((l) => l.meio === 'dinheiro').length,
+    },
+  }
+}
+
+export function resumoDoDia(base: Base, dia: string) {
+  const r = resumoFinanceiro(movimentosFinanceiro(base), 'dia', dia)
+  const vendas = base.fichas.filter((f) => f.data === dia)
+  const totalVendido = vendas.reduce((t, f) => t + f.total, 0)
+  return {
+    recebimentos: r.entradas,
+    variacao: r.variacao,
+    vendas: vendas.length,
+    ticketMedio: vendas.length ? Math.round(totalVendido / vendas.length) : 0,
+    saidas: r.saidas,
+    quantidadeSaidas: r.quantidadeSaidas,
+  }
+}
+
+export type SituacaoSaldo = 'normal' | 'baixo' | 'zerado'
+
+export function situacaoSaldo(produto: Produto): SituacaoSaldo {
+  if (produto.saldo === 0) return 'zerado'
+  return produto.saldo < produto.minimo ? 'baixo' : 'normal'
+}
+
+/** Produtos à venda: os desativados ficam só no histórico. */
+export function produtosAtivos(base: Base) {
+  return base.produtos.filter((p) => !p.inativo)
+}
+
+/** Já vendido, movimentado ou numa ficha em andamento: apagar quebraria esse registro. */
+export function produtoTemHistorico(base: Base, codigo: string) {
+  return base.movimentosEstoque.some((m) => m.produto === codigo)
+    || base.fichas.some((f) => f.itens.some((i) => i.codigo === codigo))
+    || Boolean(base.rascunhoFicha?.itens.some((i) => i.codigo === codigo))
+}
+
+export function resumoEstoque(base: Base) {
+  const ativos = produtosAtivos(base)
+  return {
+    produtos: ativos.length,
+    categorias: new Set(ativos.map((p) => p.categoria)).size,
+    // Cadastro rápido não tem contagem: o zero dele não é falta, é pendência.
+    baixo: ativos.filter((p) => !p.cadastroRapido && situacaoSaldo(p) !== 'normal').length,
+    semCodigo: ativos.filter((p) => !p.codigoBarras).length,
+    aCompletar: ativos.filter((p) => p.cadastroRapido).length,
+    desativados: base.produtos.length - ativos.length,
+  }
+}
+
+export function normalizar(texto: string) {
+  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
+}
+
+export function buscar(base: Base, termo: string): { clientes: Cliente[]; fichas: Ficha[]; produtos: Produto[] } {
+  const t = normalizar(termo.trim())
+  if (!t) return { clientes: [], fichas: [], produtos: [] }
+  const casa = (texto: string) => normalizar(texto).includes(t)
+  return {
+    clientes: base.clientes.filter((c) => casa(`${c.id} ${c.nome} ${c.documento} ${c.telefone}`)),
+    fichas: base.fichas
+      .filter((f) => casa(`${f.id} ${nomeCliente(base, f.clienteId)} ${resumoItens(f)}`))
+      .sort(porDataDecrescente)
+      .slice(0, 30),
+    produtos: base.produtos.filter((p) => casa(`${p.codigo} ${p.codigoBarras ?? ''} ${p.descricao} ${p.categoria}`)),
+  }
+}
+
+export type TipoNotificacao = 'atraso' | 'vencendo' | 'estoque-zerado' | 'estoque-baixo' | 'cadastro-rapido' | 'rascunho'
+
+export type Notificacao = {
+  id: string
+  tipo: TipoNotificacao
+  tom: 'critico' | 'atencao' | 'neutro'
+  titulo: string
+  detalhe: string
+  destino: string
+}
+
+/** O aviso só conta como lido enquanto diz a mesma coisa que foi lida. */
+export function assinaturaAviso(aviso: Notificacao) {
+  return `${aviso.titulo}|${aviso.detalhe}`
+}
+
+export function avisoLido(base: Base, aviso: Notificacao) {
+  return base.avisosLidos[aviso.id] === assinaturaAviso(aviso)
+}
+
+/** Notinha que vence nestes dias entra no sino antes de atrasar. */
+const DIAS_AVISO_VENCIMENTO = 3
+
+const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
+
+/** Tudo o que pede atenção agora, do mais grave para o menos grave. */
+export function notificacoes(base: Base, hoje: string): Notificacao[] {
+  const atrasos: Notificacao[] = []
+  const vencendo: Notificacao[] = []
+  for (const c of base.clientes) {
+    const abertas = notinhasDoCliente(base, c.id, hoje).filter((n) => n.emAberto > 0)
+    const atrasadas = abertas.filter((n) => n.situacao === 'vencido')
+    if (atrasadas.length) {
+      atrasos.push({
+        id: `atraso-${c.id}`, tipo: 'atraso', tom: 'critico', titulo: c.nome,
+        detalhe: `${plural(atrasadas.length, 'notinha', 'notinhas')} em atraso · ${reais(atrasadas.reduce((t, n) => t + n.emAberto, 0))}`,
+        destino: rotas.cliente(c.id),
+      })
+    }
+    const proximas = abertas.filter((n) => n.situacao === 'pendente' && diasEntre(hoje, n.ficha.vencimento ?? hoje) <= DIAS_AVISO_VENCIMENTO)
+    if (proximas.length) {
+      const dias = Math.min(...proximas.map((n) => diasEntre(hoje, n.ficha.vencimento ?? hoje)))
+      vencendo.push({
+        id: `vencendo-${c.id}`, tipo: 'vencendo', tom: 'atencao', titulo: c.nome,
+        detalhe: `${proximas.length === 1 ? 'Notinha' : `${proximas.length} notinhas`} ${dias === 0 ? 'vence hoje' : `vence em ${plural(dias, 'dia', 'dias')}`} · ${reais(proximas.reduce((t, n) => t + n.emAberto, 0))}`,
+        destino: rotas.cliente(c.id),
+      })
+    }
+  }
+  const avisos = [...atrasos, ...vencendo]
+
+  const nomes = (lista: Produto[]) => lista.length === 1 ? lista[0].descricao : `${lista[0].descricao} e mais ${lista.length - 1}`
+  const contados = produtosAtivos(base).filter((p) => !p.cadastroRapido)
+  const zerados = contados.filter((p) => situacaoSaldo(p) === 'zerado')
+  const baixos = contados.filter((p) => situacaoSaldo(p) === 'baixo')
+  if (zerados.length) {
+    avisos.splice(atrasos.length, 0, {
+      id: 'estoque-zerado', tipo: 'estoque-zerado', tom: 'critico',
+      titulo: plural(zerados.length, 'produto zerado', 'produtos zerados'), detalhe: nomes(zerados), destino: rotas.estoque,
+    })
+  }
+  if (baixos.length) {
+    avisos.push({
+      id: 'estoque-baixo', tipo: 'estoque-baixo', tom: 'atencao',
+      titulo: plural(baixos.length, 'produto com estoque baixo', 'produtos com estoque baixo'), detalhe: nomes(baixos), destino: rotas.estoque,
+    })
+  }
+  const rapidos = produtosAtivos(base).filter((p) => p.cadastroRapido)
+  if (rapidos.length) {
+    avisos.push({
+      id: 'cadastro-rapido', tipo: 'cadastro-rapido', tom: 'atencao',
+      titulo: plural(rapidos.length, 'cadastro rápido a completar', 'cadastros rápidos a completar'),
+      detalhe: `${nomes(rapidos)} · feito na venda`, destino: rotas.estoqueACompletar,
+    })
+  }
+  if (base.rascunhosNota.length) {
+    avisos.push({
+      id: 'rascunho', tipo: 'rascunho', tom: 'neutro',
+      titulo: plural(base.rascunhosNota.length, 'rascunho de nota em revisão', 'rascunhos de nota em revisão'),
+      detalhe: 'Conferir antes de emitir', destino: rotas.rascunhosNotas,
+    })
+  }
+  return avisos
+}

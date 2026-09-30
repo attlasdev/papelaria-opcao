@@ -1,0 +1,107 @@
+.detalhe-cliente__trilha-link:hover {
+  text-decoration: underline;
+}
+
+.detalhe-cliente__aviso {
+  margin-bottom: var(--espaco-4);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-neutro-fundo);
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+/* Cadastro + números lado a lado */
+.detalhe-cliente__topo {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+  gap: var(--espaco-4);
+  margin-bottom: var(--espaco-6);
+}
+
+.detalhe-cliente__dados {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-4) var(--espaco-6);
+}
+
+.detalhe-cliente__dados dt {
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.detalhe-cliente__dados dd {
+  margin-top: 2px;
+  font-weight: var(--font-weight-medio);
+}
+
+.detalhe-cliente__numeros {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+/* Histórico */
+.detalhe-cliente__itens {
+  max-width: 320px;
+}
+
+.detalhe-cliente__itens .celula-principal {
+  overflow: hidden;
+  max-width: 320px;
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-normal);
+  text-overflow: ellipsis;
+  white-space: nowrap; /* uma linha: todas as compras ficam da mesma altura */
+}
+
+.detalhe-cliente__pagamento {
+  white-space: nowrap;
+}
+
+.detalhe-cliente__valor {
+  font-weight: var(--font-weight-forte);
+}
+
+.detalhe-cliente__vazio {
+  padding: var(--espaco-8);
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+@media (max-width: 1080px) {
+  .detalhe-cliente__topo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .detalhe-cliente__numeros {
+    flex-direction: row;
+  }
+
+  .detalhe-cliente__numeros > * {
+    flex: 1;
+  }
+}
+
+/* Cartão "Notinhas em aberto" clicável: abre o recebimento */
+.detalhe-cliente__cartao-acao {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius-grande);
+  text-align: left;
+}
+
+.detalhe-cliente__cartao-acao:not(:disabled):hover .cartao-resumo {
+  border-color: var(--color-tinta);
+}
+
+.detalhe-cliente__cartao-acao:disabled {
+  cursor: default;
+}
+
+/* Notinha com pagamento parcial: o que falta fica sob o total, não no selo */
+.detalhe-cliente__aberto {
+  font-weight: var(--font-weight-medio);
+  color: var(--color-atencao-texto);
+  white-space: nowrap;
+}

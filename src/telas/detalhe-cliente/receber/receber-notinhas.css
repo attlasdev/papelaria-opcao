@@ -1,0 +1,123 @@
+.receber-notinhas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+/* Notinhas escolhidas: quanto falta em cada uma e o que acontece com ela */
+.receber-notinhas__lista {
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-medio);
+  overflow: hidden;
+}
+
+.receber-notinhas__lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  padding: var(--espaco-2) var(--espaco-3);
+}
+
+.receber-notinhas__lista li + li {
+  border-top: 1px solid var(--color-borda);
+}
+
+.receber-notinhas__lista strong,
+.receber-notinhas__lista small {
+  display: block;
+}
+
+.receber-notinhas__lista small {
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.receber-notinhas__valores {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.receber-notinhas__valores .receber-notinhas__quita {
+  color: var(--color-entrada);
+  font-weight: var(--font-weight-medio);
+}
+
+.receber-notinhas__campos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: var(--espaco-4);
+}
+
+.receber-notinhas__meio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.receber-notinhas__rotulo {
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-forte);
+}
+
+.receber-notinhas__troco {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: var(--altura-controle);
+}
+
+.receber-notinhas__troco span {
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.receber-notinhas__troco strong {
+  font-size: var(--text-destaque);
+  font-variant-numeric: tabular-nums;
+}
+
+.receber-notinhas__troco .receber-notinhas__falta {
+  color: var(--color-saida);
+}
+
+.receber-notinhas__nota {
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.receber-notinhas__erro {
+  font-size: var(--text-rotulo);
+  color: var(--color-saida);
+}
+
+/* Cada notinha aberta do cliente, com a caixa para incluir no pagamento */
+.receber-notinhas__marcar {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-width: 0;
+  cursor: pointer;
+}
+
+.receber-notinhas__marcar input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-tinta);
+}
+
+.receber-notinhas__desmarcada {
+  background: var(--color-fundo);
+}
+
+.receber-notinhas__desmarcada .receber-notinhas__valores strong {
+  color: var(--color-texto-suave);
+}
+
+.receber-notinhas__lista small .receber-notinhas__atraso {
+  font-weight: var(--font-weight-medio);
+  color: var(--color-critico-texto);
+}

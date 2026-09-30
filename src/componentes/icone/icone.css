@@ -1,0 +1,15 @@
+.icone {
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+}
+
+.com-icone {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.com-icone > .icone {
+  color: var(--color-texto-suave);
+}

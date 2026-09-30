@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Papelaria Opção — Gestão de Estoque</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "inverse-surface": "#303030",
+            "tertiary-container": "#1b1b1b",
+            "on-tertiary-fixed": "#1b1b1b",
+            "surface-bright": "#f9f9f9",
+            "tertiary": "#000000",
+            "primary-container": "#1b1b1b",
+            "surface-container-high": "#e8e8e8",
+            "surface": "#FFFFFF",
+            "inverse-on-surface": "#f1f1f1",
+            "danger": "#EA0B11",
+            "surface-container": "#eeeeee",
+            "on-tertiary": "#ffffff",
+            "surface-tint": "#5e5e5e",
+            "error-container": "#ffdad6",
+            "secondary": "#666000",
+            "ink": "#000000",
+            "on-primary": "#ffffff",
+            "canvas": "#F9F9F9",
+            "error": "#ba1a1a",
+            "primary-fixed": "#e2e2e2",
+            "outline-variant": "#cfc4c5",
+            "primary": "#000000",
+            "on-surface": "#1b1b1b",
+            "on-secondary": "#ffffff",
+            "tertiary-fixed-dim": "#c6c6c6",
+            "border": "#E8E8E8",
+            "on-background": "#1b1b1b",
+            "on-error": "#ffffff",
+            "inverse-primary": "#c6c6c6",
+            "surface-dim": "#dadada",
+            "on-surface-variant": "#4c4546",
+            "on-secondary-fixed-variant": "#4d4800",
+            "muted": "#4B4B4B",
+            "secondary-fixed-dim": "#d6ca00",
+            "secondary-container": "#f1e400",
+            "on-primary-container": "#848484",
+            "surface-container-highest": "#e2e2e2",
+            "on-secondary-fixed": "#1f1c00",
+            "on-error-container": "#93000a",
+            "warning": "#8A5A00",
+            "brand-accent": "#FEF003",
+            "on-primary-fixed": "#1b1b1b",
+            "surface-variant": "#e2e2e2",
+            "primary-fixed-dim": "#c6c6c6",
+            "on-primary-fixed-variant": "#474747",
+            "background": "#f9f9f9",
+            "surface-container-low": "#f3f3f3",
+            "on-tertiary-container": "#848484",
+            "outline": "#7e7576",
+            "secondary-fixed": "#f4e700",
+            "surface-container-lowest": "#ffffff",
+            "success": "#176B4D",
+            "on-secondary-container": "#6b6500",
+            "on-tertiary-fixed-variant": "#474747",
+            "tertiary-fixed": "#e2e2e2"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin": "16px",
+            "space-lg": "16px",
+            "lg": "16px",
+            "space-xxl": "32px",
+            "xxl": "32px",
+            "xl": "24px",
+            "space-sm": "8px",
+            "xs": "4px",
+            "space-xs": "4px",
+            "sm": "8px",
+            "md": "12px",
+            "space-xl": "24px",
+            "space-md": "12px",
+            "gutter": "12px"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-sm": ["Inter"],
+            "section": ["Inter"],
+            "body-sm": ["Inter"],
+            "label": ["Inter"],
+            "headline-md": ["Inter"],
+            "body": ["Inter"],
+            "heading": ["Inter"],
+            "body-md": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["12px", { "lineHeight": "17px", "fontWeight": "600" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "fontWeight": "500" }],
+            "label-sm": ["10px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "section": ["20px", { "lineHeight": "1.3", "fontWeight": "500" }],
+            "body-sm": ["12px", { "lineHeight": "17px", "fontWeight": "400" }],
+            "label": ["12px", { "lineHeight": "1.4", "fontWeight": "600" }],
+            "headline-md": ["20px", { "lineHeight": "26px", "fontWeight": "500" }],
+            "body": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+            "heading": ["28px", { "lineHeight": "1.2", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "21px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    /* Custom scrollbar for data table */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F9F9F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #E8E8E8;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #cfc4c5;
+    }
+  </style>
+<link rel="stylesheet" href="../ajustes.css"></head>
+<body class="bg-canvas text-ink antialiased min-h-screen flex selection:bg-brand-accent selection:text-ink">
+<!-- ========================================================================= -->
+<!-- SIDE NAVIGATION (Shared Component: SideNavBar)                            -->
+<!-- Active state: "Estoque" with style_active_navigation                      -->
+<!-- ========================================================================= -->
+<aside class="fixed left-0 top-0 h-screen w-64 flex flex-col z-30 bg-surface border-r border-border">
+<div class="w-64 h-full flex flex-col justify-between p-4">
+<!-- Top Zone: Store Brand Identity & Navigation Links -->
+<div class="flex flex-col gap-6">
+<!-- Brand Header -->
+<div class="po-brand">
+          <img class="po-logo" src="../assets/logo-original.svg" alt="">
+          <div class="po-brand-copy"><strong>Papelaria Opção</strong><span>Terminal Balcão #01</span></div>
+        </div><!-- Menu Tabs Navigation -->
+<nav class="flex flex-col gap-1">
+<!-- Início (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink hover:bg-canvas rounded-lg transition-colors duration-150 active:scale-[0.99] transition-transform" href="../in_cio_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-muted" data-icon="home">home</span>
+<span class="text-label-md font-label-md">Início</span>
+</a>
+<!-- Clientes (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink hover:bg-canvas rounded-lg transition-colors duration-150 active:scale-[0.99] transition-transform" href="../clientes_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-muted" data-icon="group">group</span>
+<span class="text-label-md font-label-md">Clientes</span>
+</a>
+<!-- Financeiro (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink hover:bg-canvas rounded-lg transition-colors duration-150 active:scale-[0.99] transition-transform" href="../financeiro_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-muted" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="text-label-md font-label-md">Financeiro</span>
+</a>
+<!-- Estoque (ACTIVE - JSON exact styling: style_active_navigation) -->
+<a class="flex items-center gap-3 px-3 py-2 bg-brand-accent text-ink font-semibold rounded-lg active:scale-[0.99] transition-transform shadow-xs" href="#">
+<span class="material-symbols-outlined text-ink" data-icon="inventory_2" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="text-label-md font-label-md">Estoque</span>
+</a>
+<!-- Notas fiscais (Inactive) -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink hover:bg-canvas rounded-lg transition-colors duration-150 active:scale-[0.99] transition-transform" href="../notas_fiscais_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-muted" data-icon="receipt_long">receipt_long</span>
+<span class="text-label-md font-label-md">Notas fiscais</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Zone: CTA, Operator Info & Connectivity -->
+<div class="flex flex-col gap-4 pt-4 border-t border-border">
+<!-- POS CTA Button -->
+<button class="w-full py-3 px-4 bg-brand-accent hover:bg-brand-accent/90 text-ink font-semibold text-body font-body rounded-lg flex items-center justify-center gap-2 border border-brand-accent active:scale-[0.98] transition-all duration-150 shadow-sm po-sidebar-cta" type="button" data-ir="../criar_ficha_de_venda_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-ink" data-icon="point_of_sale" style="font-variation-settings: 'FILL' 1;">point_of_sale</span>
+<span>Criar ficha</span>
+</button>
+<!-- Operator & System Card -->
+<div class="bg-canvas border border-border rounded-lg p-2.5 flex flex-col gap-2">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-muted" data-icon="account_circle">account_circle</span>
+<div class="flex flex-col leading-tight overflow-hidden">
+<span class="text-label-md font-label-md text-ink truncate">Operador: João Silva</span>
+<span class="text-body-sm font-body-sm text-muted">Balcão 01 • Turno Tarde</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-border/80">
+<div class="flex items-center gap-1.5 text-body-sm font-body-sm text-muted">
+<span class="material-symbols-outlined text-success" data-icon="cloud_done">cloud_done</span>
+<span class="text-label-sm font-label-sm font-medium">Protótipo local</span>
+</div>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-success/10 text-success">
+              Dados fictícios
+            </span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- TOP APP BAR (Shared Component: TopNavBar)                                  -->
+<!-- ========================================================================= -->
+<header class="fixed top-0 right-0 left-64 h-16 z-20 bg-surface border-b border-border">
+<div class="flex justify-between items-center h-full px-6 w-full">
+<!-- Left: Contextual Search within Inventory -->
+<div class="flex items-center gap-4 w-96">
+<div class="relative w-full">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</span>
+<input class="w-full pl-9 pr-12 py-1.5 bg-canvas border border-border rounded-md text-body font-body text-ink placeholder-muted focus:border-ink focus:ring-0 focus:outline-none transition-colors" placeholder="Buscar por código ou descrição... [Ctrl+K]" type="text">
+<kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-label-sm font-label-sm font-medium text-muted bg-surface border border-border rounded">⌘K</kbd>
+</div>
+</div>
+<!-- Right: Quick Status Actions & Profile Actions -->
+<div class="flex items-center gap-3">
+<!-- Sync Indicator Pill -->
+<!-- Notification Icon -->
+<button class="relative p-2 text-muted hover:text-ink hover:bg-canvas rounded-md border border-border transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full ring-2 ring-surface"></span>
+</button>
+<div class="h-6 w-px bg-border mx-1"></div>
+<!-- Trailing Primary Action from TopNavBar JSON -->
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-ink text-surface rounded-md text-label-md font-label-md font-medium hover:bg-inverse-surface transition-colors active:scale-[0.98] po-top-cta" type="button" data-ir="../criar_ficha_de_venda_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-surface" data-icon="receipt">receipt</span>
+<span>Criar ficha</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ========================================================================= -->
+<!-- MAIN WORKSPACE CONTENT CANVAS                                             -->
+<!-- ========================================================================= -->
+<main class="ml-64 mt-16 flex-1 min-h-[calc(100vh-64px)] p-6 flex flex-col gap-5 overflow-y-auto">
+<!-- Breadcrumb & Page Header Bar -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 text-body-sm font-body-sm text-muted">
+<span>Terminal Balcão</span>
+<span class="text-border">/</span>
+<span class="text-ink font-medium">Gestão de Estoque</span>
+</div>
+<h1 class="text-headline-lg font-headline-lg font-bold text-ink tracking-tight">Estoque de Mercadorias</h1>
+<p class="text-body font-body text-muted">Consulta rápida de saldos, movimentação física e controle de reposição no balcão.</p>
+</div>
+<!-- Action Cluster -->
+<div class="flex flex-wrap items-center gap-2.5">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 bg-surface border border-border rounded-lg text-label-md font-label-md text-ink hover:bg-canvas hover:border-ink/20 transition-all active:scale-[0.99] shadow-xs" type="button">
+<span class="material-symbols-outlined text-muted" data-icon="history">history</span>
+<span>Ver movimentações</span>
+</button>
+<button class="inline-flex items-center gap-2 px-3.5 py-2 bg-surface border border-border rounded-lg text-label-md font-label-md text-ink hover:bg-canvas hover:border-ink/20 transition-all active:scale-[0.99] shadow-xs" type="button">
+<span class="material-symbols-outlined text-muted" data-icon="tune">tune</span>
+<span>Ajustar estoque</span>
+</button>
+<button class="inline-flex items-center gap-2 px-3.5 py-2 bg-surface border border-border rounded-lg text-label-md font-label-md text-ink hover:bg-canvas hover:border-ink/20 transition-all active:scale-[0.99] shadow-xs" type="button" data-ir="../registrar_entrada_de_mercadorias_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-muted" data-icon="move_to_inbox">move_to_inbox</span>
+<span>Registrar entrada</span>
+</button>
+<button class="inline-flex items-center gap-2 px-4 py-2 bg-ink text-surface rounded-lg text-label-md font-label-md font-semibold hover:bg-inverse-surface active:scale-[0.98] transition-all shadow-xs" type="button" data-ir="../cadastrar_produto_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-brand-accent" data-icon="add">add</span>
+<span>+ Cadastrar produto</span>
+</button>
+</div>
+</div>
+<!-- Quick Metric Summary Cards (Bento-like 4-column compact cards) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 po-stock-summary">
+<!-- Card 1: Total Produtos -->
+<div class="bg-surface border border-border rounded-xl p-4 flex flex-col justify-between hover:border-ink/20 transition-colors">
+<div class="flex items-center justify-between text-muted mb-2">
+<span class="text-label-md font-label-md">Total de Itens Cadastrados</span>
+<span class="material-symbols-outlined text-muted" data-icon="category">category</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-lg font-headline-lg font-bold text-ink tabular-nums">1.420</span>
+<span class="text-body-sm font-body-sm text-success font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-success" data-icon="check_circle" style="font-size: 16px;">check_circle</span>
+            100% ativos
+          </span>
+</div>
+<span class="text-body-sm font-body-sm text-muted mt-1">Distribuídos em 18 categorias</span>
+</div>
+<!-- Card 2: Alerta de Estoque Baixo -->
+<div class="bg-surface border border-border rounded-xl p-4 flex flex-col justify-between border-l-4 border-l-danger hover:border-ink/20 transition-colors">
+<div class="flex items-center justify-between text-muted mb-2">
+<span class="text-label-md font-label-md text-danger font-semibold">Alerta de Estoque Baixo</span>
+<span class="material-symbols-outlined text-danger" data-icon="error" style="font-variation-settings: 'FILL' 1;">error</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-lg font-headline-lg font-bold text-danger tabular-nums">14 <span class="text-body font-body font-normal text-muted">itens</span></span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-danger/10 text-danger po-badge">
+            Reposição Crítica
+          </span>
+</div>
+<span class="text-body-sm font-body-sm text-muted mt-1">Abaixo do estoque mínimo estipulado</span>
+</div>
+<!-- Card 3: Itens Sem Código de Barras -->
+<div class="bg-surface border border-border rounded-xl p-4 flex flex-col justify-between hover:border-ink/20 transition-colors">
+<div class="flex items-center justify-between text-muted mb-2">
+<span class="text-label-md font-label-md">Sem Código de Barras</span>
+<span class="material-symbols-outlined text-warning" data-icon="barcode">barcode</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="text-headline-lg font-headline-lg font-bold text-ink tabular-nums">38 <span class="text-body font-body font-normal text-muted">itens</span></span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-label-sm font-label-sm font-semibold bg-warning/10 text-warning">
+            Balcão avulso
+          </span>
+</div>
+<span class="text-body-sm font-body-sm text-muted mt-1">Fracionados e papéis avulsos</span>
+</div>
+</div>
+<!-- Search, Filter & Controls Panel -->
+<div class="bg-surface border border-border rounded-xl p-4 flex flex-col gap-3">
+<!-- Primary Input Row -->
+<div class="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+<div class="relative flex-1">
+<span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</span>
+<input class="w-full pl-10 pr-24 py-2 bg-canvas border border-border rounded-lg text-body font-body text-ink placeholder-muted focus:border-ink focus:ring-0 focus:outline-none transition-colors" placeholder="Buscar por código interno, código de barras, descrição do produto ou marca... [F3]" type="text">
+<div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-muted">
+<span class="text-label-sm font-label-sm border border-border rounded px-1.5 py-0.5 bg-surface">F3</span>
+</div>
+</div>
+<!-- Filter Selectors -->
+<div class="flex items-center gap-2">
+<div class="relative">
+<select class="appearance-none bg-surface border border-border rounded-lg px-3 py-2 pr-8 text-label-md font-label-md text-ink hover:bg-canvas focus:border-ink focus:ring-0 cursor-pointer">
+<option>Status: Todos os saldos</option>
+<option>Status: Normal (&gt; Mínimo)</option>
+<option>Status: Crítico (Estoque baixo)</option>
+<option>Status: Zerado (Sem saldo)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" data-icon="expand_more" style="font-size: 18px;">expand_more</span>
+</div>
+<div class="relative">
+<select class="appearance-none bg-surface border border-border rounded-lg px-3 py-2 pr-8 text-label-md font-label-md text-ink hover:bg-canvas focus:border-ink focus:ring-0 cursor-pointer">
+<option>Ordenar: Menor saldo primeiro</option>
+<option>Ordenar: Nome (A - Z)</option>
+<option>Ordenar: Código Interno</option>
+<option>Ordenar: Mais vendido</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" data-icon="swap_vert" style="font-size: 18px;">swap_vert</span>
+</div>
+<button class="p-2 border border-border rounded-lg hover:bg-canvas text-muted hover:text-ink transition-colors" title="Exportar lista" type="button">
+<span class="material-symbols-outlined" data-icon="file_download">file_download</span>
+</button>
+</div>
+</div>
+<!-- Filter Category Pills -->
+<div class="flex items-center gap-2 overflow-x-auto pt-1 pb-0.5">
+<span class="text-body-sm font-body-sm text-muted font-medium whitespace-nowrap mr-1">Filtrar por:</span>
+<button class="px-3 py-1 bg-ink text-surface rounded-full text-label-sm font-label-sm font-medium whitespace-nowrap active:scale-[0.98] transition-transform" type="button">
+          Todos (1.420)
+        </button>
+<button class="px-3 py-1 bg-danger/10 border border-danger/20 text-danger rounded-full text-label-sm font-label-sm font-semibold flex items-center gap-1.5 whitespace-nowrap hover:bg-danger/15 transition-colors" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-danger"></span>
+          Estoque baixo (14)
+        </button>
+<button class="px-3 py-1 bg-canvas hover:bg-border/60 text-ink border border-border rounded-full text-label-sm font-label-sm whitespace-nowrap transition-colors" type="button">
+          Papéis &amp; Sulfite
+        </button>
+<button class="px-3 py-1 bg-canvas hover:bg-border/60 text-ink border border-border rounded-full text-label-sm font-label-sm whitespace-nowrap transition-colors" type="button">
+          Escrita &amp; Canetas
+        </button>
+<button class="px-3 py-1 bg-canvas hover:bg-border/60 text-ink border border-border rounded-full text-label-sm font-label-sm whitespace-nowrap transition-colors" type="button">
+          Cadernos &amp; Agendas
+        </button>
+<button class="px-3 py-1 bg-canvas hover:bg-border/60 text-ink border border-border rounded-full text-label-sm font-label-sm whitespace-nowrap transition-colors" type="button">
+          Escritório &amp; Arquivo
+        </button>
+<button class="px-3 py-1 bg-canvas hover:bg-border/60 text-ink border border-border rounded-full text-label-sm font-label-sm whitespace-nowrap transition-colors" type="button">
+          Artes &amp; Escolar
+        </button>
+</div>
+</div>
+<!-- Main Inventory Data Table Card -->
+<div class="bg-surface border border-border rounded-xl flex flex-col overflow-hidden shadow-xs">
+<!-- Table Top Meta Header -->
+<div class="px-4 py-3 border-b border-border flex items-center justify-between bg-canvas/40">
+<div class="flex items-center gap-2">
+<span class="text-label-md font-label-md text-ink">Catálogo Físico de Balcão</span>
+<span class="px-2 py-0.5 text-label-sm font-label-sm bg-surface border border-border rounded text-muted">7 itens exibidos</span>
+</div>
+<div class="flex items-center gap-3 text-body-sm font-body-sm text-muted">
+<span class="flex items-center gap-1.5">
+<span class="po-legenda po-status--em-dia"></span> Normal
+          </span>
+<span class="flex items-center gap-1.5">
+<span class="po-legenda po-status--pendente"></span> Estoque baixo
+          </span>
+<span class="flex items-center gap-1.5">
+<span class="po-legenda po-status--vencido"></span> Zerado
+          </span>
+</div>
+</div>
+<!-- Scrollable Data Table -->
+<div class="overflow-x-auto po-table-scroll">
+<table class="w-full text-left border-collapse po-table po-stock-table">
+<thead>
+<tr class="bg-canvas text-muted text-label-sm font-label-sm tracking-wider uppercase border-b border-border select-none">
+<th class="py-2.5 px-4 font-semibold w-28" scope="col">Cód. Interno</th>
+<th class="py-2.5 px-4 font-semibold w-36" scope="col">Cód. barras</th>
+<th class="py-2.5 px-4 font-semibold" scope="col">Descrição do Produto</th>
+<th class="py-2.5 px-4 font-semibold w-32" scope="col">Categoria</th>
+<th class="py-2.5 px-3 font-semibold text-center w-16" scope="col">Unid.</th>
+<th class="py-2.5 px-4 font-semibold text-right w-28" scope="col">Preço Venda</th>
+<th class="py-2.5 px-4 font-semibold w-48" scope="col">Saldo Atual &amp; Status</th>
+<th class="py-2.5 px-4 font-semibold text-right w-44" scope="col">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border text-body-sm font-body-sm">
+<!-- Row 1: Normal Caderno -->
+<tr class="hover:bg-canvas/80 transition-colors group">
+<td class="py-3 px-4 font-mono font-medium text-ink">EST-0021</td>
+<td class="py-3 px-4 font-mono text-muted tabular-nums">789102711</td>
+<td class="py-3 px-4">
+<span class="font-medium text-ink">Caderno Universitário Tilibra 10 Matérias Capa Dura 200 Fls</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-block px-2 py-0.5 rounded bg-canvas border border-border text-muted text-label-sm font-label-sm">Cadernos</span>
+</td>
+<td class="py-3 px-3 text-center text-muted font-medium">un</td>
+<td class="py-3 px-4 text-right font-medium text-ink tabular-nums">R$ 24,90</td>
+<td class="py-3 px-4">
+<div class="po-saldo"><span class="po-saldo-qtd">42 un</span><span class="po-status-mini po-status--em-dia">Normal</span></div><span class="po-saldo-min">Mínimo: 15 un</span></td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1 opacity-90 group-hover:opacity-100">
+<button class="po-entrada" title="Registrar entrada" type="button" data-ir="../registrar_entrada_de_mercadorias_balc_o_papelaria_op_o/">+ Entrada</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" title="Ajustar Contagem" type="button">
+<span class="material-symbols-outlined" data-icon="tune" style="font-size: 16px;">tune</span>
+</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" title="Histórico do Item" type="button">
+<span class="material-symbols-outlined" data-icon="history" style="font-size: 16px;">history</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: ESTOQUE BAIXO Pentel -->
+<tr class="bg-danger/[0.02] hover:bg-danger/[0.05] transition-colors group">
+<td class="py-3 px-4 font-mono font-medium text-ink">EST-0022</td>
+<td class="py-3 px-4 font-mono text-muted tabular-nums">789102722</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-1.5">
+<span class="font-medium text-ink">Caneta Gel Pentel Energel 0.7mm Azul Ponta Agulha</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-block px-2 py-0.5 rounded bg-canvas border border-border text-muted text-label-sm font-label-sm">Escrita</span>
+</td>
+<td class="py-3 px-3 text-center text-muted font-medium">un</td>
+<td class="py-3 px-4 text-right font-medium text-ink tabular-nums">R$ 12,50</td>
+<td class="py-3 px-4">
+<div class="po-saldo"><span class="po-saldo-qtd po-saldo-qtd--alerta">6 un</span><span class="po-status-mini po-status--pendente">Estoque baixo</span></div><span class="po-saldo-min">Mínimo: 20 un</span></td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="po-entrada po-entrada--repor" title="Registrar entrada" type="button" data-ir="../registrar_entrada_de_mercadorias_balc_o_papelaria_op_o/">+ Entrada</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" title="Ajustar Contagem" type="button">
+<span class="material-symbols-outlined" data-icon="tune" style="font-size: 16px;">tune</span>
+</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" title="Histórico do Item" type="button">
+<span class="material-symbols-outlined" data-icon="history" style="font-size: 16px;">history</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Sulfite Chamex -->
+<tr class="hover:bg-canvas/80 transition-colors group">
+<td class="py-3 px-4 font-mono font-medium text-ink">EST-0023</td>
+<td class="py-3 px-4 font-mono text-muted tabular-nums">789102744</td>
+<td class="py-3 px-4">
+<span class="font-medium text-ink">Sulfite A4 Chamex 75g 500fls Pacote Tradicional</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-block px-2 py-0.5 rounded bg-canvas border border-border text-muted text-label-sm font-label-sm">Papéis</span>
+</td>
+<td class="py-3 px-3 text-center text-muted font-medium">pct</td>
+<td class="py-3 px-4 text-right font-medium text-ink tabular-nums">R$ 28,00</td>
+<td class="py-3 px-4">
+<div class="po-saldo"><span class="po-saldo-qtd">85 pct</span><span class="po-status-mini po-status--em-dia">Normal</span></div><span class="po-saldo-min">Mínimo: 30 pct</span></td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1 opacity-90 group-hover:opacity-100">
+<button class="po-entrada" type="button" title="Registrar entrada" data-ir="../registrar_entrada_de_mercadorias_balc_o_papelaria_op_o/">+ Entrada</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="tune" style="font-size: 16px;">tune</span>
+</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="history" style="font-size: 16px;">history</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Sem código de barras / Balcão avulso -->
+<tr class="hover:bg-canvas/80 transition-colors group">
+<td class="py-3 px-4 font-mono font-medium text-ink">EST-0024</td>
+<td class="py-3 px-4"><span class="po-sem-codigo">Sem código</span></td>
+<td class="py-3 px-4">
+<span class="font-medium text-ink">Cartolina Cartão Duplex 250g Cores Sortidas 50x70cm Avulsa</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-block px-2 py-0.5 rounded bg-canvas border border-border text-muted text-label-sm font-label-sm">Artes &amp; Papéis</span>
+</td>
+<td class="py-3 px-3 text-center text-muted font-medium">un</td>
+<td class="py-3 px-4 text-right font-medium text-ink tabular-nums">R$ 3,50</td>
+<td class="py-3 px-4">
+<div class="po-saldo"><span class="po-saldo-qtd">18 un</span><span class="po-status-mini po-status--em-dia">Normal</span></div><span class="po-saldo-min">Mínimo: 10 un</span></td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1 opacity-90 group-hover:opacity-100">
+<button class="po-entrada" type="button" title="Registrar entrada" data-ir="../registrar_entrada_de_mercadorias_balc_o_papelaria_op_o/">+ Entrada</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="tune" style="font-size: 16px;">tune</span>
+</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="history" style="font-size: 16px;">history</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: ESTOQUE BAIXO Post-it -->
+<tr class="bg-danger/[0.02] hover:bg-danger/[0.05] transition-colors group">
+<td class="py-3 px-4 font-mono font-medium text-ink">EST-0025</td>
+<td class="py-3 px-4 font-mono text-muted tabular-nums">789102789</td>
+<td class="py-3 px-4">
+<span class="font-medium text-ink">Bloco Adesivo Post-it Amarelo 76x76mm c/ 4 Blocos 400 Folhas</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-block px-2 py-0.5 rounded bg-canvas border border-border text-muted text-label-sm font-label-sm">Escritório</span>
+</td>
+<td class="py-3 px-3 text-center text-muted font-medium">pct</td>
+<td class="py-3 px-4 text-right font-medium text-ink tabular-nums">R$ 18,90</td>
+<td class="py-3 px-4">
+<div class="po-saldo"><span class="po-saldo-qtd po-saldo-qtd--alerta">3 pct</span><span class="po-status-mini po-status--pendente">Estoque baixo</span></div><span class="po-saldo-min">Mínimo: 10 pct</span></td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="po-entrada po-entrada--repor" type="button" title="Registrar entrada" data-ir="../registrar_entrada_de_mercadorias_balc_o_papelaria_op_o/">+ Entrada</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="tune" style="font-size: 16px;">tune</span>
+</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="history" style="font-size: 16px;">history</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6: Nome Longo Papel Fotográfico -->
+<tr class="hover:bg-canvas/80 transition-colors group">
+<td class="py-3 px-4 font-mono font-medium text-ink">EST-0026</td>
+<td class="py-3 px-4 font-mono text-muted tabular-nums">789102795</td>
+<td class="py-3 px-4 max-w-md">
+<span class="font-medium text-ink line-clamp-2" title="Papel Fotográfico Glossy A4 180g Alta Definição Pacote com 100 Folhas Resistente à Água Premium Micro-poroso Secagem Instantânea">
+                  Papel Fotográfico Glossy A4 180g Alta Definição Pacote com 100 Folhas Resistente à Água Premium Micro-poroso Secagem Instantânea
+                </span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-block px-2 py-0.5 rounded bg-canvas border border-border text-muted text-label-sm font-label-sm">Papéis Especiais</span>
+</td>
+<td class="py-3 px-3 text-center text-muted font-medium">pct</td>
+<td class="py-3 px-4 text-right font-medium text-ink tabular-nums">R$ 45,00</td>
+<td class="py-3 px-4">
+<div class="po-saldo"><span class="po-saldo-qtd">12 pct</span><span class="po-status-mini po-status--em-dia">Normal</span></div><span class="po-saldo-min">Mínimo: 8 pct</span></td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1 opacity-90 group-hover:opacity-100">
+<button class="po-entrada" type="button" title="Registrar entrada" data-ir="../registrar_entrada_de_mercadorias_balc_o_papelaria_op_o/">+ Entrada</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="tune" style="font-size: 16px;">tune</span>
+</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="history" style="font-size: 16px;">history</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 7: ZERADO Borracha Mercur -->
+<tr class="bg-canvas hover:bg-danger/[0.04] transition-colors group">
+<td class="py-3 px-4 font-mono font-medium text-ink">EST-0027</td>
+<td class="py-3 px-4 font-mono text-muted tabular-nums">789102733</td>
+<td class="py-3 px-4">
+<span class="font-medium text-ink">Borracha Escolar Branca Mercur Record 40 com Capa Protetora</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-block px-2 py-0.5 rounded bg-canvas border border-border text-muted text-label-sm font-label-sm">Escolar</span>
+</td>
+<td class="py-3 px-3 text-center text-muted font-medium">un</td>
+<td class="py-3 px-4 text-right font-medium text-ink tabular-nums">R$ 2,50</td>
+<td class="py-3 px-4">
+<div class="po-saldo"><span class="po-saldo-qtd po-saldo-qtd--alerta">0 un</span><span class="po-status-mini po-status--vencido">Zerado</span></div><span class="po-saldo-min">Mínimo: 50 un</span></td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="po-entrada po-entrada--repor" type="button" title="Registrar entrada" data-ir="../registrar_entrada_de_mercadorias_balc_o_papelaria_op_o/">+ Entrada</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="tune" style="font-size: 16px;">tune</span>
+</button>
+<button class="p-1 hover:bg-canvas text-muted hover:text-ink rounded transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="history" style="font-size: 16px;">history</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination Bar -->
+<div class="p-3 bg-surface border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-body-sm font-body-sm text-muted">
+<div class="flex items-center gap-2">
+<span>Mostrando <strong>7</strong> de <strong>1.420</strong> produtos</span>
+<span class="text-border">|</span>
+<span>Página 1 de 203</span>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="px-2.5 py-1 text-label-md font-label-md rounded border border-border bg-canvas text-muted/50 cursor-not-allowed flex items-center gap-1" disabled type="button">
+<span class="material-symbols-outlined" data-icon="chevron_left" style="font-size: 16px;">chevron_left</span>
+            Anterior
+          </button>
+<button class="px-2.5 py-1 text-label-md font-label-md rounded bg-ink text-surface font-semibold" type="button">1</button>
+<button class="px-2.5 py-1 text-label-md font-label-md rounded hover:bg-canvas text-ink border border-border" type="button">2</button>
+<button class="px-2.5 py-1 text-label-md font-label-md rounded hover:bg-canvas text-ink border border-border" type="button">3</button>
+<span class="px-1 text-muted">...</span>
+<button class="px-2.5 py-1 text-label-md font-label-md rounded hover:bg-canvas text-ink border border-border" type="button">203</button>
+<button class="px-2.5 py-1 text-label-md font-label-md rounded border border-border hover:bg-canvas text-ink flex items-center gap-1" type="button">
+            Próxima
+            <span class="material-symbols-outlined" data-icon="chevron_right" style="font-size: 16px;">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Informative Operational Banner & Counter Keyboard Shortcuts Hint -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+<!-- Informative System Notice -->
+<div class="lg:col-span-2 bg-surface border border-border rounded-xl p-3.5 flex items-start gap-3">
+<span class="material-symbols-outlined text-muted mt-0.5" data-icon="info">info</span>
+<div class="flex flex-col text-body-sm font-body-sm">
+<span class="font-semibold text-ink">Regra de Movimentação no Terminal:</span>
+<p class="text-muted leading-relaxed">
+            Uma entrada de mercadorias pode ser iniciada pelo botão superior ou diretamente na linha do produto com dados pré-preenchidos. O ajuste de contagem (inventário de rotina) é separado da entrada de compras com nota.
+          </p>
+</div>
+</div>
+<!-- Quick Shortcuts Footnote Card -->
+<div class="bg-surface border border-border rounded-xl p-3.5 flex flex-col justify-center">
+<span class="text-label-sm font-label-sm uppercase font-semibold text-muted tracking-wider mb-1.5 flex items-center gap-1">
+<span class="material-symbols-outlined" data-icon="keyboard" style="font-size: 16px;">keyboard</span>
+          Atalhos do Balcão
+        </span>
+<div class="flex flex-wrap gap-2 text-label-sm font-label-sm text-ink">
+<span class="inline-flex items-center gap-1"><kbd class="bg-canvas border border-border px-1 rounded font-mono">F2</kbd> Venda</span>
+<span class="inline-flex items-center gap-1"><kbd class="bg-canvas border border-border px-1 rounded font-mono">F3</kbd> Buscar</span>
+<span class="inline-flex items-center gap-1"><kbd class="bg-canvas border border-border px-1 rounded font-mono">F5</kbd> Atualizar</span>
+<span class="inline-flex items-center gap-1"><kbd class="bg-canvas border border-border px-1 rounded font-mono">F8</kbd> Entrada Rápida</span>
+</div>
+</div>
+</div>
+</main>
+<script>
+    // Lightweight micro-interactions for keyboard accessibility in POS environment
+    document.addEventListener('keydown', function(event) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        const searchInput = document.querySelector('input[type="text"]');
+        if (searchInput) searchInput.focus();
+      }
+      if (event.key === 'F3') {
+        event.preventDefault();
+        const searchInput = document.querySelector('input[placeholder*="F3"]');
+        if (searchInput) searchInput.focus();
+      }
+    });
+  </script>
+<script src="../navegacao.js"></script></body></html>

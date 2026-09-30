@@ -1,0 +1,172 @@
+/* Segunda rodada: marca e leitura dos controles nas telas HTML do Stitch. */
+*, *::before, *::after { box-sizing: border-box; }
+::selection { background: #dedede; color: #111; }
+
+.po-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 4px 8px;
+  overflow: visible;
+}
+.po-logo {
+  display: block;
+  width: 29px;
+  height: 44px;
+  object-fit: contain;
+  flex: none;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+.po-brand-copy { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.po-brand-copy strong { color: #111; font-size: 17px; font-weight: 700; white-space: nowrap; }
+.po-brand-copy span { color: #555; font-size: 11px; white-space: nowrap; margin-top: 3px; }
+.po-product-header { display: flex; align-items: center; gap: 11px; }
+.po-product-header .po-logo { width: 24px; height: 36px; }
+
+/* O amarelo intenso fica restrito ao desenho da marca. */
+[class*="bg-brand-accent"] { background-color: #f0f0f0 !important; }
+[class*="border-brand-accent"] { border-color: #d5d5d5 !important; }
+[class*="text-brand-accent"] { color: #111 !important; }
+aside .po-nav-active {
+  background: #ededed !important;
+  color: #111 !important;
+  box-shadow: inset 3px 0 0 #111 !important;
+  font-weight: 650;
+}
+aside .po-nav-active:hover { background: #e5e5e5 !important; }
+aside .po-sidebar-cta {
+  background: #111 !important;
+  color: #fff !important;
+  border-color: #111 !important;
+  min-height: 40px;
+}
+aside .po-sidebar-cta:hover { background: #303030 !important; }
+aside .po-sidebar-cta .material-symbols-outlined { color: #fff !important; }
+.po-stock-summary { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+
+/* Conteudo longo mantem a largura do controle; tabelas rolam quando preciso. */
+.po-table-scroll { overflow-x: auto; max-width: 100%; }
+.po-table { table-layout: auto; }
+.po-table th, .po-table td { vertical-align: middle; }
+.po-sales-table { min-width: 920px; }
+.po-sales-table th:nth-child(5), .po-sales-table td:nth-child(5) { min-width: 154px; }
+.po-sales-table th:nth-child(6), .po-sales-table td:nth-child(6) { min-width: 118px; }
+.po-entry-table { min-width: 1080px; }
+.po-entry-table th:nth-child(4), .po-entry-table td:nth-child(4) { min-width: 136px; }
+.po-badge {
+  display: inline-flex !important;
+  width: max-content !important;
+  max-width: none !important;
+  min-height: 26px;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px !important;
+  line-height: 1.2;
+  white-space: nowrap !important;
+  vertical-align: middle;
+}
+
+/* Situacao das compras: fundo pastel chapado, texto escuro do mesmo tom.
+   Largura unica e texto centrado, para a coluna ler alinhada com uma ou duas linhas. */
+.po-status {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  min-height: 38px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  text-align: center;
+  line-height: 1.25;
+  vertical-align: middle;
+}
+.po-status strong { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.po-status small { font-size: 11px; font-weight: 500; opacity: .85; white-space: nowrap; }
+/* Variante compacta, uma linha, para caber ao lado de um numero. */
+.po-status-mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 22px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.po-status--em-dia { background: #DCEFE4; color: #145C3F; }
+.po-status--pendente { background: #FBE4D1; color: #8A430F; }
+.po-status--vencido { background: #F9D9D9; color: #9E1116; }
+
+/* Estoque: nenhum rotulo quebra linha; saldo em duas linhas fixas. */
+.po-stock-table td:nth-child(4) span, .po-stock-table td:nth-child(7) span { white-space: nowrap; }
+/* Colunas fixas do tamanho do conteudo; a descricao fica com o resto. */
+.po-stock-table th { white-space: nowrap; }
+.po-stock-table th:nth-child(1) { width: 116px !important; }
+.po-stock-table th:nth-child(2) { width: 120px !important; }
+.po-stock-table th:nth-child(4) { width: 120px !important; }
+.po-stock-table th:nth-child(5) { width: 56px !important; }
+.po-stock-table th:nth-child(6) { width: 112px !important; }
+.po-stock-table th:nth-child(7) { width: 180px !important; }
+.po-stock-table th:nth-child(8) { width: 148px !important; }
+.po-sem-codigo { color: #4B4B4B; font-size: 12px; font-style: italic; }
+.po-saldo { display: flex; align-items: center; gap: 8px; }
+.po-saldo-qtd { min-width: 48px; font-weight: 700; font-variant-numeric: tabular-nums; color: #000; }
+.po-saldo-qtd--alerta { color: #9E1116; }
+.po-saldo-min { display: block; margin-top: 3px; font-size: 11px; color: #4B4B4B; }
+.po-entrada {
+  display: inline-flex;
+  justify-content: center;
+  width: 84px;
+  padding: 4px 8px;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  background: #fff;
+  color: #000;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.po-entrada:hover { background: #f3f3f3; }
+.po-entrada--repor { background: #000; border-color: #000; color: #fff; }
+.po-entrada--repor:hover { background: #303030; }
+.po-legenda { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+
+.po-modal-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; flex-shrink: 0; }
+.po-modal-actions button { min-height: 38px; height: auto !important; white-space: nowrap; flex-shrink: 0; }
+.po-modal-actions .material-symbols-outlined { flex: none; }
+header .po-top-cta { min-width: 112px; min-height: 38px; flex: none; white-space: nowrap; justify-content: center; }
+header .po-top-cta span { white-space: nowrap; }
+.po-entry-fields input { min-width: 0; text-overflow: ellipsis; }
+footer button { min-height: 38px; }
+
+@media (max-width: 1080px) {
+  .po-modal-actions { max-width: 390px; }
+  .po-modal-actions button { font-size: 11px; }
+  .po-entry-fields { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .po-home-summary { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .po-home-summary > :last-child { grid-column: span 2; }
+  .po-stock-summary { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .po-client-header { height: auto !important; min-height: 64px; flex-wrap: wrap; padding-top: 8px; padding-bottom: 8px; }
+  .po-client-header > div { min-width: 0; flex-wrap: wrap; }
+  .po-client-header .relative.w-64 { display: none; }
+  .po-client-header button { white-space: nowrap; }
+  .po-client-summary { grid-template-columns: minmax(0, 1fr) !important; }
+  .po-client-summary > div { grid-column: 1 / -1 !important; min-width: 0; border-right: 0 !important; padding-left: 0 !important; }
+  .po-client-filters { flex-direction: column !important; align-items: stretch !important; }
+  .po-client-filters > div:last-child { flex-wrap: wrap; }
+  .po-sale-workspace { display: block !important; overflow-y: auto !important; overflow-x: hidden !important; }
+  .po-sale-workspace > div { height: auto !important; overflow: visible !important; border-right: 0 !important; }
+  .po-finance-header > div { gap: 12px; }
+  .po-finance-header .relative.w-72 { display: none; }
+  .po-finance-header button { white-space: nowrap; flex-shrink: 0; }
+  .po-finance-period { flex-wrap: wrap; gap: 10px; }
+  .po-finance-period > div { flex-wrap: wrap; }
+  .po-finance-summary { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .po-finance-summary > div { min-width: 0; }
+}

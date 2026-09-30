@@ -1,0 +1,30 @@
+/* Aparência padrão dos elementos soltos, antes de qualquer componente. */
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--text-corpo);
+    line-height: var(--text-corpo--line-height);
+    color: var(--color-tinta);
+    background: var(--color-fundo);
+  }
+
+  ::selection {
+    background: var(--color-selecao);
+    color: var(--color-tinta);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-tinta);
+    outline-offset: 2px;
+  }
+
+  /* Números alinham em coluna: valores, quantidades, horários. */
+  .numero {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .codigo {
+    font-family: var(--font-mono);
+    font-size: var(--text-rotulo);
+  }
+}

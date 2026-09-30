@@ -1,0 +1,279 @@
+.cadastrar-produto__grupo + .cadastrar-produto__grupo {
+  margin-top: var(--espaco-6);
+  padding-top: var(--espaco-6);
+  border-top: 1px solid var(--color-borda);
+}
+
+.cadastrar-produto__titulo {
+  margin-bottom: var(--espaco-4);
+  font-size: var(--text-destaque);
+  font-weight: var(--font-weight-forte);
+}
+
+.cadastrar-produto__explica {
+  margin: calc(var(--espaco-3) * -1) 0 var(--espaco-4);
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.cadastrar-produto__grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-4);
+}
+
+.cadastrar-produto__grade--tres {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.cadastrar-produto__largo {
+  grid-column: 1 / -1;
+}
+
+.cadastrar-produto__barras {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.cadastrar-produto__codigo-campo--consultado,
+.cadastrar-produto__codigo-campo--consultado:focus-within {
+  border-color: var(--color-ok-texto);
+}
+
+.cadastrar-produto__codigo-ajuda--consultado {
+  color: var(--color-ok-texto);
+}
+
+.cadastrar-produto__acionar-leitor {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  border-radius: var(--radius-pequeno);
+  color: var(--color-texto-suave);
+  cursor: pointer;
+}
+
+.cadastrar-produto__acionar-leitor:hover,
+.cadastrar-produto__acionar-leitor--ativo { color: var(--color-tinta); background: var(--color-superficie-2); }
+.cadastrar-produto__acionar-leitor:focus-visible { outline: 2px solid var(--color-tinta); outline-offset: 2px; }
+.cadastrar-produto__acionar-leitor:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.cadastrar-produto__laser {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 0;
+  height: 8px;
+  background: linear-gradient(to bottom, transparent, var(--color-critico-fundo));
+  border-bottom: 1.5px solid var(--color-marca-vermelho);
+  animation: cadastrar-produto-laser 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes cadastrar-produto-laser {
+  from { transform: translateY(-6px); }
+  to { transform: translateY(22px) scaleY(-1); }
+}
+
+.cadastrar-produto__leitura-feita {
+  position: absolute;
+  inset: 0;
+  background: var(--color-entrada);
+  opacity: 0;
+  animation: cadastrar-produto-lido 0.6s ease-out;
+  pointer-events: none;
+}
+
+@keyframes cadastrar-produto-lido {
+  0% { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cadastrar-produto__laser,
+  .cadastrar-produto__leitura-feita { animation: none; }
+  .cadastrar-produto__laser { transform: translateY(8px); }
+  .cadastrar-produto__leitura-feita { display: none; }
+}
+
+.cadastrar-produto__marcar {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  font-size: var(--text-rotulo);
+}
+
+.cadastrar-produto__marcar input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-tinta);
+}
+
+.cadastrar-produto__lembrete {
+  margin-right: auto;
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.cadastrar-produto__lembrete--erro { color: var(--color-saida); }
+
+
+/* Categoria: lista direta, com "Nova categoria" no topo */
+.campo-categoria { position: relative; }
+
+.campo-categoria__botao {
+  justify-content: space-between;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+}
+
+.campo-categoria__botao svg { flex-shrink: 0; color: var(--color-texto-suave); }
+.campo-categoria__vazio { color: var(--color-texto-apagado); }
+
+.campo-categoria__lista {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: grid;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: var(--espaco-1);
+  border: 1px solid var(--color-borda-forte);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-superficie);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.08);
+}
+
+.campo-categoria__opcao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--radius-pequeno);
+  text-align: left;
+}
+
+.campo-categoria__opcao:hover,
+.campo-categoria__opcao--ativa { background: var(--color-superficie-2); }
+
+.campo-categoria__opcao--criar {
+  justify-content: flex-start;
+  margin-bottom: var(--espaco-1);
+  border-bottom: 1px solid var(--color-borda);
+  border-radius: var(--radius-pequeno) var(--radius-pequeno) 0 0;
+  font-weight: var(--font-weight-medio);
+}
+
+.campo-categoria__nova {
+  display: flex;
+  gap: var(--espaco-2);
+  padding: var(--espaco-1);
+  margin-bottom: var(--espaco-1);
+  border-bottom: 1px solid var(--color-borda);
+}
+
+.campo-categoria__nova input {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 var(--espaco-3);
+  border: 1px solid var(--color-tinta);
+  border-radius: var(--radius-pequeno);
+  outline: none;
+}
+
+.campo-categoria__ok {
+  height: 36px;
+  padding: 0 var(--espaco-4);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-tinta);
+  color: var(--color-superficie);
+  font-weight: var(--font-weight-medio);
+}
+
+.campo-categoria__ok:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Produto que chegou numa embalagem diferente da unidade de venda */
+.cadastrar-produto__embalagem {
+  display: grid;
+  gap: var(--espaco-3);
+  padding: var(--espaco-4);
+  border-radius: var(--radius-medio);
+  background: var(--color-fundo);
+}
+
+.cadastrar-produto__embalagem--erro {
+  outline: 1px solid var(--color-saida);
+  animation: campo-erro-pulso 0.7s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cadastrar-produto__embalagem--erro { animation: none; }
+}
+
+.cadastrar-produto__conta {
+  font-size: var(--text-rotulo);
+  color: var(--color-entrada);
+  font-weight: var(--font-weight-medio);
+}
+
+.cadastrar-produto__conta--aviso { color: var(--color-atencao-texto); }
+
+.cadastrar-produto__dentro {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-medio);
+}
+
+/* Escolha em duas partes, como um interruptor: Caixa | Pacote */
+.cadastrar-produto__segmento {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--radius-medio);
+  background: var(--color-superficie-2);
+}
+
+.cadastrar-produto__segmento-opcao {
+  padding: var(--espaco-1) var(--espaco-4);
+  border-radius: var(--radius-pequeno);
+  color: var(--color-texto-suave);
+}
+
+.cadastrar-produto__segmento-opcao--ativa {
+  background: var(--color-superficie);
+  color: var(--color-tinta);
+  font-weight: var(--font-weight-medio);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+
+.cadastrar-produto__dica {
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+/* Campos da embalagem na mesma linha: caixas sempre alinhadas pela base. */
+.cadastrar-produto__embalagem .cadastrar-produto__grade {
+  align-items: end;
+}
+
+.cadastrar-produto__embalagem .campo__rotulo {
+  white-space: nowrap;
+}
+
+/* Excluir/desativar: à esquerda do rodapé, longe do salvar. */
+.cadastrar-produto__remover { color: var(--color-critico-texto); }
+.cadastrar-produto__remover--confirmar {
+  background: var(--color-critico-fundo);
+  color: var(--color-critico-texto);
+}

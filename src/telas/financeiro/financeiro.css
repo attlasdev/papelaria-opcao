@@ -1,0 +1,81 @@
+/* Comparação compacta do período; rótulos e valores acompanham as barras. */
+.financeiro__comparacao {
+  margin-bottom: var(--espaco-6);
+}
+
+.financeiro__comparacao-conteudo {
+  display: grid;
+  gap: var(--espaco-3);
+}
+
+.financeiro__comparacao-linha {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr) 108px;
+  align-items: center;
+  gap: var(--espaco-4);
+}
+
+.financeiro__comparacao-linha > span {
+  font-weight: var(--font-weight-forte);
+}
+
+.financeiro__comparacao-linha strong {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.financeiro__comparacao-trilho {
+  min-width: 0;
+  height: 12px;
+  border-radius: var(--radius-selo);
+  background: var(--color-superficie-2);
+}
+
+.financeiro__comparacao-barra {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-selo);
+}
+
+.financeiro__comparacao-barra--entrada { background: var(--color-grafico-entrada); }
+.financeiro__comparacao-barra--saida { background: var(--color-grafico-saida); }
+
+.financeiro__comparacao-liquido {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-1);
+  padding-top: var(--espaco-3);
+  border-top: 1px solid var(--color-borda);
+}
+
+.financeiro__comparacao-liquido span,
+.financeiro__movimentos-vazio {
+  color: var(--color-texto-suave);
+}
+
+.financeiro__movimentos-vazio { padding: var(--espaco-4); text-align: center; }
+
+/* Movimentações */
+.financeiro__valor {
+  font-weight: var(--font-weight-forte);
+}
+
+.financeiro__valor--entrada { color: var(--color-entrada); }
+.financeiro__valor--saida { color: var(--color-saida); }
+
+.financeiro__nota {
+  margin-top: var(--espaco-3);
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+/* A etiqueta da ficha abre a venda que originou a entrada */
+.financeiro__ficha {
+  display: inline-flex;
+  border-radius: var(--radius-selo);
+}
+
+.financeiro__ficha:hover {
+  outline: 1px solid var(--color-borda-forte);
+}

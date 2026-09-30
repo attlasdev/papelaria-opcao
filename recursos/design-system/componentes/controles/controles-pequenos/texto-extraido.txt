@@ -1,0 +1,55 @@
+L OGO Small Component s
+Checkbo x es
+The Checkbo x is an input contr ol t o select one or mor e options. The option can 
+be true, f alse, or indet erminat e.
+Radio Butt on
+The Radio Butt on is an input contr ol t o select a single option fr om t he list.
+T ags
+T ags r epr esent a set of int eractiv e, mer chant -supplied k e yw or ds t hat help label, 
+or ganiz e, and cat egoriz e object s.
+T ag Cont ent
+T ag Cont ent
+T ag Cont ent
+T ag Cont ent
+T oggle
+A t oggle is used t o view or swit ch betw een enabled or disabled stat es.
+P agination
+Use pagination t o let mer chant s mo v e t hr ough an or der ed collection of it ems t hat 
+has been split int o pages.
+Badge
+Badges ar e used t o inf orm mer chant s of t he status of an object or of an action 
+t hat ’ s been tak en.
+Badge Badge Badge Badge
+Badge Badge Badge Badge
+Badge Badge Badge Badge
+Badge Badge Badge Badge
+Badge Badge Badge Badge
+Badge Badge Badge Badge
+Badge Badge Badge Badge
+1 2 3 4 5 ... 10
+Label
+Badges ar e used t o inf orm mer chant s of t he status of an object or of an action 
+t hat ’ s been tak en.
+Countr y Flag
+Badges ar e used t o inf orm mer chant s of t he status of an object or of an action 
+t hat ’ s been tak en.
+Logo
+Badges ar e used t o inf orm mer chant s of t he status of an object or of an action 
+t hat ’ s been tak en.
+A v atar
+A v atars ar e used t o sho w a t humbnail r epr esentation of an individual or business 
+in t he int er f ace.
+T abs
+T abs ar e used t o or ganiz e cont ent b y gr ouping similar inf ormation on t he same 
+page.
+Tit le Tit le
+Menu Menu
+List Kanban T able Grid
+Menu Menu Menu
+T abs
+T abs ar e used t o or ganiz e cont ent b y gr ouping similar inf ormation on t he same 
+page.
+Tit le Tit le
+Menu Menu
+List Kanban T able Grid
+Menu Menu Menu

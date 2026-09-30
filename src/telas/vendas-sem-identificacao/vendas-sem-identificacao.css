@@ -1,0 +1,29 @@
+.vendas-sem-identificacao__trilha-link:hover {
+  text-decoration: underline;
+}
+
+.vendas-sem-identificacao__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.vendas-sem-identificacao__itens {
+  overflow: hidden;
+  max-width: 340px;
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+  text-overflow: ellipsis;
+  white-space: nowrap; /* uma linha: todas as vendas ficam da mesma altura */
+}
+
+.vendas-sem-identificacao__valor {
+  font-weight: var(--font-weight-forte);
+}
+
+.vendas-sem-identificacao__vazio {
+  padding: var(--espaco-8);
+  text-align: center;
+  color: var(--color-texto-suave);
+}

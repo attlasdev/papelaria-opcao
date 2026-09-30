@@ -1,0 +1,18 @@
+.movimentacoes-estoque__controles { display: flex; align-items: center; justify-content: space-between; gap: var(--espaco-3); flex-wrap: wrap; }
+.movimentacoes-estoque__total { margin: var(--espaco-6) 0 var(--espaco-3); font-size: var(--text-rotulo); color: var(--color-texto-suave); }
+.movimentacoes-estoque__lista { display: grid; gap: var(--espaco-3); }
+.movimentacoes-estoque__item { padding: var(--espaco-4); border: 1px solid var(--color-borda); border-radius: var(--radius-medio); background: var(--color-superficie); }
+.movimentacoes-estoque__item-topo, .movimentacoes-estoque__item-rodape { display: flex; align-items: center; justify-content: space-between; gap: var(--espaco-3); }
+.movimentacoes-estoque__item-topo { margin-bottom: var(--espaco-3); }
+.movimentacoes-estoque__data, .movimentacoes-estoque__codigo { font-size: var(--text-rotulo); color: var(--color-texto-suave); }
+.movimentacoes-estoque__produto { display: block; font-weight: var(--font-weight-medio); }
+.movimentacoes-estoque__codigo { display: block; margin-top: var(--espaco-1); }
+.movimentacoes-estoque__item-rodape { margin-top: var(--espaco-4); padding-top: var(--espaco-3); border-top: 1px solid var(--color-borda); }
+.movimentacoes-estoque__motivo { min-width: 0; color: var(--color-texto-suave); font-size: var(--text-rotulo); }
+.movimentacoes-estoque__saldos { white-space: nowrap; }
+.movimentacoes-estoque__saldos span { padding: 0 var(--espaco-1); color: var(--color-texto-suave); }
+.movimentacoes-estoque__vazio { padding: var(--espaco-8) var(--espaco-4); border: 1px dashed var(--color-borda-forte); border-radius: var(--radius-medio); text-align: center; color: var(--color-texto-suave); }
+
+.movimentacoes-estoque__ficha:hover {
+  text-decoration: underline;
+}

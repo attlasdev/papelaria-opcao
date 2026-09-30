@@ -1,0 +1,54 @@
+.janela-cliente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-6);
+}
+
+.janela-cliente__grupo legend {
+  margin-bottom: var(--espaco-3);
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-forte);
+  color: var(--color-texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.janela-cliente__opcional {
+  font-weight: var(--font-weight-normal);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.janela-cliente__campos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-4);
+}
+
+/* Rua larga e número estreito; bairro e cidade dividem a linha de baixo */
+.janela-cliente__campos--endereco {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.janela-cliente__campos--endereco > :nth-child(1) { grid-column: span 3; }
+.janela-cliente__campos--endereco > :nth-child(3),
+.janela-cliente__campos--endereco > :nth-child(4) { grid-column: span 2; }
+
+.janela-cliente__largo {
+  grid-column: 1 / -1;
+}
+
+.janela-cliente__aviso {
+  margin-right: auto;
+  font-size: var(--text-rotulo);
+  color: var(--color-saida);
+}
+
+@media (max-width: 700px) {
+  .janela-cliente__campos,
+  .janela-cliente__campos--endereco {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .janela-cliente__campos--endereco > :nth-child(n) { grid-column: auto; }
+}

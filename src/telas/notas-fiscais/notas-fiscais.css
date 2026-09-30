@@ -1,0 +1,60 @@
+.notas-fiscais__destaque {
+  margin-bottom: var(--espaco-6);
+}
+
+.notas-fiscais__rascunho {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-4);
+}
+
+.notas-fiscais__icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-medio);
+  background: var(--color-superficie-2);
+}
+
+.notas-fiscais__texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.notas-fiscais__linha {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.notas-fiscais__linha h2 {
+  font-size: var(--text-destaque);
+  font-weight: var(--font-weight-forte);
+}
+
+.notas-fiscais__dados {
+  margin-top: 2px;
+  font-weight: var(--font-weight-medio);
+}
+
+.notas-fiscais__explica,
+.notas-fiscais__nota {
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.notas-fiscais__nota {
+  margin-top: var(--espaco-3);
+}
+
+.notas-fiscais__referencia {
+  font-weight: var(--font-weight-medio);
+}
+
+.notas-fiscais__vazio {
+  padding: var(--espaco-8);
+  text-align: center;
+  color: var(--color-texto-suave);
+}

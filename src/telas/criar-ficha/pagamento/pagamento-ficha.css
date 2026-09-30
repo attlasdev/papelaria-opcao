@@ -1,0 +1,173 @@
+.pagamento-ficha__titulo {
+  margin-bottom: var(--espaco-3);
+  font-size: var(--text-destaque);
+  font-weight: var(--font-weight-forte);
+}
+
+.pagamento-ficha__titulo:not(:first-child) {
+  margin-top: var(--espaco-4);
+}
+
+/* Contas */
+.pagamento-ficha__contas > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--espaco-1) 0;
+}
+
+.pagamento-ficha__contas dt {
+  color: var(--color-texto-suave);
+}
+
+.pagamento-ficha__contas dd {
+  font-variant-numeric: tabular-nums;
+}
+
+.pagamento-ficha__desconto {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  height: 30px;
+  padding: 0 var(--espaco-2);
+  border: 1px solid var(--color-borda-forte);
+  border-radius: var(--radius-pequeno);
+  color: var(--color-texto-suave);
+}
+
+.pagamento-ficha__desconto input {
+  width: 100px;
+  outline: none;
+  text-align: right;
+  color: var(--color-tinta);
+  font-variant-numeric: tabular-nums;
+}
+
+.pagamento-ficha__total {
+  margin-top: var(--espaco-2);
+  padding-top: var(--espaco-3) !important;
+  border-top: 1px solid var(--color-borda);
+}
+
+.pagamento-ficha__total dt {
+  font-weight: var(--font-weight-forte);
+  color: var(--color-tinta) !important;
+}
+
+.pagamento-ficha__total dd {
+  font-size: 26px;
+  font-weight: var(--font-weight-negrito);
+}
+
+/* Formas */
+/* Três meios à vista numa linha; notinha, o caso diferente, na linha de baixo. */
+.pagamento-ficha__formas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espaco-2);
+}
+
+.pagamento-ficha__forma:last-child {
+  grid-column: 1 / -1;
+}
+
+.pagamento-ficha__forma {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-1);
+  height: 40px;
+  border: 1px solid var(--color-borda-forte);
+  border-radius: var(--radius-pequeno);
+  font-weight: var(--font-weight-medio);
+  white-space: nowrap;
+}
+
+.pagamento-ficha__forma:hover {
+  background: var(--color-superficie-2);
+}
+
+.pagamento-ficha__forma--ativa,
+.pagamento-ficha__forma--ativa:hover {
+  border-color: var(--color-tinta);
+  background: var(--color-tinta);
+  color: var(--color-superficie);
+}
+
+.pagamento-ficha__forma:disabled,
+.pagamento-ficha__forma:disabled:hover {
+  border-style: dashed;
+  background: transparent;
+  color: var(--color-texto-apagado);
+  cursor: not-allowed;
+}
+
+.pagamento-ficha__forma-aviso {
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-normal);
+}
+
+/* Detalhe da forma escolhida */
+.pagamento-ficha__detalhe {
+  margin-top: var(--espaco-3);
+}
+
+/* Notinha: vencimento e entrada lado a lado; a forma da entrada só aparece com valor */
+.pagamento-ficha__notinha {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-3);
+}
+
+.pagamento-ficha__detalhe.pagamento-ficha__detalhe--notinha {
+  margin-top: var(--espaco-2);
+}
+
+.pagamento-ficha__entrada {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-1);
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+/* Recebido e troco na mesma linha: o troco fica alinhado ao pé do campo */
+.pagamento-ficha__dinheiro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--espaco-4);
+}
+
+.pagamento-ficha__troco {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-height: var(--altura-controle);
+  justify-content: center;
+}
+
+.pagamento-ficha__troco span {
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.pagamento-ficha__troco strong {
+  font-size: var(--text-destaque);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-entrada);
+}
+
+.pagamento-ficha__troco .pagamento-ficha__falta {
+  color: var(--color-saida);
+}
+
+.pagamento-ficha__nota {
+  display: flex;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-2);
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}

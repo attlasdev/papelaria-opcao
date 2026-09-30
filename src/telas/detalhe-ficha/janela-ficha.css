@@ -1,0 +1,60 @@
+.janela-ficha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-6);
+}
+
+.janela-ficha h3 {
+  font-size: var(--text-destaque);
+  font-weight: var(--font-weight-forte);
+}
+
+.janela-ficha__itens header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-3);
+}
+
+.janela-ficha__itens header > span {
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+/* A tabela de itens ganha borda própria: dentro da janela não há painel em volta */
+.janela-ficha__tabela {
+  overflow: hidden;
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-medio);
+}
+
+/* Pagamentos à esquerda, total à direita */
+.janela-ficha__rodape {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(220px, 2fr);
+  gap: var(--espaco-6);
+}
+
+.janela-ficha__rodape h3 {
+  margin-bottom: var(--espaco-2);
+}
+
+.janela-ficha__total {
+  padding: var(--espaco-4);
+  border: 1px dashed var(--color-borda-forte);
+  border-radius: var(--radius-medio);
+  background: var(--color-fundo);
+}
+
+.janela-ficha__total > strong {
+  display: block;
+  font-size: var(--text-secao);
+  font-weight: var(--font-weight-forte);
+}
+
+@media (max-width: 760px) {
+  .janela-ficha__rodape {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,0 +1,84 @@
+L OGO Calendar
+Bar
+Sun Mon
+Sun 11
+T ue
+Mon 12 T ue 13
+W ed Thu
+W ed 14
+W ed 14
+Thu 15
+F ri
+F ri 16
+Sat
+Sat 17
+Ev ent Car ds
+5
+Meeting
+Design R e vie w
+Ne w Deals
+Discussion
+Meeting
+10:00 - 11 . 00
+Design R e vie w
+10:00 - 11 . 00
+W eekly R epor t
+10:00 - 11 . 00
+Meeting
+10:00 - 11 . 00
+Discussion
+10:00 - 11 . 00
+Ne w Deals
+10:00 - 11 . 00
+Mark et R esear ch
+10:00 - 11 . 00
+Ne w Ev ent
+Cr eat e Ne w Ev ent
+Tit le
+Ent er e v ent name her e
+Select Time
+Select Ev ent Da y
+All Da y R epeat
+Guest
+Star t t o End
+Notify Ev ent s
+Notify Me 30
+Cities
+Select Cities
+Description
+Ent er y our description her e
+Minut es
+0/50
+A ttachment
+Drag files her e or Br o wse
+Cancel Sa v e
+Calendar
+1 1 1
+T oda y
+Last 7 da ys
+Last 14 da ys
+Last 30 da ys
+Last 3 mont hs
+Last 12 mont hs
+Mont h t o dat e
+Quar t er t o dat e
+Y ear t o dat e
+All time
+July 2023
+Sun Mon T ue W ed Thu F ri Sat
+1 2 3 4
+5 6 7 8 9 10 11
+12 13 14 15 16 17 1 8
+1 9 20 21 22 23 2 4 25
+26 27 2 8 2 9 30 31
+Au g ust 2023
+Sun Mon T ue W ed Thu F ri Sat
+1
+2 3 4 5 6 7 8
+9 10 11 12 13 14 15
+16 17 1 8 1 9 20 21 22
+23 2 4 25 26 27 2 8 2 9
+30 31
+Mont hly
+W ee k y
+Daily

@@ -1,0 +1,22 @@
+# dependencias
+node_modules/
+
+# saidas de build
+dist/
+dist-electron/
+release/
+
+# segredos — chave de banco NUNCA entra no repositorio.
+# Em uso normal ela vive em app.getPath("userData"), fora daqui.
+.env
+.env.*
+*.key
+*.pem
+conexoes.json
+
+# sistema / editor
+.DS_Store
+*.log
+
+# cache do python (scripts de apoio em stitch/ e recursos/)
+__pycache__/

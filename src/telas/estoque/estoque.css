@@ -1,0 +1,129 @@
+.estoque__filtros {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-4);
+}
+
+.estoque__categorias {
+  flex: 1;
+  min-width: 0;
+}
+
+.estoque__categorias .filtros {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  max-height: 108px;
+  overflow-y: auto;
+}
+
+.estoque__busca {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  width: min(100%, 520px);
+  height: var(--altura-controle);
+  margin-bottom: var(--espaco-4);
+  padding: 0 var(--espaco-3);
+  border: 1px solid var(--color-borda-forte);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-superficie);
+  color: var(--color-texto-suave);
+}
+
+.estoque__busca:focus-within {
+  border-color: var(--color-tinta);
+}
+
+.estoque__busca input {
+  flex: 1;
+  min-width: 0;
+  outline: none;
+  color: var(--color-tinta);
+}
+
+.estoque__vazio {
+  padding: var(--espaco-8);
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+/* Colunas fixas do tamanho do conteúdo; a descrição fica com o resto.
+   Saldo sobra à direita do selo: empurra categoria, preço e saldo para a esquerda
+   e deixa o selo isolado dos botões de ação. */
+.estoque__tabela th:nth-child(1) { width: 150px; }
+.estoque__tabela th:nth-child(3) { width: 160px; }
+.estoque__tabela th:nth-child(4) { width: 100px; }
+.estoque__tabela th:nth-child(5) { width: 320px; }
+.estoque__tabela th:nth-child(6) { width: 190px; }
+
+.estoque__sem-codigo {
+  font-style: italic;
+  white-space: nowrap;
+}
+
+/* Até duas linhas; o nome inteiro aparece na dica. Todas as linhas ficam da mesma altura.
+   A largura máxima segura o texto longe das colunas da direita em janela larga. */
+.estoque__descricao {
+  display: -webkit-box;
+  max-width: 560px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-weight: var(--font-weight-medio);
+}
+
+/* Saldo: quantidade com o mínimo embaixo à esquerda; o selo fica no meio do
+   espaço que sobra até as ações, sem encostar em nenhum dos lados. Nada quebra. */
+.estoque__saldo {
+  display: grid;
+  grid-template-columns: 100px 1fr; /* bloco fixo: todos os selos na mesma vertical */
+  align-items: center;
+  gap: var(--espaco-4);
+}
+
+.estoque__saldo > :last-child {
+  justify-self: center;
+}
+
+.estoque__quantidade {
+  display: flex;
+  flex-direction: column;
+}
+
+.estoque__qtd {
+  min-width: 56px;
+  font-weight: var(--font-weight-negrito);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.estoque__qtd--baixo { color: var(--color-atencao-texto); }
+.estoque__qtd--zerado { color: var(--color-critico-texto); }
+
+.estoque__minimo {
+  margin-top: 3px;
+  font-size: var(--text-miudo);
+  color: var(--color-texto-suave);
+  white-space: nowrap;
+}
+
+.estoque__entrada {
+  width: 88px;
+}
+
+.estoque__regra {
+  margin-top: var(--espaco-3);
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+/* Cadastro feito na venda: a linha avisa até alguém completar e contar. */
+.estoque__rapido {
+  color: var(--color-atencao-texto);
+  font-weight: var(--font-weight-medio);
+}
+
+/* Desativado: fora da venda, só consulta e reativação. */
+.estoque__inativo td { color: var(--color-texto-suave); }

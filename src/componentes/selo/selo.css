@@ -1,0 +1,68 @@
+/* Tons: fundo pastel + texto escuro do mesmo tom. */
+.selo--ok { background: var(--color-ok-fundo); color: var(--color-ok-texto); }
+.selo--atencao { background: var(--color-atencao-fundo); color: var(--color-atencao-texto); }
+.selo--critico { background: var(--color-critico-fundo); color: var(--color-critico-texto); }
+.selo--neutro { background: var(--color-neutro-fundo); color: var(--color-neutro-texto); }
+
+.selo-situacao {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  min-height: 38px;
+  padding: 5px 10px;
+  border-radius: var(--radius-pequeno);
+  text-align: center;
+  line-height: 1.25;
+  vertical-align: middle;
+}
+
+.selo-situacao strong,
+.selo-situacao small {
+  /* Largura única: texto mais longo que o selo termina em reticências, nunca vaza.
+     O texto inteiro fica na dica (title). */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selo-situacao strong {
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-forte);
+}
+
+.selo-situacao small {
+  font-size: var(--text-miudo);
+  font-weight: var(--font-weight-medio);
+  opacity: 0.85;
+}
+
+.selo-compacto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 22px;
+  border-radius: var(--radius-selo);
+  font-size: var(--text-miudo);
+  font-weight: var(--font-weight-forte);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 var(--espaco-2);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-selo);
+  background: var(--color-fundo);
+  font-size: var(--text-rotulo);
+  color: var(--color-neutro-texto);
+  white-space: nowrap;
+}

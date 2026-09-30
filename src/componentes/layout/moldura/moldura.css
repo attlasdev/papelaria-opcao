@@ -1,0 +1,34 @@
+.moldura {
+  display: grid;
+  position: relative;
+  --largura-barra-lateral-atual: var(--largura-barra-lateral);
+  grid-template-columns: var(--largura-barra-lateral-atual) minmax(0, 1fr);
+  height: 100%;
+}
+
+.moldura__alternar {
+  position: absolute;
+  z-index: 10;
+  top: calc((var(--altura-cabecalho) - var(--altura-controle)) / 2);
+  left: calc(var(--largura-barra-lateral-atual) + var(--espaco-6));
+  display: grid;
+  place-items: center;
+  width: var(--altura-controle);
+  height: var(--altura-controle);
+  border-radius: var(--radius-pequeno);
+  color: var(--color-texto-suave);
+}
+
+.moldura__alternar .icone { transform: scaleX(-1); }
+.moldura__alternar:hover { background: var(--color-fundo); color: var(--color-tinta); }
+.moldura__alternar:focus-visible { outline: 2px solid var(--color-tinta); outline-offset: 2px; }
+
+.moldura--compacta {
+  --largura-barra-lateral-atual: var(--largura-barra-lateral-compacta);
+}
+
+.moldura__tela {
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}

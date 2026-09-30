@@ -1,0 +1,123 @@
+Attlas — cobrança automática: o que precisa ser liberado
+Estamos automatizando a cobrança das mensalidades. O sistema vai gerar a cobrança todo mês, mandar o link pro cliente, confirmar quando ele pagar e avisar a equipe se algo falhar.
+
+Duas frentes dependem de você. A parte B (WhatsApp) é a mais demorada, porque a Meta leva tempo pra aprovar os textos — vale começar por ela.
+
+Parte A — Conta Asaas da Attlas
+É por ela que o dinheiro vai entrar.
+
+Criar/aprovar a conta da Attlas na Asaas (www.asaas.com), com a documentação que ela pedir.
+Cadastrar uma chave Pix na conta. Sem isso o QR Code não aparece na fatura e o cliente só consegue pagar por boleto ou cartão.
+Gerar a API key de produção (Integrações → API). É uma senha: não manda por WhatsApp nem por e-mail.
+Cadastrar o webhook (Integrações → Webhooks), com estes valores exatos:
+URL: https://attlas-billing.vercel.app/api/webhooks/asaas
+Token de autenticação: o Agostinho te passa
+Versão da API: 3
+Tipo de envio: Sequencial
+Eventos: marcar PAYMENT_CREATED, PAYMENT_UPDATED, PAYMENT_CONFIRMED, PAYMENT_RECEIVED, PAYMENT_OVERDUE, PAYMENT_DELETED, PAYMENT_REFUNDED
+Enquanto a conta for pessoa física, não dá pra usar Pix Automático nem emitir nota fiscal pela Asaas. Isso fica pra quando existir CNPJ.
+
+Parte B — WhatsApp (Meta)
+B1. Cadastrar os 3 modelos de mensagem
+No WhatsApp Manager → Modelos de mensagem → Criar modelo.
+
+Para os três, use sempre:
+
+Categoria: Utilidade (não Marketing — Marketing custa cerca de 9x mais)
+Idioma: Português (BR)
+Cabeçalho: nenhum
+Rodapé: nenhum
+Modelo 1 — nome: fatura_disponivel
+Corpo (copiar exatamente):
+
+Olá, {{1}}! Sua mensalidade Attlas referente a {{2}} vence hoje. Valor: R$ {{3}}. Você pode pagar por Pix, boleto ou cartão pelo botão abaixo.
+Exemplos das variáveis (a Meta pede pra revisar):
+
+{{1}} → Maria Silva
+{{2}} → setembro de 2026
+{{3}} → 350,00
+Botão: tipo URL dinâmica
+
+Texto do botão: Pagar fatura
+URL: https://www.asaas.com/i/{{1}}
+Exemplo da variável da URL: 0tt1xbcf9wv4w7g
+Modelo 2 — nome: pagamento_confirmado
+Corpo:
+
+Olá, {{1}}! Recebemos seu pagamento de R$ {{2}} referente a {{3}}. Obrigado! Qualquer dúvida, é só responder esta mensagem.
+Exemplos:
+
+{{1}} → Maria Silva
+{{2}} → 350,00
+{{3}} → setembro de 2026
+Botão: nenhum.
+
+Modelo 3 — nome: fatura_vencida
+Corpo:
+
+Olá, {{1}}! A mensalidade Attlas referente a {{2}} (R$ {{3}}) venceu em {{4}} e ainda consta em aberto. Se já pagou, desconsidere; caso contrário, o link continua válido no botão abaixo.
+Exemplos:
+
+{{1}} → Maria Silva
+{{2}} → setembro de 2026
+{{3}} → 350,00
+{{4}} → 23/09/2026
+Botão: tipo URL dinâmica
+
+Texto do botão: Pagar fatura
+URL: https://www.asaas.com/i/{{1}}
+Exemplo da variável da URL: 0tt1xbcf9wv4w7g
+O que faz a Meta reprovar
+Se precisar ajustar algum texto, evite:
+
+começar ou terminar o corpo com uma variável;
+linha que contenha só uma variável;
+numerar fora de ordem (tem que ser {{1}}, {{2}}, {{3}}…);
+colocar o endereço inteiro dentro de uma variável do corpo;
+qualquer coisa com cara de propaganda ("aproveite", "novidade", "oferta", emoji de festa) — isso reclassifica como Marketing e encarece.
+B2. Cadastrar forma de pagamento no WhatsApp
+Configurações → Pagamentos: cadastrar um cartão na conta do WhatsApp Business. Sem isso a Meta bloqueia mensagens iniciadas pela empresa — que é exatamente o nosso caso.
+
+O custo é baixo: mensagem de Utilidade no Brasil sai por volta de R$ 0,04 a R$ 0,05 cada. Com 3 clientes e 3 mensagens por mês, dá centavos.
+
+B3. Gerar o token de acesso permanente
+No Business Manager → Configurações → Usuários do sistema:
+
+Criar (ou usar) um usuário do sistema;
+Dar a ele acesso ao app e ao número do WhatsApp da Attlas;
+Gerar token com as permissões whatsapp_business_messaging e whatsapp_business_management;
+Guardar em lugar seguro.
+Importante: o token que aparece na tela de teste do app expira em 24 horas e não serve. Precisa ser o do usuário do sistema, que não expira.
+
+B4. Anotar dois identificadores
+No WhatsApp Manager, anotar:
+
+o ID do número de telefone (phone_number_id);
+o ID da conta do WhatsApp Business (WABA ID).
+B5. Confirmar que o número está livre
+O número da Attlas não pode estar sendo usado por outra integração ao mesmo tempo — o WhatsApp só aceita um destino de webhook por número. Se o bot antigo da barbearia ainda estiver apontado pra lá, ele precisa ser desconectado.
+
+B6. Avisar os clientes
+Antes da primeira mensagem automática, mandar pros 3 clientes algo como:
+
+"Oi! A partir do mês que vem vamos enviar as cobranças da Attlas por aqui, tudo bem?"
+
+E guardar a resposta de cada um. Isso é o consentimento que a Meta exige e é o que protege a conta de ser bloqueada por denúncia.
+
+O que devolver pro Agostinho
+Item	De onde vem
+API key de produção da Asaas	Parte A, passo 3
+Confirmação de que a chave Pix está cadastrada	Parte A, passo 2
+Confirmação de que o webhook foi salvo	Parte A, passo 4
+Token permanente do usuário do sistema	Parte B3
+phone_number_id e WABA ID	Parte B4
+Aviso de que os 3 modelos foram aprovados	Parte B1
+Print ou confirmação do aceite dos 3 clientes	Parte B6
+Sobre as senhas e tokens: não manda por WhatsApp, Telegram ou e-mail. Combina com o Agostinho de passar por um gerenciador de senhas ou pessoalmente. Token de WhatsApp vazado permite mandar mensagem em nome da Attlas.
+
+Em que ordem fazer
+B1 (modelos) primeiro — é o que depende de terceiro e pode demorar
+B2 (cartão) — sem ele nada é enviado, mesmo com modelo aprovado
+B3, B4, B5 — rápidos, podem ser no mesmo dia
+A (Asaas) — depende da aprovação da conta
+B6 (avisar clientes) — só quando estiver perto de ligar de verdade

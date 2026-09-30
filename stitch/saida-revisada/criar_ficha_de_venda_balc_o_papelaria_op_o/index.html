@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Papelaria Opção - Criar Ficha de Venda</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-container": "#848484",
+            "primary": "#000000",
+            "secondary": "#666000",
+            "surface-container-high": "#e8e8e8",
+            "muted": "#4B4B4B",
+            "background": "#f9f9f9",
+            "ink": "#000000",
+            "tertiary": "#000000",
+            "surface-tint": "#5e5e5e",
+            "on-surface-variant": "#4c4546",
+            "on-secondary": "#ffffff",
+            "on-primary-fixed-variant": "#474747",
+            "on-surface": "#1b1b1b",
+            "surface": "#FFFFFF",
+            "on-tertiary-fixed": "#1b1b1b",
+            "surface-bright": "#f9f9f9",
+            "inverse-surface": "#303030",
+            "border": "#E8E8E8",
+            "inverse-on-surface": "#f1f1f1",
+            "on-primary-fixed": "#1b1b1b",
+            "primary-fixed": "#e2e2e2",
+            "brand-accent": "#FEF003",
+            "tertiary-container": "#1b1b1b",
+            "surface-container": "#eeeeee",
+            "surface-container-highest": "#e2e2e2",
+            "danger": "#EA0B11",
+            "on-error": "#ffffff",
+            "on-tertiary-fixed-variant": "#474747",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-fixed-variant": "#4d4800",
+            "inverse-primary": "#c6c6c6",
+            "secondary-fixed-dim": "#d6ca00",
+            "secondary-fixed": "#f4e700",
+            "on-error-container": "#93000a",
+            "secondary-container": "#f1e400",
+            "outline-variant": "#cfc4c5",
+            "primary-fixed-dim": "#c6c6c6",
+            "on-primary-container": "#848484",
+            "success": "#176B4D",
+            "surface-variant": "#e2e2e2",
+            "error": "#ba1a1a",
+            "surface-container-low": "#f3f3f3",
+            "outline": "#7e7576",
+            "error-container": "#ffdad6",
+            "primary-container": "#1b1b1b",
+            "on-secondary-container": "#6b6500",
+            "on-primary": "#ffffff",
+            "warning": "#8A5A00",
+            "canvas": "#F9F9F9",
+            "tertiary-fixed-dim": "#c6c6c6",
+            "on-tertiary": "#ffffff",
+            "on-secondary-fixed": "#1f1c00",
+            "on-background": "#1b1b1b",
+            "surface-dim": "#dadada",
+            "tertiary-fixed": "#e2e2e2"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "body": ["Inter"],
+            "section": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-md": ["Inter"],
+            "label": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "heading": ["Inter"],
+            "label-md": ["Inter"],
+            "body-md": ["Inter"]
+          },
+          "fontSize": {
+            "body": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+            "section": ["20px", { "lineHeight": "1.3", "fontWeight": "500" }],
+            "label-sm": ["10px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "headline-md": ["20px", { "lineHeight": "26px", "fontWeight": "500" }],
+            "label": ["12px", { "lineHeight": "1.4", "fontWeight": "600" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "fontWeight": "500" }],
+            "body-sm": ["12px", { "lineHeight": "17px", "fontWeight": "400" }],
+            "heading": ["28px", { "lineHeight": "1.2", "fontWeight": "500" }],
+            "label-md": ["12px", { "lineHeight": "17px", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "21px", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #F9F9F9;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #E8E8E8;
+      border-radius: 4px;
+    }
+  </style>
+<link rel="stylesheet" href="../ajustes.css"></head>
+<body class="bg-canvas text-ink font-body min-h-screen antialiased overflow-x-hidden">
+<!-- BACKGROUND POS SHELL (PERSISTENT SYSTEM) -->
+<!-- SideNavBar Component as defined in JSON -->
+<aside class="fixed left-0 top-0 h-screen w-64 flex flex-col z-30 bg-surface border-r border-border">
+<div class="w-64 h-full flex flex-col justify-between p-4">
+<div>
+<!-- Logo & Terminal Identifier -->
+<div class="po-brand">
+          <img class="po-logo" src="../assets/logo-original.svg" alt="">
+          <div class="po-brand-copy"><strong>Papelaria Opção</strong><span>Terminal Balcão #01</span></div>
+        </div><!-- Navigation items -->
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 bg-brand-accent text-ink font-semibold rounded-lg transition-transform active:scale-[0.99] duration-100" href="../in_cio_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-label-md font-label-md">Início</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink hover:bg-canvas rounded-lg transition-colors duration-150" href="../clientes_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="text-label-md font-label-md">Clientes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink hover:bg-canvas rounded-lg transition-colors duration-150" href="../financeiro_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="text-label-md font-label-md">Financeiro</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink hover:bg-canvas rounded-lg transition-colors duration-150" href="../estoque_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="text-label-md font-label-md">Estoque</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink hover:bg-canvas rounded-lg transition-colors duration-150" href="../notas_fiscais_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="text-label-md font-label-md">Notas fiscais</span>
+</a>
+</nav>
+</div>
+<!-- Quick Action & Footer User -->
+<div class="space-y-3 pt-4 border-t border-border">
+<button class="w-full bg-brand-accent text-ink font-label-md text-label-md py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 hover:brightness-95 active:scale-[0.98] transition-all font-semibold border border-ink/10 po-sidebar-cta">
+<span class="material-symbols-outlined" data-icon="point_of_sale">point_of_sale</span>
+          Criar ficha
+        </button>
+<div class="bg-canvas rounded-lg p-2.5 space-y-1.5 border border-border">
+<div class="flex items-center gap-2 text-body-sm font-body-sm text-ink">
+<span class="material-symbols-outlined text-muted" data-icon="account_circle">account_circle</span>
+<span class="truncate font-medium">Operador: João Silva</span>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm text-muted">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-success" data-icon="cloud_done">cloud_done</span>
+<span>Protótipo local</span>
+</div>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-success/10 text-success">Online</span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopNavBar Component as defined in JSON -->
+<header class="fixed top-0 right-0 left-64 h-16 z-20 bg-surface border-b border-border">
+<div class="flex justify-between items-center h-full px-6 w-full">
+<div class="flex items-center gap-4 w-96">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted text-[18px]" data-icon="search">search</span>
+<input class="w-full pl-9 pr-4 py-1.5 bg-canvas border border-border rounded-md text-body font-body placeholder:text-muted/70 focus:outline-none focus:border-ink" placeholder="Buscar pedidos, produtos ou clientes (Ctrl+K)..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-muted hover:text-ink hover:bg-canvas rounded-lg transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="bg-primary text-surface font-label-md text-label-md px-3.5 py-2 rounded-lg flex items-center gap-2 hover:bg-ink/90 active:scale-[0.98] transition-transform po-top-cta">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span>
+          + Criar ficha
+        </button>
+<div class="h-6 w-[1px] bg-border"></div>
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-border flex items-center justify-center font-bold text-body-sm text-ink overflow-hidden border border-border">
+            JS
+          </div>
+</div>
+</div>
+</div>
+</header>
+<!-- BACKGROUND CONTENT (INERT SURFACE BENEATH ACTIVE DIALOG) -->
+<main class="ml-64 pt-16 min-h-screen p-6 bg-canvas flex flex-col gap-6 opacity-40 pointer-events-none select-none">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="text-heading font-heading font-bold text-ink">Visão Geral do Balcão</h2>
+<p class="text-body text-muted">Movimentação diária de fichas de balcão e conferências pendentes</p>
+</div>
+<div class="flex gap-2">
+<span class="px-3 py-1.5 bg-surface border border-border rounded-lg text-body-sm font-medium">Fichas Abertas: 04</span>
+<span class="px-3 py-1.5 bg-surface border border-border rounded-lg text-body-sm font-medium">Total em Caixa: R$ 2.450,80</span>
+</div>
+</div>
+<div class="grid grid-cols-4 gap-4">
+<div class="bg-surface p-4 rounded-xl border border-border h-32"></div>
+<div class="bg-surface p-4 rounded-xl border border-border h-32"></div>
+<div class="bg-surface p-4 rounded-xl border border-border h-32"></div>
+<div class="bg-surface p-4 rounded-xl border border-border h-32"></div>
+</div>
+</main>
+<!-- MODAL / OVERLAY: CRIAR FICHA DE VENDA (FLUXO COMPLETO DE BALCÃO) -->
+<div class="fixed inset-0 z-40 bg-black/45 backdrop-blur-[2px] flex items-center justify-center p-3 md:p-6 overflow-y-auto">
+<div class="bg-surface w-full max-w-[1240px] max-h-[92vh] rounded-xl border border-border shadow-2xl flex flex-col overflow-hidden text-ink">
+<!-- 1. CABEÇALHO DA FICHA DE VENDA -->
+<div class="px-5 py-3.5 border-b border-border bg-surface flex items-center justify-between shrink-0">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-brand-accent/30 border border-brand-accent flex items-center justify-center text-ink">
+<span class="material-symbols-outlined text-[20px]" data-icon="receipt_long">receipt_long</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-headline-md font-headline-md font-bold tracking-tight text-ink">Nova Ficha de Venda</h2>
+<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-canvas border border-border text-ink">#1043</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-success/15 text-success">
+<span class="w-1.5 h-1.5 rounded-full bg-success mr-1"></span> Ficha em preparo
+              </span>
+</div>
+<p class="text-body-sm font-body-sm text-muted">Abertura: Hoje, 14:32 • Operador: João Silva</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 border border-border rounded-lg text-body-sm font-medium text-muted hover:text-ink hover:bg-canvas transition-colors flex items-center gap-1.5" id="btn-limpar-ficha" title="Limpar todos os dados desta ficha">
+<span class="material-symbols-outlined text-[16px]" data-icon="restart_alt">restart_alt</span>
+<span>Limpar ficha</span>
+</button>
+<div class="h-5 w-[1px] bg-border mx-1"></div>
+<button class="p-1.5 rounded-lg text-muted hover:text-danger hover:bg-error-container/20 transition-colors" title="Fechar / Salvar Rascunho" data-ir="../in_cio_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+</div>
+<!-- WORKSPACE PRINCIPAL (2 COLUNAS: CORPO OPERACIONAL + PAINEL DE FECHAMENTO) -->
+<div class="flex-1 grid grid-cols-12 overflow-hidden bg-canvas po-sale-workspace">
+<!-- COLUNA ESQUERDA: CLIENTE + ADIÇÃO DE ITENS + TABELA (COL 8) -->
+<div class="col-span-12 lg:col-span-8 flex flex-col border-r border-border h-full overflow-y-auto custom-scroll p-4 md:p-5 gap-4">
+<!-- 2. SELEÇÃO / CADASTRO DE CLIENTE -->
+<div class="bg-surface rounded-xl border border-border p-4 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-muted" data-icon="person">person</span>
+<span class="text-label-md font-label-md text-ink uppercase tracking-wider text-[11px]">Identificação do Cliente</span>
+</div>
+<button class="text-body-sm font-medium text-ink hover:underline flex items-center gap-1 px-2 py-1 rounded bg-canvas border border-border" id="btn-toggle-novo-cliente">
+<span class="material-symbols-outlined text-[15px]" data-icon="person_add">person_add</span>
+<span>+ Cadastrar novo cliente</span>
+</button>
+</div>
+<!-- Card de Cliente Selecionado -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 bg-canvas rounded-lg border border-border gap-3" id="card-cliente-selecionado">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-brand-accent flex items-center justify-center font-bold text-ink border border-ink/10 shrink-0">
+                  MC
+                </div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-bold text-body text-ink">Mariana Costa</span>
+<span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-success/15 text-success border border-success/20">Cadastrada</span>
+<span class="text-body-sm text-muted">• CPF: ***.452.198-**</span>
+</div>
+<div class="flex items-center gap-3 text-body-sm text-muted mt-0.5">
+<span>Telefone: (11) 98452-1100</span>
+<span>•</span>
+<span class="text-success font-medium flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]" data-icon="verified">verified</span> Cliente cadastrado
+                    </span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 self-end sm:self-auto">
+<button class="px-2.5 py-1 text-body-sm font-medium text-muted hover:text-ink border border-border rounded bg-surface transition-colors flex items-center gap-1" id="btn-trocar-cliente">
+<span class="material-symbols-outlined text-[15px]" data-icon="swap_horiz">swap_horiz</span>
+                  Trocar cliente
+                </button>
+</div>
+</div>
+<!-- Campo de Busca de Cliente (Alternativa rápida / Dropdown) -->
+<div class="hidden mt-3 pt-3 border-t border-border" id="box-busca-cliente">
+<label class="block text-body-sm font-medium text-muted mb-1">Buscar cliente cadastrado:</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted text-[18px]" data-icon="search">search</span>
+<input class="w-full pl-9 pr-8 py-2 bg-surface border border-border rounded-lg text-body font-body focus:border-ink focus:ring-0" placeholder="Digite nome completo, CPF ou WhatsApp..." type="text" value="Mariana Costa">
+<button class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-ink">
+<span class="material-symbols-outlined text-[16px]" data-icon="close">close</span>
+</button>
+</div>
+<div class="mt-1.5 border border-border rounded-lg bg-surface divide-y divide-border shadow-sm">
+<div class="p-2 hover:bg-canvas cursor-pointer flex justify-between items-center text-body-sm">
+<div>
+<span class="font-semibold text-ink">Mariana Costa</span>
+<span class="text-muted ml-2">CPF: 382.452.198-02</span>
+</div>
+<span class="text-success font-medium text-body-sm">Selecionar</span>
+</div>
+<div class="p-2 hover:bg-canvas cursor-pointer flex justify-between items-center text-body-sm">
+<div>
+<span class="font-semibold text-ink">Mariano Souza Lima</span>
+<span class="text-muted ml-2">CPF: 219.991.048-55</span>
+</div>
+<span class="text-muted text-body-sm">Selecionar</span>
+</div>
+</div>
+</div>
+<!-- Mini Gaveta Inline de Cadastro Rápido de Novo Cliente -->
+<div class="hidden mt-3 p-3.5 bg-canvas rounded-lg border border-border space-y-3" id="drawer-novo-cliente">
+<div class="flex items-center justify-between pb-2 border-b border-border">
+<span class="font-bold text-body text-ink flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-ink" data-icon="badge">badge</span>
+                  Cadastro Rápido de Cliente Balcão
+                </span>
+<button class="text-muted hover:text-ink text-body-sm flex items-center" id="btn-fechar-drawer-cliente">
+<span class="material-symbols-outlined text-[16px]" data-icon="close">close</span> Cancelar
+                </button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+<div>
+<label class="block text-body-sm font-medium text-muted mb-1">Nome Completo *</label>
+<input class="w-full px-2.5 py-1.5 bg-surface border border-border rounded-md text-body focus:border-ink" placeholder="Ex: Lucas Ferreira" type="text">
+</div>
+<div>
+<label class="block text-body-sm font-medium text-muted mb-1">CPF / Documento</label>
+<input class="w-full px-2.5 py-1.5 bg-surface border border-border rounded-md text-body focus:border-ink" placeholder="000.000.000-00" type="text">
+</div>
+<div>
+<label class="block text-body-sm font-medium text-muted mb-1">Celular / WhatsApp</label>
+<input class="w-full px-2.5 py-1.5 bg-surface border border-border rounded-md text-body focus:border-ink" placeholder="(11) 90000-0000" type="text">
+</div>
+</div>
+<div class="flex justify-end gap-2 pt-1">
+<button class="px-3 py-1.5 bg-primary text-surface text-body-sm font-semibold rounded-md hover:bg-ink/90" type="button">
+                  Salvar e selecionar direto na ficha
+                </button>
+</div>
+</div>
+</div>
+<!-- 3. ADIÇÃO DE PRODUTOS & LEITOR EAN -->
+<div class="bg-surface rounded-xl border border-border p-4 shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<label class="text-label-md font-label-md text-ink uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+<span class="material-symbols-outlined text-muted" data-icon="barcode_scanner">barcode_scanner</span>
+                Leitura de Código de Barras / Inclusão Rápida
+              </label>
+<span class="text-body-sm text-muted bg-canvas px-2 py-0.5 rounded border border-border font-mono">Atalho rápido: [F2]</span>
+</div>
+<!-- Campo de Entrada Barcode / Nome -->
+<div class="flex gap-2">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted" data-icon="qr_code_scanner">qr_code_scanner</span>
+<input class="w-full pl-10 pr-24 py-2.5 bg-surface border-2 border-primary rounded-lg text-body font-body focus:outline-none font-mono" id="input-ean" placeholder="Ler código de barras (EAN) ou digitar nome do produto..." type="text" value="78910271290">
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-body-sm text-muted bg-canvas px-2 py-0.5 rounded border border-border">Enter ↵</span>
+</div>
+<button class="px-4 py-2.5 bg-primary text-surface font-label-md text-label-md rounded-lg hover:bg-ink/90 transition-transform active:scale-[0.98] shrink-0 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_shopping_cart">add_shopping_cart</span>
+<span>Inserir Item</span>
+</button>
+</div>
+<!-- Feedback de Alerta / Teste Solicitado -->
+<div class="flex items-center justify-between p-2.5 bg-danger/10 border border-danger/30 rounded-lg text-body-sm text-danger">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="error">error</span>
+<span><strong>Código 78910271290</strong> não encontrado no estoque atual.</span>
+</div>
+<button class="text-body-sm font-semibold underline hover:text-black flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="add_box">add_box</span>
+                [Cadastrar produto rápido]
+              </button>
+</div>
+</div>
+<!-- TABELA DE ITENS INSERIDOS NA FICHA -->
+<div class="bg-surface rounded-xl border border-border overflow-hidden shadow-sm flex flex-col">
+<div class="px-4 py-3 border-b border-border bg-canvas flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-muted" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-bold text-body text-ink">Itens da Ficha</span>
+<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-primary text-surface">4 itens</span>
+</div>
+<span class="text-body-sm text-muted">Conferência contínua por leitura repetida</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-border text-[11px] uppercase tracking-wider text-muted font-semibold bg-canvas/50">
+<th class="py-2.5 px-4 w-12 text-center">#</th>
+<th class="py-2.5 px-4">Descrição do Produto &amp; Código</th>
+<th class="py-2.5 px-4 text-center w-36">Quantidade</th>
+<th class="py-2.5 px-4 text-right w-28">Preço Unit.</th>
+<th class="py-2.5 px-4 text-right w-28">Total</th>
+<th class="py-2.5 px-4 text-center w-14">Ação</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border text-body">
+<!-- Item 1 -->
+<tr class="hover:bg-canvas/80 transition-colors">
+<td class="py-3 px-4 text-center text-muted text-body-sm font-mono">01</td>
+<td class="py-3 px-4">
+<div class="font-medium text-ink">Caderno Universitário Tilibra 10 Matérias</div>
+<div class="text-body-sm text-muted font-mono flex items-center gap-2">
+<span>Cód: 789102711</span>
+<span>•</span>
+<span class="text-success text-[11px]">Estoque: 42 un</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center justify-center border border-border rounded-lg bg-surface p-0.5 w-28 mx-auto">
+<button class="w-7 h-7 flex items-center justify-center rounded text-muted hover:text-ink hover:bg-canvas font-bold">-</button>
+<span class="w-10 text-center font-bold font-mono text-body">2</span>
+<button class="w-7 h-7 flex items-center justify-center rounded text-muted hover:text-ink hover:bg-canvas font-bold">+</button>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-mono text-muted">R$ 24,90</td>
+<td class="py-3 px-4 text-right font-mono font-bold text-ink">R$ 49,80</td>
+<td class="py-3 px-4 text-center">
+<button class="p-1 rounded text-muted hover:text-danger hover:bg-danger/10 transition-colors" title="Excluir item">
+<span class="material-symbols-outlined text-[18px]" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+<!-- Item 2 -->
+<tr class="hover:bg-canvas/80 transition-colors">
+<td class="py-3 px-4 text-center text-muted text-body-sm font-mono">02</td>
+<td class="py-3 px-4">
+<div class="font-medium text-ink">Caneta Gel Pentel Energel 0.7mm Preta</div>
+<div class="text-body-sm text-muted font-mono flex items-center gap-2">
+<span>Cód: 789102722</span>
+<span>•</span>
+<span class="text-success text-[11px]">Estoque: 18 un</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center justify-center border border-border rounded-lg bg-surface p-0.5 w-28 mx-auto">
+<button class="w-7 h-7 flex items-center justify-center rounded text-muted hover:text-ink hover:bg-canvas font-bold">-</button>
+<span class="w-10 text-center font-bold font-mono text-body">3</span>
+<button class="w-7 h-7 flex items-center justify-center rounded text-muted hover:text-ink hover:bg-canvas font-bold">+</button>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-mono text-muted">R$ 12,50</td>
+<td class="py-3 px-4 text-right font-mono font-bold text-ink">R$ 37,50</td>
+<td class="py-3 px-4 text-center">
+<button class="p-1 rounded text-muted hover:text-danger hover:bg-danger/10 transition-colors" title="Excluir item">
+<span class="material-symbols-outlined text-[18px]" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+<!-- Item 3 -->
+<tr class="hover:bg-canvas/80 transition-colors">
+<td class="py-3 px-4 text-center text-muted text-body-sm font-mono">03</td>
+<td class="py-3 px-4">
+<div class="font-medium text-ink">Bloco Adesivo Post-it Amarelo 76x76mm</div>
+<div class="text-body-sm text-muted font-mono flex items-center gap-2">
+<span>Cód: 789102733</span>
+<span>•</span>
+<span class="text-success text-[11px]">Estoque: 30 un</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center justify-center border border-border rounded-lg bg-surface p-0.5 w-28 mx-auto">
+<button class="w-7 h-7 flex items-center justify-center rounded text-muted hover:text-ink hover:bg-canvas font-bold">-</button>
+<span class="w-10 text-center font-bold font-mono text-body">1</span>
+<button class="w-7 h-7 flex items-center justify-center rounded text-muted hover:text-ink hover:bg-canvas font-bold">+</button>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-mono text-muted">R$ 8,90</td>
+<td class="py-3 px-4 text-right font-mono font-bold text-ink">R$ 8,90</td>
+<td class="py-3 px-4 text-center">
+<button class="p-1 rounded text-muted hover:text-danger hover:bg-danger/10 transition-colors" title="Excluir item">
+<span class="material-symbols-outlined text-[18px]" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+<!-- Item 4 -->
+<tr class="hover:bg-canvas/80 transition-colors">
+<td class="py-3 px-4 text-center text-muted text-body-sm font-mono">04</td>
+<td class="py-3 px-4">
+<div class="font-medium text-ink">Sulfite A4 Chamex 75g 500fls</div>
+<div class="text-body-sm text-muted font-mono flex items-center gap-2">
+<span>Cód: 789102744</span>
+<span>•</span>
+<span class="text-success text-[11px]">Estoque: 85 pct</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center justify-center border border-border rounded-lg bg-surface p-0.5 w-28 mx-auto">
+<button class="w-7 h-7 flex items-center justify-center rounded text-muted hover:text-ink hover:bg-canvas font-bold">-</button>
+<span class="w-10 text-center font-bold font-mono text-body">2</span>
+<button class="w-7 h-7 flex items-center justify-center rounded text-muted hover:text-ink hover:bg-canvas font-bold">+</button>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-mono text-muted">R$ 28,00</td>
+<td class="py-3 px-4 text-right font-mono font-bold text-ink">R$ 56,00</td>
+<td class="py-3 px-4 text-center">
+<button class="p-1 rounded text-muted hover:text-danger hover:bg-danger/10 transition-colors" title="Excluir item">
+<span class="material-symbols-outlined text-[18px]" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-3 bg-canvas border-t border-border flex items-center justify-between text-body-sm text-muted">
+<span>Leitura contínua: passar mesmo código soma +1 na quantidade do item correspondente.</span>
+<span class="font-medium text-ink">Total parcial: 8 unidades</span>
+</div>
+</div>
+</div>
+<!-- 4. PAINEL LATERAL DE FECHAMENTO / PAGAMENTO (COL 4) -->
+<div class="col-span-12 lg:col-span-4 bg-surface flex flex-col justify-between h-full overflow-y-auto custom-scroll p-4 md:p-5 border-t lg:border-t-0">
+<div class="space-y-4">
+<!-- Resumo Financeiro da Ficha -->
+<div class="bg-canvas rounded-xl p-4 border border-border space-y-2.5">
+<span class="text-label-md font-label-md text-ink uppercase tracking-wider text-[11px] block">Cálculo de Valores</span>
+<div class="flex justify-between text-body text-muted">
+<span>Subtotal dos itens (4):</span>
+<span class="font-mono font-medium text-ink">R$ 152,20</span>
+</div>
+<div class="flex items-center justify-between text-body gap-2">
+<span class="text-muted">Desconto pontual:</span>
+<div class="flex items-center gap-1 w-32">
+<span class="text-body-sm text-muted">R$</span>
+<input class="w-full text-right px-2 py-1 bg-surface border border-border rounded text-body font-mono focus:border-ink" type="text" value="0,00">
+</div>
+</div>
+<div class="pt-3 border-t border-border flex items-baseline justify-between">
+<div>
+<span class="font-bold text-headline-md text-ink block">Total da Ficha</span>
+<span class="text-body-sm text-muted">Antes de concluir a ficha</span>
+</div>
+<div class="text-right">
+<span class="text-heading font-heading font-bold text-ink font-mono tracking-tight">R$ 152,20</span>
+</div>
+</div>
+</div>
+<!-- Seletores Claros de Forma de Pagamento -->
+<div class="space-y-2.5">
+<label class="text-label-md font-label-md text-ink uppercase tracking-wider text-[11px] block">Forma de Pagamento</label>
+<div class="grid grid-cols-2 gap-2" id="payment-methods">
+<!-- Dinheiro (Ativo) -->
+<button class="pay-btn flex items-center gap-2 p-2.5 rounded-lg border-2 border-brand-accent bg-brand-accent/20 text-ink font-semibold text-body-sm text-left transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="payments">payments</span>
+<span class=" po-badge">Dinheiro</span>
+</button>
+<!-- Pix -->
+<button class="pay-btn flex items-center gap-2 p-2.5 rounded-lg border border-border bg-surface hover:bg-canvas text-muted hover:text-ink font-medium text-body-sm text-left transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="qr_code_2">qr_code_2</span>
+<span class=" po-badge">Pix</span>
+</button>
+<!-- Cartão Crédito/Débito -->
+<button class="pay-btn flex items-center gap-2 p-2.5 rounded-lg border border-border bg-surface hover:bg-canvas text-muted hover:text-ink font-medium text-body-sm text-left transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="credit_card">credit_card</span>
+<span>Cartões</span>
+</button>
+<!-- Pagamento futuro -->
+<button class="pay-btn flex items-center gap-2 p-2.5 rounded-lg border border-border bg-surface hover:bg-canvas text-muted hover:text-ink font-medium text-body-sm text-left transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="calendar_month">calendar_month</span>
+<span class=" po-badge">Pagamento futuro</span>
+</button>
+</div>
+<!-- Contextual Dinheiro -->
+<div class="p-3 bg-canvas rounded-lg border border-border space-y-2.5 mt-2" id="payment-dinheiro-box">
+<div class="flex items-center justify-between gap-3">
+<label class="text-body-sm font-medium text-muted">Valor recebido:</label>
+<div class="relative w-36">
+<span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-body-sm text-muted font-mono">R$</span>
+<input class="w-full pl-8 pr-2 py-1.5 bg-surface border border-border rounded text-right font-mono font-bold text-ink focus:border-ink" type="text" value="160,00">
+</div>
+</div>
+<div class="flex items-center justify-between text-body-sm pt-1">
+<span class="font-bold text-success">Troco calculado:</span>
+<span class="font-mono font-bold text-body text-success">R$ 7,80</span>
+</div>
+<div class="p-2 rounded bg-surface border border-border/80 text-[11px] text-muted flex items-start gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-secondary shrink-0" data-icon="info">info</span>
+<span>Dinheiro recebido é registrado manualmente no caixa.</span>
+</div>
+</div>
+<!-- Contextual Pix (Instrução da Regra) -->
+<div class="p-2 rounded bg-canvas border border-border text-[11px] text-muted flex items-start gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-muted shrink-0" data-icon="shield">shield</span>
+<span>Registrado na ficha após conferência no balcão; não duplica entrada financeira de faturamento.</span>
+</div>
+</div>
+<!-- Seção de Revisão antes de concluir -->
+<div class="bg-canvas/60 rounded-lg p-3 border border-border text-body-sm space-y-1.5">
+<span class="text-label-md font-label-md text-ink text-[11px] uppercase tracking-wider block">Revisão da Transação</span>
+<div class="flex justify-between text-muted text-body-sm">
+<span>Cliente:</span>
+<span class="font-medium text-ink">Mariana Costa</span>
+</div>
+<div class="flex justify-between text-muted text-body-sm">
+<span>Total de Volumes:</span>
+<span class="font-mono text-ink">4 produtos / 8 unidades</span>
+</div>
+<div class="flex justify-between text-muted text-body-sm">
+<span>Condição:</span>
+<span class="font-medium text-ink">Dinheiro à vista (Troco R$ 7,80)</span>
+</div>
+</div>
+</div>
+<!-- Ações no rodapé do painel -->
+<div class="pt-4 border-t border-border space-y-3 mt-4">
+<!-- Opção de Nota Fiscal -->
+<label class="flex items-center gap-2.5 text-body-sm text-ink cursor-pointer select-none">
+<input class="rounded border-border text-ink focus:ring-0 w-4 h-4" type="checkbox">
+<span>Preparar rascunho de nota para revisão</span>
+</label>
+<!-- Botão Primário Dominante Preto -->
+<button class="w-full bg-primary text-surface font-label-md text-label-md py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-ink/90 active:scale-[0.99] transition-all shadow font-bold text-[14px]" data-ir="../in_cio_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" data-icon="task_alt">task_alt</span>
+<span>Concluir Ficha de Venda (F10)</span>
+</button>
+<!-- Ações Secundárias -->
+<div class="grid grid-cols-2 gap-2">
+<button class="w-full bg-surface border border-border text-ink hover:bg-canvas text-body-sm font-medium py-2 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="print">print</span>
+                Comprovante
+              </button>
+<button class="w-full bg-surface border border-border text-muted hover:text-danger hover:border-danger/30 text-body-sm font-medium py-2 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="drafts">drafts</span>
+                Salvar Rascunho
+              </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- INLINE MICRO-INTERACTIONS SCRIPT -->
+<script>
+    // Micro interaction: Toggle Cliente Search & Drawer
+    const btnToggleNovo = document.getElementById('btn-toggle-novo-cliente');
+    const drawerCliente = document.getElementById('drawer-novo-cliente');
+    const btnFecharDrawer = document.getElementById('btn-fechar-drawer-cliente');
+    const btnTrocarCliente = document.getElementById('btn-trocar-cliente');
+    const boxBuscaCliente = document.getElementById('box-busca-cliente');
+    const btnLimpar = document.getElementById('btn-limpar-ficha');
+
+    if (btnToggleNovo && drawerCliente) {
+      btnToggleNovo.addEventListener('click', () => {
+        drawerCliente.classList.toggle('hidden');
+        boxBuscaCliente.classList.add('hidden');
+      });
+    }
+
+    if (btnFecharDrawer && drawerCliente) {
+      btnFecharDrawer.addEventListener('click', () => {
+        drawerCliente.classList.add('hidden');
+      });
+    }
+
+    if (btnTrocarCliente && boxBuscaCliente) {
+      btnTrocarCliente.addEventListener('click', () => {
+        boxBuscaCliente.classList.toggle('hidden');
+        drawerCliente.classList.add('hidden');
+      });
+    }
+
+    if (btnLimpar) {
+      btnLimpar.addEventListener('click', () => {
+        const inputEan = document.getElementById('input-ean');
+        if (inputEan) inputEan.value = '';
+      });
+    }
+
+    // Toggle Payment Methods Active Styles
+    const payButtons = document.querySelectorAll('.pay-btn');
+    payButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        payButtons.forEach(b => {
+          b.className = 'pay-btn flex items-center gap-2 p-2.5 rounded-lg border border-border bg-surface hover:bg-canvas text-muted hover:text-ink font-medium text-body-sm text-left transition-all';
+        });
+        btn.className = 'pay-btn flex items-center gap-2 p-2.5 rounded-lg border-2 border-brand-accent bg-brand-accent/20 text-ink font-semibold text-body-sm text-left transition-all';
+      });
+    });
+  </script>
+<script src="../navegacao.js"></script></body></html>

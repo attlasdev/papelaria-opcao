@@ -1,0 +1,123 @@
+.cliente-ficha__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--espaco-3);
+}
+
+.cliente-ficha__topo h2 {
+  font-size: var(--text-destaque);
+  font-weight: var(--font-weight-forte);
+}
+
+.cliente-ficha__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-forte);
+}
+
+.cliente-ficha__link:hover {
+  text-decoration: underline;
+}
+
+.cliente-ficha__atalhos {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-4);
+}
+
+/* Venda sem identificação: mesmo cartão, avatar tracejado */
+.cliente-ficha__avatar--sem-identificacao {
+  border-style: dashed;
+  color: var(--color-texto-suave);
+}
+
+/* Cliente escolhido */
+.cliente-ficha__escolhido {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  padding: var(--espaco-3);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-medio);
+  background: var(--color-fundo);
+}
+
+.cliente-ficha__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-total);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borda);
+}
+
+.cliente-ficha__dados {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cliente-ficha__dados span {
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+/* Busca */
+.cliente-ficha__resultados {
+  margin-top: var(--espaco-2);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-medio);
+  overflow: hidden;
+}
+
+.cliente-ficha__resultados li + li {
+  border-top: 1px solid var(--color-borda);
+}
+
+.cliente-ficha__resultados button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--espaco-2) var(--espaco-3);
+  text-align: left;
+}
+
+.cliente-ficha__resultados button:hover {
+  background: var(--color-fundo);
+}
+
+.cliente-ficha__resultados strong {
+  display: block;
+  font-weight: var(--font-weight-medio);
+}
+
+.cliente-ficha__resultados small {
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.cliente-ficha__selecionar {
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-forte);
+}
+
+.cliente-ficha__nenhum {
+  padding: var(--espaco-3);
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+/* Busca sem resultado: cadastrar com o nome já digitado */
+.cliente-ficha__nenhum--acao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+}

@@ -1,0 +1,80 @@
+/* Duas colunas: trabalho à esquerda, valores e conclusão à direita (fixos ao rolar). */
+.criar-ficha {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+  gap: var(--espaco-4);
+}
+
+.criar-ficha__principal,
+.criar-ficha__lateral {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.criar-ficha__lateral {
+  position: sticky;
+  top: 0;
+}
+
+/* Revisão */
+.criar-ficha__revisao > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  padding: var(--espaco-1) 0;
+  font-size: var(--text-rotulo);
+}
+
+.criar-ficha__revisao dt {
+  color: var(--color-texto-suave);
+}
+
+.criar-ficha__revisao dd {
+  font-weight: var(--font-weight-medio);
+  text-align: right;
+}
+
+.criar-ficha__revisao .criar-ficha__total {
+  font-size: var(--text-destaque);
+  font-weight: var(--font-weight-negrito);
+  font-variant-numeric: tabular-nums;
+}
+
+.criar-ficha__nota {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  margin: var(--espaco-4) 0;
+  font-size: var(--text-rotulo);
+}
+
+.criar-ficha__nota input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-tinta);
+}
+
+.criar-ficha__concluir {
+  width: 100%;
+  height: 48px;
+  font-size: var(--text-destaque);
+}
+
+.criar-ficha__secundarias {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-2);
+}
+
+@media (max-width: 1180px) {
+  .criar-ficha {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .criar-ficha__lateral {
+    position: static;
+  }
+}

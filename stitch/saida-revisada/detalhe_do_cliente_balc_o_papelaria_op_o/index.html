@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Papelaria Opção - Detalhe do Cliente (Mariana Costa)</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "warning": "#8A5A00",
+            "surface-container-lowest": "#ffffff",
+            "tertiary-fixed": "#e2e2e2",
+            "surface-bright": "#f9f9f9",
+            "primary-fixed": "#e2e2e2",
+            "on-primary-container": "#848484",
+            "tertiary": "#000000",
+            "outline-variant": "#cfc4c5",
+            "on-tertiary-container": "#848484",
+            "secondary-container": "#f1e400",
+            "background": "#f9f9f9",
+            "surface-container-low": "#f3f3f3",
+            "inverse-surface": "#303030",
+            "secondary-fixed": "#f4e700",
+            "muted": "#4B4B4B",
+            "on-tertiary-fixed": "#1b1b1b",
+            "tertiary-fixed-dim": "#c6c6c6",
+            "canvas": "#F9F9F9",
+            "on-secondary": "#ffffff",
+            "secondary-fixed-dim": "#d6ca00",
+            "surface": "#FFFFFF",
+            "error": "#ba1a1a",
+            "on-background": "#1b1b1b",
+            "on-error": "#ffffff",
+            "surface-variant": "#e2e2e2",
+            "surface-container": "#eeeeee",
+            "inverse-on-surface": "#f1f1f1",
+            "secondary": "#666000",
+            "on-tertiary": "#ffffff",
+            "on-primary-fixed": "#1b1b1b",
+            "error-container": "#ffdad6",
+            "ink": "#000000",
+            "inverse-primary": "#c6c6c6",
+            "danger": "#EA0B11",
+            "primary": "#000000",
+            "on-secondary-container": "#6b6500",
+            "on-tertiary-fixed-variant": "#474747",
+            "tertiary-container": "#1b1b1b",
+            "on-primary-fixed-variant": "#474747",
+            "border": "#E8E8E8",
+            "surface-tint": "#5e5e5e",
+            "on-error-container": "#93000a",
+            "surface-container-high": "#e8e8e8",
+            "on-primary": "#ffffff",
+            "on-secondary-fixed-variant": "#4d4800",
+            "on-secondary-fixed": "#1f1c00",
+            "on-surface-variant": "#4c4546",
+            "surface-container-highest": "#e2e2e2",
+            "primary-container": "#1b1b1b",
+            "outline": "#7e7576",
+            "brand-accent": "#FEF003",
+            "surface-dim": "#dadada",
+            "success": "#176B4D",
+            "primary-fixed-dim": "#c6c6c6",
+            "on-surface": "#1b1b1b"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "gutter": "12px",
+            "md": "12px",
+            "xxl": "32px",
+            "space-lg": "16px",
+            "space-xxl": "32px",
+            "xl": "24px",
+            "lg": "16px",
+            "space-sm": "8px",
+            "space-xs": "4px",
+            "sm": "8px",
+            "margin": "16px",
+            "space-xl": "24px",
+            "space-md": "12px",
+            "xs": "4px"
+          },
+          "fontFamily": {
+            "section": ["Inter", "sans-serif"],
+            "heading": ["Inter", "sans-serif"],
+            "label": ["Inter", "sans-serif"],
+            "label-md": ["Inter", "sans-serif"],
+            "headline-lg": ["Inter", "sans-serif"],
+            "body-md": ["Inter", "sans-serif"],
+            "label-sm": ["Inter", "sans-serif"],
+            "headline-md": ["Inter", "sans-serif"],
+            "body-sm": ["Inter", "sans-serif"],
+            "body": ["Inter", "sans-serif"]
+          },
+          "fontSize": {
+            "section": ["20px", { "lineHeight": "1.3", "fontWeight": "500" }],
+            "heading": ["28px", { "lineHeight": "1.2", "fontWeight": "500" }],
+            "label": ["12px", { "lineHeight": "1.4", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "17px", "fontWeight": "600" }],
+            "headline-lg": ["28px", { "lineHeight": "34px", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "21px", "fontWeight": "400" }],
+            "label-sm": ["10px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "headline-md": ["20px", { "lineHeight": "26px", "fontWeight": "500" }],
+            "body-sm": ["12px", { "lineHeight": "17px", "fontWeight": "400" }],
+            "body": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 20px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+<link rel="stylesheet" href="../ajustes.css"></head>
+<body class="bg-canvas text-ink antialiased min-h-screen flex selection:bg-brand-accent selection:text-ink">
+<!-- SIDEBAR (Shared Component: SideNavBar) -->
+<aside class="fixed left-0 top-0 h-screen w-64 flex flex-col z-30 bg-surface border-r border-border">
+<div class="w-64 h-full flex flex-col justify-between p-4">
+<!-- Top Branding & Navigation Links -->
+<div class="flex flex-col gap-5">
+<!-- Logo Brand Unit -->
+<div class="po-brand">
+          <img class="po-logo" src="../assets/logo-original.svg" alt="">
+          <div class="po-brand-copy"><strong>Papelaria Opção</strong><span>Terminal Balcão #01</span></div>
+        </div><!-- Navigation Tabs: Active Tab is 'Clientes' based on context -->
+<nav aria-label="Navegação Principal" class="flex flex-col gap-1.5">
+<!-- Início -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink rounded-lg hover:bg-canvas transition-colors duration-150 active:scale-[0.99]" href="../in_cio_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined">home</span>
+<span class="text-label-md font-label-md">Início</span>
+</a>
+<!-- Clientes (Active) -->
+<a aria-current="page" class="flex items-center gap-3 px-3 py-2 bg-brand-accent text-ink font-semibold rounded-lg hover:bg-brand-accent transition-colors duration-150 active:scale-[0.99]" href="../clientes_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-label-md font-label-md">Clientes</span>
+</a>
+<!-- Financeiro -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink rounded-lg hover:bg-canvas transition-colors duration-150 active:scale-[0.99]" href="../financeiro_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="text-label-md font-label-md">Financeiro</span>
+</a>
+<!-- Estoque -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink rounded-lg hover:bg-canvas transition-colors duration-150 active:scale-[0.99]" href="../estoque_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-label-md font-label-md">Estoque</span>
+</a>
+<!-- Notas fiscais -->
+<a class="flex items-center gap-3 px-3 py-2 text-muted hover:text-ink rounded-lg hover:bg-canvas transition-colors duration-150 active:scale-[0.99]" href="../notas_fiscais_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-label-md font-label-md">Notas fiscais</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Actions & Footer Information -->
+<div class="flex flex-col gap-3 pt-4 border-t border-border">
+<!-- CTA: Criar ficha -->
+<button class="w-full bg-brand-accent text-ink hover:brightness-95 active:scale-[0.98] transition-all duration-150 font-label-md text-label-md font-bold py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 border border-ink/10 shadow-sm po-sidebar-cta" type="button" data-ir="../criar_ficha_de_venda_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined">shopping_cart_checkout</span>
+<span>Criar ficha</span>
+</button>
+<!-- System & Operator meta -->
+<div class="flex flex-col gap-1 px-1">
+<div class="flex items-center justify-between text-body-sm font-body-sm text-muted py-1">
+<div class="flex items-center gap-2 truncate">
+<span class="material-symbols-outlined text-muted text-base">account_circle</span>
+<span class="truncate">Operador: João Silva</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-success shrink-0" title="Ativo no caixa"></span>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm text-muted py-1">
+<div class="flex items-center gap-2 truncate">
+<span class="material-symbols-outlined text-success text-base">cloud_done</span>
+<span class="truncate">Protótipo local</span>
+</div>
+<span class="text-label-sm font-label-sm px-1.5 py-0.5 rounded bg-surface-container text-muted">Dados fictícios</span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- MAIN WRAPPER (Offset by sidebar width: left-64) -->
+<div class="pl-64 flex-1 flex flex-col min-w-0">
+<!-- TOP HEADER / APP BAR (Shared Component: TopNavBar Context) -->
+<header class="h-16 bg-surface border-b border-border sticky top-0 z-20 px-6 flex items-center justify-between gap-4 po-client-header">
+<!-- Breadcrumb and Hierarchy Navigation -->
+<div class="flex items-center gap-3">
+<a class="inline-flex items-center gap-1.5 text-body-sm font-body-sm text-muted hover:text-ink transition-colors px-2 py-1 rounded hover:bg-canvas border border-transparent hover:border-border" href="../clientes_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-base">arrow_back</span>
+<span class="font-medium">Voltar para Clientes</span>
+</a>
+<span class="text-border">|</span>
+<nav aria-label="Trilha de navegação" class="flex items-center gap-2 text-body-sm font-body-sm">
+<span class="text-muted">Clientes</span>
+<span class="text-muted">/</span>
+<span class="font-semibold text-ink flex items-center gap-1.5">
+            Mariana Costa
+            <span class="text-label-sm font-label-sm bg-surface-container px-2 py-0.5 rounded text-muted font-normal">CLI-0104</span>
+</span>
+</nav>
+</div>
+<!-- Quick Search Bar & Global Actions -->
+<div class="flex items-center gap-3">
+<!-- Search Field -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted text-base">search</span>
+<input class="w-full pl-9 pr-14 py-1.5 text-body-sm font-body-sm bg-surface border border-border rounded-md focus:outline-none focus:border-ink placeholder:text-muted/60 transition-colors" placeholder="Buscar no sistema..." type="text">
+<kbd class="absolute right-2 top-1/2 -translate-y-1/2 text-label-sm font-label-sm bg-canvas border border-border px-1.5 py-0.5 rounded text-muted">Ctrl+K</kbd>
+</div>
+<!-- Trailing action: Edit Client Data -->
+<button class="bg-surface text-ink hover:bg-canvas active:scale-[0.98] transition-all px-3 py-1.5 rounded-md border border-border text-body-sm font-body-sm font-medium flex items-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-base">edit</span>
+<span>Editar dados cadastrais</span>
+</button>
+<!-- Trailing primary action: + Nova ficha para este cliente -->
+<button class="bg-primary text-surface hover:bg-tertiary-container active:scale-[0.98] transition-all px-3.5 py-1.5 rounded-md text-body-sm font-body-sm font-semibold flex items-center gap-1.5 shadow-sm po-top-cta" type="button" data-ir="../criar_ficha_de_venda_balc_o_papelaria_op_o/">
+<span class="material-symbols-outlined text-base">add</span>
+<span>Criar ficha</span>
+</button>
+<span class="w-[1px] h-6 bg-border mx-1"></span>
+<!-- Sync icon button -->
+<!-- Notification icon button -->
+<button class="p-1.5 text-muted hover:text-ink rounded hover:bg-canvas transition-colors relative" title="Notificações" type="button">
+<span class="material-symbols-outlined">notifications</span>
+<span class="w-2 h-2 rounded-full bg-danger absolute top-1 right-1"></span>
+</button>
+</div>
+</header>
+<!-- CONTENT CANVAS -->
+<main class="p-6 max-w-7xl w-full mx-auto space-y-6">
+<!-- SECTION 1: Bento Client Identity & Summary Card -->
+<section class="bg-surface border border-border rounded-xl p-5 shadow-sm">
+<div class="grid grid-cols-12 gap-6 items-center po-client-summary">
+<!-- Column 1: Client Avatar and Status (Col 1-4) -->
+<div class="col-span-12 md:col-span-4 flex items-start gap-4 pr-4 md:border-r md:border-border">
+<div class="w-16 h-16 rounded-full bg-surface-container border border-border flex items-center justify-center text-ink font-heading text-xl font-bold tracking-tight shrink-0 shadow-inner">
+              MC
+            </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<h1 class="text-headline-md font-headline-md font-bold text-ink">Mariana Costa</h1>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#eef7f2] text-success text-label-md font-label-md border border-[#cbe4d7]">
+<span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                  Compras com pendência
+                </span>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-body-sm font-body-sm text-muted">Código: <strong class="text-ink font-semibold">CLI-0104</strong></span>
+<span class="text-border">•</span>
+<span class="text-body-sm font-body-sm text-muted">Cliente desde <span class="text-ink">Março/2022</span></span>
+</div>
+<!-- Quick tags -->
+<div class="flex items-center gap-2 mt-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-canvas border border-border text-label-sm font-label-sm text-muted">
+<span class="material-symbols-outlined text-xs">storefront</span> Balcão Frequente
+                </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-canvas border border-border text-label-sm font-label-sm text-muted">
+<span class="material-symbols-outlined text-xs">verified</span> Cliente cadastrado
+                </span>
+</div>
+</div>
+</div>
+<!-- Column 2: Personal Contact Information (Col 5-8) -->
+<div class="col-span-12 md:col-span-4 flex flex-col justify-center gap-2 px-2 md:border-r md:border-border">
+<div class="grid grid-cols-2 gap-y-2.5 gap-x-2 text-body-sm font-body-sm">
+<div>
+<span class="text-muted block text-label-sm font-label-sm">CPF</span>
+<span class="text-ink font-medium tabular-nums">***.452.198-**</span>
+</div>
+<div>
+<span class="text-muted block text-label-sm font-label-sm">Telefone / WhatsApp</span>
+<a class="text-ink font-medium hover:underline flex items-center gap-1 tabular-nums" href="#">
+<span class="material-symbols-outlined text-xs text-success">chat</span>
+                  (11) 98452-1100
+                </a>
+</div>
+<div class="col-span-2">
+<span class="text-muted block text-label-sm font-label-sm">E-mail de envio de fichas</span>
+<span class="text-ink font-medium truncate block">mariana.costa@email.com</span>
+</div>
+<div class="col-span-2">
+<span class="text-muted block text-label-sm font-label-sm">Endereço de entrega / faturamento</span>
+<span class="text-ink font-medium truncate block">Rua das Flores, 142 - Centro - São Paulo/SP</span>
+</div>
+</div>
+</div>
+<!-- Column 3: Fast Financial Glance (Col 9-12) -->
+<div class="col-span-12 md:col-span-4 pl-2 flex flex-col justify-between h-full gap-3">
+<div class="grid grid-cols-2 gap-3">
+<!-- Total Historic Purchases -->
+<div class="bg-canvas border border-border rounded-lg p-3">
+<span class="text-label-sm font-label-sm text-muted uppercase tracking-wider block">Total Comprado</span>
+<div class="mt-1 flex items-baseline gap-1">
+<span class="text-section font-section font-bold text-ink tabular-nums">R$ 2.418,90</span>
+</div>
+<span class="text-body-sm font-body-sm text-muted mt-0.5 block">18 compras registradas</span>
+</div>
+<!-- Ticket Médio -->
+<div class="bg-canvas border border-border rounded-lg p-3">
+<span class="text-label-sm font-label-sm text-muted uppercase tracking-wider block">Ticket Médio</span>
+<div class="mt-1 flex items-baseline gap-1">
+<span class="text-section font-section font-bold text-ink tabular-nums">R$ 134,38</span>
+</div>
+<span class="text-body-sm font-body-sm text-muted mt-0.5 block">Por atendimento</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION 2: Histórico Completo de Fichas de Venda (Core Workspace) -->
+<section class="bg-surface border border-border rounded-xl shadow-sm overflow-hidden flex flex-col">
+<!-- Header & Action Filters -->
+<div class="p-4 border-b border-border space-y-3">
+<div class="flex items-center justify-between flex-wrap gap-3">
+<div>
+<h2 class="text-section font-section font-bold text-ink">Histórico de Fichas de Venda</h2>
+<p class="text-body-sm font-body-sm text-muted">Auditoria de vendas em balcão, situações de pagamento deste cliente.</p>
+</div>
+<!-- Export / Quick print button -->
+<div class="flex items-center gap-2">
+<button class="bg-surface hover:bg-canvas text-ink border border-border px-3 py-1.5 rounded-md text-body-sm font-body-sm font-medium flex items-center gap-1.5 transition-colors" type="button">
+<span class="material-symbols-outlined text-base">print</span>
+<span>Imprimir Extrato</span>
+</button>
+<button class="bg-surface hover:bg-canvas text-ink border border-border px-3 py-1.5 rounded-md text-body-sm font-body-sm font-medium flex items-center gap-1.5 transition-colors" type="button">
+<span class="material-symbols-outlined text-base">download</span>
+<span>Exportar (CSV)</span>
+</button>
+</div>
+</div>
+<!-- Filter Tabs + Inner Search & Sorting Row -->
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 po-client-filters">
+<!-- Filter Tabs with Badges -->
+<div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0" role="tablist">
+<!-- Todas -->
+<button aria-selected="true" class="px-3 py-1.5 rounded-lg text-body-sm font-body-sm font-semibold bg-brand-accent text-ink flex items-center gap-1.5 border border-ink/10 shrink-0" role="tab" type="button">
+<span>Todas as compras</span>
+<span class="bg-ink text-surface text-label-sm font-label-sm px-1.5 py-0.2 rounded-full font-bold">18</span>
+</button>
+<!-- Pagas -->
+<button aria-selected="false" class="px-3 py-1.5 rounded-lg text-body-sm font-body-sm font-medium text-muted hover:text-ink hover:bg-canvas transition-colors flex items-center gap-1.5 border border-transparent hover:border-border shrink-0" role="tab" type="button">
+<span>Pagas</span>
+<span class="bg-surface-container text-muted text-label-sm font-label-sm px-1.5 py-0.2 rounded-full font-medium">17</span>
+</button>
+<!-- Pendências -->
+<button aria-selected="false" class="px-3 py-1.5 rounded-lg text-body-sm font-body-sm font-medium text-muted hover:text-ink hover:bg-canvas transition-colors flex items-center gap-1.5 border border-transparent hover:border-border shrink-0" role="tab" type="button">
+<span>Com pendências</span>
+<span class="bg-[#FFF1E6] text-[#A34F12] border border-[#F3C7A2] text-label-sm font-label-sm px-1.5 py-0.2 rounded-full font-bold">1</span>
+</button>
+<!-- Vencidos -->
+<button aria-selected="false" class="px-3 py-1.5 rounded-lg text-body-sm font-body-sm font-medium text-muted hover:text-ink hover:bg-canvas transition-colors flex items-center gap-1.5 border border-transparent hover:border-border shrink-0" role="tab" type="button">
+<span>Com vencidos</span>
+<span class="bg-surface-container text-muted text-label-sm font-label-sm px-1.5 py-0.2 rounded-full font-normal">0</span>
+</button>
+</div>
+<!-- Controls: Search within history + Sort -->
+<div class="flex items-center gap-2">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted text-base">search</span>
+<input class="w-full pl-8 pr-3 py-1.5 text-body-sm font-body-sm bg-surface border border-border rounded-md focus:outline-none focus:border-ink placeholder:text-muted/60" placeholder="Buscar por item ou nº da ficha..." type="text">
+</div>
+<!-- Sort dropdown selector -->
+<div class="flex items-center gap-1.5 bg-surface border border-border rounded-md px-2.5 py-1.5">
+<span class="material-symbols-outlined text-muted text-base">sort</span>
+<span class="text-body-sm font-body-sm text-muted">Ordenar:</span>
+<select class="text-body-sm font-body-sm font-medium text-ink bg-transparent border-0 p-0 focus:ring-0 cursor-pointer">
+<option selected>Mais recentes primeiro</option>
+<option>Mais antigas</option>
+<option>Maior valor</option>
+<option>Menor valor</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<!-- Data Table: Optimized for Desktop Counter scanning -->
+<div class="overflow-x-auto po-table-scroll">
+<table class="w-full text-left border-collapse po-table">
+<thead>
+<tr class="bg-canvas border-b border-border text-label-sm font-label-sm text-muted uppercase tracking-wider">
+<th class="py-3 px-4 w-28" scope="col">Nº Ficha</th>
+<th class="py-3 px-4 w-36" scope="col">Data / Horário</th>
+<th class="py-3 px-4" scope="col">Itens Principais (Resumo do Pedido)</th>
+<th class="py-3 px-4 w-40" scope="col">Forma de Pagto</th>
+<th class="py-3 px-4 w-32 text-right" scope="col">Valor Total</th>
+<th class="py-3 px-4 w-48 text-center" scope="col">Situação da Compra</th>
+<th class="py-3 px-4 w-44 text-right" scope="col">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border text-body-sm font-body-sm">
+<!-- LINHA 1 (Mais recente - Hoje) -->
+<tr class="hover:bg-canvas transition-colors bg-[#FEFDF0]/40">
+<td class="py-3 px-4 font-semibold text-ink tabular-nums">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-accent"></span>
+                    #1043
+                  </div>
+</td>
+<td class="py-3 px-4 tabular-nums">
+<span class="font-medium text-ink block">Hoje, 14:32</span>
+<span class="text-label-sm font-label-sm text-muted">Balcão #01</span>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-ink line-clamp-1" title="Caderno Tilibra 10 Matérias (2x), Caneta Pentel Energel (3x), Post-it (1x), Sulfite A4 (2x)">
+                    Caderno Tilibra 10 Matérias <span class="text-muted">(2x)</span>, Caneta Pentel Energel <span class="text-muted">(3x)</span>, Post-it <span class="text-muted">(1x)</span>, Sulfite A4 <span class="text-muted">(2x)</span>
+</div>
+<span class="text-label-sm font-label-sm text-muted">4 tipos de itens • 8 unidades no pacote</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-1.5 text-ink font-medium">
+<span class="material-symbols-outlined text-base text-muted">payments</span>
+<span>Dinheiro (à vista)</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-bold text-ink tabular-nums text-body-md font-body-md">
+                  R$ 152,20
+                </td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#eef7f2] text-success text-label-md font-label-md font-semibold border border-[#cbe4d7]">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                    Pago
+                  </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 text-label-md font-label-md bg-canvas hover:bg-surface border border-border rounded text-ink transition-colors font-semibold" title="Abrir espelho da ficha" type="button">
+                      Ver Ficha
+                    </button>
+<button class="p-1 text-muted hover:text-ink hover:bg-canvas rounded border border-border transition-colors" title="Reimprimir Comprovante" type="button">
+<span class="material-symbols-outlined text-base">print</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- LINHA 2 (18/10/2023) -->
+<tr class="hover:bg-canvas transition-colors">
+<td class="py-3 px-4 font-semibold text-ink tabular-nums">#0998</td>
+<td class="py-3 px-4 tabular-nums">
+<span class="font-medium text-ink block">18/10/2023</span>
+<span class="text-label-sm font-label-sm text-muted">16:15</span>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-ink line-clamp-1" title="Caneta esferográfica Bic Cristal (10x), Bloco de rascunho (5x)">
+                    Caneta esferográfica Bic Cristal <span class="text-muted">(10x)</span>, Bloco de rascunho <span class="text-muted">(5x)</span>
+</div>
+<span class="text-label-sm font-label-sm text-muted">2 tipos de itens • 15 unidades</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-1.5 text-ink font-medium">
+<span class="material-symbols-outlined text-base text-muted">qr_code_2</span>
+<span class=" po-badge">Pix</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-bold text-ink tabular-nums text-body-md font-body-md">
+                  R$ 84,50
+                </td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#eef7f2] text-success text-label-md font-label-md font-semibold border border-[#cbe4d7]">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                    Pago
+                  </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 text-label-md font-label-md bg-canvas hover:bg-surface border border-border rounded text-ink transition-colors font-semibold" type="button">
+                      Ver Ficha
+                    </button>
+<button class="p-1 text-muted hover:text-ink hover:bg-canvas rounded border border-border transition-colors" title="Mais Opções" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- LINHA 3 (05/10/2023) -->
+<tr class="hover:bg-canvas transition-colors">
+<td class="py-3 px-4 font-semibold text-ink tabular-nums">#0942</td>
+<td class="py-3 px-4 tabular-nums">
+<span class="font-medium text-ink block">05/10/2023</span>
+<span class="text-label-sm font-label-sm text-muted">11:04</span>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-ink line-clamp-1" title="Mochila Escolar Juvenil, Estojo Duplo Faber-Castell">
+                    Mochila Escolar Juvenil <span class="text-muted">(1x)</span>, Estojo Duplo Faber-Castell <span class="text-muted">(1x)</span>
+</div>
+<span class="text-label-sm font-label-sm text-muted">Material Escolar Especial</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-1.5 text-ink font-medium">
+<span class="material-symbols-outlined text-base text-muted">receipt</span>
+<span class=" po-badge">Pagamento futuro</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-bold text-ink tabular-nums text-body-md font-body-md">
+                  R$ 230,00
+                </td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#eef7f2] text-success text-label-md font-label-md font-semibold border border-[#cbe4d7]">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                    Pago
+                  </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 text-label-md font-label-md bg-canvas hover:bg-surface border border-border rounded text-ink transition-colors font-semibold" type="button">
+                      Ver Ficha
+                    </button>
+<button class="p-1 text-muted hover:text-ink hover:bg-canvas rounded border border-border transition-colors" title="Mais Opções" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- LINHA 4 (15/09/2023 - Pendente) -->
+<tr class="hover:bg-canvas transition-colors bg-[#FFF6EF]">
+<td class="py-3 px-4 font-semibold text-ink tabular-nums">#0881</td>
+<td class="py-3 px-4 tabular-nums">
+<span class="font-medium text-ink block">15/09/2023</span>
+<span class="text-label-sm font-label-sm text-muted">17:48</span>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-ink line-clamp-1" title="Pasta sanfonada 12 divisórias, Envelope saco A4 (50x)">
+                    Pasta sanfonada 12 divisórias <span class="text-muted">(1x)</span>, Envelope saco A4 <span class="text-muted">(50x)</span>
+</div>
+<span class="text-label-sm font-label-sm text-muted">Organização de Arquivo Escritório</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-1.5 text-ink font-medium">
+<span class="material-symbols-outlined text-base text-muted">credit_card</span>
+<span class=" po-badge">Pagamento futuro</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-bold text-ink tabular-nums text-body-md font-body-md">
+                  R$ 145,00
+                </td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#FFF1E6] text-[#A34F12] text-label-md font-label-md font-semibold border border-[#F3C7A2]" title="Vence em 12 dias">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                    Pendente (12 dias)
+                  </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 text-label-md font-label-md bg-canvas hover:bg-surface border border-border rounded text-ink transition-colors font-semibold" type="button">
+                      Ver Ficha
+                    </button>
+<!-- Immediate cashier resolution action -->
+<button class="px-2.5 py-1 text-label-md font-label-md bg-ink text-surface hover:bg-tertiary-container rounded transition-colors font-semibold" title="Baixar pagamento em balcão" type="button">
+                      Baixar
+                    </button>
+</div>
+</td>
+</tr>
+<!-- LINHA 5 (Anterior) -->
+<tr class="hover:bg-canvas transition-colors">
+<td class="py-3 px-4 font-semibold text-ink tabular-nums">#0820</td>
+<td class="py-3 px-4 tabular-nums">
+<span class="font-medium text-ink block">28/08/2023</span>
+<span class="text-label-sm font-label-sm text-muted">09:20</span>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-ink line-clamp-1" title="Tintas guache Acrilex 6 cores (4x), Pincéis Tigre Kit 3un (2x)">
+                    Tintas guache Acrilex 6 cores <span class="text-muted">(4x)</span>, Pincéis Tigre Kit 3un <span class="text-muted">(2x)</span>
+</div>
+<span class="text-label-sm font-label-sm text-muted">Artes &amp; Pintura</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-1.5 text-ink font-medium">
+<span class="material-symbols-outlined text-base text-muted">credit_card</span>
+<span>Cartão de Débito</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-bold text-ink tabular-nums text-body-md font-body-md">
+                  R$ 78,90
+                </td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#eef7f2] text-success text-label-md font-label-md font-semibold border border-[#cbe4d7]">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                    Pago
+                  </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 text-label-md font-label-md bg-canvas hover:bg-surface border border-border rounded text-ink transition-colors font-semibold" type="button">
+                      Ver Ficha
+                    </button>
+<button class="p-1 text-muted hover:text-ink hover:bg-canvas rounded border border-border transition-colors" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- LINHA 6 (Anterior) -->
+<tr class="hover:bg-canvas transition-colors">
+<td class="py-3 px-4 font-semibold text-ink tabular-nums">#0799</td>
+<td class="py-3 px-4 tabular-nums">
+<span class="font-medium text-ink block">10/08/2023</span>
+<span class="text-label-sm font-label-sm text-muted">15:10</span>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-ink line-clamp-1" title="Cartolinas coloridas sortidas (20x), Fita adesiva crepe 24mm (3x)">
+                    Cartolinas coloridas sortidas <span class="text-muted">(20x)</span>, Fita adesiva crepe 24mm <span class="text-muted">(3x)</span>
+</div>
+<span class="text-label-sm font-label-sm text-muted">Papéis &amp; Adesivos</span>
+</td>
+<td class="py-3 px-4">
+<div class="flex items-center gap-1.5 text-ink font-medium">
+<span class="material-symbols-outlined text-base text-muted">qr_code_2</span>
+<span class=" po-badge">Pix</span>
+</div>
+</td>
+<td class="py-3 px-4 text-right font-bold text-ink tabular-nums text-body-md font-body-md">
+                  R$ 56,00
+                </td>
+<td class="py-3 px-4 text-center">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#eef7f2] text-success text-label-md font-label-md font-semibold border border-[#cbe4d7]">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                    Pago
+                  </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 text-label-md font-label-md bg-canvas hover:bg-surface border border-border rounded text-ink transition-colors font-semibold" type="button">
+                      Ver Ficha
+                    </button>
+<button class="p-1 text-muted hover:text-ink hover:bg-canvas rounded border border-border transition-colors" type="button">
+<span class="material-symbols-outlined text-base">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Rodapé da tabela com paginação limpa -->
+<div class="p-4 border-t border-border flex items-center justify-between flex-wrap gap-3 bg-surface">
+<div class="text-body-sm font-body-sm text-muted">
+            Mostrando <span class="font-semibold text-ink">6</span> de <span class="font-semibold text-ink">18</span> compras registradas
+          </div>
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 rounded border border-border text-muted hover:text-ink hover:bg-canvas disabled:opacity-40 disabled:cursor-not-allowed text-body-sm font-body-sm flex items-center gap-1" disabled type="button">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+<span>Anterior</span>
+</button>
+<button class="w-8 h-8 rounded bg-ink text-surface font-semibold text-body-sm font-body-sm flex items-center justify-center" type="button">1</button>
+<button class="w-8 h-8 rounded border border-border text-ink hover:bg-canvas text-body-sm font-body-sm flex items-center justify-center" type="button">2</button>
+<button class="w-8 h-8 rounded border border-border text-ink hover:bg-canvas text-body-sm font-body-sm flex items-center justify-center" type="button">3</button>
+<button class="px-2.5 py-1 rounded border border-border text-ink hover:bg-canvas text-body-sm font-body-sm flex items-center gap-1" type="button">
+<span>Próxima</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+</div>
+<script src="../navegacao.js"></script></body></html>

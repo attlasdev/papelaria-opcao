@@ -1,0 +1,63 @@
+.inicio__cliente {
+  font-weight: var(--font-weight-medio);
+  white-space: nowrap;
+}
+
+.inicio__rascunho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  margin-bottom: var(--espaco-4);
+  padding: var(--espaco-3) var(--espaco-4);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-medio);
+  background: var(--color-superficie);
+}
+
+.inicio__cliente:hover {
+  text-decoration: underline;
+}
+
+.inicio__itens {
+  max-width: 340px;
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.inicio__valor {
+  font-weight: var(--font-weight-forte);
+}
+
+.inicio__filtros {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--espaco-2);
+  flex-wrap: wrap;
+}
+
+.inicio__filtro-data {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  font-size: var(--text-rotulo);
+  white-space: nowrap;
+}
+
+.inicio__vazio {
+  padding: var(--espaco-8);
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+/* Venda sem identificação: leva ao histórico dessas vendas, não a um cadastro */
+.inicio__cliente--sem-identificacao {
+  font-weight: var(--font-weight-normal);
+  color: var(--color-texto-suave);
+}
+
+/* A linha inteira abre a ficha em janela */
+.inicio__linha {
+  cursor: pointer;
+}

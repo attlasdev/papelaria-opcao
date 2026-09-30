@@ -1,0 +1,51 @@
+/*
+ * Cores da Papelaria Opção.
+ *
+ * Base neutra (branco, preto, cinzas) vinda das pranchas de componentes. O amarelo
+ * e o vermelho da marca ficam na logo; na interface o vermelho só sinaliza
+ * erro, alerta, ação destrutiva ou saída de dinheiro.
+ *
+ * `static`: o Tailwind emite todas as variáveis, mesmo as que nenhuma classe usa,
+ * porque os .css dos componentes leem direto var(--color-*).
+ */
+@theme static {
+  /* Neutros */
+  --color-tinta: #000000;          /* texto principal, botão primário */
+  --color-tinta-suave: #303030;    /* hover de botão primário */
+  --color-texto-suave: #4b4b4b;    /* texto secundário, legendas */
+  --color-texto-apagado: #8a8a8a;  /* placeholder, desabilitado */
+  --color-fundo: #f9f9f9;          /* fundo da janela */
+  --color-superficie: #ffffff;     /* painéis, cartões, tabelas */
+  --color-superficie-2: #f3f3f3;   /* hover de linha, campo desabilitado */
+  --color-selecao: #ededed;        /* item ativo no menu */
+  --color-borda: #e8e8e8;
+  --color-borda-forte: #d5d5d5;
+  --color-veu: rgb(0 0 0 / 0.35);  /* fundo escurecido atrás de uma janela */
+
+  /* Marca: só na logo e em destaques pontuais */
+  --color-marca-amarelo: #fef003;
+  --color-marca-vermelho: #ea0b11;
+
+  /* Sinal em texto e ícone */
+  --color-entrada: #176b4d;        /* dinheiro que entra */
+  --color-saida: #c8090f;          /* dinheiro que sai, erro */
+
+  /* Barras de gráfico: verde mais saturado que o texto, para não ler como cinza.
+     Par validado (skill dataviz): contraste, saturação e separação para daltonismo. */
+  --color-grafico-entrada: #1f8f5f;
+  --color-grafico-saida: #c8090f;
+
+  /* Situação: fundo pastel chapado + texto escuro do mesmo tom */
+  --color-ok-fundo: #dcefe4;
+  --color-ok-texto: #145c3f;
+  --color-atencao-fundo: #fbe4d1;
+  --color-atencao-texto: #8a430f;
+  --color-critico-fundo: #f9d9d9;
+  --color-critico-texto: #9e1116;
+  --color-neutro-fundo: #efefef;
+  --color-neutro-texto: #303030;
+
+  /* Linha destacada numa tabela (pendente, estoque baixo) */
+  --color-linha-atencao: #fff6ef;
+  --color-linha-critica: #fdf3f3;
+}

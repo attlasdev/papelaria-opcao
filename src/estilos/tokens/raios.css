@@ -1,0 +1,8 @@
+/* Raios (DESIGN.md): pequeno para selo e botão, médio para campo, grande para painel. */
+@theme static {
+  --radius-selo: 4px;
+  --radius-pequeno: 6px;
+  --radius-medio: 10px;
+  --radius-grande: 14px;
+  --radius-total: 999px;
+}
