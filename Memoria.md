@@ -5,6 +5,29 @@ aprendemos. O que o codigo faz esta no codigo e no git.
 
 ---
 
+## >>> PRÓXIMA SESSÃO — começar por aqui (`2026-09-30`) <<<
+
+**Tarefa:** análise **de função** do app inteiro, imaginando que ele **já está em
+produção** na papelaria. Mapear o comportamento de cada tela, ficha e modal e
+achar **furos reais para a dona** — não defeito por achar.
+
+- **Escopo:** ficha (criar, ver, corrigir/cancelar), notinhas (ver, vencer,
+  receber), Clientes e página do cliente, Estoque, Financeiro, Início.
+- **Fora:** Notas fiscais e qualquer impressão/exportação (dependem do programa
+  fiscal terceirizado).
+- **Filtro:** considerar o que já existe e já foi decidido (seções abaixo). Só
+  levar para a lista o que atrapalha a operação ou o controle da dona. Separar
+  furo real de preferência; não inflar a lista.
+- **Já levantado, aguardando validação:** não existe forma de corrigir ficha
+  concluída (sem cancelar/estornar). Proposta: "Cancelar ficha" com motivo, que
+  devolve estoque, estorna no Financeiro e mantém a ficha marcada como Cancelada;
+  editar livre não. Decidir com a dona (ex.: só no mesmo dia).
+- **Formato de entrega:** lista curta por tela, cada item com tipo (furo /
+  incoerência / sugestão) e recomendação; Victor decide o que entra. Não mexer em
+  código antes da decisão.
+
+---
+
 ## Nova ficha de venda — leitura e produto não cadastrado (`2026-09-30`)
 
 O ícone de código de barras na ficha ativa leitura contínua para bipar vários
