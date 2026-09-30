@@ -4,13 +4,9 @@ import { Modal } from '../../componentes/modal/Modal'
 import { Campo } from '../../componentes/campo/Campo'
 import { Botao } from '../../componentes/botao/Botao'
 import { Icone } from '../../componentes/icone/Icone'
-import { alterarSaldo, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { alterarSaldo, normalizar, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import './ajustar-estoque.css'
-
-function normalizar(texto: string) {
-  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
-}
 
 export function AjustarEstoque() {
   const [parametros] = useSearchParams()

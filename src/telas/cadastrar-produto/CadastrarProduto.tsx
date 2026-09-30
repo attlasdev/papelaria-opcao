@@ -11,7 +11,7 @@ import { rotas } from '../../rotas-caminhos'
 import type { Produto, Unidade } from '../../mock/base/tipos'
 import { cadastrarProduto, completarProduto, definirProdutoAtivo, editarProduto, excluirProduto, produtoTemHistorico, proximoCodigoProduto, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { Estoque } from '../estoque/Estoque'
-import { unidades } from './dados-exemplo'
+import { unidades } from './constantes'
 import { CampoCategoria } from './CampoCategoria'
 import './cadastrar-produto.css'
 

@@ -10,9 +10,9 @@ Este arquivo e o roteador do projeto. Ele nao repete o metodo de trabalho global
 Organizacao adaptada da Stack inicial: `docs/organizacao.md`. Orientacao local
 para o Codex e catalogo de habilidades: `AGENTS.md` e `.agents/skills/`.
 
-**O dominio ainda nao esta escrito aqui de proposito** — quem traz o vocabulario e a
-reuniao com o cliente, e o primeiro corte do contrato e do front. Ver `Memoria.md`,
-"perguntas em aberto".
+**O dominio nao fica neste arquivo.** As regras de negocio que valem hoje estao em
+`Memoria.md` ("Regras de produto"); o vocabulario em codigo esta em
+`src/mock/base/tipos.ts`, que e a proposta para o primeiro corte do contrato.
 
 ## Onde esta o que
 
@@ -21,7 +21,8 @@ reuniao com o cliente, e o primeiro corte do contrato e do front. Ver `Memoria.m
 | a fronteira: operacoes, tipos, formato de erro | `comum/contrato.ts` |
 | o que o front precisa saber (documento dele) | `front-side.md` |
 | a lista de revisao do contrato, quando ele entregar | `revisao-de-contrato.md` |
-| estado atual, decisoes, perguntas em aberto, aprendizados | `Memoria.md` |
+| estado atual, PENDENTES, regras de produto, decisoes | `Memoria.md` |
+| o passado sessao a sessao (ideias descartadas, porques antigos) | `docs/historico/` |
 | como a interface esta montada (tokens, CSS por componente, telas) | `AGENTS.md`, "Interface: como esta montada" |
 | o molde de onde este esqueleto saiu | `/home/agostinho/Desktop/projetos/upload-sys` |
 

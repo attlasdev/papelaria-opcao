@@ -8,10 +8,23 @@ type Props = {
   valor: string
   aoMudar: (data: string) => void
   dataInicial: string
+  /** Dias fora do intervalo ficam apagados no calendário (YYYY-MM-DD). */
+  min?: string
+  max?: string
+  /** Nome para leitor de tela; o campo de formulário passa o próprio rótulo. */
+  rotulo?: string
+  /**
+   * filtro: pode ficar vazio ("Limpar filtro", "Data mais recente").
+   * campo: sempre tem data, ocupa a largura do formulário ("Hoje").
+   */
+  variante?: 'filtro' | 'campo'
+  erro?: boolean
 }
 
 const diasSemana = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
-const nomeMes = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' })
+const formatoMes = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' })
+/** "Setembro de 2026": só a primeira letra maiúscula (capitalize fazia "De"). */
+const nomeMes = { format: (data: Date) => { const t = formatoMes.format(data); return t.charAt(0).toUpperCase() + t.slice(1) } }
 const nomeDia = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })
 
 function dataLocal(iso: string) {
@@ -37,8 +50,8 @@ function dataValida(texto: string) {
   return data.getFullYear() === ano && data.getMonth() === mes - 1 && data.getDate() === dia ? isoLocal(data) : ''
 }
 
-/** Calendário do aplicativo para filtrar as fichas por um dia. */
-export function SeletorData({ valor, aoMudar, dataInicial }: Props) {
+/** Calendário do aplicativo: filtro por dia e campo de data dos formulários. */
+export function SeletorData({ valor, aoMudar, dataInicial, min, max, rotulo = 'Filtrar fichas por data', variante = 'filtro', erro }: Props) {
   const id = useId()
   const controle = useRef<HTMLDivElement>(null)
   const entrada = useRef<HTMLInputElement>(null)
@@ -52,6 +65,11 @@ export function SeletorData({ valor, aoMudar, dataInicial }: Props) {
   const [posicao, setPosicao] = useState({ top: 0, left: 0 })
   const [texto, setTexto] = useState(valor ? dataCurta(valor) : '')
   const invalida = texto.length === 10 && !dataValida(texto)
+  // Valor trocado por fora (ex.: Limpar ficha volta o vencimento): o texto acompanha.
+  useEffect(() => {
+    if (valor !== dataValida(texto) && (valor || texto.length === 10)) setTexto(valor ? dataCurta(valor) : '')
+  }, [valor])
+  const foraDoIntervalo = (iso: string) => Boolean((min && iso < min) || (max && iso > max))
 
   const ano = mesVisivel.getFullYear()
   const mes = mesVisivel.getMonth()
@@ -90,7 +108,9 @@ export function SeletorData({ valor, aoMudar, dataInicial }: Props) {
     }
     const fecharEscape = (evento: globalThis.KeyboardEvent) => {
       if (evento.key !== 'Escape') return
+      // Dentro de uma janela, Esc fecha só o calendário, não a janela inteira.
       evento.preventDefault()
+      evento.stopPropagation()
       setAberto(false)
       entrada.current?.focus()
     }
@@ -149,7 +169,7 @@ export function SeletorData({ valor, aoMudar, dataInicial }: Props) {
 
   return (
     <>
-      <div ref={controle} className="seletor-data__controle">
+      <div ref={controle} className={['seletor-data__controle', variante === 'campo' && 'seletor-data__controle--campo', erro && 'seletor-data__controle--erro'].filter(Boolean).join(' ')}>
         <input
           ref={entrada}
           type="text"
@@ -158,8 +178,8 @@ export function SeletorData({ valor, aoMudar, dataInicial }: Props) {
           placeholder="dd/mm/aaaa"
           value={texto}
           maxLength={10}
-          aria-label="Filtrar fichas por data"
-          aria-invalid={invalida || undefined}
+          aria-label={rotulo}
+          aria-invalid={invalida || erro || undefined}
           onChange={(evento) => digitar(evento.target.value)}
         />
         <button type="button" aria-label="Abrir calendário" aria-haspopup="dialog" aria-expanded={aberto} aria-controls={`${id}-calendario`} onClick={abrir}>
@@ -167,7 +187,7 @@ export function SeletorData({ valor, aoMudar, dataInicial }: Props) {
         </button>
       </div>
       {aberto && createPortal(
-        <div ref={painel} id={`${id}-calendario`} className="seletor-data__painel" role="dialog" aria-label="Escolher data das fichas" style={posicao}>
+        <div ref={painel} id={`${id}-calendario`} className="seletor-data__painel" role="dialog" aria-label={`Calendário: ${rotulo}`} style={posicao}>
           <div className="seletor-data__topo">
             <strong>{nomeMes.format(mesVisivel)}</strong>
             <div className="seletor-data__navegacao">
@@ -189,6 +209,7 @@ export function SeletorData({ valor, aoMudar, dataInicial }: Props) {
                 aria-label={nomeDia.format(data)}
                 aria-pressed={iso === valor}
                 aria-current={iso === hoje ? 'date' : undefined}
+                disabled={foraDoIntervalo(iso)}
                 tabIndex={iso === diaFocado ? 0 : -1}
                 onFocus={() => setDiaFocado(iso)}
                 onKeyDown={tecladoDia}
@@ -196,14 +217,20 @@ export function SeletorData({ valor, aoMudar, dataInicial }: Props) {
               >{indice + 1}</button>
             })}
           </div>
-          <div className="seletor-data__rodape">
-            <button type="button" disabled={!valor} onClick={() => escolher('')}>Limpar filtro</button>
-            <button type="button" onClick={() => {
-              const recente = dataLocal(dataInicial)
-              setMesVisivel(new Date(recente.getFullYear(), recente.getMonth(), 1))
-              setDiaFocado(dataInicial)
-            }}>Data mais recente</button>
-          </div>
+          {variante === 'filtro' ? (
+            <div className="seletor-data__rodape">
+              <button type="button" disabled={!valor} onClick={() => escolher('')}>Limpar filtro</button>
+              <button type="button" onClick={() => {
+                const recente = dataLocal(dataInicial)
+                setMesVisivel(new Date(recente.getFullYear(), recente.getMonth(), 1))
+                setDiaFocado(dataInicial)
+              }}>Data mais recente</button>
+            </div>
+          ) : (
+            <div className="seletor-data__rodape seletor-data__rodape--fim">
+              <button type="button" disabled={foraDoIntervalo(hoje)} onClick={() => escolher(hoje)}>Hoje</button>
+            </div>
+          )}
         </div>, document.body,
       )}
     </>

@@ -4,7 +4,7 @@ import { Campo } from '../../../componentes/campo/Campo'
 import { Icone } from '../../../componentes/icone/Icone'
 import { reais } from '../../../formatar'
 import { hojeISO, normalizar, resumoDoCliente, useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
-import { semIdentificacao, type EscolhaCliente } from '../dados-exemplo'
+import { semIdentificacao, type EscolhaCliente } from '../tipos'
 import { ModalNovoCliente } from './ModalNovoCliente'
 import './cliente-ficha.css'
 

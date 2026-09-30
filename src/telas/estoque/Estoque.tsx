@@ -10,16 +10,11 @@ import { Paginacao } from '../../componentes/paginacao/Paginacao'
 import { useLinhasPorPagina } from '../../componentes/paginacao/useLinhasPorPagina'
 import { Icone } from '../../componentes/icone/Icone'
 import { reais } from '../../formatar'
-import { definirProdutoAtivo, resumoEstoque, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { definirProdutoAtivo, normalizar, resumoEstoque, situacaoSaldo, useEstadoDemonstracao, type SituacaoSaldo } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
-import { situacaoSaldo, type SituacaoSaldo } from './dados-exemplo'
 import './estoque.css'
 
 type Filtro = string
-
-function normalizar(texto: string) {
-  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
-}
 
 const selo: Record<SituacaoSaldo, { tom: Tom; rotulo: string }> = {
   normal: { tom: 'ok', rotulo: 'Normal' },

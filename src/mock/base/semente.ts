@@ -73,20 +73,20 @@ const BAIRROS = ['Centro', 'Jardim Paulista', 'Vila Nova', 'Bela Vista']
 
 /** Saldo atual de cada produto: é o ponto de chegada dos movimentos gerados. */
 const PRODUTOS: Produto[] = [
-  { codigo: 'EST-0021', codigoBarras: '789102711', descricao: 'Caderno Universitário Tilibra 10 Matérias Capa Dura 200 Fls', categoria: 'Cadernos', grupo: 'cadernos', unidade: 'un', preco: 2490, saldo: 42, minimo: 15 },
-  { codigo: 'EST-0022', codigoBarras: '789102722', descricao: 'Caneta Gel Pentel Energel 0.7mm Azul Ponta Agulha', categoria: 'Escrita', grupo: 'escrita', unidade: 'un', preco: 1250, saldo: 6, minimo: 20 },
-  { codigo: 'EST-0023', codigoBarras: '789102744', descricao: 'Sulfite A4 Chamex 75g 500fls Pacote Tradicional', categoria: 'Papéis', grupo: 'papeis', unidade: 'pct', preco: 2800, saldo: 85, minimo: 30 },
+  { codigo: 'EST-0021', codigoBarras: '789102711', descricao: 'Caderno Universitário Tilibra 10 Matérias Capa Dura 200 Fls', categoria: 'Cadernos', grupo: 'cadernos', unidade: 'un', preco: 2490, saldo: 42, minimo: 15, custo: 1556 },
+  { codigo: 'EST-0022', codigoBarras: '789102722', descricao: 'Caneta Gel Pentel Energel 0.7mm Azul Ponta Agulha', categoria: 'Escrita', grupo: 'escrita', unidade: 'un', preco: 1250, saldo: 6, minimo: 20, custo: 650 },
+  { codigo: 'EST-0023', codigoBarras: '789102744', descricao: 'Sulfite A4 Chamex 75g 500fls Pacote Tradicional', categoria: 'Papéis', grupo: 'papeis', unidade: 'pct', preco: 2800, saldo: 85, minimo: 30, custo: 1820 },
   { codigo: 'EST-0024', descricao: 'Cartolina Cartão Duplex 250g Cores Sortidas 50x70cm Avulsa', categoria: 'Artes e papéis', grupo: 'artes', unidade: 'un', preco: 350, saldo: 18, minimo: 10 },
-  { codigo: 'EST-0025', codigoBarras: '789102789', descricao: 'Bloco Adesivo Post-it Amarelo 76x76mm c/ 4 Blocos 400 Folhas', categoria: 'Escritório', grupo: 'escritorio', unidade: 'pct', preco: 1890, saldo: 3, minimo: 10 },
+  { codigo: 'EST-0025', codigoBarras: '789102789', descricao: 'Bloco Adesivo Post-it Amarelo 76x76mm c/ 4 Blocos 400 Folhas', categoria: 'Escritório', grupo: 'escritorio', unidade: 'pct', preco: 1890, saldo: 3, minimo: 10, custo: 1050 },
   { codigo: 'EST-0026', codigoBarras: '789102795', descricao: 'Papel Fotográfico Glossy A4 180g Alta Definição Pacote com 100 Folhas Resistente à Água Premium Micro-poroso Secagem Instantânea', categoria: 'Papéis especiais', grupo: 'papeis', unidade: 'pct', preco: 4500, saldo: 12, minimo: 8 },
-  { codigo: 'EST-0027', codigoBarras: '789102733', descricao: 'Borracha Escolar Branca Mercur Record 40 com Capa Protetora', categoria: 'Escolar', grupo: 'artes', unidade: 'un', preco: 250, saldo: 0, minimo: 50 },
+  { codigo: 'EST-0027', codigoBarras: '789102733', descricao: 'Borracha Escolar Branca Mercur Record 40 com Capa Protetora', categoria: 'Escolar', grupo: 'artes', unidade: 'un', preco: 250, saldo: 0, minimo: 50, custo: 125 },
   { codigo: 'EST-0028', codigoBarras: '789102806', descricao: 'Lápis Grafite Faber-Castell HB Nº 2 Caixa com 12 Unidades', categoria: 'Escrita', grupo: 'escrita', unidade: 'cx', preco: 1590, saldo: 24, minimo: 10 },
   { codigo: 'EST-0029', codigoBarras: '789102817', descricao: 'Pasta Suspensa Kraft com Haste Plástica', categoria: 'Escritório', grupo: 'escritorio', unidade: 'un', preco: 490, saldo: 36, minimo: 15 },
   { codigo: 'EST-0030', codigoBarras: '789102828', descricao: 'Agenda Permanente Capa Dura 160 Folhas', categoria: 'Agendas', grupo: 'cadernos', unidade: 'un', preco: 3290, saldo: 9, minimo: 12 },
   { codigo: 'EST-0031', descricao: 'Folha de EVA Lisa 40×60cm Azul Avulsa', categoria: 'Artes e papéis', grupo: 'artes', unidade: 'un', preco: 490, saldo: 55, minimo: 20 },
   { codigo: 'EST-0032', codigoBarras: '789102839', descricao: 'Caneta Esferográfica Azul 1.0mm Caixa com 50 Unidades', categoria: 'Escrita', grupo: 'escrita', unidade: 'cx', preco: 3990, saldo: 7, minimo: 8 },
   { codigo: 'EST-0033', codigoBarras: '789102840', descricao: 'Envelope Pardo Ofício 24×34cm Pacote com 100 Unidades', categoria: 'Escritório', grupo: 'escritorio', unidade: 'pct', preco: 2790, saldo: 18, minimo: 10 },
-  { codigo: 'EST-0034', codigoBarras: '789102851', descricao: 'Papel Sulfite A3 75g Pacote com 500 Folhas', categoria: 'Papéis', grupo: 'papeis', unidade: 'pct', preco: 6490, saldo: 14, minimo: 6 },
+  { codigo: 'EST-0034', codigoBarras: '789102851', descricao: 'Papel Sulfite A3 75g Pacote com 500 Folhas', categoria: 'Papéis', grupo: 'papeis', unidade: 'pct', preco: 6490, saldo: 14, minimo: 6, custo: 4200 },
   { codigo: 'EST-0035', codigoBarras: '789102862', descricao: 'Marcador Permanente Preto Ponta Dupla', categoria: 'Escrita', grupo: 'escrita', unidade: 'un', preco: 890, saldo: 31, minimo: 12 },
   { codigo: 'EST-0036', codigoBarras: '789102873', descricao: 'Caderno Brochura Capa Flexível 96 Folhas', categoria: 'Cadernos', grupo: 'cadernos', unidade: 'un', preco: 990, saldo: 22, minimo: 15 },
 ]

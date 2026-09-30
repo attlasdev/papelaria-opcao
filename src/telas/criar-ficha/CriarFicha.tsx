@@ -27,7 +27,7 @@ import { ClienteFicha } from './cliente/ClienteFicha'
 import { ItensFicha } from './itens/ItensFicha'
 import { ModalProduto } from '../cadastrar-produto/CadastrarProduto'
 import { PagamentoFicha } from './pagamento/PagamentoFicha'
-import { semIdentificacao, type EscolhaCliente, type FormaPagamento, type ItemFicha } from './dados-exemplo'
+import { semIdentificacao, type EscolhaCliente, type FormaPagamento, type ItemFicha } from './tipos'
 import './criar-ficha.css'
 
 const nomeForma: Record<FormaPagamento, string> = { ...NOME_MEIO, notinha: 'Notinha' }

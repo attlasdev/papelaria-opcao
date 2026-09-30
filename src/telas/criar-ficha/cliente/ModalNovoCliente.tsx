@@ -1,5 +1,5 @@
 import { JanelaCliente } from '../../formulario-cliente/JanelaCliente'
-import type { ClienteFicha as Cliente } from '../dados-exemplo'
+import type { ClienteFicha as Cliente } from '../tipos'
 
 type Props = {
   /** Nome já digitado na busca, para não digitar duas vezes. */

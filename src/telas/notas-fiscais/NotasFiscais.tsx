@@ -12,7 +12,7 @@ import { Icone } from '../../componentes/icone/Icone'
 import { dataCurta, reais } from '../../formatar'
 import { hojeISO, nomeCliente, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
-import { documentoFornecedor, type Direcao, type Documento } from './dados-exemplo'
+import { documentoFornecedor, type Direcao, type Documento } from './constantes'
 import './notas-fiscais.css'
 
 export function NotasFiscais() {

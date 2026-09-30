@@ -13,9 +13,12 @@ efetiva e as decisões do projeto ficam em `AGENTS.md`, `CLAUDE.md` e `Memoria.m
 | `electron/` | Janela, preload, IPC e futuras operações com o banco. |
 | `recursos/` | Marca (logo) e acervo de referência visual (`design-system/`), incluindo o script que recorta os ícones do app. |
 | `stitch/` | Histórico: protótipo HTML do Google Stitch, já migrado para `src/`. |
-| `Memoria.md` | Estado, decisões e perguntas em aberto. |
+| `Memoria.md` | Estado atual, pendentes, regras de produto e decisões. |
+| `docs/historico/` | Memória antiga sessão a sessão; não é o estado atual. |
+| `docs/superpowers/` | Planos e especificações de rodadas já executadas. |
 
-O domínio ainda não foi definido. A identidade visual em uso está nos tokens de
+As regras de negócio que valem hoje estão em `Memoria.md`; o vocabulário em
+código, em `src/mock/base/tipos.ts`. A identidade visual em uso está nos tokens de
 `src/estilos/tokens/`. `supabase/` só entra
 quando houver banco de teste e migrations reais.
 
@@ -50,8 +53,8 @@ As skills foram copiadas para `.agents/skills/` com seus arquivos de apoio:
   `agent-memory-engineering` e `grilling`.
 
 Não havia uma skill geral de React na pasta de origem. `gsap-react` cobre
-especificamente a integração de animações com React. As skills de GSAP estão
-disponíveis para consulta, mas os pacotes de animação não foram instalados.
+especificamente a integração de animações com React. GSAP e `@gsap/react` estão
+instalados, só para as microinterações aprovadas (ver `Memoria.md`).
 
 `web-design-guidelines` fica em `.agents/skills/web-design-guidelines/` e serve
 para revisar acessibilidade, navegação e estados da interface existente. Antes

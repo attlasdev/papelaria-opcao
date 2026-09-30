@@ -5,7 +5,7 @@ import { SeloCompacto } from '../../componentes/selo/Selo'
 import { dataCurta, reais } from '../../formatar'
 import { hojeISO, nomeCliente, resumoItens, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
-import { documentoFornecedor } from '../notas-fiscais/dados-exemplo'
+import { documentoFornecedor } from '../notas-fiscais/constantes'
 import './detalhe-fiscal.css'
 
 export function DetalheFiscal() {

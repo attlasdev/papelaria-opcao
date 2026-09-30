@@ -3,8 +3,8 @@ import { Botao, BotaoIcone } from '../../../componentes/botao/Botao'
 import { Icone } from '../../../componentes/icone/Icone'
 import { reais } from '../../../formatar'
 import { useLeitorCodigo } from '../../../leitor/useLeitorCodigo'
-import { useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
-import type { ItemFicha } from '../dados-exemplo'
+import { normalizar, useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
+import type { ItemFicha } from '../tipos'
 import './itens-ficha.css'
 
 type Props = {
@@ -12,10 +12,6 @@ type Props = {
   aoMudar: (itens: ItemFicha[]) => void
   aoCadastrarProduto: (codigoBarras?: string) => void
   erroFalta?: string
-}
-
-function normalizar(texto: string) {
-  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
 }
 
 /** Leitura de código de barras e lista de itens. Ler o mesmo código de novo soma 1. */

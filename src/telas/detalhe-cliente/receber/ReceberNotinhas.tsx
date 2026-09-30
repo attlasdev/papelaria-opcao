@@ -1,6 +1,6 @@
 import { useId, useState, type FormEvent } from 'react'
 import { Botao } from '../../../componentes/botao/Botao'
-import { Campo } from '../../../componentes/campo/Campo'
+import { CampoData } from '../../../componentes/campo/Campo'
 import { CampoMoeda } from '../../../componentes/campo/CampoMoeda'
 import { Filtros } from '../../../componentes/filtros/Filtros'
 import { Modal } from '../../../componentes/modal/Modal'
@@ -140,7 +140,7 @@ export function ReceberNotinhas({ clienteId, marcadas, aoFechar }: Props) {
             erro={valor > totalAberto}
             autoFocus
           />
-          <Campo rotulo="Data do pagamento" type="date" value={data} min={dataMinima} max={hojeISO()} onChange={(e) => setData(e.target.value)} />
+          <CampoData rotulo="Data do pagamento" valor={data} min={dataMinima} max={hojeISO()} aoMudar={setData} erro={Boolean(data) && (data < dataMinima || data > hojeISO())} />
         </div>
 
         <div className="receber-notinhas__meio">

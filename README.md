@@ -43,5 +43,5 @@ credencial nenhuma**; quando o lado real entra, nada em `src/` muda.
 | --- | --- |
 | quem monta a interface | `front-side.md` |
 | quem monta o banco | `CLAUDE.md`, `revisao-de-contrato.md` |
-| chegando agora | `Memoria.md` (secao "Como retomar") |
+| chegando agora | `Memoria.md` ("Onde estamos" e "PENDENTE", no topo) |
 | mexendo na interface | `AGENTS.md`, secao "Interface: como esta montada" |

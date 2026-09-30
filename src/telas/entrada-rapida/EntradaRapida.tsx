@@ -7,7 +7,6 @@ import { Botao } from '../../componentes/botao/Botao'
 import { reais } from '../../formatar'
 import { alterarSaldo, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
-import { custoSugerido } from '../registrar-entrada/dados-exemplo'
 import './entrada-rapida.css'
 
 /**
@@ -22,7 +21,7 @@ export function EntradaRapida() {
   const { produtos } = useEstadoDemonstracao()
   const produto = produtos.find((p) => p.codigo === parametros.get('produto'))
   const [quantidade, setQuantidade] = useState('')
-  const [custo, setCusto] = useState<number | null>(produto ? produto.custo ?? custoSugerido[produto.codigo] ?? null : null)
+  const [custo, setCusto] = useState<number | null>(produto?.custo ?? null)
   const [fornecedor, setFornecedor] = useState('')
   const [erro, setErro] = useState('')
 

@@ -70,7 +70,7 @@ src/
     layout/barra-lateral, layout/tela, layout/moldura
     botao, selo, painel (Painel + CartaoResumo), tabela, filtros, paginacao,
     campo, modal, aviso, icone
-  telas/<tela>/       Tela.tsx + tela.css + dados-exemplo.ts
+  telas/<tela>/       Tela.tsx + tela.css (+ tipos.ts / constantes.ts quando há)
     inicio, criar-ficha (blocos cliente/, itens/, pagamento/), clientes,
     detalhe-cliente, financeiro, estoque, cadastrar-produto, registrar-entrada,
     notas-fiscais
@@ -79,6 +79,7 @@ src/
     vendas-sem-identificacao (fichas sem cliente; nao e um cadastro)
     formulario-cliente/JanelaCliente: o formulario de cliente, gaveta em Clientes e janela na nova ficha
   mock/base/          base local única: tipos (fatos), semente, derivados, persistência
+                      derivados.ts também tem normalizar() (busca sem acento): não duplicar
   mock/estado-demonstracao.ts  store (useEstadoDemonstracao) e ações sobre a base
   rotas.tsx           rotas (react-router, modo hash)
   rotas-caminhos.ts   endereços das telas; botões usam estas constantes
@@ -119,8 +120,14 @@ Regras para mexer na interface:
 - **Uma moldura só.** Toda tela usa `<Tela titulo busca acaoCabecalho
   acoesTitulo>`; barra lateral e cabeçalho não são redesenhados por tela.
   "Criar ficha" fica só na barra lateral.
-- **Dados de exemplo** vêm de `dados-exemplo.ts` da própria tela, em centavos.
-  Podem divergir entre telas de propósito nesta fase; o contrato ainda não mudou.
+- **Nenhum dado de exemplo na tela.** Tudo vem da base local; divergência entre
+  telas é defeito. Arquivo `tipos.ts` ou `constantes.ts` da tela guarda só tipo
+  da tela e opção fixa de formulário (unidades, por exemplo).
+- **Data sempre com o calendário do app:** `CampoData` (formulário) ou
+  `SeletorData` (filtro), em `componentes/campo/`. Nunca `type="date"`.
+- **Desfazer sem apagar:** cancelar e estornar usam `ModalMotivo`
+  (`componentes/modal/`), com motivo obrigatório e o registro original visível.
+  Nada lançado ganha botão de excluir ou editar livre.
 - **Botão sem tela pronta** chama `useSemDestino()('nome da ação')`, que mostra
   "Ainda sem destino". Quando a tela existir, troque por `navegar(rotas.x)`.
 - **Ícones** são os do acervo (`Icons.pdf`), em `<Icone nome="..." />`. Para

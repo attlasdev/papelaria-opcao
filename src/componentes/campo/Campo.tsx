@@ -2,6 +2,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState, type InputHTMLAttr
 import { createPortal } from 'react-dom'
 import { gsap, movimentoReduzido, useGSAP } from '../../animacoes/gsap'
 import { Icone, type NomeIcone } from '../icone/Icone'
+import { SeletorData } from './SeletorData'
 import './campo.css'
 
 type Base = { rotulo: string; ajuda?: ReactNode; erro?: boolean; opcional?: boolean }
@@ -186,6 +187,33 @@ export function Selecao({ rotulo, ajuda, erro, opcional, opcoes, name, valor, va
           ))}
         </div>, document.body,
       )}
+    </div>
+  )
+}
+
+type PropsData = {
+  rotulo: string
+  valor: string
+  aoMudar: (data: string) => void
+  min?: string
+  max?: string
+  ajuda?: ReactNode
+  erro?: boolean
+  opcional?: boolean
+}
+
+/** Data de formulário com o calendário do aplicativo (nunca o do Windows). */
+export function CampoData({ rotulo, valor, aoMudar, min, max, ajuda, erro, opcional }: PropsData) {
+  const ajudaId = useId()
+  // Sem valor, o calendário abre no dia de hoje, ou no limite mais próximo dele.
+  const hoje = new Date()
+  const hojeIso = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`
+  const inicial = min && hojeIso < min ? min : max && hojeIso > max ? max : hojeIso
+  return (
+    <div className="campo" aria-describedby={ajuda ? ajudaId : undefined}>
+      <span className="campo__rotulo">{rotulo}{opcional && <span className="campo__opcional"> (opcional)</span>}</span>
+      <SeletorData variante="campo" rotulo={rotulo} valor={valor} aoMudar={aoMudar} dataInicial={inicial} min={min} max={max} erro={erro} />
+      {ajuda && <span id={ajudaId} className={erro ? 'campo__ajuda campo__ajuda--erro' : 'campo__ajuda'}>{ajuda}</span>}
     </div>
   )
 }

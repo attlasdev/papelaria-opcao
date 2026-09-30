@@ -3,23 +3,19 @@ import { Link, useLocation, useNavigate } from 'react-router'
 import { Tela } from '../../componentes/layout/tela/Tela'
 import { Botao, BotaoIcone } from '../../componentes/botao/Botao'
 import { Painel } from '../../componentes/painel/Painel'
-import { Campo } from '../../componentes/campo/Campo'
+import { Campo, CampoData } from '../../componentes/campo/Campo'
 import { Tabela } from '../../componentes/tabela/Tabela'
 import { SeloCompacto } from '../../componentes/selo/Selo'
 import { Icone } from '../../componentes/icone/Icone'
 import { reais } from '../../formatar'
-import { alterarSaldo, cadastrarProduto, hojeISO, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { alterarSaldo, cadastrarProduto, hojeISO, normalizar, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { useLeitorCodigo } from '../../leitor/useLeitorCodigo'
 import { PainelLeitor, type UltimaLeitura } from '../../leitor/PainelLeitor'
 import { rotas } from '../../rotas-caminhos'
-import { custoSugerido, type ItemEntrada } from './dados-exemplo'
+import type { ItemEntrada } from './tipos'
 import { BlocoBipados, falta, paraQuantidade, unidadeBase, type Bipado } from './bipados/BlocoBipados'
 import { ModalProduto, type ProdutoDaEntrada, type RascunhoProduto } from '../cadastrar-produto/CadastrarProduto'
 import './registrar-entrada.css'
-
-function normalizar(texto: string) {
-  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
-}
 
 /** Produto da base virando item de entrada. */
 function itemDoCatalogo(codigoOuBarras: string, produtos: ReturnType<typeof useEstadoDemonstracao>['produtos']): ItemEntrada | null {
@@ -33,7 +29,7 @@ function itemDoCatalogo(codigoOuBarras: string, produtos: ReturnType<typeof useE
     unidade: produto.unidade,
     saldoAtual: produto.saldo,
     quantidade: 1,
-    custo: produto.custo ?? custoSugerido[produto.codigo],
+    custo: produto.custo,
   }
 }
 
@@ -48,6 +44,7 @@ export function RegistrarEntrada() {
     return doProduto ? [doProduto] : []
   })
   const [bipados, setBipados] = useState<Bipado[]>([])
+  const [dataRecebimento, setDataRecebimento] = useState(hojeISO())
   const [tentouConfirmar, setTentouConfirmar] = useState(false)
   // Leitor ligado: o painel com o laser toma o lugar da busca. Liga pelo botão ou
   // sozinho no primeiro bipe, para ela sempre ver que a leitura chegou.
@@ -250,7 +247,7 @@ export function RegistrarEntrada() {
     >
       <Painel className="registrar-entrada__dados">
         <div className="registrar-entrada__campos">
-          <Campo rotulo="Data do recebimento" type="date" defaultValue={hojeISO()} />
+          <CampoData rotulo="Data do recebimento" valor={dataRecebimento} max={hojeISO()} aoMudar={setDataRecebimento} />
           <Campo rotulo="Fornecedor" opcional icone="caminhao" placeholder="Ex.: Distribuidora Tilibra & Papéis SP" />
           <Campo rotulo="Referência da compra" opcional icone="recibo" placeholder="Ex.: NF-e 45.892 (pedido 1.203)" />
           <Campo rotulo="Observações" opcional placeholder="Ex.: Entrega da manhã, 3 volumes" />

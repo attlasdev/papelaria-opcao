@@ -1,10 +1,10 @@
-import { Campo } from '../../../componentes/campo/Campo'
+import { CampoData } from '../../../componentes/campo/Campo'
 import { CampoMoeda } from '../../../componentes/campo/CampoMoeda'
 import { Icone, type NomeIcone } from '../../../componentes/icone/Icone'
 import { Filtros } from '../../../componentes/filtros/Filtros'
 import { centavosDigitados, moedaDigitada, reais } from '../../../formatar'
 import { hojeISO, NOME_MEIO, type Meio } from '../../../mock/estado-demonstracao'
-import type { FormaPagamento } from '../dados-exemplo'
+import type { FormaPagamento } from '../tipos'
 import './pagamento-ficha.css'
 
 type Props = {
@@ -120,12 +120,11 @@ export function PagamentoFicha(props: Props) {
       {forma === 'notinha' && (
         <div className="pagamento-ficha__detalhe pagamento-ficha__detalhe--notinha">
           <div className="pagamento-ficha__notinha">
-            <Campo
+            <CampoData
               rotulo="Vencimento"
-              type="date"
-              value={props.vencimento}
+              valor={props.vencimento}
               min={hojeISO()}
-              onChange={(e) => props.aoMudarVencimento(e.target.value)}
+              aoMudar={props.aoMudarVencimento}
               erro={Boolean(props.erroVencimento)}
               ajuda={props.erroVencimento}
             />
