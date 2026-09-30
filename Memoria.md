@@ -5,26 +5,70 @@ aprendemos. O que o codigo faz esta no codigo e no git.
 
 ---
 
-## >>> PRÓXIMA SESSÃO — começar por aqui (`2026-09-30`) <<<
+## Análise de função e correções — `2026-09-30` (ler primeiro)
 
-**Tarefa:** análise **de função** do app inteiro, imaginando que ele **já está em
-produção** na papelaria. Mapear o comportamento de cada tela, ficha e modal e
-achar **furos reais para a dona** — não defeito por achar.
+Análise do app como se estivesse em produção (Notas fiscais e impressão fora).
+Victor aprovou corrigir os furos achados; feito, testado no navegador, `npm test`
+(54) e build passam. Commitado em 2026-09-30.
 
-- **Escopo:** ficha (criar, ver, corrigir/cancelar), notinhas (ver, vencer,
-  receber), Clientes e página do cliente, Estoque, Financeiro, Início.
-- **Fora:** Notas fiscais e qualquer impressão/exportação (dependem do programa
-  fiscal terceirizado).
-- **Filtro:** considerar o que já existe e já foi decidido (seções abaixo). Só
-  levar para a lista o que atrapalha a operação ou o controle da dona. Separar
-  furo real de preferência; não inflar a lista.
-- **Já levantado, aguardando validação:** não existe forma de corrigir ficha
-  concluída (sem cancelar/estornar). Proposta: "Cancelar ficha" com motivo, que
-  devolve estoque, estorna no Financeiro e mantém a ficha marcada como Cancelada;
-  editar livre não. Decidir com a dona (ex.: só no mesmo dia).
-- **Formato de entrega:** lista curta por tela, cada item com tipo (furo /
-  incoerência / sugestão) e recomendação; Victor decide o que entra. Não mexer em
-  código antes da decisão.
+**Feito:**
+- **Ficha em andamento se guarda sozinha** (`CriarFicha`, efeito que grava o
+  rascunho a cada mudança). Sair pelo menu, busca ou sino não perde a venda; o
+  Início oferece "Retomar ficha". Saiu o botão "Salvar rascunho" (redundante).
+- **Limpar ficha limpa tudo**, inclusive cliente e forma de pagamento (antes a
+  próxima venda herdava o cliente e a Notinha).
+- **Quantidade digitável** na ficha, além do + e −.
+- **Aviso de dívida no bloco Cliente da ficha:** "R$ X em atraso (N notinhas)"
+  em vermelho, ou "R$ X em aberto" em laranja. Só avisa; não bloqueia.
+- **Desfazer sem apagar, um padrão só** (`ModalMotivo`, motivo obrigatório):
+  - *Cancelar ficha* (página e janela): estoque volta (movimento "Cancelamento"),
+    o que foi pago sai do Financeiro **no dia do cancelamento** (dias passados não
+    mudam), a ficha fica no histórico marcada "Cancelada" e sai das compras do
+    cliente, das vendas do dia e da cobrança. Permitido em qualquer data.
+  - *Estornar recebimento de notinha* (link na lista de pagamentos): o pagamento
+    fica riscado com o motivo e a notinha volta a dever.
+  - *Estornar lançamento manual* (coluna Ações do Financeiro): entra um lançamento
+    de sinal contrário; o original fica marcado "Estornado".
+  - No Financeiro, **estorno abate do próprio lado** (desfazer venda reduz
+    Entradas, desfazer despesa reduz Saídas) e aparece com selo "Estorno".
+- **Anotação na notinha** (página e janela): só se acrescenta, com data. O
+  vencimento **não muda** (decisão do Victor): a anotação lembra o combinado, a
+  notinha continua vencida.
+- **"vs ontem" compara até a mesma hora** (e semana/mês/ano até o mesmo ponto).
+- **Saldo informado no Cadastrar produto vira entrada** "Saldo inicial do
+  cadastro"; esse movimento sozinho não impede excluir cadastro feito por engano.
+
+**Ajustes lógicos (mesma data, pedido do Victor: "tem que funcionar"):**
+- Nova ficha: desconto maior que o subtotal bloqueia (aviso na hora, ao lado do
+  total); vencimento da notinha antes de hoje bloqueia; plurais ("1 unidade");
+  Revisão só mostra troco quando há valor recebido; rascunho não traz de volta
+  produto desativado depois.
+- Receber notinha: data do pagamento entre a notinha mais antiga marcada e hoje.
+- Produto desativado: sai da busca da entrada e do ajuste; bipado ou digitado na
+  entrada, avisa "está desativado" (antes podia virar produto novo com código repetido).
+- Cadastro rápido: sai do Ajustar estoque (ícone some da linha); a contagem é pelo
+  Completar, que tira a marca. Antes o ajuste contava mas deixava "Sem contagem".
+
+**PENDENTE (em aberto, não feito):**
+
+*Decidir com a dona:*
+1. Cancelar ficha: hoje liberado em qualquer data. Limitar a "só no mesmo dia"?
+2. Devolução parcial de itens: hoje só cancela a ficha inteira.
+3. Venda com saldo zerado no sistema: hoje passa, o saldo para em zero e o
+   movimento avisa. Passar, pedir confirmação ou bloquear?
+4. "Retirada do caixa" (levar ao cofre) ainda conta como saída no líquido do
+   Financeiro. Separar ou não?
+5. Custo por lote na entrada de mercadorias (proposta na seção de 2026-09-29).
+6. Pix e cartão em produção: de onde vem o registro (maquininha, banco ou
+   lançamento manual), incluindo crédito/débito e parcelas, que a venda hoje não
+   registra (a amostra tem "Cartão crédito (2x)").
+
+*Decidir com o Victor (adiado):*
+7. Regras de CPF e aviso de nome repetido no cadastro de cliente.
+
+*Testar:*
+8. Leitor de código físico no Electron.
+9. Esta versão no Electron (tudo foi testado no navegador).
 
 ---
 

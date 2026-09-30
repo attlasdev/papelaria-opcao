@@ -27,6 +27,7 @@ type Props = {
   erroRecebido?: string
   erroVencimento?: string
   erroEntrada?: string
+  erroDesconto?: string
 }
 
 const formas: { valor: FormaPagamento; rotulo: string; icone: NomeIcone }[] = [
@@ -53,7 +54,7 @@ export function PagamentoFicha(props: Props) {
         <div>
           <dt>Desconto</dt>
           <dd>
-            <label className="pagamento-ficha__desconto">
+            <label className={props.erroDesconto ? 'pagamento-ficha__desconto pagamento-ficha__desconto--erro' : 'pagamento-ficha__desconto'}>
               <input
                 inputMode="numeric"
                 value={moedaDigitada(desconto)}
@@ -69,6 +70,7 @@ export function PagamentoFicha(props: Props) {
           <dd>{reais(total)}</dd>
         </div>
       </dl>
+      {props.erroDesconto && <p className="pagamento-ficha__erro" role="alert">{props.erroDesconto}</p>}
 
       <h2 className="pagamento-ficha__titulo">Forma de pagamento</h2>
       <div className="pagamento-ficha__formas" role="radiogroup" aria-label="Forma de pagamento">

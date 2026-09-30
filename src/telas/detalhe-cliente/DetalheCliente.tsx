@@ -32,6 +32,7 @@ const selo: Record<SituacaoNotinha, { tom: Tom; titulo: string }> = {
   pago: { tom: 'ok', titulo: 'Pago' },
   pendente: { tom: 'atencao', titulo: 'Pendente' },
   vencido: { tom: 'critico', titulo: 'Vencido' },
+  cancelada: { tom: 'neutro', titulo: 'Cancelada' },
 }
 
 export function DetalheCliente() {
@@ -127,8 +128,8 @@ export function DetalheCliente() {
             rotulo="Total comprado"
             icone="carrinho"
             tom="ok"
-            valor={resumo.fichas.length ? reais(resumo.totalComprado) : '—'}
-            nota={`${resumo.fichas.length} ${resumo.fichas.length === 1 ? 'compra registrada' : 'compras registradas'}`}
+            valor={resumo.compras ? reais(resumo.totalComprado) : '—'}
+            nota={`${resumo.compras} ${resumo.compras === 1 ? 'compra registrada' : 'compras registradas'}`}
           />
           {/* O número que a dona olha quando a cliente pergunta "quanto eu devo?" abre o recebimento. */}
           <button
@@ -146,7 +147,7 @@ export function DetalheCliente() {
             nota={abertas.length ? `${abertas.length} ${abertas.length === 1 ? 'notinha' : 'notinhas'} · clique para receber` : 'Nada a receber'}
           />
           </button>
-          <CartaoResumo rotulo="Ticket médio" icone="recibo" valor={resumo.fichas.length ? reais(resumo.ticketMedio) : '—'} nota="Por compra" />
+          <CartaoResumo rotulo="Ticket médio" icone="recibo" valor={resumo.compras ? reais(resumo.ticketMedio) : '—'} nota="Por compra" />
         </div>
       </div>
 

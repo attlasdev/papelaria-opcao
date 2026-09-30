@@ -135,10 +135,13 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
     }
   }
 
+  function definirQuantidade(codigoBarras: string, proxima: number) {
+    aoMudar(itens.map((i) => (i.codigoBarras === codigoBarras ? { ...i, quantidade: Math.max(1, proxima) } : i)))
+  }
+
   function quantidade(codigoBarras: string, delta: number) {
-    aoMudar(
-      itens.map((i) => (i.codigoBarras === codigoBarras ? { ...i, quantidade: Math.max(1, i.quantidade + delta) } : i)),
-    )
+    const atual = itens.find((i) => i.codigoBarras === codigoBarras)
+    if (atual) definirQuantidade(codigoBarras, atual.quantidade + delta)
   }
 
   const unidades = itens.reduce((soma, i) => soma + i.quantidade, 0)
@@ -229,7 +232,7 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
       <div className="itens-ficha__topo">
         <h2>Itens da ficha</h2>
         <span>
-          {itens.length} {itens.length === 1 ? 'item' : 'itens'} · {unidades} unidades
+          {itens.length} {itens.length === 1 ? 'item' : 'itens'} · {unidades} {unidades === 1 ? 'unidade' : 'unidades'}
         </span>
       </div>
 
@@ -257,7 +260,7 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
                   <button type="button" aria-label="Diminuir" onClick={() => quantidade(item.codigoBarras, -1)}>
                     <Icone nome="menos" tamanho={16} />
                   </button>
-                  <span>{item.quantidade}</span>
+                  <CampoQuantidade valor={item.quantidade} descricao={item.descricao} aoMudar={(n) => definirQuantidade(item.codigoBarras, n)} />
                   <button type="button" aria-label="Aumentar" onClick={() => quantidade(item.codigoBarras, 1)}>
                     <Icone nome="mais" tamanho={16} />
                   </button>
@@ -284,5 +287,30 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
         </tbody>
       </table>
     </section>
+  )
+}
+
+/**
+ * Quantidade digitável (50 folhas não são 50 cliques). Enquanto digita, o campo
+ * pode ficar vazio; ao sair, volta ao último número válido.
+ */
+function CampoQuantidade({ valor, descricao, aoMudar }: { valor: number; descricao: string; aoMudar: (n: number) => void }) {
+  const [texto, setTexto] = useState(String(valor))
+  useEffect(() => setTexto(String(valor)), [valor])
+  return (
+    <input
+      className="itens-ficha__qtd-campo numero"
+      inputMode="numeric"
+      value={texto}
+      aria-label={`Quantidade de ${descricao}`}
+      onFocus={(evento) => evento.target.select()}
+      onChange={(evento) => {
+        const digitos = evento.target.value.replace(/\D/g, '').slice(0, 4)
+        setTexto(digitos)
+        if (Number(digitos) >= 1) aoMudar(Number(digitos))
+      }}
+      onBlur={() => setTexto(String(valor))}
+      onKeyDown={(evento) => { if (evento.key === 'Enter') evento.currentTarget.blur() }}
+    />
   )
 }

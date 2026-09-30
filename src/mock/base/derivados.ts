@@ -8,7 +8,7 @@ import type { Base, Cliente, Ficha, Meio, Produto } from './tipos'
  * data de hoje e devolvem o que a tela mostra. Nenhuma guarda cópia.
  */
 
-export type SituacaoNotinha = 'pago' | 'pendente' | 'vencido'
+export type SituacaoNotinha = 'pago' | 'pendente' | 'vencido' | 'cancelada'
 export type SituacaoCliente = 'em-dia' | 'pendente' | 'vencido'
 export type Notinha = { ficha: Ficha; pago: number; emAberto: number; situacao: SituacaoNotinha; detalhe?: string }
 
@@ -47,12 +47,24 @@ function textoPrazo(vencimento: string, hoje: string) {
   return `Venceu há ${-dias} ${dias === -1 ? 'dia' : 'dias'}`
 }
 
+/** Pagamentos que valem: o estornado fica no registro, mas não conta como pago. */
+export function pagamentosValidos(ficha: Ficha) {
+  return ficha.pagamentos.filter((p) => !p.estorno)
+}
+
+function textoCancelada(ficha: Ficha) {
+  return ficha.cancelamento ? `Em ${dataCurta(ficha.cancelamento.data)}` : undefined
+}
+
 export function notinha(ficha: Ficha, hoje: string): Notinha | null {
   if (ficha.forma !== 'notinha') return null
-  const pago = ficha.pagamentos.reduce((t, p) => t + p.valor, 0)
+  const validos = pagamentosValidos(ficha)
+  const pago = validos.reduce((t, p) => t + p.valor, 0)
+  // Cancelada não deve nada: sai da cobrança, do sino e do total em aberto.
+  if (ficha.cancelamento) return { ficha, pago, emAberto: 0, situacao: 'cancelada', detalhe: textoCancelada(ficha) }
   const emAberto = Math.max(0, ficha.total - pago)
   if (emAberto === 0) {
-    const ultimo = ficha.pagamentos[ficha.pagamentos.length - 1]
+    const ultimo = validos[validos.length - 1]
     return { ficha, pago, emAberto, situacao: 'pago', detalhe: ultimo ? `Quitada em ${dataCurta(ultimo.data)}` : undefined }
   }
   const vencimento = ficha.vencimento ?? hoje
@@ -64,7 +76,8 @@ export function notinha(ficha: Ficha, hoje: string): Notinha | null {
 /** Situação de qualquer ficha: à vista é sempre paga. */
 export function situacaoDaFicha(ficha: Ficha, hoje: string): { situacao: SituacaoNotinha; detalhe?: string } {
   const n = notinha(ficha, hoje)
-  return n ? { situacao: n.situacao, detalhe: n.detalhe } : { situacao: 'pago' }
+  if (n) return { situacao: n.situacao, detalhe: n.detalhe }
+  return ficha.cancelamento ? { situacao: 'cancelada', detalhe: textoCancelada(ficha) } : { situacao: 'pago' }
 }
 
 export function notinhasDoCliente(base: Base, clienteId: string, hoje: string) {
@@ -76,14 +89,17 @@ export function notinhasDoCliente(base: Base, clienteId: string, hoje: string) {
 
 export function resumoDoCliente(base: Base, clienteId: string, hoje: string) {
   const fichas = base.fichas.filter((f) => f.clienteId === clienteId).sort(porDataDecrescente)
-  const totalComprado = fichas.reduce((t, f) => t + f.total, 0)
+  // A cancelada fica no histórico, mas não é compra.
+  const compras = fichas.filter((f) => !f.cancelamento)
+  const totalComprado = compras.reduce((t, f) => t + f.total, 0)
   const abertas = fichas.map((f) => notinha(f, hoje)).filter((n): n is Notinha => n !== null && n.emAberto > 0)
   const emAberto = abertas.reduce((t, n) => t + n.emAberto, 0)
   const situacao: SituacaoCliente = abertas.some((n) => n.situacao === 'vencido') ? 'vencido' : abertas.length ? 'pendente' : 'em-dia'
   return {
     fichas,
     totalComprado,
-    ticketMedio: fichas.length ? Math.round(totalComprado / fichas.length) : 0,
+    compras: compras.length,
+    ticketMedio: compras.length ? Math.round(totalComprado / compras.length) : 0,
     abertas,
     emAberto,
     situacao,
@@ -119,6 +135,10 @@ export type LinhaFinanceiro = {
   meio: Meio
   meioRotulo: string
   valor: number
+  /** Lançamento manual que ainda pode ser estornado. */
+  estornavel?: boolean
+  /** Lançamento manual já desfeito por um estorno. */
+  estornado?: boolean
 }
 
 /**
@@ -126,21 +146,44 @@ export type LinhaFinanceiro = {
  * e os lançamentos manuais. Notinha só aparece quando alguém paga.
  */
 export function movimentosFinanceiro(base: Base): LinhaFinanceiro[] {
-  const daVenda = base.fichas.flatMap((f) => f.pagamentos.map((p, indice) => ({
-    id: `${f.id}-${indice}`,
-    data: p.data,
-    horario: p.horario,
-    descricao: f.forma !== 'notinha' ? `Venda da ficha #${f.id}` : p.entrada ? `Entrada da notinha #${f.id}` : `Recebimento da notinha #${f.id}`,
-    origem: `Balcão · ${nomeCliente(base, f.clienteId)}`,
-    ficha: f.id,
-    categoria: f.forma === 'notinha' ? 'Recebimento de notinha' : 'Venda',
-    meio: p.meio,
-    meioRotulo: p.rotulo ?? NOME_MEIO[p.meio],
-    valor: p.valor,
-  })))
-  const manuais = base.movimentosCaixa.map((m) => ({ ...m, meioRotulo: NOME_MEIO[m.meio] }))
+  const daVenda = base.fichas.flatMap((f) => f.pagamentos.flatMap((p, indice) => {
+    const linha: LinhaFinanceiro = {
+      id: `${f.id}-${indice}`,
+      data: p.data,
+      horario: p.horario,
+      descricao: f.forma !== 'notinha' ? `Venda da ficha #${f.id}` : p.entrada ? `Entrada da notinha #${f.id}` : `Recebimento da notinha #${f.id}`,
+      origem: `Balcão · ${nomeCliente(base, f.clienteId)}`,
+      ficha: f.id,
+      categoria: f.forma === 'notinha' ? 'Recebimento de notinha' : 'Venda',
+      meio: p.meio,
+      meioRotulo: p.rotulo ?? NOME_MEIO[p.meio],
+      valor: p.valor,
+    }
+    // O dinheiro que entrou continua no dia em que entrou; o estorno sai no dia do estorno.
+    const desfeito = p.estorno ?? f.cancelamento
+    if (!desfeito) return [linha]
+    return [linha, {
+      ...linha,
+      id: `${linha.id}-estorno`,
+      data: desfeito.data,
+      horario: desfeito.horario,
+      descricao: p.estorno ? `Estorno do recebimento da notinha #${f.id}` : `Cancelamento da ficha #${f.id}`,
+      origem: `${nomeCliente(base, f.clienteId)} · ${desfeito.motivo}`,
+      categoria: CATEGORIA_ESTORNO,
+      valor: -p.valor,
+    }]
+  }))
+  const estornados = new Set(base.movimentosCaixa.flatMap((m) => (m.estornoDe ? [m.estornoDe] : [])))
+  const manuais = base.movimentosCaixa.map((m) => ({
+    ...m,
+    meioRotulo: NOME_MEIO[m.meio],
+    estornado: estornados.has(m.id),
+    estornavel: !m.estornoDe && !estornados.has(m.id),
+  }))
   return [...daVenda, ...manuais].sort(porDataDecrescente)
 }
+
+export const CATEGORIA_ESTORNO = 'Estorno'
 
 export type Variacao = { texto: string; direcao: 'alta' | 'baixa' }
 
@@ -150,16 +193,24 @@ function variacaoPercentual(atual: number, anterior: number): Variacao | undefin
   return { texto: `${pct >= 0 ? '+' : ''}${pct.toFixed(1).replace('.', ',')}%`, direcao: pct >= 0 ? 'alta' : 'baixa' }
 }
 
-export function resumoFinanceiro(linhas: LinhaFinanceiro[], periodo: Periodo, referencia: string) {
+/**
+ * `agora` (HH:MM) corta o período anterior no mesmo ponto: às 10h, hoje é comparado
+ * com ontem até as 10h, não com ontem inteiro (senão toda manhã parece queda).
+ */
+export function resumoFinanceiro(linhas: LinhaFinanceiro[], periodo: Periodo, referencia: string, agora = '23:59') {
   const doPeriodo = linhas.filter((l) => noPeriodo(l.data, periodo, referencia))
   const anterior = periodoAnterior(periodo, referencia)
-  const entradasDe = (ls: LinhaFinanceiro[]) => ls.filter((l) => l.valor > 0).reduce((t, l) => t + l.valor, 0)
+  const ateOMesmoPonto = (l: LinhaFinanceiro) => l.data < anterior || (l.data === anterior && l.horario <= agora)
+  // Estorno abate do próprio lado: desfazer uma venda reduz as entradas, desfazer
+  // uma despesa reduz as saídas. Assim nenhum dos dois totais fica inflado.
+  const ehEntrada = (l: LinhaFinanceiro) => (l.categoria === CATEGORIA_ESTORNO ? l.valor < 0 : l.valor > 0)
+  const entradasDe = (ls: LinhaFinanceiro[]) => ls.filter(ehEntrada).reduce((t, l) => t + l.valor, 0)
   const entradas = entradasDe(doPeriodo)
-  const saidasLista = doPeriodo.filter((l) => l.valor < 0)
-  const saidas = saidasLista.reduce((t, l) => t - l.valor, 0)
+  const saidas = doPeriodo.filter((l) => !ehEntrada(l)).reduce((t, l) => t - l.valor, 0)
+  const saidasLista = doPeriodo.filter((l) => l.valor < 0 && l.categoria !== CATEGORIA_ESTORNO)
   const porMeio = (['pix', 'cartao', 'dinheiro'] as const).map((meio) => ({
     meio,
-    valor: doPeriodo.filter((l) => l.valor > 0 && l.meio === meio).reduce((t, l) => t + l.valor, 0),
+    valor: doPeriodo.filter((l) => ehEntrada(l) && l.meio === meio).reduce((t, l) => t + l.valor, 0),
   }))
   const maior = [...porMeio].sort((a, b) => b.valor - a.valor)[0]
   return {
@@ -167,8 +218,8 @@ export function resumoFinanceiro(linhas: LinhaFinanceiro[], periodo: Periodo, re
     saidas,
     quantidadeSaidas: saidasLista.length,
     liquido: entradas - saidas,
-    variacao: variacaoPercentual(entradas, entradasDe(linhas.filter((l) => noPeriodo(l.data, periodo, anterior)))),
-    meioMaisUsado: maior.valor > 0 ? { ...maior, participacao: Math.round((maior.valor / entradas) * 100) } : undefined,
+    variacao: variacaoPercentual(entradas, entradasDe(linhas.filter((l) => noPeriodo(l.data, periodo, anterior) && ateOMesmoPonto(l)))),
+    meioMaisUsado: maior.valor > 0 && entradas > 0 ? { ...maior, participacao: Math.round((maior.valor / entradas) * 100) } : undefined,
     contagem: {
       todos: doPeriodo.length,
       pix: doPeriodo.filter((l) => l.meio === 'pix').length,
@@ -178,9 +229,9 @@ export function resumoFinanceiro(linhas: LinhaFinanceiro[], periodo: Periodo, re
   }
 }
 
-export function resumoDoDia(base: Base, dia: string) {
-  const r = resumoFinanceiro(movimentosFinanceiro(base), 'dia', dia)
-  const vendas = base.fichas.filter((f) => f.data === dia)
+export function resumoDoDia(base: Base, dia: string, agora?: string) {
+  const r = resumoFinanceiro(movimentosFinanceiro(base), 'dia', dia, agora)
+  const vendas = base.fichas.filter((f) => f.data === dia && !f.cancelamento)
   const totalVendido = vendas.reduce((t, f) => t + f.total, 0)
   return {
     recebimentos: r.entradas,
@@ -204,9 +255,12 @@ export function produtosAtivos(base: Base) {
   return base.produtos.filter((p) => !p.inativo)
 }
 
+/** Motivo da entrada que o próprio cadastro gera; sozinha, não é histórico. */
+export const MOTIVO_SALDO_INICIAL = 'Saldo inicial do cadastro'
+
 /** Já vendido, movimentado ou numa ficha em andamento: apagar quebraria esse registro. */
 export function produtoTemHistorico(base: Base, codigo: string) {
-  return base.movimentosEstoque.some((m) => m.produto === codigo)
+  return base.movimentosEstoque.some((m) => m.produto === codigo && m.motivo !== MOTIVO_SALDO_INICIAL)
     || base.fichas.some((f) => f.itens.some((i) => i.codigo === codigo))
     || Boolean(base.rascunhoFicha?.itens.some((i) => i.codigo === codigo))
 }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet, useNavigate } from 'react-router'
 import { Tela } from '../../componentes/layout/tela/Tela'
 import { Botao } from '../../componentes/botao/Botao'
+import { ModalMotivo } from '../../componentes/modal/ModalMotivo'
 import { CartaoResumo, Painel } from '../../componentes/painel/Painel'
 import { Filtros } from '../../componentes/filtros/Filtros'
 import { Tabela } from '../../componentes/tabela/Tabela'
@@ -12,7 +13,10 @@ import type { NomeIcone } from '../../componentes/icone/Icone'
 import { useSemDestino } from '../../componentes/aviso/Aviso'
 import { dataCurta, reais, reaisComSinal } from '../../formatar'
 import {
+  agoraHorario,
+  CATEGORIA_ESTORNO,
   dataPorExtenso,
+  estornarMovimentoCaixa,
   hojeISO,
   movimentosFinanceiro,
   NOME_MEIO,
@@ -20,6 +24,7 @@ import {
   resumoFinanceiro,
   useEstadoDemonstracao,
   type Meio,
+  type LinhaFinanceiro,
   type Periodo,
 } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
@@ -30,20 +35,22 @@ type FiltroMeio = 'todos' | Meio
 
 const iconeMeio: Record<Meio, NomeIcone> = { pix: 'pix', cartao: 'cartao', dinheiro: 'dinheiro' }
 const nomePeriodo: Record<Periodo, string> = { dia: 'dia', semana: 'semana', mes: 'mês', ano: 'ano' }
-const anterior: Record<Periodo, string> = { dia: 'vs ontem', semana: 'vs semana anterior', mes: 'vs mês anterior', ano: 'vs ano anterior' }
+// A comparação para no mesmo ponto do período anterior (ver resumoFinanceiro).
+const anterior: Record<Periodo, string> = { dia: 'vs ontem, até esta hora', semana: 'vs semana anterior, até hoje', mes: 'vs mês anterior, até hoje', ano: 'vs ano anterior, até hoje' }
 
 export function Financeiro() {
   const abrirFicha = useAbrirFicha()
   const [periodo, setPeriodo] = useState<Periodo>('dia')
   const [meio, setMeio] = useState<FiltroMeio>('todos')
   const [pagina, setPagina] = useState(1)
+  const [estornando, setEstornando] = useState<LinhaFinanceiro | null>(null)
   const { referencia: painelMovimentos, linhasPorPagina } = useLinhasPorPagina()
   const semDestino = useSemDestino()
   const navegar = useNavigate()
   const base = useEstadoDemonstracao()
   const hoje = hojeISO()
   const linhas = movimentosFinanceiro(base)
-  const r = resumoFinanceiro(linhas, periodo, hoje)
+  const r = resumoFinanceiro(linhas, periodo, hoje, agoraHorario())
   const doPeriodo = linhas.filter((l) => noPeriodo(l.data, periodo, hoje))
   const lista = meio === 'todos' ? doPeriodo : doPeriodo.filter((m) => m.meio === meio)
   const totalPaginas = Math.max(1, Math.ceil(lista.length / linhasPorPagina))
@@ -161,12 +168,13 @@ export function Financeiro() {
               <th>Meio</th>
               <th>Fluxo</th>
               <th className="celula--numero">Valor</th>
+              <th className="celula--acoes">Ações</th>
             </tr>
           </thead>
           <tbody>
             {lista.length === 0 && (
               <tr>
-                <td colSpan={6} className="financeiro__movimentos-vazio">
+                <td colSpan={7} className="financeiro__movimentos-vazio">
                   Nenhuma movimentação neste {nomePeriodo[periodo]}.
                 </td>
               </tr>
@@ -196,10 +204,21 @@ export function Financeiro() {
                     <Etiqueta icone={iconeMeio[mov.meio]}>{mov.meioRotulo}</Etiqueta>
                   </td>
                   <td>
-                    <SeloCompacto tom={entrada ? 'ok' : 'critico'}>{entrada ? 'Entrada' : 'Saída'}</SeloCompacto>
+                    {mov.categoria === CATEGORIA_ESTORNO
+                      ? <SeloCompacto tom="neutro">Estorno</SeloCompacto>
+                      : <SeloCompacto tom={entrada ? 'ok' : 'critico'}>{entrada ? 'Entrada' : 'Saída'}</SeloCompacto>}
                   </td>
                   <td className={`celula--numero financeiro__valor financeiro__valor--${entrada ? 'entrada' : 'saida'}`}>
                     {reaisComSinal(mov.valor)}
+                  </td>
+                  <td className="celula--acoes">
+                    {/* Venda e recebimento se corrigem na ficha; aqui só o lançamento manual. */}
+                    {mov.estornado && <SeloCompacto tom="neutro">Estornado</SeloCompacto>}
+                    {mov.estornavel && (
+                      <Botao tamanho="pequeno" variante="fantasma" onClick={() => setEstornando(mov)}>
+                        Estornar
+                      </Botao>
+                    )}
                   </td>
                 </tr>
               )
@@ -213,6 +232,21 @@ export function Financeiro() {
       <p className="financeiro__nota">
         Relatório do balcão. Não substitui a contabilidade.
       </p>
+      {estornando && (
+        <ModalMotivo
+          titulo="Estornar lançamento"
+          subtitulo={`${estornando.descricao} · ${reaisComSinal(estornando.valor)} em ${dataCurta(estornando.data)}`}
+          consequencias={
+            <ul>
+              <li>Entra hoje um lançamento de <strong>{reaisComSinal(-estornando.valor)}</strong> que anula este.</li>
+              <li>O original fica na lista, marcado como estornado.{estornando.data !== hoje && ` O dia ${dataCurta(estornando.data)} não muda.`}</li>
+            </ul>
+          }
+          textoConfirmar="Estornar lançamento"
+          aoConfirmar={(motivo) => { estornarMovimentoCaixa(estornando.id, motivo); setEstornando(null) }}
+          aoFechar={() => setEstornando(null)}
+        />
+      )}
       <Outlet />
     </Tela>
   )

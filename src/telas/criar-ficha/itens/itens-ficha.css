@@ -235,6 +235,22 @@
   background: var(--color-superficie-2);
 }
 
+.itens-ficha__qtd-campo {
+  width: 44px;
+  height: 30px;
+  border: 0;
+  border-inline: 1px solid var(--color-borda);
+  background: transparent;
+  font-weight: var(--font-weight-forte);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.itens-ficha__qtd-campo:focus {
+  outline: 2px solid var(--color-tinta);
+  outline-offset: -2px;
+}
+
 .itens-ficha__qtd span {
   min-width: 32px;
   font-weight: var(--font-weight-forte);

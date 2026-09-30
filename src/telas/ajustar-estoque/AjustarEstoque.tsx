@@ -16,7 +16,8 @@ export function AjustarEstoque() {
   const [parametros] = useSearchParams()
   const navegar = useNavigate()
   const fechar = useCallback(() => navegar(rotas.estoque), [navegar])
-  const { produtos } = useEstadoDemonstracao()
+  // Desativado sai das contas; cadastro rápido se conta pelo Completar, que tira a marca.
+  const produtos = useEstadoDemonstracao().produtos.filter((p) => !p.inativo && !p.cadastroRapido)
   const [codigo, setCodigo] = useState(parametros.get('produto') ?? '')
   const produto = produtos.find((item) => item.codigo === codigo)
   const [contagem, setContagem] = useState(produto ? String(produto.saldo) : '')

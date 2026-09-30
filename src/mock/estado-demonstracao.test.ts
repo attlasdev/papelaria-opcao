@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  anotarFicha,
   avisoLido,
+  cancelarFicha,
+  estornarMovimentoCaixa,
+  estornarPagamento,
+  registrarMovimentoCaixa,
+  resumoFinanceiro,
   buscar,
   cadastrarCliente,
   cadastrarProduto,
@@ -150,5 +156,86 @@ describe('editar, excluir e desativar produto', () => {
     expect(resumoEstoque(obterBase())).toMatchObject({ produtos: antes - 1, desativados: 1 })
     definirProdutoAtivo('EST-0021', true)
     expect(obterBase().produtos.find((p) => p.codigo === 'EST-0021')?.inativo).toBeUndefined()
+  })
+})
+
+describe('saldo inicial do cadastro', () => {
+  it('vira a primeira entrada do histórico, sem impedir excluir cadastro por engano', () => {
+    const codigo = cadastrarProduto({ descricao: 'Grampo 26/6', categoria: 'Escritório', grupo: 'escritorio', unidade: 'cx', preco: 800, saldo: 5, minimo: 1 })
+    expect(obterBase().movimentosEstoque.filter((m) => m.produto === codigo)).toMatchObject([{ tipo: 'Entrada', antes: 0, depois: 5 }])
+    expect(excluirProduto(codigo)).toBe(true)
+    expect(obterBase().movimentosEstoque.some((m) => m.produto === codigo)).toBe(false)
+  })
+})
+
+describe('cancelar ficha', () => {
+  const venda = () => concluirFicha({
+    clienteId: 'CLI-0107', data: HOJE, horario: '14:00', desconto: 0, total: 5600, forma: 'pix',
+    itens: [{ codigo: 'EST-0021', descricao: 'Caderno', quantidade: 2, preco: 2800 }],
+    pagamentos: [{ data: HOJE, horario: '14:00', meio: 'pix', valor: 5600 }],
+  })
+
+  it('devolve o estoque, estorna o pago e tira das compras do cliente', () => {
+    const saldoAntes = obterBase().produtos.find((p) => p.codigo === 'EST-0021')!.saldo
+    const id = venda()
+    const comprasAntes = resumoDoCliente(obterBase(), 'CLI-0107', HOJE).totalComprado
+    expect(cancelarFicha(id, '')).toBe(false)
+    expect(cancelarFicha(id, 'Cliente desistiu')).toBe(true)
+    expect(cancelarFicha(id, 'de novo')).toBe(false)
+    expect(obterBase().produtos.find((p) => p.codigo === 'EST-0021')!.saldo).toBe(saldoAntes)
+    expect(obterBase().movimentosEstoque[0]).toMatchObject({ tipo: 'Cancelamento', motivo: `Ficha #${id} cancelada · Cliente desistiu` })
+    const linhas = movimentosFinanceiro(obterBase()).filter((l) => l.ficha === id)
+    expect(linhas.map((l) => l.valor).sort((a, b) => a - b)).toEqual([-5600, 5600])
+    expect(resumoDoCliente(obterBase(), 'CLI-0107', HOJE).totalComprado).toBe(comprasAntes - 5600)
+  })
+
+  it('notinha cancelada sai da cobrança', () => {
+    const aberta = notinhasDoCliente(obterBase(), 'CLI-0106', HOJE).find((n) => n.emAberto > 0)!
+    expect(cancelarFicha(aberta.ficha.id, 'Lançada no cliente errado')).toBe(true)
+    expect(resumoDoCliente(obterBase(), 'CLI-0106', HOJE).abertas.some((n) => n.ficha.id === aberta.ficha.id)).toBe(false)
+  })
+})
+
+describe('estornos', () => {
+  it('recebimento estornado volta a dever e sai do caixa no dia do estorno', () => {
+    const aberta = notinhasDoCliente(obterBase(), 'CLI-0106', HOJE).find((n) => n.emAberto > 0)!
+    receberNotinhas([aberta.ficha.id], { data: HOJE, horario: '15:00', meio: 'dinheiro', valor: aberta.emAberto })
+    const ficha = obterBase().fichas.find((f) => f.id === aberta.ficha.id)!
+    expect(estornarPagamento(ficha.id, ficha.pagamentos.length - 1, 'Valor errado')).toBe(true)
+    expect(notinhasDoCliente(obterBase(), 'CLI-0106', HOJE).find((n) => n.ficha.id === ficha.id)?.emAberto).toBe(aberta.emAberto)
+    expect(estornarPagamento(ficha.id, ficha.pagamentos.length - 1, 'de novo')).toBe(false)
+    const estorno = movimentosFinanceiro(obterBase()).find((l) => l.id === `${ficha.id}-${ficha.pagamentos.length - 1}-estorno`)
+    expect(estorno).toMatchObject({ valor: -aberta.emAberto, categoria: 'Estorno' })
+  })
+
+  it('lançamento manual é anulado por outro de sinal contrário, uma vez só', () => {
+    registrarMovimentoCaixa({ data: HOJE, horario: '15:00', descricao: 'Material de limpeza', origem: 'Lançamento manual', categoria: 'Despesa', meio: 'dinheiro', valor: -9000 })
+    const original = obterBase().movimentosCaixa[0]
+    expect(estornarMovimentoCaixa(original.id, 'Digitei 90 em vez de 9')).toBe(true)
+    expect(estornarMovimentoCaixa(original.id, 'de novo')).toBe(false)
+    expect(obterBase().movimentosCaixa[0]).toMatchObject({ valor: 9000, estornoDe: original.id })
+    const linhas = movimentosFinanceiro(obterBase())
+    expect(linhas.find((l) => l.id === original.id)).toMatchObject({ estornado: true, estornavel: false })
+    // O estorno abate a saída; não vira entrada.
+    const r = resumoFinanceiro(linhas.filter((l) => l.id === original.id || l.id === obterBase().movimentosCaixa[0].id), 'ano', HOJE)
+    expect(r).toMatchObject({ entradas: 0, saidas: 0, liquido: 0, quantidadeSaidas: 1 })
+  })
+})
+
+describe('anotação na ficha', () => {
+  it('só acrescenta, com data', () => {
+    const id = obterBase().fichas[0].id
+    expect(anotarFicha(id, '  ')).toBe(false)
+    expect(anotarFicha(id, 'Combinou pagar dia 15')).toBe(true)
+    expect(obterBase().fichas.find((f) => f.id === id)?.anotacoes?.at(-1)?.texto).toBe('Combinou pagar dia 15')
+  })
+})
+
+describe('comparação com o período anterior', () => {
+  it('corta o dia anterior na mesma hora', () => {
+    const linha = (data: string, horario: string, valor: number) => ({ id: `${data}${horario}`, data, horario, descricao: '', origem: '', categoria: 'Venda', meio: 'pix' as const, meioRotulo: 'Pix', valor })
+    const linhas = [linha('2026-09-24', '09:00', 1000), linha('2026-09-24', '17:00', 9000), linha(HOJE, '09:30', 1000)]
+    expect(resumoFinanceiro(linhas, 'dia', HOJE, '10:00').variacao?.texto).toBe('+0,0%')
+    expect(resumoFinanceiro(linhas, 'dia', HOJE).variacao?.texto).toBe('-90,0%')
   })
 })

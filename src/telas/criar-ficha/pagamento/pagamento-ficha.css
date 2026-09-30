@@ -171,3 +171,14 @@
   font-size: var(--text-rotulo);
   color: var(--color-texto-suave);
 }
+
+/* Desconto maior que o subtotal: o total que aparece já estaria errado */
+.pagamento-ficha__desconto--erro {
+  border-color: var(--color-saida);
+}
+
+.pagamento-ficha__erro {
+  margin-top: var(--espaco-1);
+  font-size: var(--text-rotulo);
+  color: var(--color-saida);
+}

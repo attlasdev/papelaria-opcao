@@ -53,6 +53,12 @@ export type Produto = {
   inativo?: true
 }
 
+/** Desfazer sem apagar: o registro original fica, marcado com quando e por quê. */
+export type Estorno = { data: string; horario: string; motivo: string }
+
+/** Lembrete da dona na ficha (ex.: prazo combinado). Só se acrescenta. */
+export type Anotacao = { data: string; horario: string; texto: string }
+
 export type ItemVenda = { codigo: string; descricao: string; quantidade: number; preco: number }
 
 /** Um dinheiro que entrou por causa de uma ficha. */
@@ -65,6 +71,8 @@ export type Pagamento = {
   entrada?: boolean
   /** Rótulo mais preciso do meio, como "Cartão crédito (2x)". */
   rotulo?: string
+  /** Recebimento lançado por engano: sai do pago e volta a dever. */
+  estorno?: Estorno
 }
 
 export type Ficha = {
@@ -80,6 +88,9 @@ export type Ficha = {
   /** À vista: um pagamento na hora. Notinha: entrada e recebimentos, em ordem. */
   pagamentos: Pagamento[]
   vencimento?: string // só notinha
+  /** Venda desfeita: estoque devolvido e pagamentos estornados na data do cancelamento. */
+  cancelamento?: Estorno
+  anotacoes?: Anotacao[]
 }
 
 /** Lançamento manual do caixa (despesa, retirada, troco, recebimento avulso). */
@@ -92,6 +103,8 @@ export type MovimentoCaixa = {
   categoria: string
   meio: Meio
   valor: number // negativo = saída
+  /** Este lançamento desfaz outro (id), com o valor invertido. */
+  estornoDe?: string
 }
 
 export type MovimentoEstoque = {
@@ -99,7 +112,7 @@ export type MovimentoEstoque = {
   data: string // ISO com hora, para ordenar
   produto: string
   descricao: string
-  tipo: 'Entrada' | 'Ajuste' | 'Venda'
+  tipo: 'Entrada' | 'Ajuste' | 'Venda' | 'Cancelamento'
   antes: number
   depois: number
   motivo: string

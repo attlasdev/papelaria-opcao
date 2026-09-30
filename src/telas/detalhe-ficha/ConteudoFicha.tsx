@@ -1,14 +1,21 @@
+import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { Botao } from '../../componentes/botao/Botao'
+import { ModalMotivo } from '../../componentes/modal/ModalMotivo'
 import { ComIcone, Icone, type NomeIcone } from '../../componentes/icone/Icone'
 import { Tabela } from '../../componentes/tabela/Tabela'
 import { SeloSituacao, type Tom } from '../../componentes/selo/Selo'
 import { dataCurta, reais } from '../../formatar'
 import {
+  anotarFicha,
+  cancelarFicha,
+  estornarPagamento,
+  hojeISO,
   NOME_MEIO,
   nomeCliente,
   notinha as notinhaDa,
   notinhasDoCliente,
+  pagamentosValidos,
   rotuloForma,
   situacaoDaFicha,
   type Base,
@@ -29,6 +36,7 @@ const situacoes: Record<SituacaoNotinha, { tom: Tom; titulo: string }> = {
   pago: { tom: 'ok', titulo: 'Pago' },
   pendente: { tom: 'atencao', titulo: 'Pendente' },
   vencido: { tom: 'critico', titulo: 'Vencido' },
+  cancelada: { tom: 'neutro', titulo: 'Cancelada' },
 }
 
 export const iconeForma: Record<FormaVenda, NomeIcone> = {
@@ -143,22 +151,144 @@ export function TotaisFicha({ ficha, hoje }: Omit<Props, 'base'>) {
 
 export function PagamentosFicha({ ficha }: { ficha: Ficha }) {
   const notinha = ficha.forma === 'notinha'
+  // Recebimento lançado errado se estorna aqui; venda à vista se corrige cancelando a ficha.
+  const [estornando, setEstornando] = useState<number | null>(null)
   if (ficha.pagamentos.length === 0) return <p className="detalhe-ficha__resumo">Nenhum pagamento registrado ainda.</p>
+  const alvo = estornando === null ? undefined : ficha.pagamentos[estornando]
   return (
-    <ul className="detalhe-ficha__pagamentos">
-      {ficha.pagamentos.map((pagamento, indice) => (
-        <li key={indice}>
-          <span className="detalhe-ficha__pagamento-meio" title={NOME_MEIO[pagamento.meio]}>
-            <Icone nome={iconeForma[pagamento.meio]} tamanho={18} />
-          </span>
-          <span className="detalhe-ficha__pagamento-texto">
-            <strong>{!notinha ? 'Na venda' : pagamento.entrada ? 'Entrada na venda' : 'Recebimento'}</strong>
-            <small>{dataCurta(pagamento.data)} · {pagamento.horario} · {pagamento.rotulo ?? NOME_MEIO[pagamento.meio]}</small>
-          </span>
-          <strong className="numero">{reais(pagamento.valor)}</strong>
-        </li>
-      ))}
-    </ul>
+    <>
+      <ul className="detalhe-ficha__pagamentos">
+        {ficha.pagamentos.map((pagamento, indice) => {
+          const desfeito = pagamento.estorno ?? ficha.cancelamento
+          return (
+            <li key={indice} className={desfeito ? 'detalhe-ficha__pagamento--estornado' : undefined}>
+              <span className="detalhe-ficha__pagamento-meio" title={NOME_MEIO[pagamento.meio]}>
+                <Icone nome={iconeForma[pagamento.meio]} tamanho={18} />
+              </span>
+              <span className="detalhe-ficha__pagamento-texto">
+                <strong>{!notinha ? 'Na venda' : pagamento.entrada ? 'Entrada na venda' : 'Recebimento'}</strong>
+                <small>{dataCurta(pagamento.data)} · {pagamento.horario} · {pagamento.rotulo ?? NOME_MEIO[pagamento.meio]}</small>
+                {desfeito && (
+                  <small className="detalhe-ficha__estorno">
+                    Estornado em {dataCurta(desfeito.data)} · {desfeito.motivo}
+                  </small>
+                )}
+              </span>
+              <span className="detalhe-ficha__pagamento-valor">
+                <strong className="numero">{reais(pagamento.valor)}</strong>
+                {notinha && !desfeito && (
+                  <button type="button" className="detalhe-ficha__estornar" onClick={() => setEstornando(indice)}>
+                    Estornar
+                  </button>
+                )}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+      {alvo && estornando !== null && (
+        <ModalMotivo
+          titulo="Estornar recebimento"
+          subtitulo={`Notinha #${ficha.id} · ${reais(alvo.valor)} em ${dataCurta(alvo.data)}`}
+          consequencias={
+            <ul>
+              <li>O recebimento fica no registro, marcado como estornado.</li>
+              <li><strong>{reais(alvo.valor)}</strong> saem do Financeiro hoje ({NOME_MEIO[alvo.meio]}).{alvo.data !== hojeISO() && ` O dia ${dataCurta(alvo.data)} não muda.`}</li>
+              <li>A notinha volta a dever esse valor.</li>
+            </ul>
+          }
+          textoConfirmar="Estornar recebimento"
+          aoConfirmar={(motivo) => { estornarPagamento(ficha.id, estornando, motivo); setEstornando(null) }}
+          aoFechar={() => setEstornando(null)}
+        />
+      )}
+    </>
+  )
+}
+
+/** Ficha cancelada: quando e por quê, acima de tudo. */
+export function FaixaCancelada({ ficha }: { ficha: Ficha }) {
+  if (!ficha.cancelamento) return null
+  return (
+    <div className="detalhe-ficha__cancelada" role="status">
+      <Icone nome="erro" tamanho={18} />
+      <p>
+        <strong>Ficha cancelada</strong> em {dataCurta(ficha.cancelamento.data)} às {ficha.cancelamento.horario} · {ficha.cancelamento.motivo}.
+        Itens devolvidos ao estoque e pagamentos estornados.
+      </p>
+    </div>
+  )
+}
+
+/**
+ * Desfaz a venda sem apagar: o estoque volta, o pago sai do caixa hoje e a ficha
+ * fica no histórico como cancelada.
+ */
+export function BotaoCancelarFicha({ ficha }: { ficha: Ficha }) {
+  const [aberto, setAberto] = useState(false)
+  if (ficha.cancelamento) return null
+  const unidades = ficha.itens.reduce((t, i) => t + i.quantidade, 0)
+  const pago = pagamentosValidos(ficha).reduce((t, p) => t + p.valor, 0)
+  const emAberto = ficha.forma === 'notinha' ? Math.max(0, ficha.total - pago) : 0
+  return (
+    <>
+      <Botao variante="fantasma" icone="erro" className="detalhe-ficha__cancelar" onClick={() => setAberto(true)}>
+        Cancelar ficha
+      </Botao>
+      {aberto && (
+        <ModalMotivo
+          titulo={`Cancelar ficha #${ficha.id}`}
+          subtitulo={`${reais(ficha.total)} · ${dataCurta(ficha.data)} às ${ficha.horario}`}
+          consequencias={
+            <ul>
+              <li>{unidades === 1 ? '1 unidade volta' : `${unidades} unidades voltam`} ao estoque.</li>
+              {pago > 0 && <li><strong>{reais(pago)}</strong> saem do Financeiro hoje, como estorno. Os dias já fechados não mudam.</li>}
+              {emAberto > 0 && <li>Os {reais(emAberto)} em aberto deixam de ser cobrados.</li>}
+              <li>A ficha continua no histórico, marcada como cancelada.</li>
+            </ul>
+          }
+          textoConfirmar="Cancelar ficha"
+          aoConfirmar={(motivo) => { cancelarFicha(ficha.id, motivo); setAberto(false) }}
+          aoFechar={() => setAberto(false)}
+        />
+      )}
+    </>
+  )
+}
+
+/**
+ * Lembretes da ficha, como um prazo combinado com o cliente. O vencimento da
+ * notinha não muda: a anotação explica, a situação continua a verdadeira.
+ */
+export function AnotacoesFicha({ ficha }: { ficha: Ficha }) {
+  const [texto, setTexto] = useState('')
+  const anotacoes = ficha.anotacoes ?? []
+  function anotar(evento: FormEvent) {
+    evento.preventDefault()
+    if (anotarFicha(ficha.id, texto)) setTexto('')
+  }
+  return (
+    <div className="detalhe-ficha__anotacoes">
+      {anotacoes.length > 0 && (
+        <ul>
+          {anotacoes.map((a, indice) => (
+            <li key={indice}>
+              <small className="numero">{dataCurta(a.data)} · {a.horario}</small>
+              <p>{a.texto}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+      <form className="detalhe-ficha__anotar" onSubmit={anotar}>
+        <input
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          placeholder="Ex.: combinou pagar dia 15"
+          aria-label="Nova anotação"
+        />
+        <Botao type="submit" tamanho="pequeno" disabled={!texto.trim()}>Anotar</Botao>
+      </form>
+    </div>
   )
 }
 

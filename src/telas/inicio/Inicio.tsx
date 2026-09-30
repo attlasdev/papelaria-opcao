@@ -5,7 +5,7 @@ import { Botao, BotaoIcone } from '../../componentes/botao/Botao'
 import { CartaoResumo, Painel } from '../../componentes/painel/Painel'
 import { Filtros } from '../../componentes/filtros/Filtros'
 import { Tabela } from '../../componentes/tabela/Tabela'
-import { Etiqueta } from '../../componentes/selo/Selo'
+import { Etiqueta, SeloCompacto } from '../../componentes/selo/Selo'
 import { SeletorData } from '../../componentes/campo/SeletorData'
 import { Paginacao } from '../../componentes/paginacao/Paginacao'
 import { useLinhasPorPagina } from '../../componentes/paginacao/useLinhasPorPagina'
@@ -13,6 +13,7 @@ import { useSemDestino } from '../../componentes/aviso/Aviso'
 import type { NomeIcone } from '../../componentes/icone/Icone'
 import { dataCurta, reais, reaisOcultos } from '../../formatar'
 import {
+  agoraHorario,
   dataPorExtenso,
   hojeISO,
   nomeCliente,
@@ -47,7 +48,7 @@ export function Inicio() {
   const semDestino = useSemDestino()
   const base = useEstadoDemonstracao()
   const hoje = hojeISO()
-  const dia = resumoDoDia(base, hoje)
+  const dia = resumoDoDia(base, hoje, agoraHorario())
 
   const valor = (centavos: number) => (mostrarValores ? reais(centavos) : reaisOcultos)
   const todasFichas = [...base.fichas].sort(porDataDecrescente)
@@ -74,7 +75,7 @@ export function Inicio() {
     >
       {base.rascunhoFicha && (
         <div className="inicio__rascunho">
-          <span>Há uma ficha em rascunho nesta sessão.</span>
+          <span>Há uma venda em andamento, guardada.</span>
           <Link className="botao botao--secundario botao--pequeno" to={rotas.criarFicha}>Retomar ficha</Link>
         </div>
       )}
@@ -85,7 +86,7 @@ export function Inicio() {
           tom="ok"
           valor={valor(dia.recebimentos)}
           variacao={dia.variacao}
-          nota={dia.variacao ? 'vs ontem' : 'Sem movimento ontem'}
+          nota={dia.variacao ? 'vs ontem, até esta hora' : 'Sem movimento ontem até esta hora'}
         />
         <CartaoResumo
           rotulo="Vendas concluídas"
@@ -164,7 +165,9 @@ export function Inicio() {
                 <td>
                   <Etiqueta icone={iconePagamento[ficha.forma]}>{rotuloForma(ficha)}</Etiqueta>
                 </td>
-                <td className="celula--numero inicio__valor">{valor(ficha.total)}</td>
+                <td className="celula--numero inicio__valor">
+                  {ficha.cancelamento ? <SeloCompacto tom="neutro">Cancelada</SeloCompacto> : valor(ficha.total)}
+                </td>
                 <td className="celula--acoes">
                   <BotaoIcone icone="abrir-externo" rotulo={`Abrir ficha #${ficha.id}`} onClick={() => abrirFicha(ficha.id)} />
                   <BotaoIcone icone="imprimir" rotulo="Imprimir 2ª via" onClick={semDestino('imprimir 2ª via')} />

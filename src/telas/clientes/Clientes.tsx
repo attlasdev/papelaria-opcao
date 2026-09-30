@@ -48,6 +48,7 @@ const seloCompra: Record<SituacaoNotinha, { tom: Tom; titulo: string }> = {
   pago: { tom: 'ok', titulo: 'Pago' },
   pendente: { tom: 'atencao', titulo: 'A receber' },
   vencido: { tom: 'critico', titulo: 'Em atraso' },
+  cancelada: { tom: 'neutro', titulo: 'Cancelada' },
 }
 
 type Linha = Cliente & { resumo: ResumoCliente }
@@ -182,7 +183,7 @@ export function Clientes() {
                     <span className="celula-principal codigo">{cliente.documento}</span>
                     <span className="celula-secundaria">{cliente.telefone}</span>
                   </td>
-                  <td className="celula--centro numero clientes__compras">{cliente.resumo.fichas.length} compras</td>
+                  <td className="celula--centro numero clientes__compras">{cliente.resumo.compras} compras</td>
                   <td>
                     <SeloSituacao {...selo[cliente.resumo.situacao]} detalhe={cliente.resumo.detalheSituacao} />
                   </td>
@@ -287,7 +288,7 @@ function ComprasRecentes({ cliente }: { cliente: Linha }) {
           Total acumulado: <strong>{reais(cliente.resumo.totalComprado)}</strong>
         </span>
         <Link className="clientes__historico" to={rotas.cliente(cliente.id)}>
-          Ver histórico completo ({cliente.resumo.fichas.length} compras) <Icone nome="seta-direita" tamanho={16} />
+          Ver histórico completo ({cliente.resumo.compras} compras) <Icone nome="seta-direita" tamanho={16} />
         </Link>
       </div>
     </div>

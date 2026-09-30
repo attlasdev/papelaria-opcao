@@ -57,6 +57,8 @@ export function ReceberNotinhas({ clienteId, marcadas, aoFechar }: Props) {
   const abatimentos = distribuir(notinhas, valor)
   // Dinheiro entregue é a cédula do cliente, só para o troco; não pode ser menor que o valor pago.
   const faltaDinheiro = meio === 'dinheiro' && entregue > 0 && entregue < valor
+  // Pagamento não pode ser anterior à venda: a notinha mais antiga marcada é o limite.
+  const dataMinima = notinhas.reduce((menor, n) => (n.ficha.data < menor ? n.ficha.data : menor), hojeISO())
   const erro = notinhas.length === 0
     ? 'Marque ao menos uma notinha.'
     : valor <= 0
@@ -67,7 +69,11 @@ export function ReceberNotinhas({ clienteId, marcadas, aoFechar }: Props) {
         ? 'O dinheiro entregue não cobre o valor a pagar.'
         : !data
           ? 'Informe a data do pagamento.'
-          : null
+          : data > hojeISO()
+            ? 'A data do pagamento não pode ser depois de hoje.'
+            : data < dataMinima
+              ? `A data do pagamento é anterior à notinha (${dataCurta(dataMinima)}).`
+              : null
 
   function confirmar(evento: FormEvent) {
     evento.preventDefault()
@@ -134,7 +140,7 @@ export function ReceberNotinhas({ clienteId, marcadas, aoFechar }: Props) {
             erro={valor > totalAberto}
             autoFocus
           />
-          <Campo rotulo="Data do pagamento" type="date" value={data} max={hojeISO()} onChange={(e) => setData(e.target.value)} />
+          <Campo rotulo="Data do pagamento" type="date" value={data} min={dataMinima} max={hojeISO()} onChange={(e) => setData(e.target.value)} />
         </div>
 
         <div className="receber-notinhas__meio">

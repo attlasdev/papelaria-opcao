@@ -122,3 +122,21 @@
   justify-content: space-between;
   gap: var(--espaco-3);
 }
+
+/* Cliente que já deve: faixa curta sob o cartão, laranja no prazo, vermelha em atraso */
+.cliente-ficha__divida {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-2);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--radius-medio);
+  background: var(--color-atencao-fundo);
+  color: var(--color-atencao-texto);
+  font-size: var(--text-rotulo);
+}
+
+.cliente-ficha__divida--atraso {
+  background: var(--color-critico-fundo);
+  color: var(--color-critico-texto);
+}

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { Botao } from '../../../componentes/botao/Botao'
 import { Campo } from '../../../componentes/campo/Campo'
 import { Icone } from '../../../componentes/icone/Icone'
-import { normalizar, useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
+import { reais } from '../../../formatar'
+import { hojeISO, normalizar, resumoDoCliente, useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
 import { semIdentificacao, type EscolhaCliente } from '../dados-exemplo'
 import { ModalNovoCliente } from './ModalNovoCliente'
 import './cliente-ficha.css'
@@ -26,7 +27,8 @@ export function ClienteFicha({ cliente, aoEscolher, erro }: Props) {
   /** Nome que abre no cadastro; null = janela fechada. */
   const [cadastro, setCadastro] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
-  const { clientes } = useEstadoDemonstracao()
+  const base = useEstadoDemonstracao()
+  const { clientes } = base
 
   const [listaAberta, setListaAberta] = useState(false)
   const [indiceAtivo, setIndiceAtivo] = useState(0)
@@ -126,6 +128,7 @@ export function ClienteFicha({ cliente, aoEscolher, erro }: Props) {
           </Botao>
         </div>
       )}
+      {modo === 'ver' && cliente && cliente !== semIdentificacao && <AvisoDivida clienteId={cliente.id} base={base} />}
 
       {modo === 'buscar' && (
         <div className="cliente-ficha__busca" ref={caixaBusca}>
@@ -180,5 +183,24 @@ export function ClienteFicha({ cliente, aoEscolher, erro }: Props) {
         />
       )}
     </section>
+  )
+}
+
+/**
+ * Quem já deve fica à vista antes de vender de novo, principalmente na notinha.
+ * Só avisa: vender ou não é decisão do balcão.
+ */
+function AvisoDivida({ clienteId, base }: { clienteId: string; base: ReturnType<typeof useEstadoDemonstracao> }) {
+  const { abertas, emAberto } = resumoDoCliente(base, clienteId, hojeISO())
+  if (abertas.length === 0) return null
+  const atrasadas = abertas.filter((n) => n.situacao === 'vencido')
+  const valorAtraso = atrasadas.reduce((t, n) => t + n.emAberto, 0)
+  return (
+    <p className={atrasadas.length ? 'cliente-ficha__divida cliente-ficha__divida--atraso' : 'cliente-ficha__divida'} role="status">
+      <Icone nome={atrasadas.length ? 'alerta' : 'relogio'} tamanho={16} />
+      {atrasadas.length
+        ? <span><strong>{reais(valorAtraso)} em atraso</strong> ({atrasadas.length === 1 ? '1 notinha' : `${atrasadas.length} notinhas`}){emAberto > valorAtraso && ` · ${reais(emAberto)} em aberto no total`}</span>
+        : <span>{reais(emAberto)} em aberto ({abertas.length === 1 ? '1 notinha' : `${abertas.length} notinhas`} no prazo)</span>}
+    </p>
   )
 }

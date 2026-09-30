@@ -58,3 +58,7 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.janela-ficha h3.janela-ficha__subtitulo {
+  margin-top: var(--espaco-4);
+}

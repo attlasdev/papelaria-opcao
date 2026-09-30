@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
+import { SeloCompacto } from '../../componentes/selo/Selo'
 import { Tela } from '../../componentes/layout/tela/Tela'
 import { CartaoResumo, Painel } from '../../componentes/painel/Painel'
 import { Filtros } from '../../componentes/filtros/Filtros'
@@ -75,8 +76,10 @@ export function VendasSemIdentificacao() {
   const doPeriodo = todas.filter((ficha) => noPeriodo(ficha.data, referencia, periodo))
   const lista = doPeriodo.filter((ficha) => filtroMeio === 'todos' || ficha.forma === filtroMeio)
 
-  const totalPeriodo = doPeriodo.reduce((soma, ficha) => soma + ficha.total, 0)
-  const porMeio = (meio: Meio) => doPeriodo.filter((ficha) => ficha.forma === meio)
+  // Cancelada continua na lista, mas não soma.
+  const vendidas = doPeriodo.filter((ficha) => !ficha.cancelamento)
+  const totalPeriodo = vendidas.reduce((soma, ficha) => soma + ficha.total, 0)
+  const porMeio = (meio: Meio) => vendidas.filter((ficha) => ficha.forma === meio)
 
   const totalPaginas = Math.max(1, Math.ceil(lista.length / linhasPorPagina))
   const paginaAtual = Math.min(pagina, totalPaginas)
@@ -119,7 +122,7 @@ export function VendasSemIdentificacao() {
           icone="carrinho"
           tom="ok"
           valor={reais(totalPeriodo)}
-          nota={`${quantidade(doPeriodo.length)}${doPeriodo.length ? ` · média ${reais(Math.round(totalPeriodo / doPeriodo.length))}` : ''}`}
+          nota={`${quantidade(vendidas.length)}${vendidas.length ? ` · média ${reais(Math.round(totalPeriodo / vendidas.length))}` : ''}`}
         />
         {meios.map((meio) => {
           const vendas = porMeio(meio.valor)
@@ -194,7 +197,7 @@ export function VendasSemIdentificacao() {
                   <td>
                     <Etiqueta icone={iconeMeio[venda.forma]}>{rotuloForma(venda)}</Etiqueta>
                   </td>
-                  <td className="celula--numero vendas-sem-identificacao__valor">{reais(venda.total)}</td>
+                  <td className="celula--numero vendas-sem-identificacao__valor">{venda.cancelamento ? <SeloCompacto tom="neutro">Cancelada</SeloCompacto> : reais(venda.total)}</td>
                   <td className="celula--acoes">
                     <Botao tamanho="pequeno" onClick={() => abrirFicha(venda.id)}>
                       Ver ficha

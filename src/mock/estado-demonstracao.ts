@@ -1,9 +1,9 @@
 import { useSyncExternalStore } from 'react'
-import { assinaturaAviso, distribuir, notinha, produtoTemHistorico, type Abatimento, type Notificacao, type Notinha } from './base/derivados'
-import { hojeISO, minutoDoDia } from './base/datas'
+import { assinaturaAviso, CATEGORIA_ESTORNO, distribuir, MOTIVO_SALDO_INICIAL, notinha, produtoTemHistorico, type Abatimento, type Notificacao, type Notinha } from './base/derivados'
+import { agoraHorario, hojeISO, minutoDoDia } from './base/datas'
 import { apagarBase, carregarBase, salvarBase } from './base/persistencia'
 import { criarSemente } from './base/semente'
-import type { Base, Ficha, Meio, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
+import type { Base, Estorno, Ficha, Meio, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
 
 export * from './base/derivados'
 export * from './base/datas'
@@ -67,7 +67,10 @@ export function editarCliente(id: string, dados: DadosCliente) {
 
 export function cadastrarProduto(dados: Omit<Produto, 'codigo'>) {
   const codigo = proximoCodigoProduto(base)
-  mudar({ ...base, produtos: [...base.produtos, { ...dados, codigo }] })
+  const produto = { ...dados, codigo }
+  // Quantidade contada no cadastro vira a primeira entrada: o histórico explica o saldo.
+  const inicial = produto.saldo > 0 ? [movimentoEstoque({ ...produto, saldo: 0 }, produto.saldo, 'Entrada', MOTIVO_SALDO_INICIAL)] : []
+  mudar({ ...base, produtos: [...base.produtos, produto], movimentosEstoque: [...inicial, ...base.movimentosEstoque] })
   return codigo
 }
 
@@ -100,7 +103,8 @@ export function editarProduto(codigo: string, dados: Omit<Produto, 'codigo' | 's
 /** Apaga só cadastro sem nenhum registro; com histórico, o caminho é desativar. */
 export function excluirProduto(codigo: string) {
   if (!base.produtos.some((p) => p.codigo === codigo) || produtoTemHistorico(base, codigo)) return false
-  mudar({ ...base, produtos: base.produtos.filter((p) => p.codigo !== codigo) })
+  // Sem histórico, o único movimento possível é o saldo inicial do próprio cadastro.
+  mudar({ ...base, produtos: base.produtos.filter((p) => p.codigo !== codigo), movimentosEstoque: base.movimentosEstoque.filter((m) => m.produto !== codigo) })
   return true
 }
 
@@ -175,6 +179,73 @@ export function receberNotinhas(ids: string[], pagamento: { data: string; horari
     }),
   })
   return abatimentos
+}
+
+function estornoAgora(motivo: string): Estorno {
+  return { data: hojeISO(), horario: agoraHorario(), motivo: motivo.trim() }
+}
+
+/**
+ * Desfaz uma venda sem apagá-la: a ficha fica marcada como cancelada, os itens
+ * voltam ao estoque e o que foi pago sai do caixa hoje (os dias passados não mudam).
+ */
+export function cancelarFicha(id: string, motivo: string) {
+  const ficha = base.fichas.find((f) => f.id === id)
+  if (!ficha || ficha.cancelamento || !motivo.trim()) return false
+  const movimentos: MovimentoEstoque[] = []
+  const produtos = base.produtos.map((p) => {
+    const devolvido = ficha.itens.find((i) => i.codigo === p.codigo)
+    if (!devolvido) return p
+    movimentos.push(movimentoEstoque(p, p.saldo + devolvido.quantidade, 'Cancelamento', `Ficha #${id} cancelada · ${motivo.trim()}`))
+    return { ...p, saldo: p.saldo + devolvido.quantidade }
+  })
+  mudar({
+    ...base,
+    fichas: base.fichas.map((f) => (f.id === id ? { ...f, cancelamento: estornoAgora(motivo) } : f)),
+    produtos,
+    movimentosEstoque: [...movimentos, ...base.movimentosEstoque],
+  })
+  return true
+}
+
+/** Recebimento de notinha lançado por engano: deixa de contar e a notinha volta a dever. */
+export function estornarPagamento(fichaId: string, indice: number, motivo: string) {
+  const ficha = base.fichas.find((f) => f.id === fichaId)
+  const pagamento = ficha?.pagamentos[indice]
+  if (!ficha || ficha.cancelamento || ficha.forma !== 'notinha' || !pagamento || pagamento.estorno || !motivo.trim()) return false
+  const pagamentos = ficha.pagamentos.map((p, i) => (i === indice ? { ...p, estorno: estornoAgora(motivo) } : p))
+  mudar({ ...base, fichas: base.fichas.map((f) => (f.id === fichaId ? { ...f, pagamentos } : f)) })
+  return true
+}
+
+/** Lançamento manual errado: um lançamento novo, de sinal contrário, anula o primeiro. */
+export function estornarMovimentoCaixa(id: string, motivo: string) {
+  const original = base.movimentosCaixa.find((m) => m.id === id)
+  if (!original || original.estornoDe || base.movimentosCaixa.some((m) => m.estornoDe === id) || !motivo.trim()) return false
+  const { data, horario } = estornoAgora(motivo)
+  const estorno: MovimentoCaixa = {
+    id: `${data}-${horario}-${base.movimentosCaixa.length}`,
+    data,
+    horario,
+    descricao: `Estorno: ${original.descricao}`,
+    origem: motivo.trim(),
+    categoria: CATEGORIA_ESTORNO,
+    meio: original.meio,
+    valor: -original.valor,
+    estornoDe: id,
+  }
+  mudar({ ...base, movimentosCaixa: [estorno, ...base.movimentosCaixa] })
+  return true
+}
+
+/** Lembrete na ficha. Só se acrescenta: o que foi anotado fica como foi. */
+export function anotarFicha(id: string, texto: string) {
+  if (!texto.trim() || !base.fichas.some((f) => f.id === id)) return false
+  mudar({
+    ...base,
+    fichas: base.fichas.map((f) => (f.id === id ? { ...f, anotacoes: [...(f.anotacoes ?? []), { data: hojeISO(), horario: agoraHorario(), texto: texto.trim() }] } : f)),
+  })
+  return true
 }
 
 export function salvarRascunhoFicha(rascunho: RascunhoFicha | null) {

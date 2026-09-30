@@ -62,7 +62,11 @@ export function RegistrarEntrada() {
   const [sugestoesAbertas, setSugestoesAbertas] = useState(false)
   const [indiceAtivo, setIndiceAtivo] = useState(-1)
   const termo = normalizar(bipe.trim())
+  // Desativado não recebe entrada; bipado ou digitado, avisa (nunca vira produto novo).
+  const desativado = (codigo: string) => produtos.find((p) => p.inativo && (p.codigo === codigo || p.codigoBarras === codigo))
+  const avisoDesativado = (descricao: string) => `“${descricao}” está desativado. Reative no Estoque para dar entrada.`
   const sugestoes = termo ? produtos
+    .filter((produto) => !produto.inativo)
     .filter((produto) => termo.split(/\s+/).every((palavra) => normalizar(`${produto.codigo} ${produto.codigoBarras ?? ''} ${produto.descricao}`).includes(palavra)))
     .sort((a, b) => {
       const prioridade = (produto: typeof a) => produto.codigo === bipe.trim() || produto.codigoBarras === bipe.trim() ? 0 : normalizar(produto.descricao).startsWith(termo) ? 1 : 2
@@ -95,7 +99,9 @@ export function RegistrarEntrada() {
       campoProduto.current?.focus()
       return
     }
-    const exato = produtos.find((produto) => produto.codigo === consulta || produto.codigoBarras === consulta)
+    const fora = desativado(consulta)
+    if (fora) { setErroBipe(avisoDesativado(fora.descricao)); return }
+    const exato = produtos.find((produto) => !produto.inativo && (produto.codigo === consulta || produto.codigoBarras === consulta))
     if (exato) { incluirProduto(exato.codigo); return }
     if (sugestoes.length === 1) { incluirProduto(sugestoes[0].codigo); return }
     setSugestoesAbertas(sugestoes.length > 0)
@@ -119,6 +125,15 @@ export function RegistrarEntrada() {
   // cursor onde estiver. Bipar de novo não duplica, só traz a linha para o topo.
   useLeitorCodigo((codigo) => {
     setTentouConfirmar(false)
+    const fora = desativado(codigo)
+    if (fora) {
+      // Para a leitura: o aviso fica no lugar da busca, onde ela vê.
+      pararLeitura()
+      setBipe('')
+      setSugestoesAbertas(false)
+      setErroBipe(avisoDesativado(fora.descricao))
+      return
+    }
     const produto = produtos.find((p) => p.codigoBarras === codigo || p.codigo === codigo)
     const chave = produto?.codigoBarras ?? codigo
     setBipados((atual) => {

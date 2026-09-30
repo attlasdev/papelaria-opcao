@@ -215,7 +215,7 @@ export function Estoque() {
                     </Botao>
                     )}
                     {!rapido && <BotaoIcone icone="editar" rotulo={`Editar ${produto.descricao}`} onClick={() => navegar(rotas.editarProduto(produto.codigo))} />}
-                    <BotaoIcone icone="ajustes" rotulo={`Ajustar contagem de ${produto.descricao}`} onClick={() => navegar(rotas.ajustarEstoque(produto.codigo))} />
+                    {!rapido && !produto.inativo && <BotaoIcone icone="ajustes" rotulo={`Ajustar contagem de ${produto.descricao}`} onClick={() => navegar(rotas.ajustarEstoque(produto.codigo))} />}
                     <BotaoIcone icone="historico" rotulo={`Histórico de ${produto.descricao}`} onClick={() => navegar(rotas.movimentacoesEstoque(produto.codigo))} />
                   </td>
                 </tr>

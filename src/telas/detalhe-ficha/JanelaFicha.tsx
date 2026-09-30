@@ -6,7 +6,7 @@ import { dataCurta, reais } from '../../formatar'
 import { contagemItens, hojeISO, nomeCliente, notinha as notinhaDa, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { ReceberNotinhas } from '../detalhe-cliente/receber/ReceberNotinhas'
 import { ComIcone } from '../../componentes/icone/Icone'
-import { AvisoOutrasNotinhas, DadosFicha, PagamentosFicha, TabelaItensFicha, TotaisFicha } from './ConteudoFicha'
+import { AnotacoesFicha, AvisoOutrasNotinhas, BotaoCancelarFicha, DadosFicha, FaixaCancelada, PagamentosFicha, TabelaItensFicha, TotaisFicha } from './ConteudoFicha'
 import './janela-ficha.css'
 
 type Props = { id: string; aoFechar: () => void }
@@ -33,6 +33,7 @@ export function JanelaFicha({ id, aoFechar }: Props) {
       aoFechar={aoFechar}
       rodape={
         <>
+          <BotaoCancelarFicha ficha={ficha} />
           <Botao icone="imprimir" onClick={semDestino('imprimir 2ª via')}>
             Imprimir 2ª via
           </Botao>
@@ -49,6 +50,7 @@ export function JanelaFicha({ id, aoFechar }: Props) {
       }
     >
       <div className="janela-ficha">
+        <FaixaCancelada ficha={ficha} />
         <AvisoOutrasNotinhas base={base} ficha={ficha} hoje={hoje} aoReceberTodas={() => setRecebendo('todas')} />
         <DadosFicha base={base} ficha={ficha} hoje={hoje} colunas={4} />
 
@@ -66,6 +68,12 @@ export function JanelaFicha({ id, aoFechar }: Props) {
           <section>
             <h3><ComIcone icone="dinheiro">{notinha ? 'Pagamentos da notinha' : 'Pagamento'}</ComIcone></h3>
             <PagamentosFicha ficha={ficha} />
+            {ficha.forma === 'notinha' && (
+              <>
+                <h3 className="janela-ficha__subtitulo"><ComIcone icone="editar">Anotações</ComIcone></h3>
+                <AnotacoesFicha ficha={ficha} />
+              </>
+            )}
           </section>
           <section className="janela-ficha__total">
             <h3><ComIcone icone="recibo">Total da ficha</ComIcone></h3>

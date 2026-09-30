@@ -8,7 +8,7 @@ import { contagemItens, hojeISO, nomeCliente, notinha as notinhaDa, useEstadoDem
 import { rotas } from '../../rotas-caminhos'
 import { ReceberNotinhas } from '../detalhe-cliente/receber/ReceberNotinhas'
 import { ComIcone } from '../../componentes/icone/Icone'
-import { AvisoOutrasNotinhas, DadosFicha, PagamentosFicha, paginaDoCliente, TabelaItensFicha, TotaisFicha } from './ConteudoFicha'
+import { AnotacoesFicha, AvisoOutrasNotinhas, BotaoCancelarFicha, DadosFicha, FaixaCancelada, PagamentosFicha, paginaDoCliente, TabelaItensFicha, TotaisFicha } from './ConteudoFicha'
 import './detalhe-ficha.css'
 
 export function DetalheFicha() {
@@ -35,6 +35,7 @@ export function DetalheFicha() {
       }
       titulo={`Ficha #${id}`}
       subtitulo={ficha ? `${nomeCliente(base, ficha.clienteId)} · ${dataCurta(ficha.data)} · ${ficha.horario} · operador ${ficha.operador}` : 'Ficha não encontrada'}
+      acoesTitulo={ficha && <BotaoCancelarFicha ficha={ficha} />}
       acaoCabecalho={notinha && notinha.emAberto > 0 && (
         <Botao variante="primario" icone="dinheiro" onClick={() => setRecebendo('esta')}>
           Receber notinha
@@ -44,6 +45,7 @@ export function DetalheFicha() {
       {ficha ? (
         <>
         <div className="detalhe-ficha__aviso">
+          <FaixaCancelada ficha={ficha} />
           <AvisoOutrasNotinhas base={base} ficha={ficha} hoje={hoje} aoReceberTodas={() => setRecebendo('todas')} />
         </div>
         <div className="detalhe-ficha">
@@ -63,6 +65,11 @@ export function DetalheFicha() {
             <Painel titulo={<ComIcone icone="dinheiro">{notinha ? 'Pagamentos da notinha' : 'Pagamento'}</ComIcone>}>
               <PagamentosFicha ficha={ficha} />
             </Painel>
+            {ficha.forma === 'notinha' && (
+              <Painel titulo={<ComIcone icone="editar">Anotações</ComIcone>}>
+                <AnotacoesFicha ficha={ficha} />
+              </Painel>
+            )}
           </aside>
         </div>
         </>

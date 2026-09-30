@@ -47,7 +47,7 @@ export function MovimentacoesEstoque() {
           <article className="movimentacoes-estoque__item" key={item.id}>
             <div className="movimentacoes-estoque__item-topo">
               <span className="movimentacoes-estoque__data numero">{data.format(new Date(item.data))}</span>
-              <SeloCompacto tom={item.tipo === 'Entrada' ? 'ok' : item.tipo === 'Venda' ? 'neutro' : 'atencao'}>{item.tipo}</SeloCompacto>
+              <SeloCompacto tom={item.tipo === 'Entrada' || item.tipo === 'Cancelamento' ? 'ok' : item.tipo === 'Venda' ? 'neutro' : 'atencao'}>{item.tipo}</SeloCompacto>
             </div>
             <strong className="movimentacoes-estoque__produto" title={item.descricao}>{item.descricao}</strong>
             <span className="movimentacoes-estoque__codigo codigo">{item.produto}</span>

@@ -64,7 +64,7 @@
 
 .criar-ficha__secundarias {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: var(--espaco-2);
   margin-top: var(--espaco-2);
 }
