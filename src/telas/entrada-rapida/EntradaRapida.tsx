@@ -57,7 +57,7 @@ export function EntradaRapida() {
     <Modal
       variante="lateral"
       titulo="Entrada rápida"
-      subtitulo="Chegou mercadoria deste produto? Some ao estoque sem abrir a entrada completa."
+      subtitulo="Soma ao estoque deste produto."
       aoFechar={fechar}
       rodape={<>
         <Botao onClick={fechar}>Cancelar</Botao>
@@ -81,7 +81,7 @@ export function EntradaRapida() {
             value={quantidade}
             onChange={(e) => { setQuantidade(e.target.value); setErro('') }}
             erro={Boolean(erro)}
-            ajuda={erro || 'Na unidade de venda. Caixa com 12 que vende por unidade: 12.'}
+            ajuda={erro || 'Na unidade de venda.'}
           />
           <div className="entrada-rapida__saldo">
             <span>Saldo</span>
@@ -89,12 +89,12 @@ export function EntradaRapida() {
               {produto.saldo} → {valida ? produto.saldo + n : '—'} {produto.unidade}
             </strong>
           </div>
-          <CampoMoeda rotulo={`Custo por ${produto.unidade} (R$)`} name="custo" opcional valorInicialCentavos={custo} aoMudar={setCusto} ajuda="Vem do último custo. Corrija se mudou." />
+          <CampoMoeda rotulo={`Custo por ${produto.unidade} (R$)`} name="custo" opcional valorInicialCentavos={custo} aoMudar={setCusto} ajuda="Último custo registrado." />
           <Campo rotulo="Fornecedor" name="fornecedor" opcional value={fornecedor} onChange={(e) => setFornecedor(e.target.value)} placeholder="Ex.: Atacadão" />
         </div>
         <p className="entrada-rapida__nota">
-          Fica registrado em Movimentações, como entrada.{' '}
-          <Link to={rotas.registrarEntrada} state={{ produto: produto.codigo }}>Chegaram outros itens junto? Abrir entrada completa</Link>
+          Chegaram outros itens?{' '}
+          <Link to={rotas.registrarEntrada} state={{ produto: produto.codigo }}>Entrada completa</Link>
         </p>
       </form>
     </Modal>

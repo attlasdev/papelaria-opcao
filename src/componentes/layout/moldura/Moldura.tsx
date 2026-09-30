@@ -4,6 +4,7 @@ import { gsap, movimentoReduzido, useGSAP } from '../../../animacoes/gsap'
 import { BarraLateral } from '../barra-lateral/BarraLateral'
 import { Icone } from '../../icone/Icone'
 import { ProvedorAviso } from '../../aviso/Aviso'
+import { ProvedorAbrirFicha } from '../../../telas/detalhe-ficha/AbrirFicha'
 import './moldura.css'
 
 /** Barra lateral fixa à esquerda; a tela da rota atual ocupa o resto. */
@@ -53,6 +54,7 @@ export function Moldura() {
 
   return (
     <ProvedorAviso>
+      <ProvedorAbrirFicha>
       <div ref={moldura} className={recolhida ? 'moldura moldura--compacta' : 'moldura'}>
         <BarraLateral ref={barra} recolhida={recolhida} />
         <button
@@ -70,6 +72,7 @@ export function Moldura() {
           <Outlet />
         </div>
       </div>
+      </ProvedorAbrirFicha>
     </ProvedorAviso>
   )
 }

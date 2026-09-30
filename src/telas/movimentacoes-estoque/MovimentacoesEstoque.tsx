@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { Modal } from '../../componentes/modal/Modal'
 import { Botao } from '../../componentes/botao/Botao'
 import { Filtros } from '../../componentes/filtros/Filtros'
@@ -7,11 +7,13 @@ import { SeloCompacto } from '../../componentes/selo/Selo'
 import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import './movimentacoes-estoque.css'
+import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
 
 /** O histórico tem centenas de movimentos; a janela mostra os mais recentes. */
 const LIMITE = 150
 
 export function MovimentacoesEstoque() {
+  const abrirFicha = useAbrirFicha()
   const [parametros] = useSearchParams()
   const navegar = useNavigate()
   const fechar = useCallback(() => navegar(rotas.estoque), [navegar])
@@ -52,7 +54,7 @@ export function MovimentacoesEstoque() {
             <div className="movimentacoes-estoque__item-rodape">
               <span className="movimentacoes-estoque__motivo">
                 {/^Ficha #\d+/.test(item.motivo) ? (
-                  <Link className="movimentacoes-estoque__ficha" to={rotas.ficha(item.motivo.slice(7).split(' ')[0])}>{item.motivo}</Link>
+                  <button type="button" className="movimentacoes-estoque__ficha" onClick={() => abrirFicha(item.motivo.slice(7).split(' ')[0])}>{item.motivo}</button>
                 ) : item.motivo}
               </span>
               <span className="movimentacoes-estoque__saldos numero">{item.antes} <span aria-label="para">→</span> <strong>{item.depois}</strong></span>

@@ -24,6 +24,7 @@ import {
 import { rotas } from '../../rotas-caminhos'
 import { ReceberNotinhas } from './receber/ReceberNotinhas'
 import './detalhe-cliente.css'
+import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
 
 type Filtro = 'todas' | SituacaoNotinha
 
@@ -34,6 +35,7 @@ const selo: Record<SituacaoNotinha, { tom: Tom; titulo: string }> = {
 }
 
 export function DetalheCliente() {
+  const abrirFicha = useAbrirFicha()
   const { id } = useParams()
   const navegar = useNavigate()
   const [filtro, setFiltro] = useState<Filtro>('todas')
@@ -91,7 +93,6 @@ export function DetalheCliente() {
       }
       titulo={cadastro?.nome ?? 'Cliente não encontrado'}
       subtitulo={cadastro ? `${cadastro.id} · ${cadastro.descricao} · cliente desde ${desde}` : 'Volte à lista de clientes'}
-      busca="Buscar no sistema..."
       acaoCabecalho={
         <Botao icone="editar" disabled={!cadastro} onClick={() => id && navegar(rotas.editarCliente(id))}>
           Editar dados
@@ -166,11 +167,6 @@ export function DetalheCliente() {
                 { valor: 'vencido', rotulo: 'Notinhas em atraso', contagem: contagem.vencidas },
               ]}
             />
-            {abertas.length > 0 && (
-              <Botao tamanho="pequeno" variante="primario" icone="dinheiro" onClick={() => setReceber('todas')}>
-                Receber notinhas ({abertas.length})
-              </Botao>
-            )}
             <Botao tamanho="pequeno" icone="imprimir" onClick={semDestino('imprimir extrato')}>
               Extrato
             </Botao>
@@ -217,9 +213,9 @@ export function DetalheCliente() {
                   <SeloSituacao {...selo[compra.situacao]} detalhe={compra.detalhe} />
                 </td>
                 <td className="celula--acoes">
-                  <Link className="botao botao--secundario botao--pequeno" to={rotas.ficha(compra.id, 'historico')}>
+                  <Botao tamanho="pequeno" onClick={() => abrirFicha(compra.id)}>
                     Ver ficha
-                  </Link>
+                  </Botao>
                   {emAberto(compra.id) && (
                     <Botao tamanho="pequeno" variante="primario" onClick={() => setReceber(compra.id)}>
                       Receber

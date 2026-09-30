@@ -13,6 +13,8 @@ import { dataCurta, reais } from '../../formatar'
 import { porDataDecrescente, resumoItens, rotuloForma, useEstadoDemonstracao, type Ficha, type Meio } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import './vendas-sem-identificacao.css'
+import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
+import { Botao } from '../../componentes/botao/Botao'
 
 type Periodo = 'dia' | 'semana' | 'mes' | 'tudo'
 type FiltroMeio = 'todos' | Meio
@@ -56,6 +58,7 @@ function quantidade(total: number) {
  * das fichas sem cliente, para achar o que saiu e como foi pago no período.
  */
 export function VendasSemIdentificacao() {
+  const abrirFicha = useAbrirFicha()
   const [periodo, setPeriodo] = useState<Periodo>('dia')
   const [filtroMeio, setFiltroMeio] = useState<FiltroMeio>('todos')
   const [dataEscolhida, setDataEscolhida] = useState('')
@@ -67,8 +70,8 @@ export function VendasSemIdentificacao() {
   const todas = fichas
     .filter((ficha): ficha is Ficha & { forma: Meio } => ficha.clienteId === null && ficha.forma !== 'notinha')
     .sort(porDataDecrescente)
-  // Sem data escolhida, o período parte da venda mais recente.
-  const referencia = dataEscolhida || todas[0]?.data || isoLocal(new Date())
+  // Sem data escolhida, o período parte de hoje, o mesmo número do card em Clientes.
+  const referencia = dataEscolhida || isoLocal(new Date())
   const doPeriodo = todas.filter((ficha) => noPeriodo(ficha.data, referencia, periodo))
   const lista = doPeriodo.filter((ficha) => filtroMeio === 'todos' || ficha.forma === filtroMeio)
 
@@ -108,8 +111,7 @@ export function VendasSemIdentificacao() {
         </>
       }
       titulo="Vendas sem identificação"
-      subtitulo="Compras de balcão feitas sem cadastro. Deram baixa no estoque e entraram no financeiro como as demais."
-      busca="Buscar no sistema..."
+      subtitulo="Vendas de balcão sem cliente cadastrado."
     >
       <div className="grade-resumo">
         <CartaoResumo
@@ -194,9 +196,9 @@ export function VendasSemIdentificacao() {
                   </td>
                   <td className="celula--numero vendas-sem-identificacao__valor">{reais(venda.total)}</td>
                   <td className="celula--acoes">
-                    <Link className="botao botao--secundario botao--pequeno" to={rotas.ficha(venda.id, 'historico')}>
+                    <Botao tamanho="pequeno" onClick={() => abrirFicha(venda.id)}>
                       Ver ficha
-                    </Link>
+                    </Botao>
                   </td>
                 </tr>
               ))}

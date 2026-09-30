@@ -113,12 +113,6 @@
   width: 88px;
 }
 
-.estoque__regra {
-  margin-top: var(--espaco-3);
-  font-size: var(--text-rotulo);
-  color: var(--color-texto-suave);
-}
-
 /* Cadastro feito na venda: a linha avisa até alguém completar e contar. */
 .estoque__rapido {
   color: var(--color-atencao-texto);

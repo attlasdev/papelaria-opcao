@@ -14,7 +14,7 @@ export function ModalNovoCliente({ nomeInicial, aoSalvar, aoFechar }: Props) {
     <JanelaCliente
       variante="central"
       nomeInicial={nomeInicial}
-      subtitulo="Cadastro rápido. Depois de salvar, o cliente já fica na ficha."
+      subtitulo="Ao salvar, já entra na ficha."
       textoSalvar="Salvar e usar na ficha"
       aoFechar={aoFechar}
       aoSalvar={(c) => aoSalvar({ id: c.id, nome: c.nome, documento: c.documento, telefone: c.telefone })}

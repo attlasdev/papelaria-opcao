@@ -89,7 +89,8 @@
   text-align: left;
 }
 
-.cliente-ficha__resultados button:hover {
+.cliente-ficha__resultados button:hover,
+.cliente-ficha__resultados .cliente-ficha__resultado--ativo {
   background: var(--color-fundo);
 }
 

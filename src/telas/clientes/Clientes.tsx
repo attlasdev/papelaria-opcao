@@ -25,6 +25,7 @@ import {
 } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import './clientes.css'
+import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
 
 type Filtro = 'todos' | 'pendente' | 'vencido'
 
@@ -67,7 +68,8 @@ export function Clientes() {
     const hoje = hojeISO()
     return base.clientes.map((c) => ({ ...c, resumo: resumoDoCliente(base, c.id, hoje) }))
   }, [base])
-  const vendasSemIdentificacao = base.fichas.filter((ficha) => ficha.clienteId === null).length
+  // Mesmo período em que a página abre: hoje.
+  const vendasSemIdentificacao = base.fichas.filter((ficha) => ficha.clienteId === null && ficha.data === hojeISO()).length
   const clientesComNotinhasAVencer = linhas.filter((l) => l.resumo.situacao === 'pendente').length
   const clientesComNotinhasEmAtraso = linhas.filter((l) => l.resumo.situacao === 'vencido').length
 
@@ -86,8 +88,7 @@ export function Clientes() {
   return (
     <Tela
       titulo="Clientes"
-      subtitulo="Consulte clientes cadastrados e o histórico de suas compras."
-      busca="Buscar no sistema..."
+      subtitulo="Clientes e histórico de compras."
       acaoCabecalho={
         <Link className="botao botao--primario" to={rotas.cadastrarCliente}>
           <Icone nome="adicionar-pessoa" tamanho={18} /> Cadastrar cliente
@@ -113,7 +114,7 @@ export function Clientes() {
         <span className="clientes__sem-identificacao-texto">
           <span className="celula-principal">Vendas sem identificação</span>
           <span className="celula-secundaria">
-            {vendasSemIdentificacao} vendas de balcão sem cadastro · o que saiu e como foi pago
+            {vendasSemIdentificacao === 1 ? '1 venda hoje' : `${vendasSemIdentificacao} vendas hoje`} · o que saiu e como foi pago
           </span>
         </span>
         <span className="clientes__sem-identificacao-ver">
@@ -244,6 +245,7 @@ function ExpansaoCompras({ cliente }: { cliente: Linha }) {
 }
 
 function ComprasRecentes({ cliente }: { cliente: Linha }) {
+  const abrirFicha = useAbrirFicha()
   const recentes = cliente.resumo.fichas.slice(0, 3)
   if (recentes.length === 0) {
     return <p className="clientes__sem-compras">Nenhuma compra registrada ainda.</p>
@@ -272,9 +274,9 @@ function ComprasRecentes({ cliente }: { cliente: Linha }) {
               <strong className="clientes__cartao-valor">{reais(ficha.total)}</strong>
               <div className="clientes__cartao-rodape">
                 <span>{rotuloForma(ficha)}</span>
-                <Link className="clientes__abrir" to={rotas.ficha(ficha.id, 'historico')}>
+                <button type="button" className="clientes__abrir" onClick={() => abrirFicha(ficha.id)}>
                   Abrir ficha
-                </Link>
+                </button>
               </div>
             </article>
           )

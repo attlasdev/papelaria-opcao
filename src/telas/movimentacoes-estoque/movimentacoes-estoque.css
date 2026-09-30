@@ -13,6 +13,7 @@
 .movimentacoes-estoque__saldos span { padding: 0 var(--espaco-1); color: var(--color-texto-suave); }
 .movimentacoes-estoque__vazio { padding: var(--espaco-8) var(--espaco-4); border: 1px dashed var(--color-borda-forte); border-radius: var(--radius-medio); text-align: center; color: var(--color-texto-suave); }
 
+.movimentacoes-estoque__ficha { text-align: left; }
 .movimentacoes-estoque__ficha:hover {
   text-decoration: underline;
 }

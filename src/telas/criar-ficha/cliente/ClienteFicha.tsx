@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { Botao } from '../../../componentes/botao/Botao'
 import { Campo } from '../../../componentes/campo/Campo'
 import { Icone } from '../../../componentes/icone/Icone'
-import { useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
+import { normalizar, useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
 import { semIdentificacao, type EscolhaCliente } from '../dados-exemplo'
 import { ModalNovoCliente } from './ModalNovoCliente'
 import './cliente-ficha.css'
@@ -28,9 +28,45 @@ export function ClienteFicha({ cliente, aoEscolher, erro }: Props) {
   const [busca, setBusca] = useState('')
   const { clientes } = useEstadoDemonstracao()
 
-  const termo = busca.trim().toLowerCase()
-  const encontrados = termo ? clientes.filter((c) => `${c.nome} ${c.documento}`.toLowerCase().includes(termo)) : []
+  const [listaAberta, setListaAberta] = useState(false)
+  const [indiceAtivo, setIndiceAtivo] = useState(0)
+  const caixaBusca = useRef<HTMLDivElement>(null)
+
+  // Sem acento e, no documento, só os dígitos: "joao" acha João, "452198" acha ***.452.198-**.
+  const termo = normalizar(busca.trim())
+  const digitos = busca.replace(/\D/g, '')
+  const encontrados = termo
+    ? clientes.filter((c) => normalizar(`${c.nome} ${c.documento}`).includes(termo) || (digitos.length >= 3 && c.documento.replace(/\D/g, '').includes(digitos)))
+    : []
   const visiveis = encontrados.slice(0, maximoResultados)
+  const mostrarLista = Boolean(termo) && listaAberta
+
+  // Como as outras listas: fecha com clique fora; o texto digitado fica.
+  useEffect(() => {
+    if (!mostrarLista) return
+    const fora = (evento: PointerEvent) => {
+      if (!caixaBusca.current?.contains(evento.target as Node)) setListaAberta(false)
+    }
+    document.addEventListener('pointerdown', fora)
+    return () => document.removeEventListener('pointerdown', fora)
+  }, [mostrarLista])
+
+  function teclado(evento: KeyboardEvent<HTMLInputElement>) {
+    if (evento.key === 'Escape' && mostrarLista) {
+      evento.preventDefault()
+      evento.stopPropagation()
+      setListaAberta(false)
+    } else if ((evento.key === 'ArrowDown' || evento.key === 'ArrowUp') && visiveis.length) {
+      evento.preventDefault()
+      setListaAberta(true)
+      setIndiceAtivo((atual) => (atual + (evento.key === 'ArrowDown' ? 1 : -1) + visiveis.length) % visiveis.length)
+    } else if (evento.key === 'Enter') {
+      evento.preventDefault()
+      const alvo = visiveis[Math.min(indiceAtivo, visiveis.length - 1)]
+      if (mostrarLista && alvo) escolher(alvo)
+      else if (termo) setListaAberta(true)
+    }
+  }
 
   function escolher(novo: EscolhaCliente) {
     aoEscolher(novo)
@@ -92,22 +128,24 @@ export function ClienteFicha({ cliente, aoEscolher, erro }: Props) {
       )}
 
       {modo === 'buscar' && (
-        <div className="cliente-ficha__busca">
+        <div className="cliente-ficha__busca" ref={caixaBusca}>
           <Campo
             rotulo="Buscar cliente cadastrado"
             icone="busca"
             placeholder="Nome ou CPF"
             value={busca}
-            onChange={(e) => setBusca(e.target.value)}
+            onChange={(e) => { setBusca(e.target.value); setListaAberta(true); setIndiceAtivo(0) }}
+            onFocus={() => setListaAberta(true)}
+            onKeyDown={teclado}
             erro={Boolean(erro)}
             ajuda={erro}
             autoFocus
           />
-          {termo && (
+          {mostrarLista && (
             <ul className="cliente-ficha__resultados">
-              {visiveis.map((c) => (
+              {visiveis.map((c, indice) => (
                 <li key={c.id}>
-                  <button type="button" onClick={() => escolher(c)}>
+                  <button type="button" className={indice === indiceAtivo ? 'cliente-ficha__resultado--ativo' : undefined} onMouseEnter={() => setIndiceAtivo(indice)} onClick={() => escolher(c)}>
                     <span>
                       <strong>{c.nome}</strong>
                       <small>{c.documento}</small>

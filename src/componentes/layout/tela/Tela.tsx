@@ -14,8 +14,6 @@ type Props = {
   trilha?: ReactNode
   /** Retorno explícito para telas internas; funciona também ao abrir a URL direto. */
   voltar?: { para: string; rotulo: string }
-  /** Texto de dica da busca do cabeçalho. */
-  busca: string
   /** Ação principal da tela, no canto direito do cabeçalho. */
   acaoCabecalho?: ReactNode
   /** Controles ao lado do título (filtros de período, mostrar valores...). */
@@ -37,11 +35,12 @@ const iconeAviso: Record<TipoNotificacao, NomeIcone> = {
  * a área de conteúdo que rola. As telas só preenchem; tamanho e espaçamento são
  * os mesmos em todas.
  */
-export function Tela({ titulo, subtitulo, trilha, voltar, busca, acaoCabecalho, acoesTitulo, children }: Props) {
+export function Tela({ titulo, subtitulo, trilha, voltar, acaoCabecalho, acoesTitulo, children }: Props) {
   const navegar = useNavigate()
   const campoBusca = useRef<HTMLInputElement>(null)
   const [termo, setTermo] = useState('')
   const [notificacoesAbertas, setNotificacoesAbertas] = useState(false)
+  const areaAvisos = useRef<HTMLDivElement>(null)
   const base = useEstadoDemonstracao()
   // Novas primeiro; as lidas continuam na lista, apagadas, até a pendência sumir.
   const todosAvisos = notificacoes(base, hojeISO())
@@ -59,6 +58,21 @@ export function Tela({ titulo, subtitulo, trilha, voltar, busca, acaoCabecalho, 
     return () => window.removeEventListener('keydown', atalho)
   }, [])
 
+  // A lista de avisos fecha com clique fora dela ou com Esc, como as demais.
+  useEffect(() => {
+    if (!notificacoesAbertas) return
+    const fora = (evento: PointerEvent) => {
+      if (!areaAvisos.current?.contains(evento.target as Node)) setNotificacoesAbertas(false)
+    }
+    const esc = (evento: KeyboardEvent) => { if (evento.key === 'Escape') setNotificacoesAbertas(false) }
+    document.addEventListener('pointerdown', fora)
+    window.addEventListener('keydown', esc)
+    return () => {
+      document.removeEventListener('pointerdown', fora)
+      window.removeEventListener('keydown', esc)
+    }
+  }, [notificacoesAbertas])
+
   function pesquisar(evento: FormEvent) {
     evento.preventDefault()
     if (termo.trim()) navegar(rotas.busca(termo.trim()))
@@ -69,11 +83,11 @@ export function Tela({ titulo, subtitulo, trilha, voltar, busca, acaoCabecalho, 
       <header className="tela__cabecalho">
         <form className="tela__busca" onSubmit={pesquisar} role="search">
           <Icone nome="busca" tamanho={18} />
-          <input ref={campoBusca} type="search" name="q" aria-label="Buscar no sistema" autoComplete="off" placeholder={busca} value={termo} onChange={(e) => setTermo(e.target.value)} />
+          <input ref={campoBusca} type="search" name="q" aria-label="Buscar no sistema" autoComplete="off" placeholder="Buscar cliente, ficha ou produto..." value={termo} onChange={(e) => setTermo(e.target.value)} />
           <kbd>Ctrl K</kbd>
         </form>
         <div className="tela__cabecalho-acoes">
-          <div className="tela__notificacoes-area">
+          <div className="tela__notificacoes-area" ref={areaAvisos}>
             <button type="button" className="tela__icone-botao" title="Notificações" aria-label={novos.length ? `Notificações: ${novos.length} novas` : 'Notificações'} aria-expanded={notificacoesAbertas} onClick={() => setNotificacoesAbertas(!notificacoesAbertas)}>
               <Icone nome="sino" />
               {novos.length > 0 && <span className="tela__notificacoes-contagem" aria-hidden>{novos.length}</span>}

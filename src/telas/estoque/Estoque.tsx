@@ -70,7 +70,6 @@ export function Estoque() {
     <Tela
       titulo="Estoque"
       subtitulo="Saldos, reposição e movimentação de mercadorias no balcão."
-      busca="Buscar no sistema..."
       acaoCabecalho={
         <Botao variante="primario" icone="mais" onClick={() => navegar(rotas.cadastrarProduto)}>
           Cadastrar produto
@@ -234,10 +233,6 @@ export function Estoque() {
       </Painel>
       </div>
 
-      <p className="estoque__regra">
-        Entrega com vários itens: Registrar entrada, no topo. Um produto só: + Entrada, na linha dele. O
-        ajuste de contagem é separado da entrada de compras.
-      </p>
       <Outlet />
     </Tela>
   )

@@ -1,11 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
 import { Botao } from '../../componentes/botao/Botao'
 import { Modal } from '../../componentes/modal/Modal'
 import { useSemDestino } from '../../componentes/aviso/Aviso'
 import { dataCurta, reais } from '../../formatar'
 import { contagemItens, hojeISO, nomeCliente, notinha as notinhaDa, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
-import { rotas } from '../../rotas-caminhos'
 import { ReceberNotinhas } from '../detalhe-cliente/receber/ReceberNotinhas'
 import { ComIcone } from '../../componentes/icone/Icone'
 import { AvisoOutrasNotinhas, DadosFicha, PagamentosFicha, TabelaItensFicha, TotaisFicha } from './ConteudoFicha'
@@ -13,13 +11,9 @@ import './janela-ficha.css'
 
 type Props = { id: string; aoFechar: () => void }
 
-/**
- * Consulta rápida de uma ficha sem sair do Início. A página /fichas/:id continua
- * existindo para quem chega de Clientes, busca, Financeiro ou sino.
- */
+/** Consulta rápida de uma ficha sem sair da tela. Aberta por useAbrirFicha, de qualquer lugar. */
 export function JanelaFicha({ id, aoFechar }: Props) {
   const base = useEstadoDemonstracao()
-  const navegar = useNavigate()
   const semDestino = useSemDestino()
   const hoje = hojeISO()
   // Uma janela por vez: receber troca a ficha pela janela de recebimento e volta.
@@ -41,9 +35,6 @@ export function JanelaFicha({ id, aoFechar }: Props) {
         <>
           <Botao icone="imprimir" onClick={semDestino('imprimir 2ª via')}>
             Imprimir 2ª via
-          </Botao>
-          <Botao icone="abrir-externo" onClick={() => navegar(rotas.ficha(ficha.id))}>
-            Abrir página da ficha
           </Botao>
           {notinha && notinha.emAberto > 0 ? (
             <Botao variante="primario" icone="dinheiro" onClick={() => setRecebendo('esta')}>

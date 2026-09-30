@@ -1,19 +1,35 @@
-import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
-import { Tela } from '../../componentes/layout/tela/Tela'
-import { Painel } from '../../componentes/painel/Painel'
-import { Campo, Selecao } from '../../componentes/campo/Campo'
+import { useCallback, useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router'
+import { Modal } from '../../componentes/modal/Modal'
+import { Campo } from '../../componentes/campo/Campo'
 import { CampoMoeda } from '../../componentes/campo/CampoMoeda'
 import { Botao } from '../../componentes/botao/Botao'
+import { Filtros } from '../../componentes/filtros/Filtros'
 import { agoraHorario, hojeISO, registrarMovimentoCaixa, type Meio } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import './registrar-movimento.css'
 
-const meios: Record<Meio, string> = { dinheiro: 'Dinheiro', pix: 'Pix', cartao: 'Cartão' }
+const meios: { valor: Meio; rotulo: string }[] = [
+  { valor: 'dinheiro', rotulo: 'Dinheiro' },
+  { valor: 'pix', rotulo: 'Pix' },
+  { valor: 'cartao', rotulo: 'Cartão' },
+]
 
+/**
+ * Saída que não é gasto: dinheiro levado ao cofre só muda de lugar. Separar da
+ * despesa deixa a categoria dizer o que de fato aconteceu com o caixa.
+ */
+const tiposSaida = [
+  { valor: 'despesa', rotulo: 'Despesa', categoria: 'Despesa' },
+  { valor: 'retirada', rotulo: 'Retirada do caixa', categoria: 'Retirada de caixa' },
+] as const
+
+/** Gaveta sobre o Financeiro: lançamento avulso, fora de venda. */
 export function RegistrarMovimento() {
   const navegar = useNavigate()
+  const fechar = useCallback(() => navegar(rotas.financeiro), [navegar])
   const [fluxo, setFluxo] = useState<'entrada' | 'saida'>('saida')
+  const [tipoSaida, setTipoSaida] = useState<(typeof tiposSaida)[number]['valor']>('despesa')
   const [meio, setMeio] = useState<Meio>('dinheiro')
   const [descricao, setDescricao] = useState('')
   const [valor, setValor] = useState<number | null>(null)
@@ -29,11 +45,7 @@ export function RegistrarMovimento() {
     const primeiro = (['descricao', 'valor'] as const).find((campo) => falhas[campo])
     if (primeiro) {
       setErros(falhas)
-      requestAnimationFrame(() => {
-        const alvo = formulario.querySelector<HTMLInputElement>(`[name="${primeiro}"]`)
-        alvo?.scrollIntoView({ block: 'center' })
-        alvo?.focus({ preventScroll: true })
-      })
+      requestAnimationFrame(() => formulario.querySelector<HTMLInputElement>(`[name="${primeiro}"]`)?.focus())
       return
     }
     registrarMovimentoCaixa({
@@ -41,36 +53,43 @@ export function RegistrarMovimento() {
       data: hojeISO(),
       descricao: descricao.trim(),
       origem: 'Lançamento manual',
-      categoria: fluxo === 'entrada' ? 'Recebimento avulso' : 'Despesa / retirada',
+      categoria: fluxo === 'entrada' ? 'Recebimento avulso' : tiposSaida.find((t) => t.valor === tipoSaida)!.categoria,
       meio,
       valor: fluxo === 'entrada' ? centavos : -centavos,
     })
-    navegar(rotas.financeiro)
+    fechar()
   }
 
   return (
-    <Tela
-      voltar={{ para: rotas.financeiro, rotulo: 'Voltar para financeiro' }}
-      trilha={<Link className="registrar-movimento__link" to={rotas.financeiro}>Financeiro</Link>}
+    <Modal
+      variante="lateral"
       titulo="Registrar movimento"
-      subtitulo="Lançamento manual de uma entrada avulsa ou saída de caixa."
-      busca="Buscar no sistema..."
+      subtitulo="Entrada ou saída avulsa do caixa."
+      aoFechar={fechar}
+      rodape={<>
+        <Botao onClick={fechar}>Cancelar</Botao>
+        <Botao variante="primario" type="submit" form="registrar-movimento-formulario" icone="check">Registrar movimento</Botao>
+      </>}
     >
-      <form className="registrar-movimento" onSubmit={salvar} noValidate>
-        <Painel titulo="Dados do movimento">
-          <div className="registrar-movimento__campos">
-            <Selecao rotulo="Fluxo" valor={fluxo} aoMudar={(valor) => setFluxo(valor as typeof fluxo)} opcoes={[{ valor: 'entrada', rotulo: 'Entrada' }, { valor: 'saida', rotulo: 'Saída' }]} />
-            <Selecao rotulo="Meio" valor={meio} aoMudar={(valor) => setMeio(valor as Meio)} opcoes={Object.entries(meios).map(([valor, rotulo]) => ({ valor, rotulo }))} />
-            <Campo rotulo="Descrição" name="descricao" required value={descricao} onChange={(e) => { setDescricao(e.target.value); setErros((atual) => ({ ...atual, descricao: undefined })) }} placeholder="Ex.: material de limpeza" className="registrar-movimento__largo" erro={Boolean(erros.descricao)} ajuda={erros.descricao} />
-            <CampoMoeda rotulo="Valor (R$)" name="valor" required valorCentavos={valor} aoMudar={(proximo) => { setValor(proximo); setErros((atual) => ({ ...atual, valor: undefined })) }} erro={Boolean(erros.valor)} ajuda={erros.valor} />
-          </div>
-          <p className="registrar-movimento__nota">Para vendas, use a ficha. Este lançamento avulso não receberá cliente nem produtos por suposição. Dados válidos apenas nesta sessão.</p>
-        </Painel>
-        <div className="registrar-movimento__acoes">
-          <Link className="botao botao--secundario" to={rotas.financeiro}>Cancelar</Link>
-          <Botao variante="primario" type="submit" icone="check">Registrar movimento</Botao>
+      <form id="registrar-movimento-formulario" className="registrar-movimento" onSubmit={salvar} noValidate>
+        <div className="registrar-movimento__grupo">
+          <span className="campo__rotulo">Fluxo</span>
+          <Filtros rotulo="Fluxo" valor={fluxo} aoMudar={setFluxo} opcoes={[{ valor: 'entrada', rotulo: 'Entrada' }, { valor: 'saida', rotulo: 'Saída' }]} />
         </div>
+        {fluxo === 'saida' && (
+          <div className="registrar-movimento__grupo">
+            <span className="campo__rotulo">Tipo de saída</span>
+            <Filtros rotulo="Tipo de saída" valor={tipoSaida} aoMudar={setTipoSaida} opcoes={tiposSaida.map(({ valor, rotulo }) => ({ valor, rotulo }))} />
+          </div>
+        )}
+        <div className="registrar-movimento__grupo">
+          <span className="campo__rotulo">Meio</span>
+          <Filtros rotulo="Meio" valor={meio} aoMudar={setMeio} opcoes={meios} />
+        </div>
+        <Campo rotulo="Descrição" name="descricao" required autoFocus value={descricao} onChange={(e) => { setDescricao(e.target.value); setErros((atual) => ({ ...atual, descricao: undefined })) }} placeholder={fluxo === 'saida' && tipoSaida === 'retirada' ? 'Ex.: levado ao cofre' : 'Ex.: material de limpeza'} erro={Boolean(erros.descricao)} ajuda={erros.descricao} />
+        <CampoMoeda rotulo="Valor (R$)" name="valor" required valorCentavos={valor} aoMudar={(proximo) => { setValor(proximo); setErros((atual) => ({ ...atual, valor: undefined })) }} erro={Boolean(erros.valor)} ajuda={erros.valor} />
+        <p className="registrar-movimento__nota">Vendas entram pela ficha.</p>
       </form>
-    </Tela>
+    </Modal>
   )
 }

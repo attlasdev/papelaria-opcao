@@ -30,8 +30,9 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
   const entrada = useRef<HTMLInputElement>(null)
   const { produtos: todos } = useEstadoDemonstracao()
   // Desativado não se vende; bipado, avisa em vez de oferecer cadastro novo.
+  // semAtalho: o aviso não oferece "Fazer cadastro rápido" (desativado, campo vazio, ambíguo).
   const produtos = todos.filter((produto) => !produto.inativo)
-  const [desativado, setDesativado] = useState(false)
+  const [semAtalho, setSemAtalho] = useState(false)
   const termo = normalizar(codigo.trim())
   const sugestoes = termo ? produtos
     .filter((produto) => {
@@ -77,7 +78,7 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
 
   function naoAchou(lido: string, ehCodigo: boolean) {
     const fora = todos.find((item) => item.inativo && (item.codigo === lido || item.codigoBarras === lido))
-    setDesativado(Boolean(fora))
+    setSemAtalho(Boolean(fora))
     setCodigoNaoEncontrado(!fora && ehCodigo ? lido : null)
     setErro(fora ? `“${fora.descricao}” está desativado. Reative no Estoque para vender.`
       : ehCodigo ? `Código “${lido}” sem cadastro.` : `Produto “${lido}” não encontrado.`)
@@ -100,12 +101,22 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
   function ler(evento: FormEvent) {
     evento.preventDefault()
     const lido = codigo.trim()
-    if (!lido) return
+    if (!lido) {
+      setSemAtalho(true)
+      setErro('Bipe um código ou busque um produto antes de inserir.')
+      entrada.current?.focus()
+      return
+    }
     const exato = produtos.find((produto) => produto.codigo === lido || produto.codigoBarras === lido)
-    const produto = exato ? itemCadastrado(exato)
-      : (sugestoes.length ? itemCadastrado(sugestoes[Math.min(indiceAtivo, sugestoes.length - 1)]) : undefined)
-    if (produto) {
-      inserir(produto)
+    // Com a lista aberta, Enter/botão levam o destacado. Fechada e com vários
+    // resultados, pede para escolher: inserir o primeiro às cegas cobraria o errado.
+    const escolhido = exato ?? (sugestoes.length === 1 || (sugestoesAbertas && sugestoes.length) ? sugestoes[Math.min(indiceAtivo, sugestoes.length - 1)] : undefined)
+    if (escolhido) {
+      inserir(itemCadastrado(escolhido))
+    } else if (sugestoes.length > 1) {
+      setSugestoesAbertas(true)
+      setSemAtalho(true)
+      setErro('Vários produtos encontrados. Escolha um da lista.')
     } else {
       naoAchou(lido, /^\d{4,}$/.test(lido))
       setSugestoesAbertas(false)
@@ -201,7 +212,7 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
       {erro && (
         <p className="itens-ficha__erro">
           {erro}{' '}
-          {!desativado && <button type="button" onClick={() => {
+          {!semAtalho && <button type="button" onClick={() => {
             const codigoPendente = codigoNaoEncontrado ?? undefined
             setLendoCodigo(false)
             setErro(null)

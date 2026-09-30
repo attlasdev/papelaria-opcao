@@ -50,7 +50,6 @@ export function NotasFiscais() {
     <Tela
       titulo="Notas fiscais"
       subtitulo="Rascunhos preparados a partir de fichas de venda e documentos de entrada."
-      busca="Buscar por referência ou cliente..."
       acaoCabecalho={
         <Botao icone="recibo" onClick={() => navegar(rotas.rascunhosNotas)}>
           Rascunhos

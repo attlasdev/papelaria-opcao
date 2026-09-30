@@ -35,7 +35,6 @@ export function DetalheFicha() {
       }
       titulo={`Ficha #${id}`}
       subtitulo={ficha ? `${nomeCliente(base, ficha.clienteId)} · ${dataCurta(ficha.data)} · ${ficha.horario} · operador ${ficha.operador}` : 'Ficha não encontrada'}
-      busca="Buscar no sistema..."
       acaoCabecalho={notinha && notinha.emAberto > 0 && (
         <Botao variante="primario" icone="dinheiro" onClick={() => setRecebendo('esta')}>
           Receber notinha

@@ -15,6 +15,9 @@ type Props = {
   children: ReactNode
 }
 
+/** Janelas abertas, a de cima por último: Esc e Tab valem só para ela. */
+const pilha: object[] = []
+
 /** Janela sobre a tela atual. Fecha com Esc, no X ou no fundo escurecido. */
 export function Modal({ titulo, subtitulo, variante = 'central', estreito, aoFechar, rodape, children }: Props) {
   const janela = useRef<HTMLDivElement>(null)
@@ -29,9 +32,13 @@ export function Modal({ titulo, subtitulo, variante = 'central', estreito, aoFec
 
   useEffect(() => {
     const focoAnterior = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    // Ficha aberta sobre a gaveta de Movimentações: Esc fecha só a ficha.
+    const eu = {}
+    pilha.push(eu)
     // Campo com autoFocus dentro da janela mantém o foco; senão, a janela recebe.
     if (!janela.current?.contains(document.activeElement)) janela.current?.focus()
     const aoTeclar = (evento: KeyboardEvent) => {
+      if (pilha[pilha.length - 1] !== eu) return
       if (evento.key === 'Escape') {
         evento.preventDefault()
         aoFechar()
@@ -52,6 +59,7 @@ export function Modal({ titulo, subtitulo, variante = 'central', estreito, aoFec
     window.addEventListener('keydown', aoTeclar)
     return () => {
       window.removeEventListener('keydown', aoTeclar)
+      pilha.splice(pilha.indexOf(eu), 1)
       focoAnterior?.focus()
     }
   }, [aoFechar])

@@ -27,4 +27,10 @@
     font-family: var(--font-mono);
     font-size: var(--text-rotulo);
   }
+
+  /* Texto de apoio sem palavra sozinha na última linha. */
+  p,
+  .campo__ajuda {
+    text-wrap: pretty;
+  }
 }

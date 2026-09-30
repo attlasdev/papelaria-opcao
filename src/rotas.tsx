@@ -36,8 +36,7 @@ export const roteador = createHashRouter([
       { path: '/clientes', element: <Clientes />, children: [{ path: 'novo', element: <CadastrarCliente /> }] },
       { path: '/clientes/sem-identificacao', element: <VendasSemIdentificacao /> },
       { path: '/clientes/:id', element: <DetalheCliente />, children: [{ path: 'editar', element: <EditarCliente /> }] },
-      { path: '/financeiro', element: <Financeiro /> },
-      { path: '/financeiro/movimento/novo', element: <RegistrarMovimento /> },
+      { path: '/financeiro', element: <Financeiro />, children: [{ path: 'movimento/novo', element: <RegistrarMovimento /> }] },
       {
         path: '/estoque',
         element: <Estoque />,

@@ -101,7 +101,7 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
       variante={variante}
       estreito={variante === 'central'}
       titulo={atual ? 'Editar dados do cliente' : 'Cadastrar cliente'}
-      subtitulo={subtitulo ?? (atual ? `${atual.nome} · ${atual.id}` : 'Só o nome é obrigatório. O resto pode ser completado depois.')}
+      subtitulo={subtitulo ?? (atual ? `${atual.nome} · ${atual.id}` : 'Só o nome é obrigatório.')}
       aoFechar={aoFechar}
       rodape={
         <>

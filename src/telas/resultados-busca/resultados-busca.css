@@ -1,6 +1,8 @@
 .resultados-busca__lista { display: grid; gap: var(--espaco-2); }
 .resultados-busca__lista li + li { border-top: 1px solid var(--color-borda); padding-top: var(--espaco-2); }
-.resultados-busca__lista a { display: grid; gap: var(--espaco-1); min-width: 0; }
-.resultados-busca__lista a:hover strong { text-decoration: underline; }
+.resultados-busca__lista a,
+.resultados-busca__lista button { display: grid; gap: var(--espaco-1); min-width: 0; width: 100%; text-align: left; }
+.resultados-busca__lista a:hover strong,
+.resultados-busca__lista button:hover strong { text-decoration: underline; }
 .resultados-busca__lista span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-texto-suave); font-size: var(--text-rotulo); }
 .resultados-busca__lista strong { overflow-wrap: anywhere; }

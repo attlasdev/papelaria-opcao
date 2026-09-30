@@ -138,7 +138,6 @@ export function CriarFicha() {
     <Tela
       titulo="Nova ficha de venda"
       subtitulo={`Ficha #${abertura.numero} · aberta hoje, ${abertura.horario} · operador ${base.operador}`}
-      busca="Buscar cliente ou produto..."
       acoesTitulo={
         <Botao icone="lixeira" onClick={limpar}>
           Limpar ficha

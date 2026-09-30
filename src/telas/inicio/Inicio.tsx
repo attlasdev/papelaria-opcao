@@ -24,7 +24,7 @@ import {
   type FormaVenda,
 } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
-import { JanelaFicha } from '../detalhe-ficha/JanelaFicha'
+import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
 import './inicio.css'
 
 type Filtro = 'todos' | FormaVenda
@@ -42,7 +42,7 @@ export function Inicio() {
   const [filtro, setFiltro] = useState<Filtro>('todos')
   const [dataSelecionada, setDataSelecionada] = useState('')
   const [pagina, setPagina] = useState(1)
-  const [fichaAberta, setFichaAberta] = useState<string | null>(null)
+  const abrirFicha = useAbrirFicha()
   const { referencia: painelHistorico, linhasPorPagina: fichasPorPagina } = useLinhasPorPagina()
   const semDestino = useSemDestino()
   const base = useEstadoDemonstracao()
@@ -66,7 +66,6 @@ export function Inicio() {
     <Tela
       titulo="Visão geral do balcão"
       subtitulo={`${dataPorExtenso(hoje)} · movimentação de vendas`}
-      busca="Buscar ficha, cliente ou produto..."
       acoesTitulo={
         <Botao icone={mostrarValores ? 'olho-fechado' : 'olho'} onClick={() => setMostrarValores(!mostrarValores)}>
           {mostrarValores ? 'Ocultar valores' : 'Mostrar valores'}
@@ -148,7 +147,7 @@ export function Inicio() {
                 key={ficha.id}
                 className="inicio__linha"
                 // A linha inteira abre a ficha; link do cliente e botões seguem com a própria ação.
-                onClick={(evento) => { if (!(evento.target as HTMLElement).closest('a, button')) setFichaAberta(ficha.id) }}
+                onClick={(evento) => { if (!(evento.target as HTMLElement).closest('a, button')) abrirFicha(ficha.id) }}
               >
                 <td className="codigo">#{ficha.id}</td>
                 <td>
@@ -167,7 +166,7 @@ export function Inicio() {
                 </td>
                 <td className="celula--numero inicio__valor">{valor(ficha.total)}</td>
                 <td className="celula--acoes">
-                  <BotaoIcone icone="abrir-externo" rotulo={`Abrir ficha #${ficha.id}`} onClick={() => setFichaAberta(ficha.id)} />
+                  <BotaoIcone icone="abrir-externo" rotulo={`Abrir ficha #${ficha.id}`} onClick={() => abrirFicha(ficha.id)} />
                   <BotaoIcone icone="imprimir" rotulo="Imprimir 2ª via" onClick={semDestino('imprimir 2ª via')} />
                 </td>
               </tr>
@@ -183,7 +182,6 @@ export function Inicio() {
         />
       </Painel>
       </div>
-      {fichaAberta && <JanelaFicha id={fichaAberta} aoFechar={() => setFichaAberta(null)} />}
     </Tela>
   )
 }

@@ -227,7 +227,6 @@ export function RegistrarEntrada() {
       }
       titulo="Registrar entrada de mercadorias"
       subtitulo="Recebimento de compras e reposição do estoque do balcão."
-      busca="Buscar produtos..."
       acoesTitulo={
         <button type="button" className="registrar-entrada__ajuste" onClick={() => navegar(rotas.ajustarEstoque())}>
           Só corrigir contagem?<br />Use Ajustar estoque
@@ -386,8 +385,7 @@ export function RegistrarEntrada() {
       <div className="registrar-entrada__rodape">
         <p className="registrar-entrada__nota">
           <Icone nome="info" tamanho={18} />
-          Ao confirmar, o saldo dos itens é atualizado. Correção de contagem fica em Ajustar estoque, para manter o
-          histórico de entradas separado dos ajustes.
+          Ao confirmar, o saldo é atualizado.
         </p>
         <dl className="registrar-entrada__resumo">
           <div>

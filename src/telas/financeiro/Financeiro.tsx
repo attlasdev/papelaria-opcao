@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Outlet, useNavigate } from 'react-router'
 import { Tela } from '../../componentes/layout/tela/Tela'
 import { Botao } from '../../componentes/botao/Botao'
 import { CartaoResumo, Painel } from '../../componentes/painel/Painel'
@@ -24,6 +24,7 @@ import {
 } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import './financeiro.css'
+import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
 
 type FiltroMeio = 'todos' | Meio
 
@@ -32,6 +33,7 @@ const nomePeriodo: Record<Periodo, string> = { dia: 'dia', semana: 'semana', mes
 const anterior: Record<Periodo, string> = { dia: 'vs ontem', semana: 'vs semana anterior', mes: 'vs mês anterior', ano: 'vs ano anterior' }
 
 export function Financeiro() {
+  const abrirFicha = useAbrirFicha()
   const [periodo, setPeriodo] = useState<Periodo>('dia')
   const [meio, setMeio] = useState<FiltroMeio>('todos')
   const [pagina, setPagina] = useState(1)
@@ -58,7 +60,6 @@ export function Financeiro() {
     <Tela
       titulo="Financeiro"
       subtitulo={`Data base: ${dataPorExtenso(hoje)}`}
-      busca="Buscar por ficha, origem ou valor..."
       acaoCabecalho={
         <Botao variante="primario" icone="mais" onClick={() => navegar(rotas.registrarMovimento)}>
           Registrar movimento
@@ -184,9 +185,9 @@ export function Financeiro() {
                   </td>
                   <td>
                     {mov.ficha ? (
-                      <Link className="financeiro__ficha" to={rotas.ficha(mov.ficha)}>
+                      <button type="button" className="financeiro__ficha" onClick={() => abrirFicha(mov.ficha!)}>
                         <Etiqueta icone="recibo">Ficha #{mov.ficha}</Etiqueta>
-                      </Link>
+                      </button>
                     ) : (
                       <Etiqueta>{mov.categoria}</Etiqueta>
                     )}
@@ -210,9 +211,9 @@ export function Financeiro() {
       </div>
 
       <p className="financeiro__nota">
-        Cada recebimento conta uma única vez: a entrada vem do pagamento registrado na ficha, sem lançamento em dobro. Relatório
-        operacional do balcão; não substitui a escrituração contábil.
+        Relatório do balcão. Não substitui a contabilidade.
       </p>
+      <Outlet />
     </Tela>
   )
 }

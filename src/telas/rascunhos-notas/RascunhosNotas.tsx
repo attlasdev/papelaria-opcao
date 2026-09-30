@@ -20,7 +20,6 @@ export function RascunhosNotas() {
       trilha={<Link className="rascunhos-notas__link" to={rotas.notas}>Notas fiscais</Link>}
       titulo="Rascunhos de notas"
       subtitulo="Dados de vendas preparados para revisão. Nenhuma nota foi emitida."
-      busca="Buscar por referência ou cliente..."
     >
       <Painel colado titulo="Rascunhos de saída">
         <Tabela larguraMinima={700}>

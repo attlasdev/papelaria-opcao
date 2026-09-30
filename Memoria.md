@@ -19,6 +19,30 @@ com saldo 0 e marcado `cadastroRapido`.
 
 ---
 
+## Check-up geral de fluxo e textos — decisões de `2026-09-30`
+
+- **Ficha sempre em janela** (`useAbrirFicha`, em `telas/detalhe-ficha/AbrirFicha.tsx`):
+  qualquer "Ver ficha"/"Ficha #…" abre por cima da tela; fechar devolve filtro,
+  página e rolagem. Motivo: a página da ficha voltava sempre ao Início (vindo do
+  Financeiro, perdia o período). Ficha = uma venda → janela basta; **cliente** =
+  várias fichas → página inteira. A página `/fichas/:id` fica só para depois de
+  concluir a venda; a janela não tem mais "Abrir página da ficha".
+- Modal empilha: Esc fecha só a janela de cima (ficha sobre a gaveta de Movimentações).
+- Sino e busca de cliente da ficha fecham com clique fora e Esc; busca de cliente
+  ignora acento e acha pelos dígitos do documento.
+- "Inserir item" na ficha: campo vazio avisa; vários resultados pedem escolha
+  (antes inseria o primeiro às cegas).
+- Registrar movimento virou gaveta; saída separa **Despesa** de **Retirada do
+  caixa** (só categoria; o líquido ainda conta a retirada como saída — em aberto).
+- Busca do topo com um texto só ("Buscar cliente, ficha ou produto...").
+- Vendas sem identificação: card e página no mesmo período (hoje).
+- Textos de apoio enxugados; `text-wrap: pretty` em `p` e ajuda de campo.
+
+**Fora por decisão do Victor:** impressão, exportação e Notas fiscais (dependem do
+programa fiscal terceirizado; os botões seguem "Ainda sem destino").
+
+---
+
 ## Cadastro rápido, edição e entrada rápida — decisões de `2026-09-30`
 
 - **Cadastro rápido fica pendente até ser completado.** A venda nunca trava, mas o

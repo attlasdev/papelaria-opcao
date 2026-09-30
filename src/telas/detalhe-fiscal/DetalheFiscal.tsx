@@ -22,7 +22,6 @@ export function DetalheFiscal() {
       trilha={<Link className="detalhe-fiscal__link" to={rotas.notas}>Notas fiscais</Link>}
       titulo={entrada ? 'Documento de fornecedor' : `Rascunho da ficha #${id}`}
       subtitulo={entrada ? 'Exemplo de entrada de mercadorias' : 'Revisão dos dados conhecidos da venda'}
-      busca="Buscar por referência ou cliente..."
     >
       {entrada ? (
         <Painel titulo="Detalhes disponíveis">

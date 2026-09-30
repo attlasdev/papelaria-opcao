@@ -276,17 +276,17 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
         titulo={produtoConsultado ? 'Produto já cadastrado' : completar ? 'Completar cadastro' : editar ? 'Editar produto' : naFicha ? 'Cadastro rápido' : 'Cadastrar produto'}
         subtitulo={produtoConsultado
           ? 'Código reconhecido. Os dados abaixo são do produto existente.'
-          : editar ? 'Corrija o cadastro. O saldo muda só por entrada ou ajuste de estoque.'
-          : completar ? 'Cadastrado às pressas numa venda. Confira os dados, complete o que falta e conte a prateleira.'
-          : naFicha ? 'Só o essencial para vender agora. O resto do cadastro e a contagem ficam pendentes no Estoque.'
-          : daEntrada ? 'Complete o cadastro do produto que chegou. A quantidade vem da entrada.' : 'Informações básicas para o item aparecer no estoque e na venda.'}
+          : editar ? 'O saldo muda só por entrada ou ajuste.'
+          : completar ? 'Feito na venda. Complete os dados e conte a prateleira.'
+          : naFicha ? 'Só o essencial para vender. O resto fica pendente no Estoque.'
+          : daEntrada ? 'A quantidade vem da entrada.' : undefined}
         aoFechar={fechar}
         rodape={
           produtoConsultado ? <Botao variante="primario" onClick={fechar}>Fechar</Botao> : (
             <>
               {editar && <AcaoRemover produto={editar} aoConcluir={fechar} />}
               <span className={erroSalvar ? 'cadastrar-produto__lembrete cadastrar-produto__lembrete--erro' : 'cadastrar-produto__lembrete'} role={erroSalvar ? 'alert' : undefined}>
-                {erroSalvar || (naFicha ? 'Confira nome, categoria, unidade, preço e quantidade.' : 'Confira nome, categoria, unidade e preço.')}
+                {erroSalvar}
               </span>
               <Botao variante="fantasma" onClick={fechar}>
                 Cancelar
@@ -302,7 +302,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
         <section className="cadastrar-produto__grupo">
           <h3 className="cadastrar-produto__titulo">Dados principais</h3>
           <div className="cadastrar-produto__grade">
-            <Campo rotulo="Código interno" value={produtoConsultado?.codigo ?? existente?.codigo ?? proximoCodigo} readOnly ajuda={produtoConsultado || existente ? 'Código do cadastro existente.' : 'Gerado automaticamente.'} />
+            <Campo rotulo="Código interno" value={produtoConsultado?.codigo ?? existente?.codigo ?? proximoCodigo} readOnly />
             <div className="cadastrar-produto__barras">
               {daEntrada ? (
                 <Campo
@@ -314,7 +314,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
                   value={semCodigo ? '' : codigoBarras}
                   onChange={(e) => { setCodigoBarras(e.target.value); limparErro('codigoBarras') }}
                   erro={Boolean(duplicado)}
-                  ajuda={duplicado ? `Este código já está cadastrado em ${duplicado.codigo}.` : 'Deixe sem código para papel avulso, impressão ou serviço.'}
+                  ajuda={duplicado ? `Este código já está cadastrado em ${duplicado.codigo}.` : undefined}
                 />
               ) : (
                 <div className="campo cadastrar-produto__codigo-campo">
@@ -351,7 +351,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
                     />
                   </div>
                   <span id={`${idCodigoBarras}-ajuda`} className={produtoConsultado ? 'campo__ajuda cadastrar-produto__codigo-ajuda--consultado' : duplicado ? 'campo__ajuda campo__ajuda--erro' : 'campo__ajuda'} role={produtoConsultado ? 'status' : duplicado ? 'alert' : undefined}>
-                    {produtoConsultado ? `Cadastrado em ${produtoConsultado.codigo}. Para cadastrar outro produto, informe outro código.` : duplicado ? `Este código já está cadastrado em ${duplicado.codigo}.` : 'Deixe sem código para papel avulso, impressão ou serviço.'}
+                    {produtoConsultado ? `Cadastrado em ${produtoConsultado.codigo}. Para cadastrar outro produto, informe outro código.` : duplicado ? `Este código já está cadastrado em ${duplicado.codigo}.` : undefined}
                   </span>
                 </div>
               )}
@@ -373,7 +373,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
               disabled={Boolean(produtoConsultado)}
               erro={Boolean(erros.unidade)}
               aoMudar={(valor) => { setUnidadeVenda(valor.slice(0, valor.indexOf(' ')) as Unidade); limparErro('unidade') }}
-              ajuda={erros.unidade ?? 'Como o produto sai no balcão. O estoque é contado nela.'}
+              ajuda={erros.unidade ?? 'O estoque é contado nela.'}
             />
             {daEntrada && (
               <div className={erros.embalagem ? 'cadastrar-produto__embalagem cadastrar-produto__embalagem--erro cadastrar-produto__largo' : 'cadastrar-produto__embalagem cadastrar-produto__largo'} data-campo="embalagem" tabIndex={-1}>
@@ -477,7 +477,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
               min={1}
               defaultValue={1}
               erro={Boolean(erros.quantidadeVendida)}
-              ajuda={erros.quantidadeVendida ?? 'Quantas vão nesta venda.'}
+              ajuda={erros.quantidadeVendida}
               onChange={() => limparErro('quantidadeVendida')}
             />}
             {!naFicha && <CampoMoeda rotulo="Custo (R$)" name="custo" opcional valorInicialCentavos={inicial.custo} readOnly={Boolean(produtoConsultado)} erro={Boolean(erros.custo)} ajuda={erros.custo} aoMudar={() => limparErro('custo')} />}
@@ -501,7 +501,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
               defaultValue={inicial.minimo}
               readOnly={Boolean(produtoConsultado)}
               erro={Boolean(erros.minimo)}
-              ajuda={erros.minimo ?? 'Abaixo disto, o item aparece como estoque baixo.'}
+              ajuda={erros.minimo ?? 'Abaixo disto, vira estoque baixo.'}
               onChange={() => limparErro('minimo')}
             />}
           </div>
@@ -509,7 +509,6 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
 
         {!naFicha && <section className="cadastrar-produto__grupo">
           <h3 className="cadastrar-produto__titulo">Dados complementares</h3>
-          <p className="cadastrar-produto__explica">Opcionais: preencha o que ajuda a identificar e repor o produto.</p>
           <div className="cadastrar-produto__grade">
             <Campo rotulo="Marca" name="marca" opcional defaultValue={produtoConsultado?.marca ?? r?.marca} readOnly={Boolean(produtoConsultado)} />
             {/* Na entrada, o fornecedor já está no topo da tela: não pedir de novo. */}

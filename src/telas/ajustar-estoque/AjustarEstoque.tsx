@@ -87,7 +87,7 @@ export function AjustarEstoque() {
     <Modal
       variante="lateral"
       titulo="Ajustar estoque"
-      subtitulo="Corrija a contagem física de um produto sem registrar uma compra."
+      subtitulo="Corrige a contagem, sem registrar compra."
       aoFechar={fechar}
       rodape={<>
         <Botao onClick={fechar}>Cancelar</Botao>
