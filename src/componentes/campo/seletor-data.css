@@ -68,7 +68,8 @@
   height: 30px;
   border-radius: var(--radius-pequeno);
 }
-.seletor-data__navegacao button:hover { background: var(--color-superficie-2); }
+.seletor-data__navegacao button:hover:not(:disabled) { background: var(--color-superficie-2); }
+.seletor-data__navegacao button:disabled { color: var(--color-texto-apagado); cursor: default; }
 
 .seletor-data__grade {
   display: grid;

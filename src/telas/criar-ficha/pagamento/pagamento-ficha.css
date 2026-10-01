@@ -60,16 +60,15 @@
 }
 
 /* Formas */
-/* Três meios à vista numa linha; notinha, o caso diferente, na linha de baixo. */
+/* Três meios à vista numa linha; misto e notinha dividem a seguinte. */
 .pagamento-ficha__formas {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: var(--espaco-2);
 }
 
-.pagamento-ficha__forma:last-child {
-  grid-column: 1 / -1;
-}
+.pagamento-ficha__forma:nth-child(-n + 3) { grid-column: span 2; }
+.pagamento-ficha__forma:nth-child(n + 4) { grid-column: span 3; }
 
 .pagamento-ficha__forma {
   display: flex;
@@ -100,11 +99,6 @@
   background: transparent;
   color: var(--color-texto-apagado);
   cursor: not-allowed;
-}
-
-.pagamento-ficha__forma-aviso {
-  font-size: var(--text-rotulo);
-  font-weight: var(--font-weight-normal);
 }
 
 /* Detalhe da forma escolhida */
@@ -182,3 +176,8 @@
   font-size: var(--text-rotulo);
   color: var(--color-saida);
 }
+
+.pagamento-ficha__misto { display: grid; gap: var(--espaco-2); }
+.pagamento-ficha__misto .pagamento-ficha__nota { margin-top: 0; }
+.pagamento-ficha__misto-restante { display: flex; justify-content: space-between; gap: var(--espaco-2); font-size: var(--text-rotulo); color: var(--color-texto-suave); }
+.pagamento-ficha__misto-restante--erro { color: var(--color-saida); }

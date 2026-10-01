@@ -19,6 +19,11 @@ export function dataCurta(dataISO: string): string {
   return `${dia}/${mes}/${ano}`
 }
 
+/** Instante registrado → data e horário da papelaria. */
+export function dataHora(instante: string): string {
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' }).format(new Date(instante))
+}
+
 /** Data curta produzida pelo formulário da ficha → chave de filtro YYYY-MM-DD. */
 export function dataISODeCurta(data: string): string {
   const [dia, mes, ano] = data.split('/')

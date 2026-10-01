@@ -100,7 +100,6 @@ export function criarSemente(hoje: string, minutoAtual = 24 * 60): Base {
 
   const clientes: Cliente[] = CLIENTES.map(([id, nome, documento, telefone, descricao, desde], indice) => ({
     id, nome, documento, telefone, descricao,
-    email: indice % 3 === 0 ? `${nome.split(' ')[0].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')}@email.com` : '',
     endereco: indice % 2 === 0 ? `${RUAS[indice % RUAS.length]}, ${100 + indice * 7} - ${BAIRROS[indice % BAIRROS.length]} - São Paulo/SP` : '',
     desde: somarDias(hoje, -desde),
   }))
@@ -211,6 +210,7 @@ export function criarSemente(hoje: string, minutoAtual = 24 * 60): Base {
     produtos,
     fichas: comId,
     movimentosCaixa: caixaManual(hoje, minutoAtual),
+    turnosCaixa: [],
     movimentosEstoque: historicoEstoque(produtos, comId, hoje),
     rascunhosNota: comId.filter((f) => f.clienteId).slice(-2).map((f) => f.id).reverse(),
     rascunhoFicha: null,

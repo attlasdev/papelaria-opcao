@@ -64,12 +64,18 @@ export function SeletorData({ valor, aoMudar, dataInicial, min, max, rotulo = 'F
   const [diaFocado, setDiaFocado] = useState(valor || dataInicial)
   const [posicao, setPosicao] = useState({ top: 0, left: 0 })
   const [texto, setTexto] = useState(valor ? dataCurta(valor) : '')
-  const invalida = texto.length === 10 && !dataValida(texto)
+  const valorInformado = useRef(valor)
+  const foraDoIntervalo = (iso: string) => Boolean((min && iso < min) || (max && iso > max))
+  const limitarData = (iso: string) => min && iso < min ? min : max && iso > max ? max : iso
+  const dataDigitada = dataValida(texto)
+  const invalida = texto.length === 10 && (!dataDigitada || foraDoIntervalo(dataDigitada))
   // Valor trocado por fora (ex.: Limpar ficha volta o vencimento): o texto acompanha.
   useEffect(() => {
-    if (valor !== dataValida(texto) && (valor || texto.length === 10)) setTexto(valor ? dataCurta(valor) : '')
+    if (valor !== valorInformado.current) {
+      setTexto(valor ? dataCurta(valor) : '')
+      valorInformado.current = valor
+    }
   }, [valor])
-  const foraDoIntervalo = (iso: string) => Boolean((min && iso < min) || (max && iso > max))
 
   const ano = mesVisivel.getFullYear()
   const mes = mesVisivel.getMonth()
@@ -130,20 +136,29 @@ export function SeletorData({ valor, aoMudar, dataInicial, min, max, rotulo = 'F
 
   function abrir() {
     if (aberto) { setAberto(false); return }
-    const data = dataValida(texto) || valor || dataInicial
+    const data = limitarData(dataValida(texto) || valor || dataInicial)
     const inicio = dataLocal(data)
     setMesVisivel(new Date(inicio.getFullYear(), inicio.getMonth(), 1))
     setDiaFocado(data)
     setAberto(true)
   }
 
+  function podeMudarMes(deslocamento: number) {
+    const primeiro = isoLocal(new Date(ano, mes + deslocamento, 1))
+    const ultimo = isoLocal(new Date(ano, mes + deslocamento + 1, 0))
+    return !((min && ultimo < min) || (max && primeiro > max))
+  }
+
   function mudarMes(deslocamento: number) {
+    if (!podeMudarMes(deslocamento)) return
     const proximo = new Date(ano, mes + deslocamento, 1)
     setMesVisivel(proximo)
-    setDiaFocado(isoLocal(proximo))
+    setDiaFocado(limitarData(isoLocal(proximo)))
   }
 
   function escolher(data: string) {
+    if (data && foraDoIntervalo(data)) return
+    valorInformado.current = data
     setTexto(data ? dataCurta(data) : '')
     aoMudar(data)
     setAberto(false)
@@ -153,7 +168,10 @@ export function SeletorData({ valor, aoMudar, dataInicial, min, max, rotulo = 'F
   function digitar(textoDigitado: string) {
     const formatado = mascaraData(textoDigitado)
     setTexto(formatado)
-    aoMudar(dataValida(formatado))
+    const data = dataValida(formatado)
+    const permitida = data && !foraDoIntervalo(data) ? data : ''
+    valorInformado.current = permitida
+    aoMudar(permitida)
   }
 
   function tecladoDia(evento: KeyboardEvent<HTMLButtonElement>) {
@@ -163,6 +181,7 @@ export function SeletorData({ valor, aoMudar, dataInicial, min, max, rotulo = 'F
     evento.preventDefault()
     const proximo = dataLocal(diaFocado)
     proximo.setDate(proximo.getDate() + deslocamento)
+    if (foraDoIntervalo(isoLocal(proximo))) return
     setMesVisivel(new Date(proximo.getFullYear(), proximo.getMonth(), 1))
     setDiaFocado(isoLocal(proximo))
   }
@@ -180,6 +199,7 @@ export function SeletorData({ valor, aoMudar, dataInicial, min, max, rotulo = 'F
           maxLength={10}
           aria-label={rotulo}
           aria-invalid={invalida || erro || undefined}
+          title={invalida ? !dataDigitada ? 'Informe uma data válida.' : max && dataDigitada > max ? `Escolha uma data até ${dataCurta(max)}.` : `Escolha uma data a partir de ${dataCurta(min!)}.` : undefined}
           onChange={(evento) => digitar(evento.target.value)}
         />
         <button type="button" aria-label="Abrir calendário" aria-haspopup="dialog" aria-expanded={aberto} aria-controls={`${id}-calendario`} onClick={abrir}>
@@ -191,8 +211,8 @@ export function SeletorData({ valor, aoMudar, dataInicial, min, max, rotulo = 'F
           <div className="seletor-data__topo">
             <strong>{nomeMes.format(mesVisivel)}</strong>
             <div className="seletor-data__navegacao">
-              <button type="button" aria-label="Mês anterior" onClick={() => mudarMes(-1)}><Icone nome="chevron-esquerda" tamanho={18} /></button>
-              <button type="button" aria-label="Próximo mês" onClick={() => mudarMes(1)}><Icone nome="chevron-direita" tamanho={18} /></button>
+              <button type="button" aria-label="Mês anterior" disabled={!podeMudarMes(-1)} onClick={() => mudarMes(-1)}><Icone nome="chevron-esquerda" tamanho={18} /></button>
+              <button type="button" aria-label="Próximo mês" disabled={!podeMudarMes(1)} onClick={() => mudarMes(1)}><Icone nome="chevron-direita" tamanho={18} /></button>
             </div>
           </div>
           <div className="seletor-data__grade" aria-label={nomeMes.format(mesVisivel)}>
@@ -219,7 +239,7 @@ export function SeletorData({ valor, aoMudar, dataInicial, min, max, rotulo = 'F
           </div>
           {variante === 'filtro' ? (
             <div className="seletor-data__rodape">
-              <button type="button" disabled={!valor} onClick={() => escolher('')}>Limpar filtro</button>
+              <button type="button" disabled={!valor && !texto} onClick={() => escolher('')}>Limpar filtro</button>
               <button type="button" onClick={() => {
                 const recente = dataLocal(dataInicial)
                 setMesVisivel(new Date(recente.getFullYear(), recente.getMonth(), 1))

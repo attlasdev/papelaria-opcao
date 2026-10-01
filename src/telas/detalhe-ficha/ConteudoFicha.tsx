@@ -43,6 +43,7 @@ export const iconeForma: Record<FormaVenda, NomeIcone> = {
   dinheiro: 'dinheiro',
   pix: 'pix',
   cartao: 'cartao',
+  misto: 'financeiro',
   notinha: 'calendario',
 }
 
@@ -167,10 +168,10 @@ export function PagamentosFicha({ ficha }: { ficha: Ficha }) {
               </span>
               <span className="detalhe-ficha__pagamento-texto">
                 <strong>{!notinha ? 'Na venda' : pagamento.entrada ? 'Entrada na venda' : 'Recebimento'}</strong>
-                <small>{dataCurta(pagamento.data)} · {pagamento.horario} · {pagamento.rotulo ?? NOME_MEIO[pagamento.meio]}</small>
+                <small>{dataCurta(pagamento.data)} · {pagamento.horario} · {pagamento.rotulo ?? NOME_MEIO[pagamento.meio]}{pagamento.operador && ` · ${pagamento.operador}`}</small>
                 {desfeito && (
                   <small className="detalhe-ficha__estorno">
-                    Estornado em {dataCurta(desfeito.data)} · {desfeito.motivo}
+                    Estornado em {dataCurta(desfeito.data)} · {desfeito.motivo}{desfeito.operador && ` · ${desfeito.operador}`}
                   </small>
                 )}
               </span>
@@ -213,8 +214,8 @@ export function FaixaCancelada({ ficha }: { ficha: Ficha }) {
     <div className="detalhe-ficha__cancelada" role="status">
       <Icone nome="erro" tamanho={18} />
       <p>
-        <strong>Ficha cancelada</strong> em {dataCurta(ficha.cancelamento.data)} às {ficha.cancelamento.horario} · {ficha.cancelamento.motivo}.
-        Itens devolvidos ao estoque e pagamentos estornados.
+        <strong>Ficha cancelada</strong> em {dataCurta(ficha.cancelamento.data)} às {ficha.cancelamento.horario} · {ficha.cancelamento.motivo}{ficha.cancelamento.operador && ` · ${ficha.cancelamento.operador}`}.
+        Baixa de estoque revertida e pagamentos estornados.
       </p>
     </div>
   )
@@ -227,7 +228,8 @@ export function FaixaCancelada({ ficha }: { ficha: Ficha }) {
 export function BotaoCancelarFicha({ ficha }: { ficha: Ficha }) {
   const [aberto, setAberto] = useState(false)
   if (ficha.cancelamento) return null
-  const unidades = ficha.itens.reduce((t, i) => t + i.quantidade, 0)
+  const unidades = ficha.itens.reduce((t, i) => t + (i.baixaEstoque ?? i.quantidade), 0)
+  const semBaixa = ficha.itens.some((i) => (i.baixaEstoque ?? i.quantidade) < i.quantidade)
   const pago = pagamentosValidos(ficha).reduce((t, p) => t + p.valor, 0)
   const emAberto = ficha.forma === 'notinha' ? Math.max(0, ficha.total - pago) : 0
   return (
@@ -241,7 +243,8 @@ export function BotaoCancelarFicha({ ficha }: { ficha: Ficha }) {
           subtitulo={`${reais(ficha.total)} · ${dataCurta(ficha.data)} às ${ficha.horario}`}
           consequencias={
             <ul>
-              <li>{unidades === 1 ? '1 unidade volta' : `${unidades} unidades voltam`} ao estoque.</li>
+              <li>{unidades === 0 ? 'Nenhuma unidade volta' : unidades === 1 ? '1 unidade volta' : `${unidades} unidades voltam`} ao saldo registrado do estoque.</li>
+              {semBaixa && <li>A venda passou com saldo insuficiente. Confira a prateleira e use Ajustar estoque se houver diferença física.</li>}
               {pago > 0 && <li><strong>{reais(pago)}</strong> saem do Financeiro hoje, como estorno. Os dias já fechados não mudam.</li>}
               {emAberto > 0 && <li>Os {reais(emAberto)} em aberto deixam de ser cobrados.</li>}
               <li>A ficha continua no histórico, marcada como cancelada.</li>

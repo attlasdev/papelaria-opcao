@@ -7,21 +7,21 @@ import { CartaoResumo, Painel } from '../../componentes/painel/Painel'
 import { Filtros } from '../../componentes/filtros/Filtros'
 import { Tabela } from '../../componentes/tabela/Tabela'
 import { Paginacao } from '../../componentes/paginacao/Paginacao'
-import { useLinhasPorPagina } from '../../componentes/paginacao/useLinhasPorPagina'
+import { CampoData } from '../../componentes/campo/Campo'
 import { Etiqueta, SeloCompacto } from '../../componentes/selo/Selo'
 import type { NomeIcone } from '../../componentes/icone/Icone'
 import { useSemDestino } from '../../componentes/aviso/Aviso'
 import { dataCurta, reais, reaisComSinal } from '../../formatar'
 import {
-  agoraHorario,
   CATEGORIA_ESTORNO,
-  dataPorExtenso,
+  dataCalendarioValida,
   estornarMovimentoCaixa,
   hojeISO,
+  intervaloAtual,
+  linhasFinanceiroNoIntervalo,
   movimentosFinanceiro,
-  NOME_MEIO,
-  noPeriodo,
-  resumoFinanceiro,
+  movimentosOperacionaisFinanceiro,
+  resumoFinanceiroIntervalo,
   useEstadoDemonstracao,
   type Meio,
   type LinhaFinanceiro,
@@ -32,33 +32,34 @@ import './financeiro.css'
 import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
 
 type FiltroMeio = 'todos' | Meio
+type AtalhoPeriodo = Periodo | 'personalizado'
 
 const iconeMeio: Record<Meio, NomeIcone> = { pix: 'pix', cartao: 'cartao', dinheiro: 'dinheiro' }
-const nomePeriodo: Record<Periodo, string> = { dia: 'dia', semana: 'semana', mes: 'mês', ano: 'ano' }
-// A comparação para no mesmo ponto do período anterior (ver resumoFinanceiro).
-const anterior: Record<Periodo, string> = { dia: 'vs ontem, até esta hora', semana: 'vs semana anterior, até hoje', mes: 'vs mês anterior, até hoje', ano: 'vs ano anterior, até hoje' }
+const linhasPorPagina = 15
 
 export function Financeiro() {
   const abrirFicha = useAbrirFicha()
-  const [periodo, setPeriodo] = useState<Periodo>('dia')
+  const [periodo, setPeriodo] = useState<AtalhoPeriodo>('dia')
+  const [de, setDe] = useState(hojeISO())
+  const [ate, setAte] = useState(hojeISO())
   const [meio, setMeio] = useState<FiltroMeio>('todos')
   const [pagina, setPagina] = useState(1)
   const [estornando, setEstornando] = useState<LinhaFinanceiro | null>(null)
-  const { referencia: painelMovimentos, linhasPorPagina } = useLinhasPorPagina()
   const semDestino = useSemDestino()
   const navegar = useNavigate()
   const base = useEstadoDemonstracao()
   const hoje = hojeISO()
-  const linhas = movimentosFinanceiro(base)
-  const r = resumoFinanceiro(linhas, periodo, hoje, agoraHorario())
-  const doPeriodo = linhas.filter((l) => noPeriodo(l.data, periodo, hoje))
+  const linhas = movimentosOperacionaisFinanceiro(movimentosFinanceiro(base))
+  const r = resumoFinanceiroIntervalo(linhas, de, ate)
+  const doPeriodo = linhasFinanceiroNoIntervalo(linhas, de, ate)
   const lista = meio === 'todos' ? doPeriodo : doPeriodo.filter((m) => m.meio === meio)
+  const periodoValido = dataCalendarioValida(de) && dataCalendarioValida(ate) && de <= ate && ate <= hoje
   const totalPaginas = Math.max(1, Math.ceil(lista.length / linhasPorPagina))
   const paginaAtual = Math.min(pagina, totalPaginas)
   const inicioPagina = (paginaAtual - 1) * linhasPorPagina
   const movimentosDaPagina = lista.slice(inicioPagina, inicioPagina + linhasPorPagina)
   const resumoPagina = lista.length === 0
-    ? `Nenhuma movimentação neste ${nomePeriodo[periodo]}`
+    ? periodoValido ? 'Nenhuma movimentação no período selecionado' : 'Escolha as datas inicial e final'
     : `Mostrando ${inicioPagina + 1}–${inicioPagina + movimentosDaPagina.length} de ${lista.length} ${lista.length === 1 ? 'movimentação' : 'movimentações'}`
   const maiorValor = Math.max(r.entradas, r.saidas, 1)
   const largura = (centavos: number) => `${(centavos / maiorValor) * 100}%`
@@ -66,31 +67,47 @@ export function Financeiro() {
   return (
     <Tela
       titulo="Financeiro"
-      subtitulo={`Data base: ${dataPorExtenso(hoje)}`}
+      subtitulo={periodoValido ? `Consulta de ${dataCurta(de)} a ${dataCurta(ate)}` : 'Escolha as datas para consultar'}
       acaoCabecalho={
         <Botao variante="primario" icone="mais" onClick={() => navegar(rotas.registrarMovimento)}>
           Registrar movimento
         </Botao>
       }
       acoesTitulo={
-        <>
-          <Filtros
-            rotulo="Período"
-            valor={periodo}
-            aoMudar={(proximoPeriodo) => { setPeriodo(proximoPeriodo); setPagina(1) }}
-            opcoes={[
-              { valor: 'dia', rotulo: 'Dia' },
-              { valor: 'semana', rotulo: 'Semana' },
-              { valor: 'mes', rotulo: 'Mês' },
-              { valor: 'ano', rotulo: 'Ano' },
-            ]}
-          />
-          <Botao icone="baixar" onClick={semDestino('exportar período')}>
-            Exportar período
-          </Botao>
-        </>
+        <Botao icone="baixar" onClick={semDestino('exportar período')}>
+          Exportar período
+        </Botao>
       }
     >
+      <Painel titulo="Consultar período" className="financeiro__periodo">
+        <div className="financeiro__periodo-controles">
+          <Filtros
+            rotulo="Atalhos de período financeiro"
+            valor={periodo}
+            aoMudar={(atalho) => {
+              setPeriodo(atalho)
+              if (atalho !== 'personalizado') {
+                const intervalo = intervaloAtual(atalho, hoje)
+                setDe(intervalo.de)
+                setAte(intervalo.ate)
+              }
+              setPagina(1)
+            }}
+            opcoes={[
+              { valor: 'dia', rotulo: 'Hoje' },
+              { valor: 'semana', rotulo: 'Esta semana' },
+              { valor: 'mes', rotulo: 'Este mês' },
+              { valor: 'ano', rotulo: 'Este ano' },
+              { valor: 'personalizado', rotulo: 'Outro período' },
+            ]}
+          />
+          <div className="financeiro__periodo-datas">
+            <CampoData rotulo="De" valor={de} min="1900-01-01" max={ate || hoje} aoMudar={(valor) => { setDe(valor); setPeriodo('personalizado'); setPagina(1) }} />
+            <CampoData rotulo="Até" valor={ate} min={de || '1900-01-01'} max={hoje} aoMudar={(valor) => { setAte(valor); setPeriodo('personalizado'); setPagina(1) }} />
+          </div>
+        </div>
+        {!periodoValido && <p className="financeiro__periodo-ajuda" role="status">Preencha um intervalo válido para consultar.</p>}
+      </Painel>
       <div className="grade-resumo">
         <CartaoResumo
           rotulo="Entradas"
@@ -98,23 +115,19 @@ export function Financeiro() {
           tom="ok"
           valor={reais(r.entradas)}
           sinal="entrada"
-          variacao={r.variacao}
-          nota={r.variacao ? anterior[periodo] : 'Sem período anterior para comparar'}
         />
         <CartaoResumo
-          rotulo="Saídas"
+          rotulo="Despesas e outras saídas"
           icone="enviar"
           tom="critico"
           valor={reais(r.saidas)}
           sinal="saida"
-          nota={`${r.quantidadeSaidas} ${r.quantidadeSaidas === 1 ? 'saída' : 'saídas'} no ${nomePeriodo[periodo]}`}
+          nota={`${r.quantidadeSaidas} ${r.quantidadeSaidas === 1 ? 'saída' : 'saídas'} no período`}
         />
-        <CartaoResumo rotulo="Entradas menos saídas" icone="financeiro" valor={reais(r.liquido)} nota={`Líquido do ${nomePeriodo[periodo]}`} />
         <CartaoResumo
-          rotulo="Meio mais usado"
-          icone={r.meioMaisUsado ? iconeMeio[r.meioMaisUsado.meio] : 'pix'}
-          valor={r.meioMaisUsado ? NOME_MEIO[r.meioMaisUsado.meio] : '—'}
-          nota={r.meioMaisUsado ? `${r.meioMaisUsado.participacao}% do volume · ${reais(r.meioMaisUsado.valor)}` : 'Sem entradas no período'}
+          rotulo="Entradas menos despesas"
+          icone="financeiro"
+          valor={reais(r.liquido)}
         />
       </div>
 
@@ -128,30 +141,29 @@ export function Financeiro() {
             <strong className="numero">{reais(r.entradas)}</strong>
           </div>
           <div className="financeiro__comparacao-linha">
-            <span>Saídas</span>
+            <span>Despesas</span>
             <div className="financeiro__comparacao-trilho" aria-hidden="true">
               <span className="financeiro__comparacao-barra financeiro__comparacao-barra--saida" style={{ width: largura(r.saidas) }} />
             </div>
             <strong className="numero">{reais(r.saidas)}</strong>
           </div>
           <div className="financeiro__comparacao-liquido">
-            <span>Líquido do {nomePeriodo[periodo]}</span>
+            <span>Entradas menos despesas do período</span>
             <strong className="numero">{reais(r.liquido)}</strong>
           </div>
         </div>
       </Painel>
 
-      <div ref={painelMovimentos}>
       <Painel
         colado
-        titulo="Movimentações do caixa"
+        titulo="Movimentações financeiras"
         acoes={
           <Filtros
             rotulo="Filtrar por meio de pagamento"
             valor={meio}
             aoMudar={(proximoMeio) => { setMeio(proximoMeio); setPagina(1) }}
             opcoes={[
-              { valor: 'todos', rotulo: 'Todos', contagem: r.contagem.todos },
+              { valor: 'todos', rotulo: 'Todos os meios', contagem: r.contagem.todos },
               { valor: 'pix', rotulo: 'Pix', contagem: r.contagem.pix },
               { valor: 'cartao', rotulo: 'Cartão', contagem: r.contagem.cartao },
               { valor: 'dinheiro', rotulo: 'Dinheiro', contagem: r.contagem.dinheiro },
@@ -175,7 +187,7 @@ export function Financeiro() {
             {lista.length === 0 && (
               <tr>
                 <td colSpan={7} className="financeiro__movimentos-vazio">
-                  Nenhuma movimentação neste {nomePeriodo[periodo]}.
+                  {periodoValido ? 'Nenhuma movimentação no período selecionado.' : 'Escolha as datas inicial e final.'}
                 </td>
               </tr>
             )}
@@ -189,7 +201,7 @@ export function Financeiro() {
                   </td>
                   <td>
                     <span className="celula-principal">{mov.descricao}</span>
-                    <span className="celula-secundaria">{mov.origem}</span>
+                    <span className="celula-secundaria">{mov.origem}{mov.operador && ` · ${mov.operador}`}</span>
                   </td>
                   <td>
                     {mov.ficha ? (
@@ -227,10 +239,9 @@ export function Financeiro() {
         </Tabela>
         <Paginacao resumo={resumoPagina} pagina={paginaAtual} totalPaginas={totalPaginas} aoMudar={setPagina} />
       </Painel>
-      </div>
 
       <p className="financeiro__nota">
-        Relatório do balcão. Não substitui a contabilidade.
+        Entradas incluem vendas, notinhas recebidas e lançamentos avulsos em dinheiro, Pix e cartão. O resultado não representa lucro nem saldo bancário.
       </p>
       {estornando && (
         <ModalMotivo

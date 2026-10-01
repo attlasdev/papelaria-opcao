@@ -1,3 +1,4 @@
 .registrar-movimento { display: flex; flex-direction: column; gap: var(--espaco-4); }
 .registrar-movimento__grupo { display: flex; flex-direction: column; gap: var(--espaco-2); align-items: flex-start; }
 .registrar-movimento__nota { color: var(--color-texto-suave); font-size: var(--text-rotulo); }
+.registrar-movimento__erro { color: var(--color-saida); font-size: var(--text-rotulo); }

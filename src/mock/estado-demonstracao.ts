@@ -1,8 +1,9 @@
 import { useSyncExternalStore } from 'react'
-import { assinaturaAviso, CATEGORIA_ESTORNO, distribuir, MOTIVO_SALDO_INICIAL, notinha, produtoTemHistorico, type Abatimento, type Notificacao, type Notinha } from './base/derivados'
-import { agoraHorario, hojeISO, minutoDoDia } from './base/datas'
+import { assinaturaAviso, CATEGORIA_ADICAO_CAIXA, CATEGORIA_RETIRADA_CAIXA, CATEGORIA_ESTORNO, distribuir, documentoJaCadastrado, faltaEstoqueParaVenda, MOTIVO_SALDO_INICIAL, notinha, produtoTemHistorico, resumoTurnoCaixa, type Abatimento, type Notificacao, type Notinha } from './base/derivados'
+import { agoraHorario, dataCalendarioValida, hojeISO, minutoDoDia } from './base/datas'
 import { apagarBase, carregarBase, salvarBase } from './base/persistencia'
 import { criarSemente } from './base/semente'
+import { comFechamentosExemplo } from './base/cenario-caixa'
 import type { Base, Estorno, Ficha, Meio, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
 
 export * from './base/derivados'
@@ -14,6 +15,7 @@ export type * from './base/tipos'
  * as telas. Sai de cena quando o banco de verdade entrar (via window.api e contrato).
  */
 let base: Base = carregarBase() ?? criarSemente(hojeISO(), minutoDoDia())
+if (import.meta.env.MODE === 'development') base = comFechamentosExemplo(base, hojeISO())
 salvarBase(base)
 
 const ouvintes = new Set<() => void>()
@@ -23,6 +25,8 @@ const inscrever = (ouvinte: () => void) => {
 }
 
 export const obterBase = () => base
+
+const turnoCaixaAberto = () => (base.turnosCaixa ?? []).find((turno) => !turno.fechadoEm)?.id
 
 function mudar(proxima: Base) {
   base = proxima
@@ -37,7 +41,8 @@ export function useEstadoDemonstracao() {
 /** Volta à amostra de 90 dias até hoje, apagando o que foi feito nesta máquina. */
 export function restaurarDemonstracao(hoje = hojeISO(), minutoAtual = minutoDoDia()) {
   apagarBase()
-  mudar(criarSemente(hoje, minutoAtual))
+  const semente = criarSemente(hoje, minutoAtual)
+  mudar(import.meta.env.MODE === 'development' ? comFechamentosExemplo(semente, hoje) : semente)
 }
 
 function proximoCodigo(codigos: string[], prefixo: string) {
@@ -53,16 +58,19 @@ export function proximoCodigoProduto(atual: Base) {
   return proximoCodigo(atual.produtos.map((p) => p.codigo), 'EST-')
 }
 
-type DadosCliente = { nome: string; documento: string; telefone: string; email: string; endereco: string }
+type DadosCliente = { nome: string; documento: string; telefone: string; endereco: string }
 
 export function cadastrarCliente(dados: DadosCliente) {
+  if (documentoJaCadastrado(base.clientes, dados.documento)) return null
   const id = proximoCodigo(base.clientes.map((c) => c.id), 'CLI-')
   mudar({ ...base, clientes: [...base.clientes, { ...dados, id, descricao: 'Cadastro novo', desde: hojeISO() }] })
   return id
 }
 
 export function editarCliente(id: string, dados: DadosCliente) {
+  if (!base.clientes.some((cliente) => cliente.id === id) || documentoJaCadastrado(base.clientes, dados.documento, id)) return false
   mudar({ ...base, clientes: base.clientes.map((c) => (c.id === id ? { ...c, ...dados } : c)) })
+  return true
 }
 
 export function cadastrarProduto(dados: Omit<Produto, 'codigo'>) {
@@ -119,42 +127,95 @@ export function definirProdutoAtivo(codigo: string, ativo: boolean) {
   })
 }
 
-function movimentoEstoque(produto: Produto, depois: number, tipo: MovimentoEstoque['tipo'], motivo: string): MovimentoEstoque {
+function movimentoEstoque(produto: Produto, depois: number, tipo: MovimentoEstoque['tipo'], motivo: string, entrada?: MovimentoEstoque['entrada']): MovimentoEstoque {
   const data = new Date().toISOString()
-  return { id: `${data}-${produto.codigo}-${tipo}`, data, produto: produto.codigo, descricao: produto.descricao, tipo, antes: produto.saldo, depois, motivo }
+  return { id: `${data}-${produto.codigo}-${tipo}`, data, produto: produto.codigo, descricao: produto.descricao, tipo, antes: produto.saldo, depois, motivo, operador: base.operador, ...(entrada ? { entrada } : {}) }
 }
 
-export function alterarSaldo(codigo: string, depois: number, motivo: string, tipo: 'Entrada' | 'Ajuste') {
+export function alterarSaldo(codigo: string, depois: number, motivo: string, tipo: 'Entrada' | 'Ajuste', entrada?: MovimentoEstoque['entrada']) {
   const produto = base.produtos.find((p) => p.codigo === codigo)
   if (!produto || !Number.isInteger(depois) || depois < 0) return false
+  if (entrada && (tipo !== 'Entrada' || !dataCalendarioValida(entrada.recebidaEm) || entrada.recebidaEm > hojeISO())) return false
+  if (entrada?.custoUnitario !== undefined && (!Number.isSafeInteger(entrada.custoUnitario) || entrada.custoUnitario < 0)) return false
   mudar({
     ...base,
     produtos: base.produtos.map((p) => (p.codigo === codigo ? { ...p, saldo: depois } : p)),
-    movimentosEstoque: [movimentoEstoque(produto, depois, tipo, motivo), ...base.movimentosEstoque],
+    movimentosEstoque: [movimentoEstoque(produto, depois, tipo, motivo, entrada), ...base.movimentosEstoque],
   })
   return true
 }
 
 export function registrarMovimentoCaixa(dados: Omit<MovimentoCaixa, 'id'>) {
-  const movimento = { ...dados, id: `${dados.data}-${dados.horario}-${base.movimentosCaixa.length}` }
+  if (!Number.isSafeInteger(dados.valor) || dados.valor === 0 || !dados.descricao.trim()) return false
+  if (dados.categoria === CATEGORIA_RETIRADA_CAIXA && (dados.meio !== 'dinheiro' || dados.valor >= 0)) return false
+  if (dados.categoria === CATEGORIA_ADICAO_CAIXA && (dados.meio !== 'dinheiro' || dados.valor <= 0 || !turnoCaixaAberto())) return false
+  const movimento = { ...dados, id: `${dados.data}-${dados.horario}-${base.movimentosCaixa.length}`, operador: base.operador, registradoEm: new Date().toISOString(), turnoCaixaId: turnoCaixaAberto() }
   mudar({ ...base, movimentosCaixa: [movimento, ...base.movimentosCaixa] })
+  return true
 }
 
-/** Venda concluída: guarda a ficha e dá baixa no estoque; o saldo para em zero. */
+/** Transferir notas/moedas exige uma conferência aberta, sem criar receita/despesa. */
+export function movimentarDinheiroCaixa(acao: 'adicionar' | 'retirar', valor: number, motivo: string) {
+  if (!turnoCaixaAberto() || !Number.isSafeInteger(valor) || valor <= 0 || !motivo.trim()) return false
+  return registrarMovimentoCaixa({ data: hojeISO(), horario: agoraHorario(), descricao: motivo.trim(), origem: 'Movimentação da gaveta', categoria: acao === 'adicionar' ? CATEGORIA_ADICAO_CAIXA : CATEGORIA_RETIRADA_CAIXA, meio: 'dinheiro', valor: acao === 'adicionar' ? valor : -valor })
+}
+
+/** Abre uma conferência a partir do dinheiro contado agora. */
+export function abrirTurnoCaixa(fundoInicial: number) {
+  if (!Number.isSafeInteger(fundoInicial) || fundoInicial < 0 || (base.turnosCaixa ?? []).some((turno) => !turno.fechadoEm)) return false
+  const abertoEm = new Date().toISOString()
+  mudar({
+    ...base,
+    turnosCaixa: [{ id: `${abertoEm}-${(base.turnosCaixa ?? []).length}`, abertoEm, operadorAbertura: base.operador, fundoInicial }, ...(base.turnosCaixa ?? [])],
+  })
+  return true
+}
+
+/** Fecha sem reescrever movimentos; diferença exige explicação. */
+export function fecharTurnoCaixa(id: string, contadoFechamento: number, justificativaDiferenca: string) {
+  const turno = (base.turnosCaixa ?? []).find((item) => item.id === id)
+  if (!turno || turno.fechadoEm || !Number.isSafeInteger(contadoFechamento) || contadoFechamento < 0) return false
+  const fechadoEm = new Date().toISOString()
+  const esperadoFechamento = resumoTurnoCaixa(base, { ...turno, fechadoEm }).esperado
+  if (contadoFechamento !== esperadoFechamento && !justificativaDiferenca.trim()) return false
+  mudar({
+    ...base,
+    turnosCaixa: (base.turnosCaixa ?? []).map((item) => item.id === id ? {
+      ...item, fechadoEm, operadorFechamento: base.operador, esperadoFechamento, contadoFechamento,
+      justificativaDiferenca: justificativaDiferenca.trim() || undefined,
+    } : item),
+  })
+  return true
+}
+
+/** Venda concluída somente se todas as unidades já existirem no estoque. */
 export function concluirFicha(dados: Omit<Ficha, 'id' | 'operador'>) {
+  if (!dados.itens.length || dados.itens.some((item) => !Number.isSafeInteger(item.quantidade) || item.quantidade < 1) || new Set(dados.itens.map((item) => item.codigo)).size !== dados.itens.length || faltaEstoqueParaVenda(base, dados.itens)) return null
+  const meios = new Set(dados.pagamentos.map((pagamento) => pagamento.meio))
+  const somaPagamentos = dados.pagamentos.reduce((total, pagamento) => total + pagamento.valor, 0)
+  if (dados.forma === 'misto' && (meios.size < 2 || meios.size !== dados.pagamentos.length || somaPagamentos !== dados.total || dados.pagamentos.some((pagamento) => pagamento.valor <= 0))) return null
+  if (dados.forma !== 'misto' && dados.forma !== 'notinha' && (dados.pagamentos.length !== 1 || dados.pagamentos[0].meio !== dados.forma || somaPagamentos !== dados.total)) return null
+  if (dados.pagamentos.some((pagamento) => !Number.isSafeInteger(pagamento.valor) || pagamento.valor < 0)) return null
   const id = proximoNumeroFicha(base)
   const movimentos: MovimentoEstoque[] = []
+  const baixas = new Map<string, number>()
   const produtos = base.produtos.map((p) => {
     const vendido = dados.itens.find((i) => i.codigo === p.codigo)
     if (!vendido) return p
-    const depois = Math.max(0, p.saldo - vendido.quantidade)
-    const aviso = p.saldo < vendido.quantidade ? ' · saldo do sistema menor que o vendido' : ''
-    movimentos.push(movimentoEstoque(p, depois, 'Venda', `Ficha #${id}${aviso}`))
+    const depois = p.saldo - vendido.quantidade
+    baixas.set(p.codigo, p.saldo - depois)
+    movimentos.push(movimentoEstoque(p, depois, 'Venda', `Ficha #${id}`))
     return { ...p, saldo: depois }
   })
   mudar({
     ...base,
-    fichas: [...base.fichas, { ...dados, id, operador: base.operador }],
+    fichas: [...base.fichas, {
+      ...dados,
+      id,
+      operador: base.operador,
+      itens: dados.itens.map((item) => ({ ...item, baixaEstoque: baixas.get(item.codigo) ?? 0 })),
+      pagamentos: dados.pagamentos.map((pagamento) => ({ ...pagamento, operador: base.operador, registradoEm: new Date().toISOString(), turnoCaixaId: turnoCaixaAberto() })),
+    }],
     produtos,
     movimentosEstoque: [...movimentos, ...base.movimentosEstoque],
     rascunhoFicha: null,
@@ -162,27 +223,55 @@ export function concluirFicha(dados: Omit<Ficha, 'id' | 'operador'>) {
   return id
 }
 
-/** Recebe uma ou várias notinhas; cada uma ganha o pagamento que lhe coube. */
-export function receberNotinhas(ids: string[], pagamento: { data: string; horario: string; meio: Meio; valor: number }): Abatimento[] {
+type RecebimentoNotinhas = { data: string; horario: string } & (
+  | { meio: Meio; valor: number }
+  | { parcelas: { meio: Meio; valor: number }[] }
+)
+
+/** Recebe uma ou várias notinhas, em uma gravação; cada meio conserva seu valor. */
+export function receberNotinhas(ids: string[], pagamento: RecebimentoNotinhas): Abatimento[] {
+  const parcelas = 'parcelas' in pagamento ? pagamento.parcelas : [{ meio: pagamento.meio, valor: pagamento.valor }]
+  const total = parcelas.reduce((soma, parcela) => soma + parcela.valor, 0)
+  if (!ids.length || new Set(ids).size !== ids.length || !parcelas.length ||
+    parcelas.some((parcela) => !['dinheiro', 'pix', 'cartao'].includes(parcela.meio) || !Number.isSafeInteger(parcela.valor) || parcela.valor <= 0) ||
+    new Set(parcelas.map((parcela) => parcela.meio)).size !== parcelas.length || !Number.isSafeInteger(total) ||
+    !dataCalendarioValida(pagamento.data) || pagamento.data > hojeISO()) return []
   const abertas = base.fichas
     .filter((f) => ids.includes(f.id))
     .map((f) => notinha(f, pagamento.data))
     .filter((n): n is Notinha => n !== null && n.emAberto > 0)
-  const abatimentos = distribuir(abertas, pagamento.valor)
-  if (!abatimentos.length) return []
+  if (abertas.length !== ids.length || new Set(abertas.map((n) => n.ficha.clienteId)).size !== 1 ||
+    total > abertas.reduce((soma, n) => soma + n.emAberto, 0)) return []
+  const abatimentos = distribuir(abertas, total)
+  if (abatimentos.some((abatimento) => abertas.find((n) => n.ficha.id === abatimento.id)!.ficha.data > pagamento.data)) return []
+  const restantePorMeio = parcelas.map((parcela) => ({ ...parcela }))
+  const pagamentosPorFicha = new Map<string, { meio: Meio; valor: number }[]>()
+  for (const abatimento of abatimentos) {
+    let restante = abatimento.valor
+    const recebidos: { meio: Meio; valor: number }[] = []
+    for (const parcela of restantePorMeio) {
+      const valor = Math.min(restante, parcela.valor)
+      if (valor > 0) recebidos.push({ meio: parcela.meio, valor })
+      parcela.valor -= valor
+      restante -= valor
+    }
+    pagamentosPorFicha.set(abatimento.id, recebidos)
+  }
+  const registradoEm = new Date().toISOString()
+  const turnoCaixaId = turnoCaixaAberto()
   mudar({
     ...base,
     fichas: base.fichas.map((f) => {
-      const abatimento = abatimentos.find((a) => a.id === f.id)
-      if (!abatimento) return f
-      return { ...f, pagamentos: [...f.pagamentos, { data: pagamento.data, horario: pagamento.horario, meio: pagamento.meio, valor: abatimento.valor }] }
+      const recebidos = pagamentosPorFicha.get(f.id)
+      if (!recebidos) return f
+      return { ...f, pagamentos: [...f.pagamentos, ...recebidos.map((parcela) => ({ ...parcela, data: pagamento.data, horario: pagamento.horario, operador: base.operador, registradoEm, turnoCaixaId }))] }
     }),
   })
   return abatimentos
 }
 
 function estornoAgora(motivo: string): Estorno {
-  return { data: hojeISO(), horario: agoraHorario(), motivo: motivo.trim() }
+  return { data: hojeISO(), horario: agoraHorario(), motivo: motivo.trim(), operador: base.operador, registradoEm: new Date().toISOString(), turnoCaixaId: turnoCaixaAberto() }
 }
 
 /**
@@ -196,8 +285,10 @@ export function cancelarFicha(id: string, motivo: string) {
   const produtos = base.produtos.map((p) => {
     const devolvido = ficha.itens.find((i) => i.codigo === p.codigo)
     if (!devolvido) return p
-    movimentos.push(movimentoEstoque(p, p.saldo + devolvido.quantidade, 'Cancelamento', `Ficha #${id} cancelada · ${motivo.trim()}`))
-    return { ...p, saldo: p.saldo + devolvido.quantidade }
+    // Fichas antigas não têm baixaEstoque: preservam a regra anterior.
+    const baixa = devolvido.baixaEstoque ?? devolvido.quantidade
+    movimentos.push(movimentoEstoque(p, p.saldo + baixa, 'Cancelamento', `Ficha #${id} cancelada · ${motivo.trim()}`))
+    return { ...p, saldo: p.saldo + baixa }
   })
   mudar({
     ...base,
@@ -222,7 +313,7 @@ export function estornarPagamento(fichaId: string, indice: number, motivo: strin
 export function estornarMovimentoCaixa(id: string, motivo: string) {
   const original = base.movimentosCaixa.find((m) => m.id === id)
   if (!original || original.estornoDe || base.movimentosCaixa.some((m) => m.estornoDe === id) || !motivo.trim()) return false
-  const { data, horario } = estornoAgora(motivo)
+  const { data, horario, registradoEm, turnoCaixaId } = estornoAgora(motivo)
   const estorno: MovimentoCaixa = {
     id: `${data}-${horario}-${base.movimentosCaixa.length}`,
     data,
@@ -232,6 +323,9 @@ export function estornarMovimentoCaixa(id: string, motivo: string) {
     categoria: CATEGORIA_ESTORNO,
     meio: original.meio,
     valor: -original.valor,
+    operador: base.operador,
+    registradoEm,
+    turnoCaixaId,
     estornoDe: id,
   }
   mudar({ ...base, movimentosCaixa: [estorno, ...base.movimentosCaixa] })

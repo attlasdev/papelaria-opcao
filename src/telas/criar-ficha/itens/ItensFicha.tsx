@@ -1,24 +1,25 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { Link } from 'react-router'
 import { Botao, BotaoIcone } from '../../../componentes/botao/Botao'
 import { Icone } from '../../../componentes/icone/Icone'
 import { reais } from '../../../formatar'
 import { useLeitorCodigo } from '../../../leitor/useLeitorCodigo'
 import { normalizar, useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
 import type { ItemFicha } from '../tipos'
+import { rotas } from '../../../rotas-caminhos'
 import './itens-ficha.css'
 
 type Props = {
   itens: ItemFicha[]
   aoMudar: (itens: ItemFicha[]) => void
-  aoCadastrarProduto: (codigoBarras?: string) => void
   erroFalta?: string
+  erroEstoque?: { codigo: string; descricao: string; disponivel: number; solicitado: number }
 }
 
 /** Leitura de código de barras e lista de itens. Ler o mesmo código de novo soma 1. */
-export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Props) {
+export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque }: Props) {
   const [codigo, setCodigo] = useState('')
   const [erro, setErro] = useState<string | null>(null)
-  const [codigoNaoEncontrado, setCodigoNaoEncontrado] = useState<string | null>(null)
   const [sugestoesAbertas, setSugestoesAbertas] = useState(false)
   const [indiceAtivo, setIndiceAtivo] = useState(0)
   const [lendoCodigo, setLendoCodigo] = useState(false)
@@ -49,7 +50,6 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
       aoMudar([...itens, { ...produto, quantidade: 1 }])
     }
     setErro(null)
-    setCodigoNaoEncontrado(null)
     setCodigo('')
     setSugestoesAbertas(false)
     setIndiceAtivo(0)
@@ -57,7 +57,7 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
   }
 
   function itemCadastrado(produto: (typeof produtos)[number]) {
-    return { codigo: produto.codigo, codigoBarras: produto.codigoBarras ?? produto.codigo, descricao: produto.descricao, estoque: `${produto.saldo} ${produto.unidade}`, preco: produto.preco }
+    return { codigo: produto.codigo, codigoBarras: produto.codigoBarras ?? produto.codigo, descricao: produto.descricao, preco: produto.preco }
   }
 
   useLeitorCodigo((lido) => {
@@ -75,7 +75,6 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
   function naoAchou(lido: string, ehCodigo: boolean) {
     const fora = todos.find((item) => item.inativo && (item.codigo === lido || item.codigoBarras === lido))
     setSemAtalho(Boolean(fora))
-    setCodigoNaoEncontrado(!fora && ehCodigo ? lido : null)
     setErro(fora ? `“${fora.descricao}” está desativado. Reative no Estoque para vender.`
       : ehCodigo ? `Código “${lido}” sem cadastro.` : `Produto “${lido}” não encontrado.`)
   }
@@ -168,7 +167,7 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
             <input
               ref={entrada}
               value={codigo}
-              onChange={(e) => { setCodigo(e.target.value); setCodigoNaoEncontrado(null); setIndiceAtivo(0); setSugestoesAbertas(!lendoCodigo && Boolean(e.target.value.trim())); setErro(null) }}
+              onChange={(e) => { setCodigo(e.target.value); setIndiceAtivo(0); setSugestoesAbertas(!lendoCodigo && Boolean(e.target.value.trim())); setErro(null) }}
               onFocus={() => setSugestoesAbertas(!lendoCodigo && Boolean(codigo.trim()))}
               onBlur={() => setSugestoesAbertas(false)}
               onKeyDown={teclado}
@@ -211,19 +210,13 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
       {erro && (
         <p className="itens-ficha__erro">
           {erro}{' '}
-          {!semAtalho && <button type="button" onClick={() => {
-            const codigoPendente = codigoNaoEncontrado ?? undefined
-            setLendoCodigo(false)
-            setErro(null)
-            setCodigo('')
-            setCodigoNaoEncontrado(null)
-            aoCadastrarProduto(codigoPendente)
-          }}>
-            Fazer cadastro rápido
-          </button>}
+          {!semAtalho && <>Cadastre e conte o produto no Estoque antes de vender. <Link to={rotas.cadastrarProduto}>Cadastrar no Estoque</Link></>}
         </p>
       )}
       {!erro && erroFalta && <p className="itens-ficha__erro" role="alert">{erroFalta}</p>}
+      {erroEstoque && <p className="itens-ficha__erro" role="alert">
+        Estoque insuficiente para {erroEstoque.descricao}: {erroEstoque.disponivel} disponível, {erroEstoque.solicitado} na ficha. Confira a prateleira e <Link to={todos.find((produto) => produto.codigo === erroEstoque.codigo)?.cadastroRapido ? rotas.completarProduto(erroEstoque.codigo) : rotas.ajustarEstoque(erroEstoque.codigo)}>{todos.find((produto) => produto.codigo === erroEstoque.codigo)?.cadastroRapido ? 'complete o cadastro com a contagem' : 'ajuste o estoque'}</Link> antes de concluir.
+      </p>}
 
       <div className="itens-ficha__topo">
         <h2>Itens da ficha</h2>
@@ -248,7 +241,7 @@ export function ItensFicha({ itens, aoMudar, aoCadastrarProduto, erroFalta }: Pr
               <td>
                 <span className="itens-ficha__nome">{item.descricao}</span>
                 <span className="itens-ficha__detalhe">
-                  Cód. {item.codigoBarras} · estoque {item.estoque}
+                  Cód. {item.codigoBarras} · estoque {todos.find((produto) => produto.codigo === item.codigo)?.saldo ?? 0} {todos.find((produto) => produto.codigo === item.codigo)?.unidade ?? ''}
                 </span>
               </td>
               <td className="itens-ficha__centro">

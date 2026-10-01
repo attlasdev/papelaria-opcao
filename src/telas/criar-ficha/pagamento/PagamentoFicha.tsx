@@ -24,6 +24,11 @@ type Props = {
   aoMudarEntrada: (centavos: number) => void
   meioEntrada: Meio
   aoMudarMeioEntrada: (meio: Meio) => void
+  divisaoPagamento: Record<Meio, number>
+  aoMudarDivisao: (meio: Meio, centavos: number) => void
+  recebidoMisto: number
+  aoMudarRecebidoMisto: (centavos: number) => void
+  erroMisto?: string
   erroRecebido?: string
   erroVencimento?: string
   erroEntrada?: string
@@ -34,6 +39,7 @@ const formas: { valor: FormaPagamento; rotulo: string; icone: NomeIcone }[] = [
   { valor: 'dinheiro', rotulo: 'Dinheiro', icone: 'dinheiro' },
   { valor: 'pix', rotulo: 'Pix', icone: 'pix' },
   { valor: 'cartao', rotulo: 'Cartão', icone: 'cartao' },
+  { valor: 'misto', rotulo: 'Misto', icone: 'financeiro' },
   { valor: 'notinha', rotulo: 'Notinha', icone: 'calendario' },
 ]
 
@@ -42,6 +48,8 @@ export function PagamentoFicha(props: Props) {
   const { subtotal, desconto, forma, recebido, entrada } = props
   const total = Math.max(0, subtotal - desconto)
   const troco = recebido - total
+  const totalMisto = Object.values(props.divisaoPagamento).reduce((soma, valor) => soma + valor, 0)
+  const restaMisto = total - totalMisto
 
   return (
     <section className="pagamento-ficha">
@@ -87,12 +95,12 @@ export function PagamentoFicha(props: Props) {
           >
             <Icone nome={f.valor === 'notinha' && props.notinhaBloqueada ? 'cadeado' : f.icone} tamanho={16} />
             {f.rotulo}
-            {f.valor === 'notinha' && props.notinhaBloqueada && (
-              <span className="pagamento-ficha__forma-aviso">· só com cliente identificado</span>
-            )}
           </button>
         ))}
       </div>
+      {props.notinhaBloqueada && (
+        <p className="pagamento-ficha__nota">Notinha disponível apenas para cliente identificado.</p>
+      )}
 
       {forma === 'dinheiro' && (
         <div className="pagamento-ficha__detalhe pagamento-ficha__dinheiro">
@@ -115,6 +123,34 @@ export function PagamentoFicha(props: Props) {
           <Icone nome="info" tamanho={16} />
           Conclua só depois de conferir o recebimento.
         </p>
+      )}
+
+      {forma === 'misto' && (
+        <div className="pagamento-ficha__detalhe pagamento-ficha__misto">
+          <p className="pagamento-ficha__nota">Informe quanto foi pago em cada meio. Confira Pix e cartão antes de concluir.</p>
+          {(['dinheiro', 'pix', 'cartao'] as const).map((meio) => (
+            <CampoMoeda
+              key={meio}
+              rotulo={`${NOME_MEIO[meio]} (R$)`}
+              valorCentavos={props.divisaoPagamento[meio]}
+              aoMudar={(valor) => props.aoMudarDivisao(meio, valor ?? 0)}
+            />
+          ))}
+          <p className={restaMisto < 0 ? 'pagamento-ficha__misto-restante pagamento-ficha__misto-restante--erro' : 'pagamento-ficha__misto-restante'}>
+            {restaMisto < 0 ? 'Acima do total' : 'Falta distribuir'} <strong>{reais(Math.abs(restaMisto))}</strong>
+          </p>
+          {props.divisaoPagamento.dinheiro > 0 && (
+            <>
+              <CampoMoeda
+                rotulo="Dinheiro entregue (R$)"
+                valorCentavos={props.recebidoMisto}
+                aoMudar={(valor) => props.aoMudarRecebidoMisto(valor ?? 0)}
+              />
+              <p className="pagamento-ficha__misto-restante">{props.recebidoMisto < props.divisaoPagamento.dinheiro ? 'Falta em dinheiro' : 'Troco'} <strong>{reais(Math.abs(props.recebidoMisto - props.divisaoPagamento.dinheiro))}</strong></p>
+            </>
+          )}
+          {props.erroMisto && <p className="pagamento-ficha__erro" role="alert">{props.erroMisto}</p>}
+        </div>
       )}
 
       {forma === 'notinha' && (

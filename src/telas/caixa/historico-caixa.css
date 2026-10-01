@@ -1,0 +1,14 @@
+.historico-caixa { display: grid; gap: var(--espaco-4); min-width: 0; }
+.historico-caixa__periodo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--espaco-4); }
+.historico-caixa__atalhos { display: flex; flex-wrap: wrap; gap: var(--espaco-2); }
+.historico-caixa__identificacao { display: grid; gap: var(--espaco-1); }
+.historico-caixa__identificacao h3,
+.historico-caixa__titulo { font-size: var(--text-destaque); font-weight: var(--font-weight-forte); }
+.historico-caixa__identificacao p,
+.historico-caixa__nota { font-size: var(--text-rotulo); color: var(--color-texto-suave); overflow-wrap: anywhere; }
+.historico-caixa__resumo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--espaco-3) var(--espaco-6); padding: var(--espaco-4); border: 1px solid var(--color-borda); border-radius: var(--radius-medio); }
+.historico-caixa__resumo div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--espaco-2); }
+.historico-caixa__resumo dt { color: var(--color-texto-suave); }
+.historico-caixa__resumo dd { font-variant-numeric: tabular-nums; font-weight: var(--font-weight-medio); white-space: nowrap; }
+.historico-caixa__descricao { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; max-width: 270px; }
+.historico-caixa__vazio { padding: var(--espaco-4); color: var(--color-texto-suave); text-align: center; }

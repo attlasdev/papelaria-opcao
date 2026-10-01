@@ -5,6 +5,7 @@ import { Botao } from '../../componentes/botao/Botao'
 import { Filtros } from '../../componentes/filtros/Filtros'
 import { SeloCompacto } from '../../componentes/selo/Selo'
 import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { dataCurta, reais } from '../../formatar'
 import { rotas } from '../../rotas-caminhos'
 import './movimentacoes-estoque.css'
 import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
@@ -46,7 +47,7 @@ export function MovimentacoesEstoque() {
         {lista.map((item) => (
           <article className="movimentacoes-estoque__item" key={item.id}>
             <div className="movimentacoes-estoque__item-topo">
-              <span className="movimentacoes-estoque__data numero">{data.format(new Date(item.data))}</span>
+              <span className="movimentacoes-estoque__data numero">{data.format(new Date(item.data))}{item.operador && ` · ${item.operador}`}</span>
               <SeloCompacto tom={item.tipo === 'Entrada' || item.tipo === 'Cancelamento' ? 'ok' : item.tipo === 'Venda' ? 'neutro' : 'atencao'}>{item.tipo}</SeloCompacto>
             </div>
             <strong className="movimentacoes-estoque__produto" title={item.descricao}>{item.descricao}</strong>
@@ -59,6 +60,15 @@ export function MovimentacoesEstoque() {
               </span>
               <span className="movimentacoes-estoque__saldos numero">{item.antes} <span aria-label="para">→</span> <strong>{item.depois}</strong></span>
             </div>
+            {item.entrada && (
+              <dl className="movimentacoes-estoque__entrada">
+                <div><dt>Recebido em</dt><dd>{dataCurta(item.entrada.recebidaEm)}</dd></div>
+                {item.entrada.fornecedor && <div><dt>Fornecedor</dt><dd>{item.entrada.fornecedor}</dd></div>}
+                {item.entrada.referencia && <div><dt>Referência</dt><dd>{item.entrada.referencia}</dd></div>}
+                {item.entrada.custoUnitario !== undefined && <div><dt>Custo unitário</dt><dd>{reais(item.entrada.custoUnitario)}</dd></div>}
+                {item.entrada.observacoes && <div className="movimentacoes-estoque__entrada-observacoes"><dt>Observações</dt><dd>{item.entrada.observacoes}</dd></div>}
+              </dl>
+            )}
           </article>
         ))}
         {lista.length === 0 && <p className="movimentacoes-estoque__vazio">Nenhuma movimentação encontrada para este filtro.</p>}

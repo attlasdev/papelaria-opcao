@@ -18,6 +18,18 @@ export function hojeISO() {
   return paraISO(new Date())
 }
 
+/** Dia comercial do registro em UTC, inclusive ao atravessar a meia-noite. */
+export function diaDoInstante(instante: string) {
+  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(instante))
+}
+
+export function dataCalendarioValida(iso: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return false
+  const { ano, mes, dia } = partes(iso)
+  const data = new Date(Date.UTC(ano, mes - 1, dia))
+  return ano >= 1900 && data.getUTCFullYear() === ano && data.getUTCMonth() === mes - 1 && data.getUTCDate() === dia
+}
+
 export function agoraHorario() {
   const agora = new Date()
   return `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`
@@ -44,6 +56,15 @@ export type Periodo = 'dia' | 'semana' | 'mes' | 'ano'
 
 function inicioDaSemana(iso: string) {
   return somarDias(iso, -paraData(iso).getDay())
+}
+
+/** Atalhos do Financeiro terminam hoje; a consulta livre pode escolher outras datas. */
+export function intervaloAtual(periodo: Periodo, hoje: string) {
+  const de = periodo === 'dia' ? hoje
+    : periodo === 'semana' ? inicioDaSemana(hoje)
+    : periodo === 'mes' ? `${hoje.slice(0, 7)}-01`
+    : `${hoje.slice(0, 4)}-01-01`
+  return { de, ate: hoje }
 }
 
 export function noPeriodo(data: string, periodo: Periodo, referencia: string) {

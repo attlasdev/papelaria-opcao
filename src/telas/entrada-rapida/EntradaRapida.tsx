@@ -4,8 +4,7 @@ import { Modal } from '../../componentes/modal/Modal'
 import { Campo } from '../../componentes/campo/Campo'
 import { CampoMoeda } from '../../componentes/campo/CampoMoeda'
 import { Botao } from '../../componentes/botao/Botao'
-import { reais } from '../../formatar'
-import { alterarSaldo, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { alterarSaldo, hojeISO, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import './entrada-rapida.css'
 
@@ -21,7 +20,7 @@ export function EntradaRapida() {
   const { produtos } = useEstadoDemonstracao()
   const produto = produtos.find((p) => p.codigo === parametros.get('produto'))
   const [quantidade, setQuantidade] = useState('')
-  const [custo, setCusto] = useState<number | null>(produto?.custo ?? null)
+  const [custo, setCusto] = useState<number | null>(null)
   const [fornecedor, setFornecedor] = useState('')
   const [erro, setErro] = useState('')
 
@@ -43,12 +42,9 @@ export function EntradaRapida() {
       document.querySelector<HTMLInputElement>('.entrada-rapida [name="quantidade"]')?.focus()
       return
     }
-    // O custo desta compra fica no registro; se ele vira o custo do cadastro ainda
-    // está em aberto com a dona (ver Memoria.md, custo na entrada).
-    const motivo = ['Recebimento de mercadorias', fornecedor.trim(), custo ? `custo ${reais(custo)}/${produto.unidade}` : '']
-      .filter(Boolean)
-      .join(' · ')
-    alterarSaldo(produto.codigo, produto.saldo + n, motivo, 'Entrada')
+    alterarSaldo(produto.codigo, produto.saldo + n, 'Recebimento de mercadorias', 'Entrada', {
+      recebidaEm: hojeISO(), fornecedor: fornecedor.trim() || undefined, custoUnitario: custo ?? undefined,
+    })
     navegar(rotas.movimentacoesEstoque(produto.codigo), { replace: true })
   }
 
@@ -88,7 +84,7 @@ export function EntradaRapida() {
               {produto.saldo} → {valida ? produto.saldo + n : '—'} {produto.unidade}
             </strong>
           </div>
-          <CampoMoeda rotulo={`Custo por ${produto.unidade} (R$)`} name="custo" opcional valorInicialCentavos={custo} aoMudar={setCusto} ajuda="Último custo registrado." />
+          <CampoMoeda rotulo={`Custo por ${produto.unidade} (R$)`} name="custo" opcional valorCentavos={custo} aoMudar={setCusto} ajuda="Informe o custo desta compra, se souber." />
           <Campo rotulo="Fornecedor" name="fornecedor" opcional value={fornecedor} onChange={(e) => setFornecedor(e.target.value)} placeholder="Ex.: Atacadão" />
         </div>
         <p className="entrada-rapida__nota">

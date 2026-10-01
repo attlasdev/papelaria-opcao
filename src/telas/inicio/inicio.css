@@ -1,6 +1,9 @@
 .inicio__cliente {
+  display: block;
   font-weight: var(--font-weight-medio);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .inicio__rascunho {
@@ -20,9 +23,29 @@
 }
 
 .inicio__itens {
-  max-width: 340px;
   font-size: var(--text-rotulo);
   color: var(--color-texto-suave);
+}
+
+/* Colunas e linhas independem das fichas exibidas: a paginação não oscila. */
+.inicio__tabela {
+  table-layout: fixed;
+}
+
+.inicio__coluna--ficha { width: 76px; }
+.inicio__coluna--cliente { width: clamp(190px, 18%, 290px); }
+.inicio__coluna--data { width: 112px; }
+.inicio__coluna--horario { width: 84px; }
+.inicio__coluna--pagamento { width: 184px; }
+.inicio__coluna--valor { width: 128px; }
+.inicio__coluna--acoes { width: 104px; }
+
+.inicio__resumo-itens {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .inicio__valor {

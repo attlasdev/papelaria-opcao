@@ -10,7 +10,8 @@ a revisão do contrato. A organização adaptada da Stack está em
 ## Stack efetiva
 
 - Electron + electron-builder; Vite + React 19 + TypeScript + Tailwind CSS v4.
-- `npm run dev` abre o front com mock no navegador; `npm start` abre o Electron.
+- `npm run dev` inicia Vite na porta 5173 e Electron com atualização automática
+  do front; `npm start` faz build e abre Electron. Reutilize a janela aberta.
 - O banco online ainda não está integrado. Supabase é uma hipótese registrada em
   `Memoria.md`, não uma dependência instalada.
 - GSAP e `@gsap/react` estão instalados para as microinterações aprovadas.
@@ -72,14 +73,17 @@ src/
     campo, modal, aviso, icone
   telas/<tela>/       Tela.tsx + tela.css (+ tipos.ts / constantes.ts quando há)
     inicio, criar-ficha (blocos cliente/, itens/, pagamento/), clientes,
-    detalhe-cliente, financeiro, estoque, cadastrar-produto, registrar-entrada,
+    detalhe-cliente, financeiro, caixa, estoque, cadastrar-produto, registrar-entrada,
     notas-fiscais
     detalhe-ficha, formulario-cliente, ajustar-estoque, movimentacoes-estoque,
     registrar-movimento, rascunhos-notas, detalhe-fiscal, resultados-busca,
     vendas-sem-identificacao (fichas sem cliente; nao e um cadastro)
     formulario-cliente/JanelaCliente: o formulario de cliente, gaveta em Clientes e janela na nova ficha
+    caixa/             CaixaAtual, ConferenciaCaixa, MovimentarDinheiro,
+                       FechamentosRecentes, HistoricoCaixa (base compartilhada)
   mock/base/          base local única: tipos (fatos), semente, derivados, persistência
                       derivados.ts também tem normalizar() (busca sem acento): não duplicar
+                      cenario-caixa.ts: exemplos de fechamento só em desenvolvimento
   mock/estado-demonstracao.ts  store (useEstadoDemonstracao) e ações sobre a base
   rotas.tsx           rotas (react-router, modo hash)
   rotas-caminhos.ts   endereços das telas; botões usam estas constantes
@@ -105,7 +109,7 @@ Regras para mexer na interface:
   (uma linha, ao lado de número), `Etiqueta` (neutra, se ajusta ao texto).
   Vermelho forte só para saída de dinheiro, erro e alerta.
 - **Ícone só onde ajuda a achar.** Título de seção e nome de campo de consulta
-  (cliente, data, documento, telefone, e-mail, endereço) levam `ComIcone`
+  (cliente, data, documento, telefone, endereço) levam `ComIcone`
   (`componentes/icone/Icone.tsx`): ícone solto, 16 px, cinza suave, sem fundo.
   Forma de pagamento usa o ícone do meio. Não leva ícone: campo de formulário
   curto, valores, situação que já tem selo colorido, linha a linha de tabela.

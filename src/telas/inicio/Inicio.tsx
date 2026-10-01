@@ -28,12 +28,13 @@ import { rotas } from '../../rotas-caminhos'
 import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
 import './inicio.css'
 
-type Filtro = 'todos' | FormaVenda
+type Filtro = 'todos' | Exclude<FormaVenda, 'misto'>
 
 const iconePagamento: Record<FormaVenda, NomeIcone> = {
   pix: 'pix',
   cartao: 'cartao',
   dinheiro: 'dinheiro',
+  misto: 'financeiro',
   notinha: 'calendario',
 }
 
@@ -53,7 +54,7 @@ export function Inicio() {
   const valor = (centavos: number) => (mostrarValores ? reais(centavos) : reaisOcultos)
   const todasFichas = [...base.fichas].sort(porDataDecrescente)
   const fichas = todasFichas
-    .filter((ficha) => filtro === 'todos' || ficha.forma === filtro)
+    .filter((ficha) => filtro === 'todos' || ficha.forma === filtro || (filtro !== 'notinha' && ficha.forma === 'misto' && ficha.pagamentos.some((pagamento) => pagamento.meio === filtro)))
     .filter((ficha) => !dataSelecionada || ficha.data === dataSelecionada)
   const totalPaginas = Math.max(1, Math.ceil(fichas.length / fichasPorPagina))
   const paginaAtual = Math.min(pagina, totalPaginas)
@@ -85,8 +86,6 @@ export function Inicio() {
           icone="dinheiro"
           tom="ok"
           valor={valor(dia.recebimentos)}
-          variacao={dia.variacao}
-          nota={dia.variacao ? 'vs ontem, até esta hora' : 'Sem movimento ontem até esta hora'}
         />
         <CartaoResumo
           rotulo="Vendas concluídas"
@@ -95,12 +94,12 @@ export function Inicio() {
           nota={`Média ${valor(dia.ticketMedio)}`}
         />
         <CartaoResumo
-          rotulo="Saídas do dia"
+          rotulo="Despesas e outras saídas"
           icone="enviar"
           tom="critico"
           valor={valor(dia.saidas)}
           sinal="saida"
-          nota={`${dia.quantidadeSaidas} ${dia.quantidadeSaidas === 1 ? 'saída registrada' : 'saídas registradas'}`}
+          nota={`${dia.quantidadeSaidas} ${dia.quantidadeSaidas === 1 ? 'saída registrada' : 'saídas registradas'} · retiradas à parte`}
         />
       </div>
 
@@ -112,7 +111,7 @@ export function Inicio() {
           <div className="inicio__filtros">
             <div className="inicio__filtro-data">
               <span>Data</span>
-              <SeletorData valor={dataSelecionada} dataInicial={hoje} aoMudar={(data) => { setDataSelecionada(data); setPagina(1) }} />
+              <SeletorData valor={dataSelecionada} dataInicial={hoje} max={hoje} aoMudar={(data) => { setDataSelecionada(data); setPagina(1) }} />
             </div>
             <Filtros
               rotulo="Filtrar por pagamento"
@@ -129,7 +128,17 @@ export function Inicio() {
           </div>
         }
       >
-        <Tabela larguraMinima={1000}>
+        <Tabela larguraMinima={1120} className="inicio__tabela">
+          <colgroup>
+            <col className="inicio__coluna--ficha" />
+            <col className="inicio__coluna--cliente" />
+            <col className="inicio__coluna--data" />
+            <col className="inicio__coluna--horario" />
+            <col />
+            <col className="inicio__coluna--pagamento" />
+            <col className="inicio__coluna--valor" />
+            <col className="inicio__coluna--acoes" />
+          </colgroup>
           <thead>
             <tr>
               <th>Ficha</th>
@@ -155,13 +164,16 @@ export function Inicio() {
                   <Link
                     className={ficha.clienteId ? 'inicio__cliente' : 'inicio__cliente inicio__cliente--sem-identificacao'}
                     to={ficha.clienteId ? rotas.cliente(ficha.clienteId) : rotas.vendasSemIdentificacao}
+                    title={nomeCliente(base, ficha.clienteId)}
                   >
                     {nomeCliente(base, ficha.clienteId)}
                   </Link>
                 </td>
                 <td className="numero">{dataCurta(ficha.data)}</td>
                 <td className="numero">{ficha.horario}</td>
-                <td className="inicio__itens">{resumoItens(ficha)}</td>
+                <td className="inicio__itens">
+                  <span className="inicio__resumo-itens" title={resumoItens(ficha)}>{resumoItens(ficha)}</span>
+                </td>
                 <td>
                   <Etiqueta icone={iconePagamento[ficha.forma]}>{rotuloForma(ficha)}</Etiqueta>
                 </td>

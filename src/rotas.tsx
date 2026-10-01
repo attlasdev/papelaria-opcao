@@ -9,6 +9,7 @@ import { DetalheCliente } from './telas/detalhe-cliente/DetalheCliente'
 import { CadastrarCliente, EditarCliente } from './telas/formulario-cliente/FormularioCliente'
 import { VendasSemIdentificacao } from './telas/vendas-sem-identificacao/VendasSemIdentificacao'
 import { Financeiro } from './telas/financeiro/Financeiro'
+import { Caixa } from './telas/caixa/Caixa'
 import { RegistrarMovimento } from './telas/registrar-movimento/RegistrarMovimento'
 import { Estoque } from './telas/estoque/Estoque'
 import { CadastrarProduto, CompletarProduto, EditarProduto } from './telas/cadastrar-produto/CadastrarProduto'
@@ -37,6 +38,7 @@ export const roteador = createHashRouter([
       { path: '/clientes/sem-identificacao', element: <VendasSemIdentificacao /> },
       { path: '/clientes/:id', element: <DetalheCliente />, children: [{ path: 'editar', element: <EditarCliente /> }] },
       { path: '/financeiro', element: <Financeiro />, children: [{ path: 'movimento/novo', element: <RegistrarMovimento /> }] },
+      { path: '/caixa', element: <Caixa /> },
       {
         path: '/estoque',
         element: <Estoque />,

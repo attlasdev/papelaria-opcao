@@ -48,15 +48,22 @@ export function ReceberNotinhas({ clienteId, marcadas, aoFechar }: Props) {
     setSelecionadas(proximas)
     setValorCentavos(abertas.filter((n) => proximas.includes(n.ficha.id)).reduce((t, n) => t + n.emAberto, 0))
   }
-  const [meio, setMeio] = useState<Meio>('dinheiro')
+  const [meio, setMeio] = useState<Meio | 'misto'>('dinheiro')
+  const [divisao, setDivisao] = useState<Record<Meio, number>>({ dinheiro: 0, pix: 0, cartao: 0 })
   const [data, setData] = useState(hojeISO())
   const [entregueCentavos, setEntregueCentavos] = useState<number | null>(null)
+  const [erroRegistro, setErroRegistro] = useState<string | null>(null)
 
   const valor = valorCentavos ?? 0
   const entregue = entregueCentavos ?? 0
   const abatimentos = distribuir(notinhas, valor)
+  const parcelas = meio === 'misto'
+    ? (['dinheiro', 'pix', 'cartao'] as const).map((item) => ({ meio: item, valor: divisao[item] })).filter((parcela) => parcela.valor > 0)
+    : [{ meio, valor }]
+  const faltaDistribuir = valor - parcelas.reduce((soma, parcela) => soma + parcela.valor, 0)
+  const parteDinheiro = meio === 'misto' ? divisao.dinheiro : meio === 'dinheiro' ? valor : 0
   // Dinheiro entregue é a cédula do cliente, só para o troco; não pode ser menor que o valor pago.
-  const faltaDinheiro = meio === 'dinheiro' && entregue > 0 && entregue < valor
+  const faltaDinheiro = parteDinheiro > 0 && entregue > 0 && entregue < parteDinheiro
   // Pagamento não pode ser anterior à venda: a notinha mais antiga marcada é o limite.
   const dataMinima = notinhas.reduce((menor, n) => (n.ficha.data < menor ? n.ficha.data : menor), hojeISO())
   const erro = notinhas.length === 0
@@ -65,6 +72,10 @@ export function ReceberNotinhas({ clienteId, marcadas, aoFechar }: Props) {
     ? 'Informe o valor a pagar agora.'
     : valor > totalAberto
       ? `O valor passa do total em aberto (${reais(totalAberto)}).`
+      : meio === 'misto' && parcelas.length < 2
+        ? 'Informe valores em pelo menos duas formas de pagamento.'
+      : faltaDistribuir !== 0
+        ? 'A soma das formas de pagamento deve ser igual ao valor a pagar agora.'
       : faltaDinheiro
         ? 'O dinheiro entregue não cobre o valor a pagar.'
         : !data
@@ -73,13 +84,19 @@ export function ReceberNotinhas({ clienteId, marcadas, aoFechar }: Props) {
             ? 'A data do pagamento não pode ser depois de hoje.'
             : data < dataMinima
               ? `A data do pagamento é anterior à notinha (${dataCurta(dataMinima)}).`
+              : abatimentos.some((abatimento) => notinhas.find((n) => n.ficha.id === abatimento.id)!.ficha.data > data)
+                ? 'A data do pagamento é anterior a uma das notinhas que serão abatidas.'
               : null
 
   function confirmar(evento: FormEvent) {
     evento.preventDefault()
     if (erro) return
     const horario = new Intl.DateTimeFormat('pt-BR', { timeStyle: 'short' }).format(new Date())
-    receberNotinhas(notinhas.map((item) => item.ficha.id), { data, horario, meio, valor })
+    const recebidos = receberNotinhas(notinhas.map((item) => item.ficha.id), { data, horario, parcelas })
+    if (!recebidos.length) {
+      setErroRegistro('Não foi possível registrar. Confira as notinhas selecionadas e os valores.')
+      return
+    }
     aoFechar()
   }
 
@@ -100,7 +117,7 @@ export function ReceberNotinhas({ clienteId, marcadas, aoFechar }: Props) {
         </>
       }
     >
-      <form id={idFormulario} className="receber-notinhas" onSubmit={confirmar}>
+      <form id={idFormulario} className="receber-notinhas" onSubmit={confirmar} onChange={() => setErroRegistro(null)}>
         <ul className="receber-notinhas__lista">
           {abertas.map((notinha) => {
             const id = notinha.ficha.id
@@ -149,16 +166,35 @@ export function ReceberNotinhas({ clienteId, marcadas, aoFechar }: Props) {
             rotulo="Forma de pagamento"
             valor={meio}
             aoMudar={setMeio}
-            opcoes={(['dinheiro', 'pix', 'cartao'] as const).map((item) => ({ valor: item, rotulo: NOME_MEIO[item] }))}
+            opcoes={[
+              ...(['dinheiro', 'pix', 'cartao'] as const).map((item) => ({ valor: item, rotulo: NOME_MEIO[item] })),
+              { valor: 'misto', rotulo: 'Misto' },
+            ]}
           />
         </div>
 
-        {meio === 'dinheiro' && (
+        {meio === 'misto' && (
+          <div className="receber-notinhas__divisao">
+            {(['dinheiro', 'pix', 'cartao'] as const).map((item) => (
+              <CampoMoeda
+                key={item}
+                rotulo={`${NOME_MEIO[item]} (R$)`}
+                valorCentavos={divisao[item]}
+                aoMudar={(valor) => setDivisao((atual) => ({ ...atual, [item]: valor ?? 0 }))}
+              />
+            ))}
+            <p className={faltaDistribuir < 0 ? 'receber-notinhas__distribuicao receber-notinhas__erro' : 'receber-notinhas__distribuicao'}>
+              {faltaDistribuir < 0 ? 'Acima do valor a pagar' : 'Falta distribuir'} <strong>{reais(Math.abs(faltaDistribuir))}</strong>
+            </p>
+          </div>
+        )}
+
+        {parteDinheiro > 0 && (
           <div className="receber-notinhas__campos">
             <CampoMoeda
               rotulo="Dinheiro entregue (R$)"
               opcional
-              placeholder={reais(valor)}
+              placeholder={reais(parteDinheiro)}
               valorCentavos={entregueCentavos}
               erro={faltaDinheiro}
               aoMudar={setEntregueCentavos}
@@ -166,18 +202,21 @@ export function ReceberNotinhas({ clienteId, marcadas, aoFechar }: Props) {
             <div className="receber-notinhas__troco">
               <span>{faltaDinheiro ? 'Faltam' : 'Troco'}</span>
               <strong className={faltaDinheiro ? 'receber-notinhas__falta' : undefined}>
-                {entregue ? reais(Math.abs(entregue - valor)) : '—'}
+                {entregue ? reais(Math.abs(entregue - parteDinheiro)) : '—'}
               </strong>
             </div>
           </div>
         )}
 
         <p className="receber-notinhas__nota">
-          {meio === 'dinheiro'
+          {meio === 'misto'
+            ? `Recebimento em ${dataCurta(data || hojeISO())}: ${parcelas.map((parcela) => `${NOME_MEIO[parcela.meio]} ${reais(parcela.valor)}`).join(' · ')}.`
+            : meio === 'dinheiro'
             ? `Entram ${reais(valor)} no caixa de ${dataCurta(data || hojeISO())} como recebimento de notinha.`
             : `Entram ${reais(valor)} no Financeiro em ${dataCurta(data || hojeISO())} como recebimento de notinha (${NOME_MEIO[meio]}).`}
         </p>
         {erro && valor !== 0 && <p className="receber-notinhas__erro" role="alert">{erro}</p>}
+        {erroRegistro && <p className="receber-notinhas__erro" role="alert">{erroRegistro}</p>}
       </form>
     </Modal>
   )

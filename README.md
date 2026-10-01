@@ -1,6 +1,7 @@
 # papelaria-opcao
 
-Aplicacao de mesa (Electron) que fala com um banco online.
+Aplicacao de mesa (Electron) em estágio inicial, com interface e base local de
+demonstração. A integração com banco online ainda está pendente.
 
 Orientacao para agentes e organizacao do projeto: `AGENTS.md` e
 `docs/organizacao.md`. Skills locais: `.agents/skills/`.
@@ -11,9 +12,10 @@ Referencia visual de componentes: `recursos/design-system/README.md`.
 
 ```bash
 npm install
-npm run dev     # interface no navegador, contra o mock. Sem Electron, sem banco
-npm start       # o aplicativo de verdade
+npm run dev     # Vite na porta 5173 + Electron, com atualização automática do front
+npm start       # build + Electron; ainda usa a base local, sem banco integrado
 npm run build   # typecheck + build. Tem que passar antes de PR
+npm test        # testes da base local e dos cálculos
 ```
 
 ## Dois donos, uma fronteira
@@ -45,3 +47,10 @@ credencial nenhuma**; quando o lado real entra, nada em `src/` muda.
 | quem monta o banco | `CLAUDE.md`, `revisao-de-contrato.md` |
 | chegando agora | `Memoria.md` ("Onde estamos" e "PENDENTE", no topo) |
 | mexendo na interface | `AGENTS.md`, secao "Interface: como esta montada" |
+
+## Retomar a revisão com o Victor
+
+Comece por [Memoria.md](Memoria.md). O [registro de 01/10/2026](docs/historico/2026-10-01-revisao-com-victor.md)
+marca as tarefas feitas e o roteiro de retomada. **Financeiro e Caixa ainda não
+validados pelo Victor**; Início e Clientes tiveram a revisão desta rodada encerrada.
+Reutilize a janela do Electron aberta em desenvolvimento.

@@ -14,6 +14,7 @@ efetiva e as decisões do projeto ficam em `AGENTS.md`, `CLAUDE.md` e `Memoria.m
 | `recursos/` | Marca (logo) e acervo de referência visual (`design-system/`), incluindo o script que recorta os ícones do app. |
 | `stitch/` | Histórico: protótipo HTML do Google Stitch, já migrado para `src/`. |
 | `Memoria.md` | Estado atual, pendentes, regras de produto e decisões. |
+| `docs/auditorias/` | Achados técnicos datados e correções posteriores; conferir o estado atual em `Memoria.md`. |
 | `docs/historico/` | Memória antiga sessão a sessão; não é o estado atual. |
 | `docs/superpowers/` | Planos e especificações de rodadas já executadas. |
 
@@ -21,6 +22,10 @@ As regras de negócio que valem hoje estão em `Memoria.md`; o vocabulário em
 código, em `src/mock/base/tipos.ts`. A identidade visual em uso está nos tokens de
 `src/estilos/tokens/`. `supabase/` só entra
 quando houver banco de teste e migrations reais.
+
+A retomada da revisão por telas está no topo de `Memoria.md`. O registro de
+`docs/historico/2026-10-01-revisao-com-victor.md` distingue tarefas implementadas
+de validação pelo usuário; Financeiro e Caixa permanecem não validados.
 
 As pranchas recebidas para a interface desktop estão catalogadas em
 `recursos/design-system/README.md`. Elas fornecem repertório de componentes e

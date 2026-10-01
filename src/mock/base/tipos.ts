@@ -5,7 +5,7 @@
 export const VERSAO_BASE = 1
 
 export type Meio = 'dinheiro' | 'pix' | 'cartao'
-export type FormaVenda = Meio | 'notinha'
+export type FormaVenda = Meio | 'misto' | 'notinha'
 export type Grupo = 'papeis' | 'escrita' | 'cadernos' | 'escritorio' | 'artes'
 
 export type Cliente = {
@@ -13,7 +13,6 @@ export type Cliente = {
   nome: string
   documento: string // mascarado; "Sem documento" quando não informado
   telefone: string
-  email: string
   endereco: string // "Rua, nº - Bairro - Cidade/UF" ou ""
   descricao: string // "Cliente frequente"
   desde: string // YYYY-MM-DD
@@ -54,12 +53,19 @@ export type Produto = {
 }
 
 /** Desfazer sem apagar: o registro original fica, marcado com quando e por quê. */
-export type Estorno = { data: string; horario: string; motivo: string }
+export type Estorno = { data: string; horario: string; motivo: string; operador?: string; registradoEm?: string; turnoCaixaId?: string }
 
 /** Lembrete da dona na ficha (ex.: prazo combinado). Só se acrescenta. */
 export type Anotacao = { data: string; horario: string; texto: string }
 
-export type ItemVenda = { codigo: string; descricao: string; quantidade: number; preco: number }
+export type ItemVenda = {
+  codigo: string
+  descricao: string
+  quantidade: number
+  preco: number
+  /** Quanto esta venda realmente baixou do saldo registrado; pode ser menor se faltava saldo. */
+  baixaEstoque?: number
+}
 
 /** Um dinheiro que entrou por causa de uma ficha. */
 export type Pagamento = {
@@ -67,6 +73,9 @@ export type Pagamento = {
   horario: string
   meio: Meio
   valor: number
+  operador?: string
+  registradoEm?: string // instante do lançamento, mesmo se o recebimento foi informado para outra data
+  turnoCaixaId?: string
   /** Notinha: parte paga no ato da venda. */
   entrada?: boolean
   /** Rótulo mais preciso do meio, como "Cartão crédito (2x)". */
@@ -85,7 +94,7 @@ export type Ficha = {
   desconto: number
   total: number // já com desconto
   forma: FormaVenda
-  /** À vista: um pagamento na hora. Notinha: entrada e recebimentos, em ordem. */
+  /** À vista: pagamentos na hora, separados por meio. Notinha: entrada e recebimentos, em ordem. */
   pagamentos: Pagamento[]
   vencimento?: string // só notinha
   /** Venda desfeita: estoque devolvido e pagamentos estornados na data do cancelamento. */
@@ -103,8 +112,24 @@ export type MovimentoCaixa = {
   categoria: string
   meio: Meio
   valor: number // negativo = saída
+  operador?: string
+  registradoEm?: string
+  turnoCaixaId?: string
   /** Este lançamento desfaz outro (id), com o valor invertido. */
   estornoDe?: string
+}
+
+/** Conferência do dinheiro físico; períodos anteriores não são recalculados. */
+export type TurnoCaixa = {
+  id: string
+  abertoEm: string
+  operadorAbertura: string
+  fundoInicial: number
+  fechadoEm?: string
+  operadorFechamento?: string
+  esperadoFechamento?: number
+  contadoFechamento?: number
+  justificativaDiferenca?: string
 }
 
 export type MovimentoEstoque = {
@@ -116,6 +141,15 @@ export type MovimentoEstoque = {
   antes: number
   depois: number
   motivo: string
+  operador?: string
+  /** Dados da compra recebida, sem alterar a data em que o lançamento foi feito. */
+  entrada?: {
+    recebidaEm: string // YYYY-MM-DD, data informada pelo operador
+    fornecedor?: string
+    referencia?: string
+    observacoes?: string
+    custoUnitario?: number // centavos desta entrega, não do cadastro
+  }
 }
 
 /** Ficha em andamento guardada para retomar depois. */
@@ -130,6 +164,8 @@ export type RascunhoFicha = {
   vencimento: string
   entrada: number
   meioEntrada: Meio
+  divisaoPagamento?: Record<Meio, number>
+  recebidoMisto?: number
 }
 
 export type Base = {
@@ -140,6 +176,7 @@ export type Base = {
   produtos: Produto[]
   fichas: Ficha[]
   movimentosCaixa: MovimentoCaixa[]
+  turnosCaixa?: TurnoCaixa[] // opcional para bases locais anteriores
   movimentosEstoque: MovimentoEstoque[]
   rascunhosNota: string[] // ids de ficha
   rascunhoFicha: RascunhoFicha | null

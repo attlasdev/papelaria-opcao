@@ -2,8 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { criarSemente } from './semente'
 import {
   buscar,
+  clienteCorrespondeBusca,
+  textoDiferencaCaixa,
+  fechamentosCaixaNoPeriodo,
+  turnosCaixaNoPeriodo,
   distribuir,
   movimentosFinanceiro,
+  movimentosFisicosCaixa,
+  movimentosOperacionaisFinanceiro,
+  linhasFinanceiroNoIntervalo,
   notificacoes,
   notinha,
   notinhasDoCliente,
@@ -11,9 +18,12 @@ import {
   resumoDoDia,
   resumoEstoque,
   resumoFinanceiro,
+  resumoFinanceiroIntervalo,
   resumoItens,
+  type LinhaFinanceiro,
 } from './derivados'
-import type { Ficha } from './tipos'
+import { intervaloAtual } from './datas'
+import type { Ficha, TurnoCaixa } from './tipos'
 import { reais } from '../../formatar'
 
 const HOJE = '2026-09-25'
@@ -23,6 +33,26 @@ const fichaNotinha = (total: number, pagos: number[], vencimento: string, id = '
   id, clienteId: 'CLI-0104', data, horario: '10:00', operador: 'João Silva',
   itens: [{ codigo: 'EST-0021', descricao: 'Caderno', quantidade: 1, preco: total }], desconto: 0, total,
   forma: 'notinha', vencimento, pagamentos: pagos.map((valor) => ({ data: '2026-09-02', horario: '10:00', meio: 'pix' as const, valor })),
+})
+
+describe('consulta de fechamentos', () => {
+  it('filtra sete dias inclusivos pelo fechamento em São Paulo, não pela abertura', () => {
+    const turno = (id: string, abertoEm: string, fechadoEm?: string): TurnoCaixa => ({ id, abertoEm, fechadoEm, operadorAbertura: 'Operador', fundoInicial: 1000, contadoFechamento: fechadoEm ? 1000 : undefined, esperadoFechamento: fechadoEm ? 1000 : undefined })
+    const amostra = { ...base, turnosCaixa: [
+      turno('aberto', '2026-10-01T10:00:00Z'),
+      turno('virou-dia', '2026-09-20T10:00:00Z', '2026-10-02T02:59:59Z'),
+      turno('fora-futuro', '2026-10-01T10:00:00Z', '2026-10-02T03:00:00Z'),
+      turno('limite', '2026-09-24T10:00:00Z', '2026-09-25T03:00:00Z'),
+      turno('fora-passado', '2026-09-24T10:00:00Z', '2026-09-25T02:59:59Z'),
+    ] }
+    expect(fechamentosCaixaNoPeriodo(amostra, '2026-09-25', '2026-10-01').map((t) => t.id)).toEqual(['virou-dia', 'limite'])
+    expect(fechamentosCaixaNoPeriodo(amostra, '2026-10-01', '2026-10-01').map((t) => t.id)).toEqual(['virou-dia'])
+    expect(turnosCaixaNoPeriodo(amostra, '2026-10-01', '2026-10-01').map((t) => t.id)).toEqual(['virou-dia', 'aberto'])
+    expect(fechamentosCaixaNoPeriodo(amostra, '2026-09-01', '2026-09-30').map((t) => t.id)).toEqual(['limite', 'fora-passado'])
+    expect(turnosCaixaNoPeriodo(amostra, '2026-10-02', '2026-10-01')).toEqual([])
+    expect(turnosCaixaNoPeriodo(amostra, '', '2026-10-01')).toEqual([])
+    expect(turnosCaixaNoPeriodo(amostra, '2026-02-30', '2026-10-01')).toEqual([])
+  })
 })
 
 describe('notinha', () => {
@@ -37,6 +67,24 @@ describe('notinha', () => {
 })
 
 describe('cliente', () => {
+  it('encontra documento e telefone com ou sem pontuação', () => {
+    const cliente = { ...base.clientes[0], documento: 'CPF 123.456.789-00', telefone: '(11) 98452-1100' }
+    for (const termo of ['12345678900', '123.456.789-00', 'CPF 12345678900', '11984521100', '(11) 98452-1100', '984521100', '98452 1100']) {
+      expect(clienteCorrespondeBusca(cliente, termo), termo).toBe(true)
+      expect(buscar({ ...base, clientes: [cliente] }, termo).clientes).toEqual([cliente])
+    }
+    expect(clienteCorrespondeBusca({ ...cliente, documento: '12345678900', telefone: '11984521100' }, '(11) 98452-1100')).toBe(true)
+    expect(clienteCorrespondeBusca({ ...cliente, documento: '12345678900' }, '123.456.789-00')).toBe(true)
+  })
+  it('preserva nomes/códigos e não junta números de campos diferentes', () => {
+    const cliente = { ...base.clientes[0], nome: 'João da Conceição', documento: '123.456', telefone: '789-000' }
+    expect(clienteCorrespondeBusca(cliente, 'joao da conceicao')).toBe(true)
+    expect(clienteCorrespondeBusca(cliente, cliente.id.toLowerCase())).toBe(true)
+    expect(clienteCorrespondeBusca(cliente, '   ')).toBe(true)
+    expect(clienteCorrespondeBusca(cliente, '456789')).toBe(false)
+    expect(clienteCorrespondeBusca(cliente, 'outro nome 123')).toBe(false)
+    expect(clienteCorrespondeBusca(cliente, '()---')).toBe(false)
+  })
   it('Mariana está com notinha a vencer, visível no resumo', () => {
     const r = resumoDoCliente(base, 'CLI-0104', HOJE)
     expect(r.abertas.some((n) => n.ficha.vencimento === '2026-10-07')).toBe(true)
@@ -74,6 +122,54 @@ describe('itens', () => {
 })
 
 describe('financeiro', () => {
+  it('consulta dias antigos e intervalos inclusivos, com cartões e lista no mesmo recorte', () => {
+    const movimento = (id: string, data: string, valor: number, categoria: string, meio: 'pix' | 'dinheiro'): LinhaFinanceiro => ({
+      id, data, horario: '10:00', descricao: id, origem: 'Teste', categoria, meio, meioRotulo: meio, valor,
+    })
+    const registros = [
+      movimento('anterior', '2026-08-31', 900, 'Venda', 'pix'),
+      movimento('venda', '2026-09-10', 10000, 'Venda', 'pix'),
+      movimento('despesa', '2026-09-10', -3000, 'Despesa', 'dinheiro'),
+      movimento('retirada', '2026-09-10', -2000, 'Retirada de caixa', 'dinheiro'),
+      movimento('seguinte', '2026-09-11', 5000, 'Venda', 'dinheiro'),
+    ]
+    expect(linhasFinanceiroNoIntervalo(movimentosOperacionaisFinanceiro(registros), '2026-09-10', '2026-09-10').map((l) => l.id)).toEqual(['venda', 'despesa'])
+    expect(resumoFinanceiroIntervalo(registros, '2026-09-10', '2026-09-10')).toMatchObject({
+      entradas: 10000, saidas: 3000, retiradas: 2000, liquido: 7000, contagem: { todos: 2, pix: 1, dinheiro: 1 },
+    })
+    expect(resumoFinanceiroIntervalo(registros, '2026-09-10', '2026-09-11').entradas).toBe(15000)
+    expect(linhasFinanceiroNoIntervalo(registros, '2026-09-11', '2026-09-10')).toEqual([])
+    expect(linhasFinanceiroNoIntervalo(registros, '', '2026-09-10')).toEqual([])
+  })
+  it('separa também estornos físicos e categorias antigas sem mudar os registros', () => {
+    const dados = { data: '2026-09-10', horario: '10:00', origem: 'Teste', meio: 'dinheiro' as const }
+    const movimentosCaixa = [
+      { ...dados, id: 'venda-avulsa', descricao: 'Venda avulsa', categoria: 'Avulso', valor: 5000 },
+      { ...dados, id: 'adicao', data: '2026-09-09', descricao: 'Troco do cofre', categoria: 'Adição de caixa', valor: 2000 },
+      { ...dados, id: 'estorno-adicao', descricao: 'Estorno: Troco do cofre', categoria: 'Estorno', valor: -2000, estornoDe: 'adicao' },
+      { ...dados, id: 'troco-antigo', descricao: 'Reposição do fundo de troco', categoria: 'Troco', valor: -3500 },
+      { ...dados, id: 'retirada-antiga', descricao: 'Retirada para o cofre', categoria: 'Saída de caixa', valor: -30000 },
+    ]
+    const cenario = { ...base, fichas: [], movimentosCaixa }
+    const linhas = movimentosFinanceiro(cenario)
+    expect(movimentosOperacionaisFinanceiro(linhas).map((linha) => linha.id)).toEqual(['venda-avulsa'])
+    expect(movimentosFisicosCaixa(cenario).map((linha) => linha.id)).toEqual(['estorno-adicao', 'troco-antigo', 'retirada-antiga', 'adicao'])
+    expect(resumoFinanceiroIntervalo(linhas, '2026-09-10', '2026-09-10')).toMatchObject({
+      entradas: 5000, saidas: 0, liquido: 5000, contagem: { todos: 1, dinheiro: 1 },
+    })
+    expect(cenario.movimentosCaixa).toEqual(movimentosCaixa)
+  })
+  it('atalhos financeiros usam o período atual e terminam hoje', () => {
+    expect(intervaloAtual('dia', '2026-10-01')).toEqual({ de: '2026-10-01', ate: '2026-10-01' })
+    expect(intervaloAtual('semana', '2026-10-01')).toEqual({ de: '2026-09-27', ate: '2026-10-01' })
+    expect(intervaloAtual('mes', '2026-10-01')).toEqual({ de: '2026-10-01', ate: '2026-10-01' })
+    expect(intervaloAtual('ano', '2026-10-01')).toEqual({ de: '2026-01-01', ate: '2026-10-01' })
+  })
+  it('explica falta, sobra e valor conferido no caixa', () => {
+    expect(textoDiferencaCaixa(-1000)).toBe('Faltam R$ 10,00 em relação ao esperado.')
+    expect(textoDiferencaCaixa(1000)).toBe('Há R$ 10,00 a mais que o esperado.')
+    expect(textoDiferencaCaixa(0)).toBe('O valor contado confere.')
+  })
   const linhas = movimentosFinanceiro(base)
   it('tem uma entrada por pagamento, nenhuma a mais', () => {
     const pagamentos = base.fichas.flatMap((f) => f.pagamentos)
@@ -88,7 +184,7 @@ describe('financeiro', () => {
     const r = resumoFinanceiro(linhas, 'dia', HOJE)
     const doDia = linhas.filter((l) => l.data === HOJE)
     expect(r.entradas).toBe(doDia.filter((l) => l.valor > 0).reduce((t, l) => t + l.valor, 0))
-    expect(r.contagem.todos).toBe(doDia.length)
+    expect(r.contagem.todos).toBe(movimentosOperacionaisFinanceiro(doDia).length)
     expect(r.liquido).toBe(r.entradas - r.saidas)
   })
 })

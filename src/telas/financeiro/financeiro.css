@@ -1,4 +1,33 @@
 /* Comparação compacta do período; rótulos e valores acompanham as barras. */
+.financeiro__periodo {
+  margin-bottom: var(--espaco-6);
+}
+
+.financeiro__periodo-controles {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+}
+
+.financeiro__periodo .filtros {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.financeiro__periodo-datas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-3);
+  width: min(100%, 360px);
+}
+
+.financeiro__periodo-ajuda {
+  margin-top: var(--espaco-3);
+  color: var(--color-saida);
+  font-size: var(--text-rotulo);
+}
+
 .financeiro__comparacao {
   margin-bottom: var(--espaco-6);
 }

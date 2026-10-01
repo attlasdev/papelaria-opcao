@@ -2,7 +2,7 @@ import { useId, useState, type FormEvent } from 'react'
 import { Botao } from '../../componentes/botao/Botao'
 import { Campo } from '../../componentes/campo/Campo'
 import { Modal } from '../../componentes/modal/Modal'
-import { cadastrarCliente, editarCliente, useEstadoDemonstracao, type Cliente } from '../../mock/estado-demonstracao'
+import { cadastrarCliente, documentoJaCadastrado, editarCliente, useEstadoDemonstracao, type Cliente } from '../../mock/estado-demonstracao'
 import './janela-cliente.css'
 
 type Props = {
@@ -49,9 +49,9 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
   const { clientes } = useEstadoDemonstracao()
   const atual = clienteId ? clientes.find((c) => c.id === clienteId) : undefined
   const endereco = separarEndereco(atual?.endereco ?? '')
-  const [erros, setErros] = useState<Partial<Record<'nome' | 'documento' | 'email', string>>>({})
+  const [erros, setErros] = useState<Partial<Record<'nome' | 'documento', string>>>({})
 
-  function limparErro(campo: 'nome' | 'documento' | 'email') {
+  function limparErro(campo: 'nome' | 'documento') {
     setErros((atual) => ({ ...atual, [campo]: undefined }))
   }
 
@@ -64,11 +64,10 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
     const documentoDigitado = campo('documento')
     const falhas: typeof erros = {}
     if (!nome) falhas.nome = 'Informe o nome do cliente.'
-    if (documentoDigitado && clientes.some((c) => c.id !== clienteId && c.documento === documentoDigitado)) {
+    if (documentoJaCadastrado(clientes, documentoDigitado, clienteId)) {
       falhas.documento = 'Este documento já está cadastrado. Busque o cliente em vez de cadastrar de novo.'
     }
-    if (formulario.querySelector<HTMLInputElement>('[name="email"]')?.validity.typeMismatch) falhas.email = 'Confira o endereço de e-mail.'
-    const primeiro = (['nome', 'documento', 'email'] as const).find((chave) => falhas[chave])
+    const primeiro = (['nome', 'documento'] as const).find((chave) => falhas[chave])
     if (primeiro) {
       setErros(falhas)
       requestAnimationFrame(() => {
@@ -82,14 +81,20 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
       nome,
       documento: documentoDigitado || SEM_DOCUMENTO,
       telefone: campo('telefone') || SEM_TELEFONE,
-      email: campo('email'),
       endereco: juntarEndereco(campo('rua'), campo('numero'), campo('bairro'), campo('cidade')),
     }
     if (atual) {
-      editarCliente(atual.id, cadastro)
+      if (!editarCliente(atual.id, cadastro)) {
+        setErros({ documento: 'Este documento já está cadastrado.' })
+        return
+      }
       aoSalvar({ ...atual, ...cadastro })
     } else {
       const id = cadastrarCliente(cadastro)
+      if (!id) {
+        setErros({ documento: 'Este documento já está cadastrado.' })
+        return
+      }
       aoSalvar({ ...cadastro, id, descricao: 'Cadastro novo', desde: '' })
     }
   }
@@ -142,7 +147,6 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
               onChange={() => limparErro('documento')}
             />
             <Campo rotulo="Celular / WhatsApp" name="telefone" type="tel" opcional defaultValue={vazioSe(atual?.telefone, SEM_TELEFONE)} placeholder="(11) 90000-0000" />
-            <Campo rotulo="E-mail" name="email" type="email" opcional defaultValue={atual?.email ?? ''} placeholder="nome@email.com" className="janela-cliente__largo" erro={Boolean(erros.email)} ajuda={erros.email} onChange={() => limparErro('email')} />
           </div>
         </fieldset>
 

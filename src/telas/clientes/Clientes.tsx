@@ -13,7 +13,7 @@ import { Icone } from '../../componentes/icone/Icone'
 import { dataCurta, reais } from '../../formatar'
 import {
   hojeISO,
-  normalizar,
+  clienteCorrespondeBusca,
   resumoDoCliente,
   rotuloForma,
   situacaoDaFicha,
@@ -74,10 +74,9 @@ export function Clientes() {
   const clientesComNotinhasAVencer = linhas.filter((l) => l.resumo.situacao === 'pendente').length
   const clientesComNotinhasEmAtraso = linhas.filter((l) => l.resumo.situacao === 'vencido').length
 
-  const termo = normalizar(busca.trim())
   const lista = linhas
     .filter((c) => filtro === 'todos' || c.resumo.situacao === filtro)
-    .filter((c) => !termo || normalizar(`${c.id} ${c.nome} ${c.documento} ${c.telefone}`).includes(termo))
+    .filter((c) => clienteCorrespondeBusca(c, busca))
   const totalPaginas = Math.max(1, Math.ceil(lista.length / clientesPorPagina))
   const paginaAtual = Math.min(pagina, totalPaginas)
   const inicioPagina = (paginaAtual - 1) * clientesPorPagina
@@ -115,7 +114,7 @@ export function Clientes() {
         <span className="clientes__sem-identificacao-texto">
           <span className="celula-principal">Vendas sem identificação</span>
           <span className="celula-secundaria">
-            {vendasSemIdentificacao === 1 ? '1 venda hoje' : `${vendasSemIdentificacao} vendas hoje`} · o que saiu e como foi pago
+            {vendasSemIdentificacao === 1 ? '1 venda hoje' : `${vendasSemIdentificacao} vendas hoje`} · consultar histórico
           </span>
         </span>
         <span className="clientes__sem-identificacao-ver">

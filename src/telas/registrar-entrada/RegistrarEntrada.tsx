@@ -7,8 +7,8 @@ import { Campo, CampoData } from '../../componentes/campo/Campo'
 import { Tabela } from '../../componentes/tabela/Tabela'
 import { SeloCompacto } from '../../componentes/selo/Selo'
 import { Icone } from '../../componentes/icone/Icone'
-import { reais } from '../../formatar'
-import { alterarSaldo, cadastrarProduto, hojeISO, normalizar, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { centavosDigitados, moedaDigitada, reais } from '../../formatar'
+import { alterarSaldo, cadastrarProduto, dataCalendarioValida, hojeISO, normalizar, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { useLeitorCodigo } from '../../leitor/useLeitorCodigo'
 import { PainelLeitor, type UltimaLeitura } from '../../leitor/PainelLeitor'
 import { rotas } from '../../rotas-caminhos'
@@ -29,7 +29,7 @@ function itemDoCatalogo(codigoOuBarras: string, produtos: ReturnType<typeof useE
     unidade: produto.unidade,
     saldoAtual: produto.saldo,
     quantidade: 1,
-    custo: produto.custo,
+    // Custo do cadastro não comprova o preço desta compra.
   }
 }
 
@@ -45,6 +45,10 @@ export function RegistrarEntrada() {
   })
   const [bipados, setBipados] = useState<Bipado[]>([])
   const [dataRecebimento, setDataRecebimento] = useState(hojeISO())
+  const [fornecedor, setFornecedor] = useState('')
+  const [referencia, setReferencia] = useState('')
+  const [observacoes, setObservacoes] = useState('')
+  const [erroData, setErroData] = useState(false)
   const [tentouConfirmar, setTentouConfirmar] = useState(false)
   // Leitor ligado: o painel com o laser toma o lugar da busca. Liga pelo botão ou
   // sozinho no primeiro bipe, para ela sempre ver que a leitura chegou.
@@ -73,6 +77,10 @@ export function RegistrarEntrada() {
 
   function mudarQuantidade(codigo: string, quantidade: number) {
     setItens((atual) => atual.map((i) => (i.codigo === codigo ? { ...i, quantidade: Math.max(1, quantidade) } : i)))
+  }
+
+  function mudarCusto(codigo: string, custo: number | null) {
+    setItens((atual) => atual.map((item) => item.codigo === codigo ? { ...item, custo: custo ?? undefined } : item))
   }
 
   function incluirProduto(codigo: string) {
@@ -212,19 +220,31 @@ export function RegistrarEntrada() {
       return
     }
     if (itens.length === 0) return
+    if (!dataCalendarioValida(dataRecebimento) || dataRecebimento > hojeISO()) {
+      setErroData(true)
+      return
+    }
+    const cabecalho = {
+      recebidaEm: dataRecebimento,
+      fornecedor: fornecedor.trim() || undefined,
+      referencia: referencia.trim() || undefined,
+      observacoes: observacoes.trim() || undefined,
+    }
     itens.forEach((item) => {
+      const entrada = { ...cabecalho, custoUnitario: item.custo }
       if (item.novo) {
-        const codigo = cadastrarProduto({ ...item.novo, saldo: 0 })
-        alterarSaldo(codigo, item.quantidade, 'Recebimento de mercadorias', 'Entrada')
+        const codigo = cadastrarProduto({ ...item.novo, custo: item.custo, saldo: 0 })
+        alterarSaldo(codigo, item.quantidade, 'Recebimento de mercadorias', 'Entrada', entrada)
         return
       }
-      alterarSaldo(item.codigo, (produtos.find((produto) => produto.codigo === item.codigo)?.saldo ?? item.saldoAtual) + item.quantidade, 'Recebimento de mercadorias', 'Entrada')
+      alterarSaldo(item.codigo, (produtos.find((produto) => produto.codigo === item.codigo)?.saldo ?? item.saldoAtual) + item.quantidade, 'Recebimento de mercadorias', 'Entrada', entrada)
     })
     navegar(rotas.movimentacoesEstoque())
   }
 
   const totalUnidades = itens.reduce((soma, i) => soma + i.quantidade, 0)
   const custoTotal = itens.reduce((soma, i) => soma + (i.custo ?? 0) * i.quantidade, 0)
+  const custosInformados = itens.filter((item) => item.custo !== undefined).length
 
   return (
     <Tela
@@ -247,10 +267,10 @@ export function RegistrarEntrada() {
     >
       <Painel className="registrar-entrada__dados">
         <div className="registrar-entrada__campos">
-          <CampoData rotulo="Data do recebimento" valor={dataRecebimento} max={hojeISO()} aoMudar={setDataRecebimento} />
-          <Campo rotulo="Fornecedor" opcional icone="caminhao" placeholder="Ex.: Distribuidora Tilibra & Papéis SP" />
-          <Campo rotulo="Referência da compra" opcional icone="recibo" placeholder="Ex.: NF-e 45.892 (pedido 1.203)" />
-          <Campo rotulo="Observações" opcional placeholder="Ex.: Entrega da manhã, 3 volumes" />
+          <CampoData rotulo="Data do recebimento" valor={dataRecebimento} max={hojeISO()} aoMudar={(valor) => { setDataRecebimento(valor); setErroData(false) }} erro={erroData} ajuda={erroData ? 'Informe uma data válida até hoje.' : undefined} />
+          <Campo rotulo="Fornecedor" opcional icone="caminhao" placeholder="Ex.: Distribuidora Tilibra & Papéis SP" value={fornecedor} onChange={(evento) => setFornecedor(evento.target.value)} />
+          <Campo rotulo="Referência da compra" opcional icone="recibo" placeholder="Ex.: NF-e 45.892 (pedido 1.203)" value={referencia} onChange={(evento) => setReferencia(evento.target.value)} />
+          <Campo rotulo="Observações" opcional placeholder="Ex.: Entrega da manhã, 3 volumes" value={observacoes} onChange={(evento) => setObservacoes(evento.target.value)} />
         </div>
       </Painel>
 
@@ -370,9 +390,18 @@ export function RegistrarEntrada() {
                 <td className="celula--numero registrar-entrada__novo">
                   {item.saldoAtual + item.quantidade} {item.unidade}
                 </td>
-                <td className="celula--numero">{item.custo ? reais(item.custo) : '—'}</td>
+                <td className="celula--numero">
+                  <input
+                    className="registrar-entrada__custo"
+                    inputMode="numeric"
+                    value={item.custo === undefined ? '' : moedaDigitada(item.custo)}
+                    onChange={(evento) => mudarCusto(item.codigo, centavosDigitados(evento.target.value))}
+                    aria-label={`Custo unitário da entrada de ${item.descricao}`}
+                    placeholder="Não informado"
+                  />
+                </td>
                 <td className="celula--numero registrar-entrada__total">
-                  {item.custo ? reais(item.custo * item.quantidade) : '—'}
+                  {item.custo === undefined ? '—' : reais(item.custo * item.quantidade)}
                 </td>
                 <td className="celula--acoes">
                   <BotaoIcone
@@ -397,7 +426,7 @@ export function RegistrarEntrada() {
       <div className="registrar-entrada__rodape">
         <p className="registrar-entrada__nota">
           <Icone nome="info" tamanho={18} />
-          Ao confirmar, o saldo é atualizado.
+          Ao confirmar, o saldo é atualizado. Informe o custo desta compra se souber; o custo antigo do cadastro não será presumido.
         </p>
         <dl className="registrar-entrada__resumo">
           <div>
@@ -412,7 +441,7 @@ export function RegistrarEntrada() {
           </div>
           <div>
             <dt>Custo informado</dt>
-            <dd>{reais(custoTotal)}</dd>
+            <dd>{custosInformados === 0 ? '—' : `${custosInformados < itens.length ? 'Parcial · ' : ''}${reais(custoTotal)}`}</dd>
           </div>
         </dl>
       </div>

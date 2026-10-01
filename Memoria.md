@@ -3,7 +3,8 @@
 Estado vivo do projeto: onde estamos, o que falta e as regras que valem hoje,
 com o porquê. O que o código faz está no código e no git. O passado sessão a
 sessão (ideias descartadas, números antigos) está em
-`docs/historico/memoria-ate-2026-09-30.md`.
+`docs/historico/`. A sessão mais recente está em
+`docs/historico/2026-10-01-revisao-com-victor.md`.
 
 **Como manter este arquivo:** uma lista de pendentes só, no topo. Decisão nova
 entra na seção da área, substituindo a antiga (não empilhar "atualizado em").
@@ -11,73 +12,104 @@ Relato de sessão longo vai para `docs/historico/`.
 
 ---
 
-## Onde estamos — `2026-09-30`
+## Onde estamos — `2026-10-01`
 
 Só a interface existe, rodando contra uma **base local** (`src/mock/base/`,
 `localStorage`). Tudo o que se faz nas telas grava e aparece igual em todas.
 Ainda não há contrato de verdade, banco nem `supabase/`; `comum/contrato.ts` tem
 só a operação de exemplo `ping`.
 
-- Rodar: `npm run dev` (navegador, porta 5173) ou `npm start` (Electron).
-- Conferir: `npm test` (54 testes da camada de dados) e `npm run build`.
-- Última rodada: análise de função do app inteiro e correções (cancelar ficha,
-  estornos, ficha que se guarda sozinha, validações), calendário padronizado e
-  organização de pastas e documentos. Testado no navegador; **não testado no
-  Electron**.
+- Rodar: `npm run dev` (Vite na porta 5173 e Electron com atualização automática)
+  ou `npm start` (build e Electron). Reutilizar a instância aberta durante a revisão.
+- Conferir: `npm test` (75 testes da camada de dados) e `npm run build`.
+- Última rodada: revisão por telas com o Victor, usando prints e o Electron.
+  Início e Clientes tiveram a revisão desta rodada encerrada e as correções
+  pedidas implementadas. **Financeiro e Caixa NÃO VALIDADOS pelo Victor:** agora
+  são telas independentes, prontas para continuar a avaliação.
+- Verificação técnica mais recente: 75 testes passam; build concluído; telas
+  separadas conferidas no Chromium a 1300 e 900 px, sem erro de JavaScript ou
+  transbordamento do documento, e abertas pelo menu no Electron. Isso não
+  substitui a validação de uso do Financeiro e do Caixa.
 - Branch de trabalho: `analise-de-funcao` (ainda não juntada à `main`).
 - "Restaurar dados de exemplo" (botão do operador, rodapé da barra lateral)
   refaz a amostra de 90 dias até hoje.
+- Na prévia de desenvolvimento, o cenário pedido pelo Victor acrescenta três
+  fechamentos recentes e um mais antigo, incluindo uma falta de R$ 10,00 com
+  motivo. Os movimentos físicos trazem "Exemplo" na descrição; as contagens
+  conferem com esses movimentos. Preserva o caixa atual, não sobrepõe turnos
+  existentes e não duplica exemplos ao recarregar. Não cria dados na versão
+  de produção nem altera receitas/despesas.
+
+---
+
+## Como retomar com o Victor
+
+O objetivo é manter as regras robustas e tornar a interface simples para a dona,
+que não trabalha com tecnologia. O Victor simula o usuário e aponta telas,
+componentes e mensagens; explicar o que o código realmente faz antes de sugerir
+mudanças. Prosseguir pela área indicada, sem ampliar a rodada por conta própria.
+
+| Área | Situação desta rodada |
+| --- | --- |
+| Início | Revisão encerrada; ajustes solicitados feitos. |
+| Clientes, detalhe e vendas sem identificação | Revisão encerrada; ajustes solicitados feitos. |
+| Financeiro e Caixa | Separados em duas telas e itens do menu conforme `docs/superpowers/plans/2026-10-01-separar-financeiro-caixa.md`. **NÃO VALIDADOS pelo Victor**. Retomar aqui. |
+| Estoque, nova ficha e demais áreas | Ainda não percorridas nesta rodada por telas; há verificações técnicas anteriores. |
+
+Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victor.md`.
 
 ---
 
 ## PENDENTE
 
+*Retomar na próxima sessão — prioridade:*
+- [ ] **Validar Financeiro e Caixa com o Victor** após a separação: no Caixa,
+  percorrer o cenário de fechamentos e a rotina de abrir/adicionar/retirar/fechar;
+  no Financeiro, revisar filtro de datas, resumo, movimentos e estornos. Não
+  marcar as áreas como validadas apenas porque os testes e o build passam.
+
 *Decidir com a dona:*
 1. Cancelar ficha: hoje liberado em qualquer data. Limitar a "só no mesmo dia"?
-2. Devolução parcial de itens: hoje só se cancela a ficha inteira.
-3. Venda com saldo zerado no sistema: hoje passa, o saldo para em zero e o
-   movimento avisa. Passar, pedir confirmação ou bloquear?
-4. "Retirada do caixa" (dinheiro levado ao cofre) ainda conta como saída no
-   líquido do Financeiro. Separar ou não?
-5. Custo por lote na entrada. Proposta a levar: um produto só; cada entrada
+2. Devolução parcial de itens: adiada pelo Victor; hoje só se cancela a ficha inteira.
+3. A retirada física fica separada das despesas no Financeiro e reduz o
+   esperado da gaveta. O histórico agora está na seção Caixa, com
+   destino/motivo em texto. Controle do saldo de cofre segue em aberto.
+4. Custo por lote na entrada. Proposta a levar: um produto só; cada entrada
    guarda o custo do lote; o produto mostra "10 un a R$ 8,00 (lote 03/09) · 30 un
    a R$ 10,00 (lote 29/09)"; a venda consome o mais antigo. Perguntar se ela
-   usaria ou se o último custo basta. Hoje o custo da entrada fica só no motivo
-   do movimento e não altera o cadastro. (Descartado: cadastrar o produto duas
+   usaria ou se o último custo basta. Hoje cada entrada guarda seu custo no
+   movimento, sem alterar o cadastro nem criar fila de lotes. (Descartado: cadastrar o produto duas
    vezes, um por lote — o código de barras não diz o lote e o saldo se parte.)
-6. Pix e cartão em produção: de onde vem o registro (maquininha, banco ou
-   lançamento manual), incluindo crédito/débito e parcelas, que a venda hoje não
-   registra (a amostra tem "Cartão crédito (2x)"). Ver "Pagamentos" abaixo.
+5. Pix e cartão: o fluxo interno já registra o meio informado; uma camada
+   futura integrará maquininha/banco e tratará crédito/débito, parcelas, taxas
+   e liquidação. Isso não bloqueia o teste funcional atual.
 
 *Decidir com o Victor:*
-7. Regras de CPF e aviso de nome repetido no cadastro de cliente (adiado).
-8. Registrar entrada: a "Data do recebimento" não é gravada; o movimento sai com
-   a data de agora. Gravar exige decidir a ordem do histórico quando a data for
-   passada (o saldo "antes → depois" encadeia).
-9. `docs/materiais-recebidos/attlas-cobranca-automatica.txt` trata de outra
+6. Regras de CPF e aviso de nome repetido no cadastro de cliente (adiado).
+7. `docs/materiais-recebidos/attlas-cobranca-automatica.txt` trata de outra
    empresa (Attlas), não da papelaria. Mover para o Atlas Victor ou apagar daqui?
 
 *Visual, a conferir (anotados em 2026-09-25):*
-10. Painel "Cadastro" do detalhe do cliente estica até a altura dos três cartões
+8. Painel "Cadastro" do detalhe do cliente estica até a altura dos três cartões
     e sobra espaço embaixo.
-11. A Revisão da nova ficha repete o total do painel Valores.
+9. A Revisão da nova ficha repete o total do painel Valores.
 
 *Testar:*
-12. Leitor de código físico no Electron.
-13. A versão atual inteira no Electron.
+10. Leitor de código físico no Electron.
+11. A versão atual inteira no Electron.
 
 *Antes de distribuir:*
-14. Licença do pacote de ícones do acervo; ícone do aplicativo
+12. Licença do pacote de ícones do acervo; ícone do aplicativo
     (`electron-builder.json` não aponta nenhum).
 
 *Próximos passos de arquitetura (em ordem):*
-15. Contrato de verdade em PR próprio (regra 7): o formato de
+13. Contrato de verdade em PR próprio (regra 7): o formato de
     `src/mock/base/tipos.ts` é a proposta de vocabulário. Nessa etapa as telas
     ganham estados de carregando e falha (regra 6), que hoje não aparecem porque
     a base local é síncrona.
-16. Entregar `front-side.md` ao parceiro; esperar o primeiro corte do contrato;
+14. Entregar `front-side.md` ao parceiro; esperar o primeiro corte do contrato;
     aplicar `revisao-de-contrato.md`.
-17. Só depois: banco de **teste**, `supabase/migrations/0001` e
+15. Só depois: banco de **teste**, `supabase/migrations/0001` e
     `electron/operacoes.ts` de verdade.
 
 ---
@@ -95,15 +127,21 @@ só a operação de exemplo `ping`.
   no prazo em laranja. Só avisa; vender ou não é do balcão.
 - **Itens:** bipe (leitura contínua pelo ícone), busca por nome ou código;
   vários resultados pedem escolha. Quantidade digitável e com + e −. Código sem
-  cadastro oferece **cadastro rápido** em janela: o produto nasce com saldo 0 e
-  marcado `cadastroRapido` até alguém completar e contar no Estoque.
+  cadastro leva ao Estoque para cadastrar e contar antes de vender; a ficha em
+  andamento fica guardada para ser retomada.
 - **A venda em andamento se guarda sozinha** (rascunho único na base); o Início
   oferece "Retomar ficha". "Limpar ficha" zera tudo, inclusive cliente e forma.
 - **Bloqueios ao concluir:** sem cliente, sem item, desconto maior que o
   subtotal, dinheiro recebido menor que o total, notinha sem vencimento ou com
-  vencimento antes de hoje, entrada que cobre o total.
-- Concluir dá baixa no estoque (movimento "Venda"); com saldo menor que o
-  vendido, a venda passa e o saldo para em zero (pendente 3).
+  vencimento antes de hoje, entrada que cobre o total, produto sem saldo
+  suficiente e pagamento misto cuja soma não fecha ou cujo dinheiro entregue
+  é menor que a parcela em espécie.
+- **Sem saldo, sem venda:** conferir a prateleira e registrar entrada ou ajuste
+  no Estoque antes de concluir. A ação de dados também recusa a venda sem
+  alterar ficha, financeiro ou estoque.
+- **Pagamento misto à vista:** distribuir exatamente o total entre pelo menos
+  dois meios, cada um com valor positivo. Cada parcela aparece separada no
+  Financeiro; o troco é calculado só sobre a parte em dinheiro.
 
 ### Notinha (compra fiada)
 - Rótulo na tela: "Notinha". Situação calculada: pendente, vencida, paga,
@@ -121,7 +159,7 @@ só a operação de exemplo `ping`.
 ### Corrigir sem apagar
 - Nada lançado se apaga ou se edita livremente. Três desfazeres, todos com
   **motivo obrigatório** (`ModalMotivo`), e o registro original fica visível:
-  - **Cancelar ficha** (página e janela da ficha): itens voltam ao estoque
+  - **Cancelar ficha** (página e janela da ficha): a baixa registrada volta ao estoque
     (movimento "Cancelamento"), o pago sai do Financeiro **no dia do
     cancelamento** (dias fechados não mudam), a ficha fica marcada "Cancelada" e
     sai das compras do cliente, das vendas do dia e da cobrança.
@@ -137,14 +175,31 @@ só a operação de exemplo `ping`.
   venda. Janela sobre janela: Esc fecha só a de cima.
 
 ### Clientes
+- Os cartões de notinhas contam **clientes**, não a quantidade de notinhas:
+  quarenta notinhas em atraso de quatro clientes correspondem a "4 clientes".
+  Hoje a classificação dá prioridade ao atraso: quem tem notinha atrasada aparece
+  em atraso mesmo se também tiver outra a vencer; não é contado nas duas situações.
 - Lista alfabética com número estável (`CLI-0104`), busca no topo, filtros
   "Notinhas a vencer" e "Notinhas em atraso" (contam clientes). Linha expande
   com as três compras recentes; "Ver histórico completo" abre o cliente.
+- A busca de clientes aceita CPF/CNPJ e telefone com ou sem pontuação e nomes
+  sem acento. A mesma regra vale no cabeçalho e na identificação da nova ficha.
 - Cadastro e edição num formulário só, em gaveta (ou janela na ficha): só o nome
   é obrigatório; documento repetido é barrado; endereço gravado como
-  "Rua, nº - Bairro - Cidade/UF".
+  "Rua, nº - Bairro - Cidade/UF". Não se cadastra e-mail (decisão do Victor):
+  o contato é por telefone/WhatsApp, sem esse campo nos formulários ou detalhes.
 - Detalhe do cliente: cartões Total comprado, Notinhas em aberto (clicar recebe)
   e Ticket médio; histórico com filtros e "Receber" por linha.
+- Receber notinhas permite Dinheiro, Pix, Cartão ou Misto, inclusive em pagamento
+  parcial e com várias notinhas selecionadas. No Misto, duas ou três formas
+  somam exatamente o valor a pagar agora; só a parte em dinheiro calcula troco
+  e entra na gaveta. O recebimento abate as notinhas da mais antiga para a mais
+  nova, conserva cada meio no histórico/Financeiro e grava tudo junto.
+- Vendas sem identificação: filtros Todos, Dinheiro, Pix e Cartão, sem filtro
+  exclusivo para Misto. Vendas mistas aparecem em cada meio usado e conservam
+  a divisão dos pagamentos no detalhe da ficha, como no Início.
+- O calendário de vendas sem identificação permite hoje e qualquer dia passado;
+  datas futuras são bloqueadas também na digitação e na navegação por teclado.
 
 ### Estoque
 - Saldo só muda por **entrada, ajuste, venda ou cancelamento**, para o histórico
@@ -159,24 +214,85 @@ só a operação de exemplo `ping`.
 - "+ Entrada" da linha abre a gaveta Entrada rápida (um produto). Entrega com
   vários itens vai pela página Registrar entrada, com bloco "Bipados" (bipar de
   novo não duplica; produto novo precisa de cadastro antes de ir à tabela).
+- Entrada completa preserva data física do recebimento, fornecedor, referência,
+  observações e custo informado por item no histórico. A data do lançamento
+  continua sendo a data atual, mantendo a ordem dos saldos antes/depois.
 - Cadastrar produto (topo do Estoque) aceita bipe; código já cadastrado mostra o
   produto existente em vez de duplicar.
 
 ### Financeiro
-- Dia, Semana, Mês, Ano; filtro por meio. Cada pagamento registrado numa ficha
-  (venda, entrada ou recebimento de notinha, **em qualquer meio**) vira uma
-  linha; lançamento manual também (saída separa Despesa de Retirada do caixa).
+**Situação de validação: NÃO VALIDADO pelo Victor.** As regras abaixo descrevem
+o que foi discutido e implementado; a avaliação de uso continua na próxima sessão.
+
+- Tela e item próprios no menu. Não apresenta prévia do Caixa nem transferências
+  físicas da gaveta. "Registrar movimento" oferece Entrada e Despesa em janela
+  central compacta; vendas e recebimentos de notinhas vêm das fichas.
+- Atalhos Hoje, Esta semana, Este mês, Este ano e consulta livre De/Até,
+  inclusive de um único dia antigo. Cartões, gráfico, contagens e tabela usam
+  o mesmo intervalo; "Todos os meios" reúne Pix, cartão e dinheiro dentro dele.
+  A tabela mostra até 15 registros por página, com rolagem da tela quando
+  necessário, sem reduzir a lista a uma linha pelo espaço restante.
+  Cada pagamento registrado numa ficha (venda, entrada ou recebimento de
+  notinha, **em qualquer meio**) vira uma linha; lançamento manual também.
 - **Estorno abate do próprio lado:** desfazer venda reduz Entradas, desfazer
   despesa reduz Saídas; selo "Estorno".
-- Comparação com o período anterior **até o mesmo ponto** ("vs ontem, até esta
-  hora"), senão toda manhã parece queda.
-- Exportar período para a contabilidade: previsto, formato a combinar.
+- Os três cartões resumem somente o período selecionado. Entradas menos
+  despesas não representa lucro nem saldo bancário; não há comparação com o
+  período anterior. A tabela "Movimentações financeiras" contém somente fatos
+  financeiros e seus estornos.
+- Transferências físicas e seus estornos ficam na seção Caixa. As categorias
+  antigas "Troco" e "Saída de caixa" são classificadas como registros físicos
+  para consulta, sem alterar seus valores, sinais ou datas persistidos.
+- Exportar período para a contabilidade: botão ainda sem destino; formato a combinar.
+
+### Caixa
+**Situação de validação: NÃO VALIDADO pelo Victor.** A gaveta tem tela e item
+próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
+
+- Retirada física só aceita dinheiro, fica fora das despesas financeiras e
+  reduz o esperado na conferência da gaveta.
+- Conferência em espécie: abertura com contagem, somente movimentos lançados
+  durante aquele turno, fechamento com valor contado e justificativa obrigatória
+  para diferença. Pix/cartão não entram. A abertura é opcional e informa todo
+  dinheiro já na gaveta, inclusive troco vindo do dia anterior. Movimentos
+  antigos entram nessa contagem inicial, sem recalcular períodos fechados.
+- "Caixa atual" acompanha o turno aberto e mostra "Esperado na gaveta". Sem
+  caixa aberto, orienta a contar o dinheiro e oferece "Abrir caixa".
+- Abertura, retirada e fechamento usam janelas centrais compactas. "Cancelar"
+  apenas sai da janela; "Fechar caixa" registra a contagem final. Diferenças são
+  explicadas como falta ou sobra e exigem "Motivo da diferença". Abertura não
+  lança receita e fechamento não cria despesa. Só um caixa permanece aberto;
+  não há abertura ou fechamento automático na virada do dia.
+- "Abrir caixa" aparece no lugar das ações do caixa aberto quando não existe
+  turno aberto. Pode ser usado em qualquer horário; depois de confirmar um
+  fechamento, reaparece. A rotina de abrir ao chegar e fechar ao sair depende da
+  pessoa. Vendas e recebimentos não são bloqueados pela falta de conferência.
+- O Caixa atual identifica a abertura com ícone de dinheiro, data/horário e
+  operador em linhas separadas. "Adicionar dinheiro" pede valor e "Origem ou
+  motivo"; "Retirar dinheiro" pede valor e "Destino ou motivo". As duas ações
+  exigem caixa aberto, conservam operador/vínculo e alteram só o esperado da
+  gaveta. Reforço de troco não é receita, retirada não é despesa; seus estornos
+  também ficam fora dos totais financeiros. Compra/conta continua sendo despesa.
+  Registros antigos sem turno vinculado seguem consultáveis com seus valores
+  e sinais originais. O histórico também mostra estornos físicos e seu motivo.
+- Fechamentos dos últimos sete dias corridos (hoje e seis anteriores) aparecem
+  abaixo do Caixa atual, com data do fechamento, dinheiro contado, situação e
+  "Ver". Cada fechamento é individual, sem somar saldos entre dias.
+- "Consultar outro período" abre o histórico com datas De/Até, atalhos Últimos
+  7 dias e Este mês; nenhuma data futura. Fechados são filtrados pelo dia do
+  fechamento em São Paulo, inclusive quando abertos em outro dia; abertos pela
+  abertura. O histórico separa Aberturas e fechamentos / Adições e retiradas.
+  Conserva contagens, esperado, diferenças, motivos, operadores e estornos;
+  "Ver" abre os movimentos em dinheiro e as fichas do caixa escolhido.
+  Fechamentos anteriores são preservados.
+- Novos movimentos, pagamentos e estornos guardam o operador da base local;
+  isto identifica o operador configurado, sem autenticar quem está na máquina.
 
 ### Pagamentos (Pix e cartão)
 - A funcionária marca Pix ou cartão **depois de conferir** no balcão; não há
   etapa "aguardando conferência".
 - Na base local todo pagamento marcado entra no Financeiro. Em produção a tela
-  não muda; muda **de onde** vem o registro (pendente 6). Não assumir que a API
+  não muda; muda **de onde** vem o registro (pendente 5). Não assumir que a API
   do Mercado Pago cobre Pix de outro banco nem cobranças feitas fora do app;
   não prometer caixa completo antes de testar com transações reais. Separar
   total recebido do saldo líquido da conta (taxas e prazo de liberação).
@@ -187,6 +303,19 @@ só a operação de exemplo `ping`.
 - Início: resumo do dia (recebimentos, vendas, saídas) com **valores ocultos por
   padrão** (tela virada para o cliente); histórico de fichas com filtro por data e
   pagamento. Estoque baixo e contas vencidas ficam nas seções delas e no sino.
+- O Início se concentra no dia atual, com informação essencial para o balcão.
+  O cartão Recebimentos do dia mostra só o título e o valor, sem comparação com
+  ontem, percentual de variação ou frase sobre o movimento anterior (decisão do Victor).
+- O filtro de data do histórico permite consultar qualquer dia passado e hoje,
+  inclusive meses e anos anteriores, sem limite mínimo. Datas futuras ficam
+  bloqueadas no calendário, nas setas e na digitação; o filtro afeta só as fichas.
+- Os filtros de pagamento são Todos, Pix, Cartão, Dinheiro e Notinha. Não há
+  filtro exclusivo para Misto (decisão do Victor): uma venda mista aparece em
+  Todos e em cada meio usado no pagamento. O detalhe da ficha conserva a divisão
+  dos valores; nas notinhas, mostra a entrada e os recebimentos registrados.
+- Revisão com o Victor: manter uma única janela do Electron em desenvolvimento
+  (`npm run dev`), aproveitando a atualização automática da interface. Reutilizar
+  essa janela nas alterações do front, sem abrir outra instância a cada conferência.
 - Sino: notinha em atraso, notinha que vence em até 3 dias, produto zerado,
   estoque baixo, cadastro rápido a completar, rascunho de nota; do mais grave ao
   menos grave. Lido volta a ser novo se o texto mudar.

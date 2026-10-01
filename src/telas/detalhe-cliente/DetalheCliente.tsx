@@ -114,10 +114,6 @@ export function DetalheCliente() {
               <dd>{cadastro?.telefone ?? '—'}</dd>
             </div>
             <div>
-              <dt><ComIcone icone="email">E-mail</ComIcone></dt>
-              <dd>{cadastro?.email || '—'}</dd>
-            </div>
-            <div>
               <dt><ComIcone icone="endereco">Endereço</ComIcone></dt>
               <dd>{cadastro?.endereco || '—'}</dd>
             </div>

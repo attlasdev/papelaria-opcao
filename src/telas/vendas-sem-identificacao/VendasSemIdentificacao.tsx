@@ -11,7 +11,7 @@ import { Paginacao } from '../../componentes/paginacao/Paginacao'
 import { useLinhasPorPagina } from '../../componentes/paginacao/useLinhasPorPagina'
 import type { NomeIcone } from '../../componentes/icone/Icone'
 import { dataCurta, reais } from '../../formatar'
-import { porDataDecrescente, resumoItens, rotuloForma, useEstadoDemonstracao, type Ficha, type Meio } from '../../mock/estado-demonstracao'
+import { hojeISO, porDataDecrescente, resumoItens, rotuloForma, useEstadoDemonstracao, type Ficha, type FormaVenda, type Meio } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import './vendas-sem-identificacao.css'
 import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
@@ -26,7 +26,7 @@ const meios: { valor: Meio; rotulo: string; icone: NomeIcone }[] = [
   { valor: 'cartao', rotulo: 'Cartão', icone: 'cartao' },
 ]
 
-const iconeMeio = Object.fromEntries(meios.map((m) => [m.valor, m.icone])) as Record<Meio, NomeIcone>
+const iconeMeio: Record<Exclude<FormaVenda, 'notinha'>, NomeIcone> = { dinheiro: 'dinheiro', pix: 'pix', cartao: 'cartao', misto: 'financeiro' }
 
 function isoLocal(data: Date) {
   return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`
@@ -66,20 +66,22 @@ export function VendasSemIdentificacao() {
   const [pagina, setPagina] = useState(1)
   const { referencia: painelVendas, linhasPorPagina } = useLinhasPorPagina()
   const { fichas } = useEstadoDemonstracao()
+  const hoje = hojeISO()
 
-  // Sem cliente não existe notinha: só as três formas à vista.
+  // Sem cliente não existe notinha; pagamento misto também é à vista.
   const todas = fichas
-    .filter((ficha): ficha is Ficha & { forma: Meio } => ficha.clienteId === null && ficha.forma !== 'notinha')
+    .filter((ficha): ficha is Ficha & { forma: Exclude<FormaVenda, 'notinha'> } => ficha.clienteId === null && ficha.forma !== 'notinha')
     .sort(porDataDecrescente)
   // Sem data escolhida, o período parte de hoje, o mesmo número do card em Clientes.
-  const referencia = dataEscolhida || isoLocal(new Date())
+  const referencia = dataEscolhida || hoje
   const doPeriodo = todas.filter((ficha) => noPeriodo(ficha.data, referencia, periodo))
-  const lista = doPeriodo.filter((ficha) => filtroMeio === 'todos' || ficha.forma === filtroMeio)
+  const lista = doPeriodo.filter((ficha) => filtroMeio === 'todos' || ficha.forma === filtroMeio || ficha.pagamentos.some((pagamento) => pagamento.meio === filtroMeio))
 
   // Cancelada continua na lista, mas não soma.
   const vendidas = doPeriodo.filter((ficha) => !ficha.cancelamento)
   const totalPeriodo = vendidas.reduce((soma, ficha) => soma + ficha.total, 0)
-  const porMeio = (meio: Meio) => vendidas.filter((ficha) => ficha.forma === meio)
+  const porMeio = (meio: Meio) => vendidas.filter((ficha) => ficha.pagamentos.some((pagamento) => pagamento.meio === meio))
+  const totalPorMeio = (meio: Meio) => vendidas.flatMap((ficha) => ficha.pagamentos).filter((pagamento) => pagamento.meio === meio).reduce((soma, pagamento) => soma + pagamento.valor, 0)
 
   const totalPaginas = Math.max(1, Math.ceil(lista.length / linhasPorPagina))
   const paginaAtual = Math.min(pagina, totalPaginas)
@@ -114,7 +116,7 @@ export function VendasSemIdentificacao() {
         </>
       }
       titulo="Vendas sem identificação"
-      subtitulo="Vendas de balcão sem cliente cadastrado."
+      subtitulo="Vendas realizadas sem identificar o cliente."
     >
       <div className="grade-resumo">
         <CartaoResumo
@@ -131,7 +133,7 @@ export function VendasSemIdentificacao() {
               key={meio.valor}
               rotulo={meio.rotulo}
               icone={meio.icone}
-              valor={reais(vendas.reduce((soma, ficha) => soma + ficha.total, 0))}
+              valor={reais(totalPorMeio(meio.valor))}
               nota={quantidade(vendas.length)}
             />
           )
@@ -159,6 +161,7 @@ export function VendasSemIdentificacao() {
                 <SeletorData
                   valor={dataEscolhida}
                   dataInicial={referencia}
+                  max={hoje}
                   aoMudar={(data) => { setDataEscolhida(data); setPagina(1) }}
                 />
               )}

@@ -14,8 +14,9 @@ trabalho e o meu.
    ao que voce ja faz.
 2. Em vez de `fetch('/api/coisa')`, voce chama `window.api.coisa()`. Async, tipada,
    com autocomplete.
-3. Voce roda `npm run dev` e abre no navegador normal. **Sem Electron, sem banco,
-   sem credencial nenhuma** — um mock responde por tudo.
+3. Voce roda `npm run dev`: Vite serve o front na porta 5173 e o plugin abre o
+   Electron com atualização automática. Também pode consultar no navegador.
+   **Sem banco ou credenciais**; hoje as telas usam a base local de demonstração.
 4. Quando eu implementar o lado real, **nada em `src/` muda**. Nenhuma linha. A
    mesma chamada passa a falar com o banco.
 5. Para isso funcionar, a lista de operacoes (`comum/contrato.ts`) precisa existir
@@ -72,12 +73,15 @@ la, e voce perde o tipo.
 ```bash
 npm install
 
-npm run dev     # o seu dia a dia: abre no navegador, com o mock
-npm start       # o aplicativo de verdade — so precisa quando for conferir a janela
+npm run dev     # Vite + Electron, com atualização automática do front
+npm start       # build + Electron; ainda usa a base local, sem banco integrado
 npm run build   # typecheck + build. Isto tem que passar antes de PR
 ```
 
-No `npm run dev` aparece um painel **MOCK** no canto inferior direito, com duas
+Reutilize o Electron já aberto durante a revisão; não rode esses comandos de
+novo para cada alteração de interface. A retomada fica em `Memoria.md`.
+
+No navegador em desenvolvimento aparece um painel **MOCK** no canto inferior direito, com duas
 coisas: a causa de falha a forcar, e o atraso de cada resposta em ms. Use os dois.
 Ver secao 7.
 

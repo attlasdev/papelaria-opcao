@@ -6,7 +6,9 @@
 > os movimentos na ordem da lista (sem reordenar); as notinhas de cenário têm itens
 > fixos; a amostra quita 93% das notinhas vencidas (não 80%); o sino ganhou tipos,
 > ícones e "marcar como lidas" (`avisosLidos` na base); `notinha().detalhe` traz só
-> o prazo, para caber no selo. As caixas `- [ ]` abaixo não foram marcadas uma a uma.
+> o prazo, para caber no selo. As caixas abaixo foram marcadas em 01/10/2026 com
+> base neste registro de execução histórica. Elas não indicam validação da versão
+> atual do Financeiro pelo Victor: essa revisão permanece pendente em `Memoria.md`.
 
 > **Para quem executa (humano ou agente):** usar superpowers:executing-plans (na
 > mesma sessão) ou superpowers:subagent-driven-development (uma tarefa por
@@ -100,7 +102,7 @@ não são fatos (`grupos`, `situacaoSaldo`, `categorias`, `unidades`,
 `periodoAnterior(periodo, referencia): string`, `dataPorExtenso(iso): string`,
 `carregarBase(): Base | null`, `salvarBase(base): void`, `apagarBase(): void`.
 
-- [ ] **Passo 1: instalar o Vitest e criar a config separada**
+- [x] **Passo 1: instalar o Vitest e criar a config separada**
 
 ```bash
 npm install -D vitest
@@ -119,7 +121,7 @@ export default defineConfig({
 
 Em `package.json`, adicionar a `scripts`: `"test": "vitest run"`.
 
-- [ ] **Passo 2: escrever `tipos.ts`**
+- [x] **Passo 2: escrever `tipos.ts`**
 
 ```ts
 /**
@@ -235,7 +237,7 @@ export type Base = {
 }
 ```
 
-- [ ] **Passo 3: escrever o teste de datas (falha, porque `datas.ts` ainda não existe)**
+- [x] **Passo 3: escrever o teste de datas (falha, porque `datas.ts` ainda não existe)**
 
 `src/mock/base/datas.test.ts`:
 
@@ -273,7 +275,7 @@ describe('datas', () => {
 
 Rodar `npm test`. Esperado: FALHA ("Failed to resolve import './datas'").
 
-- [ ] **Passo 4: escrever `datas.ts`**
+- [x] **Passo 4: escrever `datas.ts`**
 
 ```ts
 /** Datas da base: sempre YYYY-MM-DD no fuso local, sem hora. */
@@ -353,7 +355,7 @@ export function dataPorExtenso(iso: string) {
 Rodar `npm test`. Esperado: PASSA. Se o `Intl` do Node devolver "sexta-feira, 25
 de setembro", o `toUpperCase` da primeira letra já cobre.
 
-- [ ] **Passo 5: escrever `persistencia.ts`**
+- [x] **Passo 5: escrever `persistencia.ts`**
 
 ```ts
 import { VERSAO_BASE, type Base } from './tipos'
@@ -392,7 +394,7 @@ export function apagarBase() {
 }
 ```
 
-- [ ] **Passo 6: ponto de verificação**
+- [x] **Passo 6: ponto de verificação**
 
 Rodar `npx tsc --noEmit -p tsconfig.json` e `npm test`. Esperado: sem erros.
 
@@ -416,7 +418,7 @@ Rodar `npx tsc --noEmit -p tsconfig.json` e `npm test`. Esperado: sem erros.
 | CLI-0117 Associação Girassol | duas notinhas em atraso |
 | CLI-0107 Ana Beatriz Nogueira | só compras à vista (em dia) |
 
-- [ ] **Passo 1: escrever o teste de invariantes (falha, porque `semente.ts` ainda não existe)**
+- [x] **Passo 1: escrever o teste de invariantes (falha, porque `semente.ts` ainda não existe)**
 
 `src/mock/base/semente.test.ts`:
 
@@ -504,7 +506,7 @@ describe('semente', () => {
 
 Rodar `npm test`. Esperado: FALHA ("Failed to resolve import './semente'").
 
-- [ ] **Passo 2: escrever `semente.ts`**
+- [x] **Passo 2: escrever `semente.ts`**
 
 ```ts
 import { diasEntre, somarDias } from './datas'
@@ -764,7 +766,7 @@ duas vendas do mesmo produto têm o mesmo `data`, a ordenação dos movimentos c
 `data` igual precisa desempatar pela ordem de criação: trocar o `sort` final por
 um que preserve a ordem de `eventos` (já invertida) e reverter a lista no fim.
 
-- [ ] **Passo 3: ponto de verificação** — `npx tsc --noEmit -p tsconfig.json` e `npm test`.
+- [x] **Passo 3: ponto de verificação** — `npx tsc --noEmit -p tsconfig.json` e `npm test`.
 
 ---
 
@@ -797,7 +799,7 @@ export type Abatimento = { id: string; valor: number; quita: boolean }
 export function distribuir(notinhas: Notinha[], valor: number): Abatimento[]
 ```
 
-- [ ] **Passo 1: escrever o teste (falha, porque `derivados.ts` ainda não existe)**
+- [x] **Passo 1: escrever o teste (falha, porque `derivados.ts` ainda não existe)**
 
 `src/mock/base/derivados.test.ts`:
 
@@ -868,7 +870,7 @@ describe('itens', () => {
 
 Rodar `npm test`. Esperado: FALHA ("Failed to resolve import './derivados'").
 
-- [ ] **Passo 2: escrever a primeira metade de `derivados.ts`**
+- [x] **Passo 2: escrever a primeira metade de `derivados.ts`**
 
 ```ts
 import { reais } from '../../formatar'
@@ -979,7 +981,7 @@ Juntar os dois imports de `formatar` num só ao salvar.
 
 Rodar `npm test`. Esperado: PASSA.
 
-- [ ] **Passo 3: ponto de verificação** — `npx tsc --noEmit -p tsconfig.json` e `npm test`.
+- [x] **Passo 3: ponto de verificação** — `npx tsc --noEmit -p tsconfig.json` e `npm test`.
 
 ---
 
@@ -1017,7 +1019,7 @@ export function situacaoSaldo(produto: Produto): 'normal' | 'baixo' | 'zerado'
 importando-as em `derivados.ts` (o arquivo não tem React, então isso não cria
 dependência de tela).
 
-- [ ] **Passo 1: acrescentar os testes (falham, porque as funções ainda não existem)**
+- [x] **Passo 1: acrescentar os testes (falham, porque as funções ainda não existem)**
 
 ```ts
 import { buscar, movimentosFinanceiro, notificacoes, resumoDoDia, resumoEstoque, resumoFinanceiro } from './derivados'
@@ -1074,7 +1076,7 @@ describe('estoque, busca e sino', () => {
 busca. Os produtos com saldo baixo ou zerado na lista são EST-0022, EST-0025,
 EST-0027, EST-0030 e EST-0032 (5). Os sem código são EST-0024 e EST-0031 (2).
 
-- [ ] **Passo 2: acrescentar as funções a `derivados.ts`**
+- [x] **Passo 2: acrescentar as funções a `derivados.ts`**
 
 ```ts
 import { noPeriodo, periodoAnterior, type Periodo } from './datas'
@@ -1209,7 +1211,7 @@ Reorganizar os imports no topo do arquivo, um por módulo.
 
 Rodar `npm test`. Esperado: PASSA.
 
-- [ ] **Passo 3: ponto de verificação** — `npx tsc --noEmit -p tsconfig.json` e `npm test`.
+- [x] **Passo 3: ponto de verificação** — `npx tsc --noEmit -p tsconfig.json` e `npm test`.
 
 ---
 
@@ -1241,7 +1243,7 @@ export * from './base/datas'
 export type * from './base/tipos'
 ```
 
-- [ ] **Passo 1: escrever o teste (falha, porque as novas assinaturas ainda não existem)**
+- [x] **Passo 1: escrever o teste (falha, porque as novas assinaturas ainda não existem)**
 
 `src/mock/estado-demonstracao.test.ts`:
 
@@ -1296,7 +1298,7 @@ módulo).
 
 Rodar `npm test`. Esperado: FALHA (exports inexistentes).
 
-- [ ] **Passo 2: reescrever `estado-demonstracao.ts`**
+- [x] **Passo 2: reescrever `estado-demonstracao.ts`**
 
 ```ts
 import { useSyncExternalStore } from 'react'
@@ -1434,7 +1436,7 @@ export function prepararRascunho(id: string) {
 Rodar `npm test`. Esperado: PASSA. `npx tsc` vai acusar erros **nas telas**: é
 esperado, e as Tarefas 6 a 10 resolvem.
 
-- [ ] **Passo 3: ponto de verificação** — `npm test` passa. A lista de erros do
+- [x] **Passo 3: ponto de verificação** — `npm test` passa. A lista de erros do
   `tsc` passa a ser o roteiro das próximas tarefas.
 
 ---
@@ -1450,7 +1452,7 @@ esperado, e as Tarefas 6 a 10 resolvem.
 `resumoItens`, `contagemItens`, `rotuloForma`, `situacaoDaFicha`, `notinha`,
 `concluirFicha`, `proximoNumeroFicha`, `hojeISO`, `agoraHorario`, `dataPorExtenso`.
 
-- [ ] **Passo 1: Início lê a base**
+- [x] **Passo 1: Início lê a base**
   - Subtítulo: `${dataPorExtenso(hojeISO())} · movimentação de vendas`.
   - Cartões: `const dia = resumoDoDia(base, hojeISO())`, com Recebimentos =
     `dia.recebimentos` (variação "vs ontem" = `dia.variacao`, escondida quando
@@ -1462,7 +1464,7 @@ esperado, e as Tarefas 6 a 10 resolvem.
     `rotuloForma(f)` com o ícone de `f.forma` (`notinha` → `calendario`).
   - Filtro de pagamento compara com `f.forma` (`'notinha'` no lugar de `'futuro'`).
   - O `SeletorData` usa `dataInicial={hojeISO()}`.
-- [ ] **Passo 2: Nova ficha**
+- [x] **Passo 2: Nova ficha**
   - Cabeçalho: `Ficha #${proximoNumeroFicha(base)} · aberta hoje, ${agoraHorario()} · operador ${base.operador}`
     (horário fixado num `useState` na abertura).
   - Itens começam vazios (D4). `ItensFicha` monta o item a partir de `base.produtos`
@@ -1492,20 +1494,20 @@ const id = concluirFicha({
   - Rascunho: `salvarRascunhoFicha` com o formato `RascunhoFicha` da base (ids e
     quantidades). Ao retomar, os itens são remontados por `codigo` a partir de
     `base.produtos`.
-- [ ] **Passo 3: Detalhe da ficha**
+- [x] **Passo 3: Detalhe da ficha**
   - `const ficha = base.fichas.find((f) => f.id === id)`. Somem `buscarFichaExemplo`
     e a divergência por `origem`; `origem` só decide o botão Voltar.
   - "Itens principais" vira uma tabela curta (produto, quantidade, preço, total)
     montada de `ficha.itens`, com desconto e total no rodapé.
   - Pagamento = `rotuloForma(ficha)`, situação = `situacaoDaFicha(ficha, hojeISO())`,
     e o bloco da notinha usa `notinha(ficha, hojeISO())`.
-- [ ] **Passo 4: verificar no navegador** (`preview_start` em `http://localhost:5173`):
+- [x] **Passo 4: verificar no navegador** (`preview_start` em `http://localhost:5173`):
   - o Início mostra as vendas de hoje, e os cartões batem com a soma da tabela
     filtrada por hoje;
   - concluir uma venda Pix de 2 cadernos faz a ficha aparecer no topo do
     Início, o saldo do caderno cair 2 no Estoque e a entrada aparecer no Financeiro;
   - recarregar a página mantém a venda (localStorage).
-- [ ] **Passo 5: ponto de verificação** — `npx tsc` sem erros nestes arquivos e `npm test`.
+- [x] **Passo 5: ponto de verificação** — `npx tsc` sem erros nestes arquivos e `npm test`.
 
 ---
 
@@ -1520,7 +1522,7 @@ const id = concluirFicha({
 `distribuir`, `nomeCliente`, `resumoItens`, `contagemItens`, `rotuloForma`,
 `situacaoDaFicha`, `cadastrarCliente`, `editarCliente`.
 
-- [ ] **Passo 1: lista de Clientes**
+- [x] **Passo 1: lista de Clientes**
   - Linha: `const r = resumoDoCliente(base, c.id, hoje)`. Compras = `r.fichas.length`,
     situação = `r.situacao`, detalhe = `r.detalheSituacao`, descrição = `c.descricao`.
   - Cartões e filtros contam clientes com `r.situacao === 'pendente'` e `'vencido'`;
@@ -1529,7 +1531,7 @@ const id = concluirFicha({
     `situacaoDaFicha` (hoje o selo é sempre "Pago"). "Total acumulado" = `r.totalComprado`.
   - Calcular `resumoDoCliente` uma vez por cliente num `useMemo([base])`, para
     busca e filtro não recalcularem tudo a cada tecla.
-- [ ] **Passo 2: detalhe do cliente**
+- [x] **Passo 2: detalhe do cliente**
   - Cadastro: documento, telefone, e-mail e endereço vêm de `Cliente`. O subtítulo
     fica `${c.id} · ${c.descricao} · cliente desde ${mês/ano de c.desde}`.
   - Cartões: Total comprado = `r.totalComprado` (nota `${r.fichas.length} compras`),
@@ -1538,25 +1540,25 @@ const id = concluirFicha({
     Somem `compras`, `historicoDisponivel`, `vendasDaSessao`, `fichasDaAmostra` e o aviso
     "histórico detalhado ainda não foi incluído".
   - Seleção e "Receber" continuam iguais, com ids de `r.abertas`.
-- [ ] **Passo 3: janela Receber notinha**
+- [x] **Passo 3: janela Receber notinha**
   - Troca `notinhasDoCliente(estado, clienteId)` antigo pelo novo
     (`notinhasDoCliente(base, clienteId, hoje)`), `n.id` → `n.ficha.id`,
     `n.data` → `dataCurta(n.ficha.data)`, `n.valor` → `n.ficha.total`, `n.ordem` → `n.ficha.data`.
   - Confirmar chama `receberNotinhas(ids, { data, horario, meio, valor })`.
   - A nota da forma de pagamento passa a valer para todos os meios:
     "Entram R$ X no Financeiro em DD/MM/AAAA como recebimento de notinha." (D1).
-- [ ] **Passo 4: formulário e vendas sem identificação**
+- [x] **Passo 4: formulário e vendas sem identificação**
   - `FormularioCliente` lê e grava `Cliente` (e-mail e endereço sempre presentes;
     nada de `dadosClientes`).
   - `VendasSemIdentificacao` usa `base.fichas.filter((f) => f.clienteId === null)`;
     o meio vem de `f.forma` (nunca `notinha`).
-- [ ] **Passo 5: verificar no navegador**
+- [x] **Passo 5: verificar no navegador**
   - Mariana: lista mostra "Notinhas a vencer · 1 notinha · R$ …"; o detalhe mostra a
     mesma notinha, com vencimento em 12 dias e entrada de R$ 50,00; a janela de
     recebimento abre com o mesmo valor em aberto.
   - Receber tudo da Associação Girassol muda o selo para "Em dia" na lista, tira o
     aviso do sino e acrescenta as entradas no Financeiro de hoje.
-- [ ] **Passo 6: ponto de verificação.**
+- [x] **Passo 6: ponto de verificação.**
 
 ---
 
@@ -1565,7 +1567,7 @@ const id = concluirFicha({
 **Arquivos:**
 - Modificar: `src/telas/financeiro/Financeiro.tsx`, `financeiro/dados-exemplo.ts` (fica só `Meio`, reexportado da base), `src/telas/registrar-movimento/RegistrarMovimento.tsx`
 
-- [ ] **Passo 1: períodos reais**
+- [x] **Passo 1: períodos reais**
   - `const linhas = movimentosFinanceiro(base)`, `const r = resumoFinanceiro(linhas, periodo, hojeISO())`.
   - Lista = `linhas.filter((l) => noPeriodo(l.data, periodo, hojeISO()))` e depois o filtro de meio.
   - Cartões: Entradas, Saídas (`${r.quantidadeSaidas} saídas no período`), Entradas
@@ -1575,12 +1577,12 @@ const id = concluirFicha({
   - Subtítulo: `Data base: ${dataPorExtenso(hojeISO())}`. Rótulo "Líquido do dia"
     → "Líquido do período".
   - Etiqueta da ficha continua; linhas com `ficha` ganham link para `rotas.ficha(id)`.
-- [ ] **Passo 2: registrar movimento**
+- [x] **Passo 2: registrar movimento**
   - `registrarMovimentoCaixa({ data: hojeISO(), horario: agoraHorario(), descricao, origem, categoria, meio, valor })`, sem `meioRotulo`.
-- [ ] **Passo 3: verificar no navegador** — Dia, Semana, Mês e Ano mostram números
+- [x] **Passo 3: verificar no navegador** — Dia, Semana, Mês e Ano mostram números
   diferentes e coerentes (Semana ≥ Dia, Mês ≥ Semana no mesmo mês); o total de
   Entradas do Dia bate com o cartão "Recebimentos do dia" do Início.
-- [ ] **Passo 4: ponto de verificação.**
+- [x] **Passo 4: ponto de verificação.**
 
 ---
 
@@ -1590,20 +1592,20 @@ const id = concluirFicha({
 - Modificar: `src/telas/estoque/Estoque.tsx`, `estoque/dados-exemplo.ts` (ficam `grupos` e o reexport de `situacaoSaldo`/`Produto`/`Grupo` da base)
 - Modificar: `src/telas/movimentacoes-estoque/MovimentacoesEstoque.tsx`, `ajustar-estoque/AjustarEstoque.tsx`, `registrar-entrada/RegistrarEntrada.tsx`, `registrar-entrada/dados-exemplo.ts`, `cadastrar-produto/CadastrarProduto.tsx`, `cadastrar-produto/dados-exemplo.ts`
 
-- [ ] **Passo 1:** cartões e contagens do Estoque vêm de `resumoEstoque(base)`; somem
+- [x] **Passo 1:** cartões e contagens do Estoque vêm de `resumoEstoque(base)`; somem
   `totais`, `novosProdutos` e as somas de compensação.
-- [ ] **Passo 2:** Movimentações já lê `base.movimentosEstoque`, com o filtro "Vendas".
+- [x] **Passo 2:** Movimentações já lê `base.movimentosEstoque`, com o filtro "Vendas".
   O motivo `Ficha #1043` vira link para a ficha.
-- [ ] **Passo 3:** Registrar entrada abre com os produtos em estoque baixo ou zerado
+- [x] **Passo 3:** Registrar entrada abre com os produtos em estoque baixo ou zerado
   (`base.produtos.filter((p) => situacaoSaldo(p) !== 'normal')`), com `saldoAtual`
   vindo da base. O custo sugerido sai do protótipo (`itensIniciais`) quando
   existir para o código; senão fica vazio. A data padrão é `hojeISO()`.
-- [ ] **Passo 4:** Cadastrar produto sugere o próximo código a partir da base
+- [x] **Passo 4:** Cadastrar produto sugere o próximo código a partir da base
   (sai `proximoCodigo = 'EST-0028'`, que colide com um produto existente).
-- [ ] **Passo 5: verificar no navegador** — o cartão "Estoque baixo" é igual ao
+- [x] **Passo 5: verificar no navegador** — o cartão "Estoque baixo" é igual ao
   número de linhas no filtro "Estoque baixo"; uma entrada de 10 canetas tira a
   caneta desse filtro e aparece em Movimentações.
-- [ ] **Passo 6: ponto de verificação.**
+- [x] **Passo 6: ponto de verificação.**
 
 ---
 
@@ -1613,23 +1615,23 @@ const id = concluirFicha({
 - Modificar: `src/telas/notas-fiscais/NotasFiscais.tsx`, `notas-fiscais/dados-exemplo.ts` (fica só o documento de fornecedor), `rascunhos-notas/RascunhosNotas.tsx`, `detalhe-fiscal/DetalheFiscal.tsx`
 - Modificar: `src/telas/resultados-busca/ResultadosBusca.tsx`, `src/componentes/layout/tela/Tela.tsx`
 
-- [ ] **Passo 1: notas**
+- [x] **Passo 1: notas**
   - Rascunhos = `base.rascunhosNota` mapeados para as fichas (cliente por
     `nomeCliente`, data por `dataCurta`, valor por `f.total`).
   - Destaque = o rascunho mais recente; se não houver nenhum, o painel diz "Nenhum
     rascunho em revisão" e aponta para a nova ficha.
   - Documentos: saídas = rascunhos; entrada = o documento de fornecedor de exemplo.
   - `DetalheFiscal` monta o rascunho a partir da ficha da base, com a tabela de itens.
-- [ ] **Passo 2: busca** — `buscar(base, termo)`, com três grupos (Clientes, Fichas,
+- [x] **Passo 2: busca** — `buscar(base, termo)`, com três grupos (Clientes, Fichas,
   Produtos). A seção "Compras do histórico" some (era duplicata). A ficha mostra
   `dataCurta(f.data) · reais(f.total) · rotuloForma(f) · resumoItens(f)`.
-- [ ] **Passo 3: sino** — `notificacoes(base, hojeISO())`, uma linha por aviso,
+- [x] **Passo 3: sino** — `notificacoes(base, hojeISO())`, uma linha por aviso,
   cada uma com link para `destino`. Sem avisos: "Nenhuma pendência". Um número no
   ícone do sino quando houver avisos (`tela__notificacoes-contagem`, CSS com tokens).
-- [ ] **Passo 4: verificar no navegador** — buscar "mariana" traz a cliente e as
+- [x] **Passo 4: verificar no navegador** — buscar "mariana" traz a cliente e as
   fichas dela; o sino lista Associação Girassol e Carlos Eduardo; receber as
   notinhas do Carlos tira a linha dele do sino.
-- [ ] **Passo 5: ponto de verificação.**
+- [x] **Passo 5: ponto de verificação.**
 
 ---
 
@@ -1639,16 +1641,16 @@ const id = concluirFicha({
 - Modificar: `src/componentes/layout/barra-lateral/BarraLateral.tsx` (+ `.css`)
 - Modificar: `Memoria.md`, `AGENTS.md`
 
-- [ ] **Passo 1: restaurar (D3)** — o operador no rodapé da barra lateral vira um
+- [x] **Passo 1: restaurar (D3)** — o operador no rodapé da barra lateral vira um
   botão que abre um `Modal estreito` "Restaurar dados de exemplo": "Apaga as vendas,
   clientes e ajustes feitos nesta máquina e volta à amostra de 90 dias até hoje."
   Botões Cancelar e "Restaurar" (primário). Confirmar chama `restaurarDemonstracao()`
   e navega para `rotas.inicio`. Na barra recolhida, o ícone do operador faz o mesmo.
-- [ ] **Passo 2: limpeza** — `rg "dados-exemplo" src` só pode achar constantes de tela
+- [x] **Passo 2: limpeza** — `rg "dados-exemplo" src` só pode achar constantes de tela
   (grupos, categorias, unidades, semIdentificacao, documento de fornecedor).
   `rg "Stitch|protótipo" src` não pode achar comentário que ainda diga que os dados
   "podem divergir entre telas". Apagar arquivos que ficaram vazios.
-- [ ] **Passo 3: documentação**
+- [x] **Passo 3: documentação**
   - `Memoria.md`: a decisão (base única em `src/mock/base/`, fatos contra
     derivados, localStorage, semente relativa a hoje, D1 a D5) e a atualização do
     "Estado atual". Tirar de "Como retomar" a frase "Divergência de dados de exemplo
@@ -1658,7 +1660,7 @@ const id = concluirFicha({
     em `tipos.ts` e na semente".
   - Memória do projeto (auto-memória): atualizar `fase-visual-sem-dados`, que deixou
     de valer.
-- [ ] **Passo 4: verificação final**
+- [x] **Passo 4: verificação final**
   - `npm test` e `npm run build` passam.
   - No navegador, percorrer as telas: Início → nova ficha (notinha com entrada
     para a Mariana) → detalhe da Mariana (a notinha nova e a de cenário aparecem)

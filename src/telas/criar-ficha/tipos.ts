@@ -14,7 +14,6 @@ export type ItemFicha = {
   codigo: string
   codigoBarras: string
   descricao: string
-  estoque: string
   preco: number // centavos
   quantidade: number
 }

@@ -1,7 +1,7 @@
 import { dataCurta, reais } from '../../formatar'
 import { rotas } from '../../rotas-caminhos'
-import { diasEntre, noPeriodo, periodoAnterior, type Periodo } from './datas'
-import type { Base, Cliente, Ficha, Meio, Produto } from './tipos'
+import { dataCalendarioValida, diaDoInstante, diasEntre, noPeriodo, periodoAnterior, type Periodo } from './datas'
+import type { Base, Cliente, Ficha, ItemVenda, Meio, Produto, TurnoCaixa } from './tipos'
 
 /**
  * Tudo o que se calcula a partir da base. Funções puras: recebem a base e a
@@ -16,6 +16,12 @@ export const ROTULO_SEM_IDENTIFICACAO = 'Não identificado'
 
 export const NOME_MEIO = { dinheiro: 'Dinheiro', pix: 'Pix', cartao: 'Cartão' } as const
 
+/** Pontuação e prefixos não tornam CPF/CNPJ distintos no cadastro. */
+export function documentoJaCadastrado(clientes: Cliente[], documento: string, excetoId?: string) {
+  const digitos = documento.replace(/\D/g, '')
+  return Boolean(digitos) && clientes.some((cliente) => cliente.id !== excetoId && cliente.documento.replace(/\D/g, '') === digitos)
+}
+
 export function nomeCliente(base: Base, clienteId: string | null) {
   if (!clienteId) return ROTULO_SEM_IDENTIFICACAO
   return base.clientes.find((c) => c.id === clienteId)?.nome ?? 'Cliente removido'
@@ -25,6 +31,22 @@ export function resumoItens(ficha: Ficha) {
   return ficha.itens.map((i) => `${i.descricao} (${i.quantidade}x)`).join(', ')
 }
 
+/** A venda só pode baixar unidades que já constam no estoque. */
+export function faltaEstoqueParaVenda(base: Base, itens: Pick<ItemVenda, 'codigo' | 'descricao' | 'quantidade'>[]) {
+  const solicitados = new Map<string, { descricao: string; quantidade: number }>()
+  for (const item of itens) {
+    const anterior = solicitados.get(item.codigo)
+    solicitados.set(item.codigo, { descricao: item.descricao, quantidade: (anterior?.quantidade ?? 0) + item.quantidade })
+  }
+  for (const [codigo, pedido] of solicitados) {
+    const produto = base.produtos.find((item) => item.codigo === codigo && !item.inativo)
+    if (!produto || !Number.isSafeInteger(pedido.quantidade) || pedido.quantidade < 1 || produto.saldo < pedido.quantidade) {
+      return { codigo, descricao: produto?.descricao ?? pedido.descricao, disponivel: produto?.saldo ?? 0, solicitado: pedido.quantidade }
+    }
+  }
+  return null
+}
+
 export function contagemItens(ficha: Ficha) {
   const unidades = ficha.itens.reduce((t, i) => t + i.quantidade, 0)
   return `${ficha.itens.length} ${ficha.itens.length === 1 ? 'tipo de item' : 'tipos de itens'} · ${unidades} ${unidades === 1 ? 'unidade' : 'unidades'}`
@@ -32,6 +54,7 @@ export function contagemItens(ficha: Ficha) {
 
 export function rotuloForma(ficha: Ficha) {
   if (ficha.forma === 'notinha') return 'Notinha'
+  if (ficha.forma === 'misto') return 'Misto'
   return ficha.pagamentos[0]?.rotulo ?? NOME_MEIO[ficha.forma]
 }
 
@@ -135,6 +158,10 @@ export type LinhaFinanceiro = {
   meio: Meio
   meioRotulo: string
   valor: number
+  operador?: string
+  estornoDe?: string
+  registradoEm?: string
+  turnoCaixaId?: string
   /** Lançamento manual que ainda pode ser estornado. */
   estornavel?: boolean
   /** Lançamento manual já desfeito por um estorno. */
@@ -158,6 +185,9 @@ export function movimentosFinanceiro(base: Base): LinhaFinanceiro[] {
       meio: p.meio,
       meioRotulo: p.rotulo ?? NOME_MEIO[p.meio],
       valor: p.valor,
+      operador: p.operador ?? f.operador,
+      registradoEm: p.registradoEm,
+      turnoCaixaId: p.turnoCaixaId,
     }
     // O dinheiro que entrou continua no dia em que entrou; o estorno sai no dia do estorno.
     const desfeito = p.estorno ?? f.cancelamento
@@ -171,6 +201,9 @@ export function movimentosFinanceiro(base: Base): LinhaFinanceiro[] {
       origem: `${nomeCliente(base, f.clienteId)} · ${desfeito.motivo}`,
       categoria: CATEGORIA_ESTORNO,
       valor: -p.valor,
+      operador: desfeito.operador,
+      registradoEm: desfeito.registradoEm,
+      turnoCaixaId: desfeito.turnoCaixaId,
     }]
   }))
   const estornados = new Set(base.movimentosCaixa.flatMap((m) => (m.estornoDe ? [m.estornoDe] : [])))
@@ -183,9 +216,74 @@ export function movimentosFinanceiro(base: Base): LinhaFinanceiro[] {
   return [...daVenda, ...manuais].sort(porDataDecrescente)
 }
 
+/** Conta apenas dinheiro lançado após a abertura, inclusive estornos. */
+export function movimentosDoTurnoCaixa(base: Base, turnoId: string) {
+  return movimentosFinanceiro(base).filter((linha) => linha.meio === 'dinheiro' && linha.turnoCaixaId === turnoId)
+}
+
+export const CATEGORIA_RETIRADA_CAIXA = 'Retirada de caixa'
+export const CATEGORIA_ADICAO_CAIXA = 'Adição de caixa'
+
+function categoriaFisica(categoria: string) {
+  // A semente antiga usava estas duas categorias sem vínculo com um turno.
+  // Classificá-las na consulta não altera os registros persistidos nem seus sinais.
+  return categoria === CATEGORIA_RETIRADA_CAIXA || categoria === CATEGORIA_ADICAO_CAIXA
+    || categoria === 'Troco' || categoria === 'Saída de caixa'
+}
+
+function identificarMovimentosFisicos(linhas: LinhaFinanceiro[]) {
+  const idsFisicos = new Set(linhas.filter((linha) => categoriaFisica(linha.categoria)).map((linha) => linha.id))
+  return (linha: LinhaFinanceiro) => idsFisicos.has(linha.id) || (linha.estornoDe !== undefined && idsFisicos.has(linha.estornoDe))
+}
+
+/** Separação de apresentação: mantém também o estorno no mesmo lado do original. */
+export function movimentosOperacionaisFinanceiro(linhas: LinhaFinanceiro[]) {
+  const ehFisico = identificarMovimentosFisicos(linhas)
+  return linhas.filter((linha) => !ehFisico(linha))
+}
+
+/** Registros físicos e seus estornos, conservando os dados originais. */
+export function movimentosFisicosCaixa(base: Base) {
+  const linhas = movimentosFinanceiro(base)
+  const ehFisico = identificarMovimentosFisicos(linhas)
+  return linhas.filter(ehFisico)
+}
+
+/** Fechados são consultados pelo fechamento; abertos, pela abertura. */
+export function turnosCaixaNoPeriodo(base: Base, de: string, ate: string) {
+  if (!dataCalendarioValida(de) || !dataCalendarioValida(ate) || de > ate) return []
+  return [...(base.turnosCaixa ?? [])].filter((turno) => {
+    const dia = diaDoInstante(turno.fechadoEm ?? turno.abertoEm)
+    return dia >= de && dia <= ate
+  }).sort((a, b) => (b.fechadoEm ?? b.abertoEm).localeCompare(a.fechadoEm ?? a.abertoEm))
+}
+
+export function fechamentosCaixaNoPeriodo(base: Base, de: string, ate: string) {
+  return turnosCaixaNoPeriodo(base, de, ate).filter((turno) => turno.fechadoEm)
+}
+
+export function textoDiferencaCaixa(diferenca: number) {
+  if (diferenca === 0) return 'O valor contado confere.'
+  return diferenca < 0 ? `Faltam ${reais(-diferenca)} em relação ao esperado.` : `Há ${reais(diferenca)} a mais que o esperado.`
+}
+
+export function resumoTurnoCaixa(base: Base, turno: TurnoCaixa) {
+  const movimentos = movimentosDoTurnoCaixa(base, turno.id)
+  const entradas = movimentos.filter((linha) => linha.valor > 0).reduce((total, linha) => total + linha.valor, 0)
+  const saidas = movimentos.filter((linha) => linha.valor < 0).reduce((total, linha) => total - linha.valor, 0)
+  const esperado = turno.fechadoEm ? turno.esperadoFechamento ?? turno.fundoInicial + entradas - saidas : turno.fundoInicial + entradas - saidas
+  return { entradas, saidas, esperado, diferenca: turno.contadoFechamento === undefined ? undefined : turno.contadoFechamento - esperado }
+}
+
 export const CATEGORIA_ESTORNO = 'Estorno'
 
 export type Variacao = { texto: string; direcao: 'alta' | 'baixa' }
+
+/** Datas inclusivas, válidas e em ordem; retorna todos os registros do intervalo. */
+export function linhasFinanceiroNoIntervalo(linhas: LinhaFinanceiro[], de: string, ate: string) {
+  if (!dataCalendarioValida(de) || !dataCalendarioValida(ate) || de > ate) return []
+  return linhas.filter((linha) => linha.data >= de && linha.data <= ate)
+}
 
 function variacaoPercentual(atual: number, anterior: number): Variacao | undefined {
   if (anterior === 0) return undefined
@@ -199,32 +297,48 @@ function variacaoPercentual(atual: number, anterior: number): Variacao | undefin
  */
 export function resumoFinanceiro(linhas: LinhaFinanceiro[], periodo: Periodo, referencia: string, agora = '23:59') {
   const doPeriodo = linhas.filter((l) => noPeriodo(l.data, periodo, referencia))
+  const resumo = resumirFinanceiro(linhas, doPeriodo)
   const anterior = periodoAnterior(periodo, referencia)
   const ateOMesmoPonto = (l: LinhaFinanceiro) => l.data < anterior || (l.data === anterior && l.horario <= agora)
+  const ehFisico = identificarMovimentosFisicos(linhas)
+  return {
+    ...resumo,
+    variacao: variacaoPercentual(resumo.entradas, entradasDe(linhas.filter((l) => !ehFisico(l) && noPeriodo(l.data, periodo, anterior) && ateOMesmoPonto(l)))),
+  }
+}
+
+export function resumoFinanceiroIntervalo(linhas: LinhaFinanceiro[], de: string, ate: string) {
+  return resumirFinanceiro(linhas, linhasFinanceiroNoIntervalo(linhas, de, ate))
+}
+
+function entradasDe(linhas: LinhaFinanceiro[]) {
+  return linhas.filter((linha) => linha.categoria === CATEGORIA_ESTORNO ? linha.valor < 0 : linha.valor > 0)
+    .reduce((total, linha) => total + linha.valor, 0)
+}
+
+function resumirFinanceiro(linhas: LinhaFinanceiro[], doPeriodo: LinhaFinanceiro[]) {
+  const idsRetiradas = new Set(linhas.filter((l) => l.categoria === CATEGORIA_RETIRADA_CAIXA).map((l) => l.id))
+  const ehRetirada = (l: LinhaFinanceiro) => idsRetiradas.has(l.id) || (l.estornoDe !== undefined && idsRetiradas.has(l.estornoDe))
+  const fisico = identificarMovimentosFisicos(linhas)
+  const operacionais = doPeriodo.filter((l) => !fisico(l))
   // Estorno abate do próprio lado: desfazer uma venda reduz as entradas, desfazer
   // uma despesa reduz as saídas. Assim nenhum dos dois totais fica inflado.
   const ehEntrada = (l: LinhaFinanceiro) => (l.categoria === CATEGORIA_ESTORNO ? l.valor < 0 : l.valor > 0)
-  const entradasDe = (ls: LinhaFinanceiro[]) => ls.filter(ehEntrada).reduce((t, l) => t + l.valor, 0)
-  const entradas = entradasDe(doPeriodo)
-  const saidas = doPeriodo.filter((l) => !ehEntrada(l)).reduce((t, l) => t - l.valor, 0)
-  const saidasLista = doPeriodo.filter((l) => l.valor < 0 && l.categoria !== CATEGORIA_ESTORNO)
-  const porMeio = (['pix', 'cartao', 'dinheiro'] as const).map((meio) => ({
-    meio,
-    valor: doPeriodo.filter((l) => ehEntrada(l) && l.meio === meio).reduce((t, l) => t + l.valor, 0),
-  }))
-  const maior = [...porMeio].sort((a, b) => b.valor - a.valor)[0]
+  const entradas = entradasDe(operacionais)
+  const saidas = operacionais.filter((l) => !ehEntrada(l)).reduce((t, l) => t - l.valor, 0)
+  const retiradas = doPeriodo.filter(ehRetirada).reduce((t, l) => t - l.valor, 0)
+  const saidasLista = operacionais.filter((l) => l.valor < 0 && l.categoria !== CATEGORIA_ESTORNO)
   return {
     entradas,
     saidas,
+    retiradas,
     quantidadeSaidas: saidasLista.length,
     liquido: entradas - saidas,
-    variacao: variacaoPercentual(entradas, entradasDe(linhas.filter((l) => noPeriodo(l.data, periodo, anterior) && ateOMesmoPonto(l)))),
-    meioMaisUsado: maior.valor > 0 && entradas > 0 ? { ...maior, participacao: Math.round((maior.valor / entradas) * 100) } : undefined,
     contagem: {
-      todos: doPeriodo.length,
-      pix: doPeriodo.filter((l) => l.meio === 'pix').length,
-      cartao: doPeriodo.filter((l) => l.meio === 'cartao').length,
-      dinheiro: doPeriodo.filter((l) => l.meio === 'dinheiro').length,
+      todos: operacionais.length,
+      pix: operacionais.filter((l) => l.meio === 'pix').length,
+      cartao: operacionais.filter((l) => l.meio === 'cartao').length,
+      dinheiro: operacionais.filter((l) => l.meio === 'dinheiro').length,
     },
   }
 }
@@ -282,12 +396,22 @@ export function normalizar(texto: string) {
   return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
 }
 
+/** Nome/código sem acento; documento e telefone com ou sem a pontuação do cadastro. */
+export function clienteCorrespondeBusca(cliente: Cliente, busca: string) {
+  const termo = normalizar(busca.trim())
+  if (!termo || normalizar(`${cliente.id} ${cliente.nome} ${cliente.documento} ${cliente.telefone}`).includes(termo)) return true
+  const numero = termo.replace(/^(cpf|cnpj)\s*/, '')
+  if (!/^[\d\s()./+*\-]+$/.test(numero)) return false
+  const digitos = numero.replace(/\D/g, '')
+  return Boolean(digitos) && [cliente.documento, cliente.telefone].some((campo) => campo.replace(/\D/g, '').includes(digitos))
+}
+
 export function buscar(base: Base, termo: string): { clientes: Cliente[]; fichas: Ficha[]; produtos: Produto[] } {
   const t = normalizar(termo.trim())
   if (!t) return { clientes: [], fichas: [], produtos: [] }
   const casa = (texto: string) => normalizar(texto).includes(t)
   return {
-    clientes: base.clientes.filter((c) => casa(`${c.id} ${c.nome} ${c.documento} ${c.telefone}`)),
+    clientes: base.clientes.filter((c) => clienteCorrespondeBusca(c, termo)),
     fichas: base.fichas
       .filter((f) => casa(`${f.id} ${nomeCliente(base, f.clienteId)} ${resumoItens(f)}`))
       .sort(porDataDecrescente)

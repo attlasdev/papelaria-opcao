@@ -9,7 +9,7 @@ export type ItemEntrada = {
   unidade: Unidade
   saldoAtual: number
   quantidade: number
-  /** Custo unitário em centavos; ausente quando o produto não tem custo cadastrado. */
+  /** Custo unitário desta entrega em centavos; nunca presumido do cadastro. */
   custo?: number
   /** Produto que ainda não existe: o cadastro preparado, gravado ao confirmar a entrada. */
   novo?: RascunhoProduto

@@ -147,7 +147,8 @@
   color: var(--color-saida);
 }
 
-.itens-ficha__erro button {
+.itens-ficha__erro button,
+.itens-ficha__erro a {
   font-weight: var(--font-weight-forte);
   color: var(--color-tinta);
   text-decoration: underline;

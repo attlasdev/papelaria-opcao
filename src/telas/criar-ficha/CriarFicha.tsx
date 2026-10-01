@@ -8,6 +8,7 @@ import { dataCurta, reais } from '../../formatar'
 import {
   agoraHorario,
   concluirFicha,
+  faltaEstoqueParaVenda,
   hojeISO,
   obterBase,
   NOME_MEIO,
@@ -25,12 +26,12 @@ import {
 import { rotas } from '../../rotas-caminhos'
 import { ClienteFicha } from './cliente/ClienteFicha'
 import { ItensFicha } from './itens/ItensFicha'
-import { ModalProduto } from '../cadastrar-produto/CadastrarProduto'
 import { PagamentoFicha } from './pagamento/PagamentoFicha'
 import { semIdentificacao, type EscolhaCliente, type FormaPagamento, type ItemFicha } from './tipos'
 import './criar-ficha.css'
 
-const nomeForma: Record<FormaPagamento, string> = { ...NOME_MEIO, notinha: 'Notinha' }
+const nomeForma: Record<FormaPagamento, string> = { ...NOME_MEIO, misto: 'Misto', notinha: 'Notinha' }
+const divisaoVazia = (): Record<Meio, number> => ({ dinheiro: 0, pix: 0, cartao: 0 })
 
 /** Rascunho guarda só ids e quantidades; aqui volta a ser cliente e itens da tela. */
 function clienteDoRascunho(base: Base, rascunho: RascunhoFicha | null): EscolhaCliente | null {
@@ -43,7 +44,7 @@ function itensDoRascunho(base: Base, rascunho: RascunhoFicha | null): ItemFicha[
   return (rascunho?.itens ?? []).flatMap(({ codigo, quantidade }) => {
     // Produto desativado depois de guardar o rascunho não volta para a venda.
     const p = base.produtos.find((produto) => produto.codigo === codigo && !produto.inativo)
-    return p ? [{ codigo, codigoBarras: p.codigoBarras ?? p.codigo, descricao: p.descricao, estoque: `${p.saldo} ${p.unidade}`, preco: p.preco, quantidade }] : []
+    return p ? [{ codigo, codigoBarras: p.codigoBarras ?? p.codigo, descricao: p.descricao, preco: p.preco, quantidade }] : []
   })
 }
 
@@ -64,8 +65,10 @@ export function CriarFicha() {
   const [vencimento, setVencimento] = useState(rascunhoFicha?.vencimento ?? somarDias(hojeISO(), 30))
   const [entrada, setEntrada] = useState(rascunhoFicha?.entrada ?? 0)
   const [meioEntrada, setMeioEntrada] = useState<Meio>(rascunhoFicha?.meioEntrada ?? 'dinheiro')
+  const [divisaoPagamento, setDivisaoPagamento] = useState<Record<Meio, number>>(rascunhoFicha?.divisaoPagamento ?? divisaoVazia())
+  const [recebidoMisto, setRecebidoMisto] = useState(rascunhoFicha?.recebidoMisto ?? 0)
   const [tentouConcluir, setTentouConcluir] = useState(false)
-  const [codigoProdutoNovo, setCodigoProdutoNovo] = useState<string | null>(null)
+  const [erroConclusao, setErroConclusao] = useState('')
   // Muda ao limpar: cliente e itens voltam ao estado de ficha nova.
   const [versao, setVersao] = useState(0)
   const areaFicha = useRef<HTMLDivElement>(null)
@@ -79,15 +82,23 @@ export function CriarFicha() {
       clienteId: cliente && cliente !== semIdentificacao ? cliente.id : null,
       semIdentificacao: cliente === semIdentificacao,
       itens: itens.map((item) => ({ codigo: item.codigo, quantidade: item.quantidade })),
-      desconto, forma, recebido, prepararNota, vencimento, entrada, meioEntrada,
+      desconto, forma, recebido, prepararNota, vencimento, entrada, meioEntrada, divisaoPagamento, recebidoMisto,
     } : null)
-  }, [cliente, itens, desconto, forma, recebido, prepararNota, vencimento, entrada, meioEntrada])
+  }, [cliente, itens, desconto, forma, recebido, prepararNota, vencimento, entrada, meioEntrada, divisaoPagamento, recebidoMisto])
 
   const subtotal = itens.reduce((soma, i) => soma + i.preco * i.quantidade, 0)
   const total = Math.max(0, subtotal - desconto)
   const unidades = itens.reduce((soma, i) => soma + i.quantidade, 0)
   const faltaDinheiro = forma === 'dinheiro' && recebido < total
   const notinha = forma === 'notinha'
+  const faltaEstoque = faltaEstoqueParaVenda(base, itens)
+  const totalMisto = Object.values(divisaoPagamento).reduce((soma, valor) => soma + valor, 0)
+  const meiosMistos = Object.values(divisaoPagamento).filter((valor) => valor > 0).length
+  const problemaMisto = forma !== 'misto' ? null
+    : totalMisto !== total ? `Distribua exatamente ${reais(total)} entre os meios de pagamento.`
+    : meiosMistos < 2 ? 'Escolha pelo menos dois meios com valor maior que zero.'
+    : divisaoPagamento.dinheiro > 0 && recebidoMisto < divisaoPagamento.dinheiro ? 'O dinheiro entregue é menor que a parte paga em espécie.'
+    : null
   const entradaNaNotinha = notinha ? entrada : 0
   const problemaNotinha = !notinha ? null
     : !vencimento ? 'Informe o vencimento da notinha.'
@@ -96,7 +107,8 @@ export function CriarFicha() {
   const problemaDesconto = itens.length > 0 && desconto > subtotal ? `O desconto passa do subtotal (${reais(subtotal)}).` : null
   const problema = !cliente ? 'Falta escolher o cliente.'
     : itens.length === 0 ? 'Inclua ao menos um item.'
-    : problemaDesconto ?? problemaNotinha ?? (faltaDinheiro ? 'O valor recebido é menor que o total.' : null)
+    : faltaEstoque ? `Estoque insuficiente para ${faltaEstoque.descricao}: ${faltaEstoque.disponivel} disponível, ${faltaEstoque.solicitado} na ficha.`
+    : problemaDesconto ?? problemaNotinha ?? problemaMisto ?? (faltaDinheiro ? 'O valor recebido é menor que o total.' : null)
   const erroCliente = tentouConcluir && !cliente ? problema ?? undefined : undefined
   const erroItens = tentouConcluir && cliente && itens.length === 0 ? problema ?? undefined : undefined
   const podeMostrar = tentouConcluir && cliente && itens.length > 0
@@ -105,7 +117,8 @@ export function CriarFicha() {
   const erroVencimentoNotinha = notinha && (!vencimento || vencimento < hojeISO())
   const erroVencimento = podeMostrar && !problemaDesconto && erroVencimentoNotinha ? problemaNotinha ?? undefined : undefined
   const erroEntrada = podeMostrar && !problemaDesconto && notinha && !erroVencimentoNotinha && problemaNotinha ? problemaNotinha : undefined
-  const erroRecebido = podeMostrar && !problemaDesconto && !notinha && faltaDinheiro ? problema ?? undefined : undefined
+  const erroRecebido = podeMostrar && !problemaDesconto && forma === 'dinheiro' && faltaDinheiro ? problema ?? undefined : undefined
+  const erroMisto = podeMostrar && !problemaDesconto && problemaMisto ? problemaMisto : undefined
   const semCliente = cliente === semIdentificacao
   const nomeCliente = cliente === null ? 'Nenhum escolhido' : semCliente ? ROTULO_SEM_IDENTIFICACAO : cliente.nome
 
@@ -127,7 +140,10 @@ export function CriarFicha() {
     setVencimento(somarDias(hojeISO(), 30))
     setEntrada(0)
     setMeioEntrada('dinheiro')
+    setDivisaoPagamento(divisaoVazia())
+    setRecebidoMisto(0)
     setTentouConcluir(false)
+    setErroConclusao('')
     setVersao((atual) => atual + 1)
     salvarRascunhoFicha(null)
   }
@@ -137,9 +153,11 @@ export function CriarFicha() {
       setTentouConcluir(true)
       const seletor = !cliente ? '.cliente-ficha__busca input'
         : itens.length === 0 ? '.itens-ficha__leitor input'
+        : faltaEstoque ? '.itens-ficha__tabela input'
         : problemaDesconto ? '.pagamento-ficha__desconto input'
         : notinha && vencimento && vencimento >= hojeISO() ? '.pagamento-ficha__notinha .campo:nth-child(2) input'
-        : notinha ? '.pagamento-ficha__notinha input' : '.pagamento-ficha__dinheiro input'
+        : notinha ? '.pagamento-ficha__notinha input'
+        : forma === 'misto' ? '.pagamento-ficha__misto input' : '.pagamento-ficha__dinheiro input'
       requestAnimationFrame(() => {
         const alvo = areaFicha.current?.querySelector<HTMLInputElement>(seletor)
         alvo?.scrollIntoView({ block: 'center' })
@@ -153,6 +171,9 @@ export function CriarFicha() {
     // O Financeiro lê estes pagamentos; nada é lançado à parte.
     const pagamentos: Pagamento[] = notinha
       ? entradaNaNotinha > 0 ? [{ data, horario, meio: meioEntrada, valor: entradaNaNotinha, entrada: true }] : []
+      : forma === 'misto' ? (['dinheiro', 'pix', 'cartao'] as const)
+        .filter((meio) => divisaoPagamento[meio] > 0)
+        .map((meio) => ({ data, horario, meio, valor: divisaoPagamento[meio] }))
       : [{ data, horario, meio: forma as Meio, valor: total }]
     const numero = concluirFicha({
       clienteId: cliente === semIdentificacao ? null : cliente.id,
@@ -165,6 +186,11 @@ export function CriarFicha() {
       pagamentos,
       vencimento: notinha ? vencimento : undefined,
     })
+    if (!numero) {
+      setErroConclusao('A venda não foi registrada. Confira o saldo dos produtos e os pagamentos.')
+      setTentouConcluir(true)
+      return
+    }
     if (prepararNota) prepararRascunho(numero)
     navegar(prepararNota ? rotas.rascunhoNota(numero) : rotas.ficha(numero))
   }
@@ -185,7 +211,7 @@ export function CriarFicha() {
             <ClienteFicha key={versao} cliente={cliente} aoEscolher={escolherCliente} erro={erroCliente} />
           </Painel>
           <Painel>
-            <ItensFicha key={versao} itens={itens} aoMudar={(proximos) => { setItens(proximos); setTentouConcluir(false) }} aoCadastrarProduto={(codigo) => setCodigoProdutoNovo(codigo ?? '')} erroFalta={erroItens} />
+            <ItensFicha key={versao} itens={itens} aoMudar={(proximos) => { setItens(proximos); setTentouConcluir(false); setErroConclusao('') }} erroFalta={erroItens} erroEstoque={faltaEstoque ?? undefined} />
           </Painel>
         </div>
 
@@ -206,6 +232,11 @@ export function CriarFicha() {
               aoMudarEntrada={(proxima) => { setEntrada(proxima); setTentouConcluir(false) }}
               meioEntrada={meioEntrada}
               aoMudarMeioEntrada={setMeioEntrada}
+              divisaoPagamento={divisaoPagamento}
+              aoMudarDivisao={(meio, valor) => { setDivisaoPagamento((atual) => ({ ...atual, [meio]: valor })); setTentouConcluir(false) }}
+              recebidoMisto={recebidoMisto}
+              aoMudarRecebidoMisto={(valor) => { setRecebidoMisto(valor); setTentouConcluir(false) }}
+              erroMisto={erroMisto}
               erroRecebido={erroRecebido}
               erroVencimento={erroVencimento}
               erroEntrada={erroEntrada}
@@ -230,6 +261,8 @@ export function CriarFicha() {
                 <dd>
                   {nomeForma[forma]}
                   {forma === 'dinheiro' && recebido > 0 && !faltaDinheiro && ` · troco ${reais(recebido - total)}`}
+                  {forma === 'misto' && ` · ${(['dinheiro', 'pix', 'cartao'] as const).filter((meio) => divisaoPagamento[meio] > 0).map((meio) => `${NOME_MEIO[meio]} ${reais(divisaoPagamento[meio])}`).join(' + ') || 'distribua o total'}`}
+                  {forma === 'misto' && divisaoPagamento.dinheiro > 0 && recebidoMisto >= divisaoPagamento.dinheiro && ` · troco ${reais(recebidoMisto - divisaoPagamento.dinheiro)}`}
                   {notinha && (entradaNaNotinha > 0 ? ` · ${reais(Math.max(0, total - entradaNaNotinha))} em aberto` : vencimento && ` · vence ${dataCurta(vencimento)}`)}
                 </dd>
               </div>
@@ -252,6 +285,7 @@ export function CriarFicha() {
             >
               Concluir ficha de venda
             </Botao>
+            {erroConclusao && <p className="criar-ficha__erro" role="alert">{erroConclusao}</p>}
             {/* Sem "Salvar rascunho": a ficha em andamento já se guarda sozinha. */}
             <div className="criar-ficha__secundarias">
               <Botao tamanho="pequeno" icone="imprimir" onClick={semDestino('comprovante')}>
@@ -261,25 +295,6 @@ export function CriarFicha() {
           </Painel>
         </aside>
       </div>
-      {codigoProdutoNovo !== null && (
-        <ModalProduto
-          naFicha
-          codigoInicial={codigoProdutoNovo}
-          aoFechar={() => setCodigoProdutoNovo(null)}
-          aoSalvar={(codigo, produto, quantidade = 1) => {
-            setItens((atual) => [...atual, {
-              codigo,
-              codigoBarras: produto.codigoBarras ?? codigo,
-              descricao: produto.descricao,
-              estoque: `0 ${produto.unidade}`,
-              preco: produto.preco,
-              quantidade,
-            }])
-            setTentouConcluir(false)
-            setCodigoProdutoNovo(null)
-          }}
-        />
-      )}
     </Tela>
   )
 }

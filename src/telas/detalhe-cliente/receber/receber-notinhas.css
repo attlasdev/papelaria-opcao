@@ -57,6 +57,22 @@
   gap: var(--espaco-2);
 }
 
+.receber-notinhas__divisao {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espaco-3);
+}
+
+.receber-notinhas__distribuicao {
+  grid-column: 1 / -1;
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.receber-notinhas__distribuicao.receber-notinhas__erro {
+  color: var(--color-saida);
+}
+
 .receber-notinhas__rotulo {
   font-size: var(--text-rotulo);
   font-weight: var(--font-weight-forte);

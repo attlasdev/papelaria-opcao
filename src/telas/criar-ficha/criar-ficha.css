@@ -62,6 +62,8 @@
   font-size: var(--text-destaque);
 }
 
+.criar-ficha__erro { margin-top: var(--espaco-2); color: var(--color-saida); font-size: var(--text-rotulo); }
+
 .criar-ficha__secundarias {
   display: grid;
   grid-template-columns: 1fr;

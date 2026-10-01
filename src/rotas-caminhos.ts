@@ -13,6 +13,7 @@ export const rotas = {
   cliente: (id: string) => `/clientes/${id}`,
   editarCliente: (id: string) => `/clientes/${id}/editar`,
   financeiro: '/financeiro',
+  caixa: '/caixa',
   registrarMovimento: '/financeiro/movimento/novo',
   estoque: '/estoque',
   estoqueACompletar: '/estoque?filtro=completar',

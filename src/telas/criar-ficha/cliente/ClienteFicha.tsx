@@ -3,7 +3,7 @@ import { Botao } from '../../../componentes/botao/Botao'
 import { Campo } from '../../../componentes/campo/Campo'
 import { Icone } from '../../../componentes/icone/Icone'
 import { reais } from '../../../formatar'
-import { hojeISO, normalizar, resumoDoCliente, useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
+import { clienteCorrespondeBusca, hojeISO, resumoDoCliente, useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
 import { semIdentificacao, type EscolhaCliente } from '../tipos'
 import { ModalNovoCliente } from './ModalNovoCliente'
 import './cliente-ficha.css'
@@ -34,11 +34,10 @@ export function ClienteFicha({ cliente, aoEscolher, erro }: Props) {
   const [indiceAtivo, setIndiceAtivo] = useState(0)
   const caixaBusca = useRef<HTMLDivElement>(null)
 
-  // Sem acento e, no documento, só os dígitos: "joao" acha João, "452198" acha ***.452.198-**.
-  const termo = normalizar(busca.trim())
-  const digitos = busca.replace(/\D/g, '')
+  // Mesma busca por nome, documento e telefone usada na lista de clientes.
+  const termo = busca.trim()
   const encontrados = termo
-    ? clientes.filter((c) => normalizar(`${c.nome} ${c.documento}`).includes(termo) || (digitos.length >= 3 && c.documento.replace(/\D/g, '').includes(digitos)))
+    ? clientes.filter((c) => clienteCorrespondeBusca(c, termo))
     : []
   const visiveis = encontrados.slice(0, maximoResultados)
   const mostrarLista = Boolean(termo) && listaAberta

@@ -1,0 +1,12 @@
+.conferencia-caixa { display: grid; gap: var(--espaco-4); }
+.conferencia-caixa__nota { color: var(--color-texto-suave); font-size: var(--text-rotulo); }
+.conferencia-caixa__resumo { display: grid; gap: var(--espaco-3); padding: var(--espaco-4); border: 1px solid var(--color-borda); border-radius: var(--radius-medio); background: var(--color-superficie); }
+.conferencia-caixa__resumo div { display: flex; justify-content: space-between; gap: var(--espaco-3); }
+.conferencia-caixa__resumo dt { color: var(--color-texto-suave); }
+.conferencia-caixa__resumo dd { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.conferencia-caixa__esperado { padding-top: var(--espaco-3); border-top: 1px solid var(--color-borda); font-weight: var(--font-weight-forte); }
+.conferencia-caixa__diferenca { font-size: var(--text-rotulo); }
+.conferencia-caixa__diferenca--atencao { color: var(--color-atencao-texto); }
+.conferencia-caixa__resumo dt { min-width: 0; }
+.conferencia-caixa__resumo dd { flex: none; }
+.conferencia-caixa__erro { color: var(--color-saida); font-size: var(--text-rotulo); }

@@ -12,6 +12,7 @@ const secoes: { rotulo: string; icone: NomeIcone; caminho: string; exato?: boole
   { rotulo: 'Início', icone: 'inicio', caminho: rotas.inicio, exato: true },
   { rotulo: 'Clientes', icone: 'clientes', caminho: rotas.clientes },
   { rotulo: 'Financeiro', icone: 'financeiro', caminho: rotas.financeiro },
+  { rotulo: 'Caixa', icone: 'dinheiro', caminho: rotas.caixa },
   { rotulo: 'Estoque', icone: 'estoque', caminho: rotas.estoque },
   { rotulo: 'Notas fiscais', icone: 'notas', caminho: rotas.notas },
 ]

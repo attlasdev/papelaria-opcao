@@ -12,7 +12,13 @@ export function carregarBase(): Base | null {
     if (!texto) return null
     const base = JSON.parse(texto) as Base
     // Campos que chegaram depois ganham valor vazio em vez de apagar a base guardada.
-    return base.versao === VERSAO_BASE ? { ...base, avisosLidos: base.avisosLidos ?? {} } : null
+    return base.versao === VERSAO_BASE ? {
+      ...base,
+      avisosLidos: base.avisosLidos ?? {},
+      // Conserva o cadastro existente, retirando campos que deixaram de fazer parte dele.
+      clientes: base.clientes.map(({ id, nome, documento, telefone, endereco, descricao, desde }) =>
+        ({ id, nome, documento, telefone, endereco, descricao, desde })),
+    } : null
   } catch {
     return null
   }
