@@ -30,6 +30,7 @@ para o Codex e catalogo de habilidades: `AGENTS.md` e `.agents/skills/`.
 | o que o front precisa saber (documento dele) | `front-side.md` |
 | o que cada tela le e grava, e a operacao que vira | `docs/contrato/inventario.md` |
 | mudancas que afetam o Victor | `docs/contrato/mudancas.md` |
+| montar e instalar o piloto 0.1 (Supabase, Windows, semente) | `docs/piloto.md` |
 | checklist para conferir cada operacao do contrato | `revisao-de-contrato.md` |
 | estado atual, PENDENTES, regras de produto, decisoes | `Memoria.md` |
 | o passado sessao a sessao (ideias descartadas, porques antigos) | `docs/historico/` |

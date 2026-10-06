@@ -17,6 +17,15 @@ Relato de sessão longo vai para `docs/historico/`.
 **Rumo atual: versão 0.1 (piloto online) para a loja testar.** Ver "Decisões de
 arquitetura", `2026-10-06`. O banco local de `2026-10-05` é o alvo da 1.0.
 
+**Estado da 0.1 (`2026-10-06`, branch `piloto-0.1`):** app ligado ao Supabase
+(login, base como documento único com revisão e 200 versões anteriores, cópia
+local e envio quando a internet volta), campos fiscais no cadastro, semente de
+20 produtos sob pedido, pacote zip para Windows. Exercitado no Electron contra
+Supabase local (Docker): login, gravação, reabrir com sessão, abrir e gravar
+sem internet, envio ao voltar. 96 testes; build ok. **Falta:** aplicar a
+migration no dev e no piloto, testar o zip numa máquina Windows, instalar na
+loja. Passo a passo: `docs/piloto.md`.
+
 **Prazo da 0.1 (`2026-10-06`): no máximo 2 dias.** Emitte e formato do piloto
 ficam para reunião do Agostinho mais tarde; materiais em `EMITTE/` (sem API: a
 integração é por arquivos e a nota é montada à mão na Emitte). Notas do piloto
