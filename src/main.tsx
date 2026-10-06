@@ -15,6 +15,10 @@ import './estilos/index.css'
 async function iniciar() {
   if (!window.api) await import('./mock/api')
 
+  // Fora de qualquer componente: o StrictMode montaria duas vezes e abriria dois inícios.
+  const { sincronia } = await import('./dados/sincronia')
+  void sincronia.iniciar()
+
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <App />

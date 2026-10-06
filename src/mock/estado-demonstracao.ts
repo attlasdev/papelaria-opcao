@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { assinaturaAviso, CATEGORIA_ADICAO_CAIXA, CATEGORIA_RETIRADA_CAIXA, CATEGORIA_ESTORNO, distribuir, documentoJaCadastrado, faltaEstoqueParaVenda, MOTIVO_SALDO_INICIAL, notinha, produtoTemHistorico, resumoTurnoCaixa, type Abatimento, type Notificacao, type Notinha } from './base/derivados'
 import { agoraHorario, dataCalendarioValida, hojeISO, minutoDoDia } from './base/datas'
 import { apagarBase, carregarBase, salvarBase } from './base/persistencia'
-import { criarSemente } from './base/semente'
+import { criarBaseVazia, criarSemente } from './base/semente'
 import { comFechamentosExemplo } from './base/cenario-caixa'
 import type { Base, Estorno, Ficha, Meio, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
 
@@ -11,14 +11,18 @@ export * from './base/datas'
 export type * from './base/tipos'
 
 /**
- * A base local da demonstração: uma só, gravada no localStorage, lida por todas
- * as telas. Sai de cena quando o banco de verdade entrar (via window.api e contrato).
+ * A base da loja: uma só, lida por todas as telas. Toda mudança grava a cópia no
+ * computador (localStorage) na hora; quem leva ao banco é `src/dados/sincronia.ts`,
+ * que também decide, ao abrir o app, qual versão vale.
+ *
+ * Piloto 0.1 (Memoria.md, `2026-10-06`): a 1.0 troca isto por uma operação do
+ * contrato por gesto do usuário.
  */
-let base: Base = carregarBase() ?? criarSemente(hojeISO(), minutoDoDia())
-if (import.meta.env.MODE === 'development') base = comFechamentosExemplo(base, hojeISO())
-salvarBase(base)
+let base: Base = carregarBase() ?? criarBaseVazia(hojeISO())
 
 const ouvintes = new Set<() => void>()
+/** Quem precisa saber que o USUÁRIO mudou algo (a sincronia), não só que a tela mudou. */
+const aoMudar = new Set<() => void>()
 const inscrever = (ouvinte: () => void) => {
   ouvintes.add(ouvinte)
   return () => ouvintes.delete(ouvinte)
@@ -32,6 +36,19 @@ function mudar(proxima: Base) {
   base = proxima
   salvarBase(base)
   ouvintes.forEach((ouvinte) => ouvinte())
+  aoMudar.forEach((observador) => observador())
+}
+
+/** Troca a base inteira pela versão escolhida ao abrir o app, sem contar como mudança do usuário. */
+export function substituirBase(nova: Base) {
+  base = nova
+  salvarBase(base)
+  ouvintes.forEach((ouvinte) => ouvinte())
+}
+
+export function observarMudancas(observador: () => void) {
+  aoMudar.add(observador)
+  return () => { aoMudar.delete(observador) }
 }
 
 export function useEstadoDemonstracao() {

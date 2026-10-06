@@ -11,7 +11,7 @@ componentes, CSS por componente).
 
 ---
 
-## Previstas (ainda não feitas)
+## Previstas para a 1.0 (contrato por operação)
 
 - **Estados de carregando e de falha em toda tela que lê ou grava.** Com banco, a
   resposta demora e pode falhar; hoje a base local responde na hora e nunca
@@ -22,9 +22,21 @@ componentes, CSS por componente).
   A tela deixa de mostrar o número durante a venda e ele aparece ao concluir.
 - **Código do produto no cadastro.** Mesmo caso: o próximo `EST-` deixa de aparecer
   antes de salvar e é mostrado depois de gravar.
-- **Botão "Restaurar dados de exemplo"** (barra lateral) sai quando a base local
-  sair: com banco, isso é seed do ambiente de teste, não ação no app.
 
 ## Feitas
 
-_Nenhuma ainda._
+### `2026-10-06` — Piloto 0.1: dados no Supabase
+
+- **Tela de login** (`src/telas/entrar/`): aparece antes da loja abrir, na primeira
+  vez e se a sessão vencer. A mesma tela mostra "Carregando os dados da loja…" e,
+  se o app não conseguir abrir, o motivo com "Tentar de novo".
+- **Indicador de gravação** no rodapé da barra lateral, abaixo do operador:
+  "Salvo às 14:10", "Salvando…", "Sem conexão" (vermelho; os dados ficam no
+  computador e sobem quando a internet volta) ou "Não salvo" (conflito). Na
+  barra recolhida, só o ícone.
+- **"Restaurar dados de exemplo"** só existe em desenvolvimento (`npm run dev`).
+  No app instalado, clicar no operador não faz nada.
+- **A loja começa vazia** no app instalado. No navegador (mock), a amostra de 90
+  dias continua igual para o trabalho nas telas.
+- Para o código das telas: `useEstadoDemonstracao()` e as funções de gravação
+  continuam iguais. Nada nas telas precisou mudar além da barra lateral.

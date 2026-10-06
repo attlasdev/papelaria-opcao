@@ -95,6 +95,24 @@ const ROTULOS_CARTAO = ['Cartão débito', 'Cartão crédito (1x)', 'Cartão cr�
 
 type FichaSemId = Omit<Ficha, 'id'>
 
+/** A base de uma loja que acabou de começar: nada cadastrado, nada vendido. */
+export function criarBaseVazia(hoje: string, operador = 'Loja'): Base {
+  return {
+    versao: VERSAO_BASE,
+    criadaEm: hoje,
+    operador,
+    clientes: [],
+    produtos: [],
+    fichas: [],
+    movimentosCaixa: [],
+    turnosCaixa: [],
+    movimentosEstoque: [],
+    rascunhosNota: [],
+    rascunhoFicha: null,
+    avisosLidos: {},
+  }
+}
+
 export function criarSemente(hoje: string, minutoAtual = 24 * 60): Base {
   const s = sorteador(1043)
 

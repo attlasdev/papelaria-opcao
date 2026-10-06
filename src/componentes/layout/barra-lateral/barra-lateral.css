@@ -136,3 +136,18 @@
 }
 
 .barra-lateral__operador .icone { flex: none; }
+
+/* Onde estão os dados: discreto quando salvo, em destaque quando há problema. */
+.barra-lateral__gravacao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  padding: 0 var(--espaco-2);
+  font-size: var(--text-rotulo);
+  line-height: var(--text-rotulo--line-height);
+  color: var(--color-texto-apagado);
+  white-space: nowrap;
+}
+.barra-lateral__gravacao .icone { flex: none; }
+.barra-lateral__gravacao--problema { color: var(--color-critico-texto); font-weight: var(--font-weight-medio); }
+.barra-lateral--compacta .barra-lateral__gravacao { justify-content: center; }

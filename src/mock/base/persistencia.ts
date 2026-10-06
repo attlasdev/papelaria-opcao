@@ -9,18 +9,27 @@ const CHAVE = 'papelaria-opcao:base'
 export function carregarBase(): Base | null {
   try {
     const texto = globalThis.localStorage?.getItem(CHAVE)
-    if (!texto) return null
-    const base = JSON.parse(texto) as Base
-    // Campos que chegaram depois ganham valor vazio em vez de apagar a base guardada.
-    return base.versao === VERSAO_BASE ? {
-      ...base,
-      avisosLidos: base.avisosLidos ?? {},
-      // Conserva o cadastro existente, retirando campos que deixaram de fazer parte dele.
-      clientes: base.clientes.map(({ id, nome, documento, telefone, endereco, descricao, desde }) =>
-        ({ id, nome, documento, telefone, endereco, descricao, desde })),
-    } : null
+    return texto ? normalizarBase(JSON.parse(texto)) : null
   } catch {
     return null
+  }
+}
+
+/**
+ * Confere e completa uma base vinda de fora (da cópia local ou do banco). Devolve
+ * `null` se ela não estiver no formato desta versão do app.
+ */
+export function normalizarBase(bruto: unknown): Base | null {
+  if (!bruto || typeof bruto !== 'object') return null
+  const base = bruto as Base
+  if (base.versao !== VERSAO_BASE || !Array.isArray(base.clientes) || !Array.isArray(base.produtos) || !Array.isArray(base.fichas)) return null
+  // Campos que chegaram depois ganham valor vazio em vez de apagar a base guardada.
+  return {
+    ...base,
+    avisosLidos: base.avisosLidos ?? {},
+    // Conserva o cadastro existente, retirando campos que deixaram de fazer parte dele.
+    clientes: base.clientes.map(({ id, nome, documento, telefone, endereco, descricao, desde }) =>
+      ({ id, nome, documento, telefone, endereco, descricao, desde })),
   }
 }
 

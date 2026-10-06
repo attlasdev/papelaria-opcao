@@ -5,6 +5,7 @@ import { Icone, type NomeIcone } from '../../icone/Icone'
 import { Botao } from '../../botao/Botao'
 import { Modal } from '../../modal/Modal'
 import { restaurarDemonstracao, useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
+import { useSincronia, type SituacaoGravacao } from '../../../dados/sincronia'
 import { rotas } from '../../../rotas-caminhos'
 import './barra-lateral.css'
 
@@ -18,6 +19,37 @@ const secoes: { rotulo: string; icone: NomeIcone; caminho: string; exato?: boole
 ]
 
 type Props = { recolhida: boolean; ref?: Ref<HTMLElement> }
+
+const textoGravacao: Record<SituacaoGravacao, string> = {
+  salvo: 'Salvo',
+  pendente: 'Salvando…',
+  salvando: 'Salvando…',
+  'sem-conexao': 'Sem conexão',
+  conflito: 'Não salvo',
+}
+
+/** Onde estão os dados: salvos no banco, a caminho, ou presos no computador. */
+function IndicadorGravacao({ recolhida }: { recolhida: boolean }) {
+  const estado = useSincronia()
+  if (estado.fase !== 'pronto') return null
+  const problema = estado.gravacao === 'sem-conexao' || estado.gravacao === 'conflito'
+  const hora = estado.salvoEm ? new Date(estado.salvoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : null
+  const texto = estado.gravacao === 'salvo' && hora ? `Salvo às ${hora}` : textoGravacao[estado.gravacao]
+  const detalhe = estado.gravacao === 'sem-conexao'
+    ? 'Os dados estão guardados neste computador e vão para o banco quando a internet voltar.'
+    : estado.mensagem ?? (estado.descartada ? 'Havia mudanças antigas neste computador que não entraram; elas foram guardadas à parte.' : texto)
+  return (
+    <p
+      className={problema ? 'barra-lateral__gravacao barra-lateral__gravacao--problema' : 'barra-lateral__gravacao'}
+      role="status"
+      title={detalhe}
+      aria-label={`${texto}. ${detalhe}`}
+    >
+      <Icone nome={problema ? 'alerta' : 'nuvem-ok'} tamanho={16} />
+      {!recolhida && <span>{texto}</span>}
+    </p>
+  )
+}
 
 /** A mesma barra em todas as telas: marca, seções, criar ficha, operador. */
 export function BarraLateral({ recolhida, ref }: Props) {
@@ -63,23 +95,25 @@ export function BarraLateral({ recolhida, ref }: Props) {
           <Icone nome="carrinho" tamanho={18} />
           <span>Criar ficha</span>
         </button>
+        {/* Restaurar a amostra só existe em desenvolvimento: no piloto apagaria os dados da loja. */}
         <button
           type="button"
           className="barra-lateral__operador"
-          aria-label={`Operador: ${operador}. Restaurar dados de exemplo`}
-          title={recolhida ? `Operador: ${operador}` : 'Restaurar dados de exemplo'}
-          onClick={() => setRestaurando(true)}
+          aria-label={import.meta.env.DEV ? `Operador: ${operador}. Restaurar dados de exemplo` : `Operador: ${operador}`}
+          title={recolhida ? `Operador: ${operador}` : import.meta.env.DEV ? 'Restaurar dados de exemplo' : undefined}
+          onClick={import.meta.env.DEV ? () => setRestaurando(true) : undefined}
         >
           <Icone nome="pessoa-circulo" tamanho={24} />
           <span>Operador: {operador}</span>
         </button>
+        <IndicadorGravacao recolhida={recolhida} />
       </div>
 
-      {restaurando && (
+      {import.meta.env.DEV && restaurando && (
         <Modal
           estreito
           titulo="Restaurar dados de exemplo"
-          subtitulo="Os dados de demonstração ficam guardados nesta máquina."
+          subtitulo="Ferramenta de desenvolvimento."
           aoFechar={() => setRestaurando(false)}
           rodape={
             <>
@@ -89,8 +123,8 @@ export function BarraLateral({ recolhida, ref }: Props) {
           }
         >
           <p>
-            Apaga as vendas, clientes, recebimentos e ajustes feitos aqui e volta à amostra de 90 dias até hoje.
-            Não afeta nenhum banco de dados.
+            Apaga as vendas, clientes, recebimentos e ajustes e volta à amostra de 90 dias até hoje.
+            Só existe em desenvolvimento: a troca também vai para o banco ligado a este app.
           </p>
         </Modal>
       )}
