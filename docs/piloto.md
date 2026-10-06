@@ -45,14 +45,14 @@ o link apontando para o dev** (`npx supabase link --project-ref <ref do dev>`).
 
 ## 2. Instalar na máquina Windows da loja
 
-O pacote é `release/papelaria-opcao-0.1.0-win.zip`, gerado com
+O pacote é `release/papelaria-opcao-0.1.0-win-x64.zip`, gerado com
 `npx electron-builder --win zip --x64` (o instalador `.exe` precisa de `wine`
 no Linux ou de ser gerado numa máquina Windows com `npm run dist:win`).
 
 1. Descompactar numa pasta fixa, por exemplo `C:\Papelaria Opcao\`.
-2. Criar um atalho de `papelaria-opcao.exe` na área de trabalho.
+2. Criar um atalho de `papelaria-opcao.exe` na área de trabalho e renomeá-lo para "Papelaria Opção".
 3. Abrir uma vez e fechar: isso cria a pasta de dados
-   `%APPDATA%\papelaria-opcao\`. A tela vai dizer que o computador não foi
+   `%APPDATA%\papelaria-opcao\` (nome fixo, mesmo com o app se chamando "Papelaria Opção"). A tela vai dizer que o computador não foi
    configurado — é o esperado.
 4. Nessa pasta, criar `conexao.json` com a URL e a chave **pública** do projeto
    **piloto**:

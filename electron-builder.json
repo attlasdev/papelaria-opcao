@@ -1,26 +1,35 @@
 {
   "appId": "dev.attlas.papelaria-opcao",
-  "productName": "papelaria-opcao",
+  "productName": "Papelaria Opção",
   "directories": {
     "output": "release"
   },
   "files": [
     "dist/**/*",
-    "dist-electron/**/*"
+    "dist-electron/**/*",
+    "recursos/icone/icone.png"
   ],
   "linux": {
-    "target": ["AppImage", "deb"],
+    "target": [
+      "AppImage",
+      "deb"
+    ],
     "category": "Office",
     "synopsis": "Aplicacao de mesa com banco online",
     "syncDesktopName": true,
-    "maintainer": "Attlas"
+    "maintainer": "Attlas",
+    "icon": "recursos/icone/icone.png"
   },
   "win": {
-    "target": "nsis"
+    "target": "nsis",
+    "icon": "recursos/icone/icone.png"
   },
   "nsis": {
     "oneClick": false,
     "perMachine": false,
-    "allowToChangeInstallationDirectory": true
-  }
+    "allowToChangeInstallationDirectory": true,
+    "shortcutName": "Papelaria Opção"
+  },
+  "executableName": "papelaria-opcao",
+  "artifactName": "papelaria-opcao-${version}-${os}-${arch}.${ext}"
 }

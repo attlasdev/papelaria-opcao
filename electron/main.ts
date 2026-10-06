@@ -5,6 +5,11 @@ import { operacoes } from './operacoes'
 
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
 
+// A pasta de dados (conexao.json, sessao, copia local) tem nome fixo e sem acento,
+// independente do nome exibido "Papelaria Opção": e o caminho que a instalacao
+// manual usa (`%APPDATA%\papelaria-opcao`, ver docs/piloto.md).
+app.setPath('userData', path.join(app.getPath('appData'), 'papelaria-opcao'))
+
 let win: BrowserWindow | null = null
 
 function createWindow() {
@@ -13,7 +18,8 @@ function createWindow() {
     height: 760,
     minWidth: 900,
     minHeight: 600,
-    title: 'papelaria-opcao',
+    title: 'Papelaria Opção',
+    icon: path.join(__dirname, '../../recursos/icone/icone.png'),
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.js'),
       contextIsolation: true,
