@@ -18,6 +18,10 @@ npm run build   # typecheck + build. Tem que passar antes de PR
 npm test        # testes da base local e dos cálculos
 ```
 
+O instalador Windows não é gerado aqui: o GitHub Actions o monta a cada tag
+`v*` e publica na Release. Instalar, configurar e publicar uma versão:
+[docs/piloto.md](docs/piloto.md).
+
 ## Dois donos, uma fronteira
 
 ```

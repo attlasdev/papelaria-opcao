@@ -14,6 +14,9 @@ efetiva e as decisões do projeto ficam em `AGENTS.md`, `CLAUDE.md` e `Memoria.m
 | `recursos/` | Marca (logo) e acervo de referência visual (`design-system/`), incluindo o script que recorta os ícones do app. |
 | `stitch/` | Histórico: protótipo HTML do Google Stitch, já migrado para `src/`. |
 | `Memoria.md` | Estado atual, pendentes, regras de produto e decisões. |
+| `.github/workflows/` | `release-win.yml`: instalador Windows e Release a cada tag `v*`. |
+| `supabase/` | Migrations do banco (piloto 0.1: a base como documento único). |
+| `scripts/` | Ferramentas que só a Attlas roda (ex.: semente do piloto). |
 | `docs/contrato/` | Inventário do que cada tela lê e grava, e registro das mudanças que afetam a interface. |
 | `docs/auditorias/` | Achados técnicos datados e correções posteriores; conferir o estado atual em `Memoria.md`. |
 | `docs/historico/` | Memória antiga sessão a sessão; não é o estado atual. |
@@ -21,8 +24,8 @@ efetiva e as decisões do projeto ficam em `AGENTS.md`, `CLAUDE.md` e `Memoria.m
 
 As regras de negócio que valem hoje estão em `Memoria.md`; o vocabulário em
 código, em `src/mock/base/tipos.ts`. A identidade visual em uso está nos tokens de
-`src/estilos/tokens/`. `supabase/` só entra
-quando houver banco de teste e migrations reais.
+`src/estilos/tokens/`. As migrations de `supabase/` rodam primeiro no projeto
+de teste (`papelaria-dev`), nunca direto no piloto.
 
 A retomada da revisão por telas está no topo de `Memoria.md`. O registro de
 `docs/historico/2026-10-01-revisao-com-victor.md` distingue tarefas implementadas

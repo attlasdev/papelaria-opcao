@@ -1,0 +1,81 @@
+# O instalador Windows oficial.
+#
+# Dispara quando uma tag `v*` e empurrada (`git push origin v0.1.0`) e roda, num
+# Windows real do GitHub, build + testes + electron-builder. Se tudo passar, cria
+# a Release da tag com o `.exe` anexo. O projeto e desenvolvido no Linux, sem
+# `wine`; e daqui que o instalador nasce. Molde: `upload-sys`.
+#
+# `workflow_dispatch` permite rodar a mao, sem tag, para conferir o pipeline; nesse
+# caso o `.exe` fica como artefato do run e nenhuma Release e criada.
+#
+# Versao 0.x sai como pre-release (piloto); a partir de 1.0, release normal.
+
+name: release-win
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  instalador:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # Falhar antes de gastar minutos: uma Release `v0.2.0` com um instalador que
+      # se diz 0.1.0 confundiria quem instala.
+      - name: A tag tem de bater com a versao do package.json
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          versao="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$versao" ]; then
+            echo "tag v$tag nao bate com package.json $versao"
+            exit 1
+          fi
+
+      - run: npm ci
+
+      # O npm 11 nao roda o script de instalacao do Electron; sem isto,
+      # node_modules/electron/dist fica vazio.
+      - run: node node_modules/electron/install.js
+
+      # Typecheck + build (o dist:win abaixo refaz o build, de proposito barato).
+      - run: npm run build
+
+      - run: npm test
+
+      # `--publish never`: o electron-builder tentaria publicar sozinho ao ver a tag
+      # e o token; a Release e criada no passo seguinte, de forma explicita.
+      - run: npm run dist:win -- --publish never
+
+      - name: Guardar o instalador como artefato do run
+        uses: actions/upload-artifact@v4
+        with:
+          name: papelaria-opcao-setup
+          path: release/*.exe
+          if-no-files-found: error
+
+      - name: Criar a Release com o instalador
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          versao="${GITHUB_REF_NAME#v}"
+          previa=""
+          case "$versao" in 0.*) previa="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" release/*.exe \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes $previa

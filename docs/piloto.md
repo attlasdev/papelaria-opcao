@@ -45,12 +45,16 @@ o link apontando para o dev** (`npx supabase link --project-ref <ref do dev>`).
 
 ## 2. Instalar na máquina Windows da loja
 
-O pacote é `release/papelaria-opcao-0.1.0-win-x64.zip`, gerado com
-`npx electron-builder --win zip --x64` (o instalador `.exe` precisa de `wine`
-no Linux ou de ser gerado numa máquina Windows com `npm run dist:win`).
+O instalador vem da **Release** do GitHub (`attlasdev/papelaria-opcao` →
+Releases → `papelaria-opcao-<versão>-win-x64.exe`). Ele é gerado pelo GitHub
+Actions num Windows real a cada tag `v*` — ver "Publicar uma versão" abaixo. O
+repositório é privado: baixar exige estar logado no GitHub com acesso a ele.
 
-1. Descompactar numa pasta fixa, por exemplo `C:\Papelaria Opcao\`.
-2. Criar um atalho de `papelaria-opcao.exe` na área de trabalho e renomeá-lo para "Papelaria Opção".
+1. Rodar o instalador e seguir as telas (dá para escolher a pasta). Ele cria o
+   atalho "Papelaria Opção".
+2. **Windows SmartScreen:** o instalador não é assinado, então o Windows pode
+   avisar "aplicativo não reconhecido" → "Mais informações" → "Executar assim
+   mesmo".
 3. Abrir uma vez e fechar: isso cria a pasta de dados
    `%APPDATA%\papelaria-opcao\` (nome fixo, mesmo com o app se chamando "Papelaria Opção"). A tela vai dizer que o computador não foi
    configurado — é o esperado.
@@ -66,9 +70,21 @@ no Linux ou de ser gerado numa máquina Windows com `npm run dist:win`).
 
 Testar antes na máquina Windows de vocês, com o projeto **dev**.
 
-**Windows SmartScreen:** o app não é assinado, então o Windows pode avisar
-"aplicativo não reconhecido" na primeira abertura → "Mais informações" →
-"Executar assim mesmo".
+**Atualizar** para uma versão nova: rodar o instalador novo por cima. A pasta
+de dados (`conexao.json`, sessão, cópia local) não é tocada.
+
+---
+
+## Publicar uma versão
+
+1. Subir `version` no `package.json` (ex.: `0.1.0` → `0.1.1`) e commitar.
+2. Criar e empurrar a tag igual: `git tag v0.1.1 && git push origin v0.1.1`.
+3. O GitHub Actions (`release-win`) builda, testa e cria a Release com o `.exe`.
+   Se a tag não bater com o `package.json`, ele para antes de gastar minutos.
+   Versões `0.x` saem como **pré-release**.
+
+Sem `wine` no Linux não se gera o `.exe` aqui; o `zip` sai com
+`npx electron-builder --win zip --x64` se precisar de algo local.
 
 ---
 
