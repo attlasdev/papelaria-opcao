@@ -16,6 +16,30 @@ export type Cliente = {
   endereco: string // "Rua, nº - Bairro - Cidade/UF" ou ""
   descricao: string // "Cliente frequente"
   desde: string // YYYY-MM-DD
+  /** Só para nota fiscal de produto (NF-e); venda de balcão não precisa. */
+  fiscal?: FiscalCliente
+}
+
+/** O que a Emitte exige do cliente numa NF-e. Rua, número, bairro e cidade vêm do endereço. */
+export type FiscalCliente = {
+  tipoContribuinte: 'nao-contribuinte' | 'contribuinte' | 'isento'
+  tipoCliente: 'consumidor' | 'revenda'
+  inscricaoEstadual?: string
+  cep?: string // 8 dígitos
+  complemento?: string
+}
+
+/**
+ * O que a nota fiscal precisa saber do produto. Os valores são decisão do
+ * contador; o app só guarda e confere o formato.
+ */
+export type FiscalProduto = {
+  tributacao: 'simples' | 'substituicao' // Simples (CSOSN 102) ou ST (CSOSN 500)
+  origem: string // '0' a '8'; 0 = nacional
+  cfopEstadual: string // ex.: 5102
+  cfopInterestadual: string // ex.: 6102
+  ncm?: string // 8 dígitos
+  cest?: string // 7 dígitos, só com substituição tributária
 }
 
 /**
@@ -43,6 +67,8 @@ export type Produto = {
   /** Como costuma vir do fornecedor: caixa ou pacote com tantas unidades. Só informativo. */
   /** `pacotes`: por caixa. `unidades`: por pacote se houver pacotes, senão por embalagem. */
   conteudo?: { embalagem: 'cx' | 'pct'; pacotes?: number; unidades?: number }
+  /** Para a nota fiscal. Sem isso, a nota leva os valores padrão. */
+  fiscal?: FiscalProduto
   /**
    * Cadastrado às pressas numa venda: só o essencial, saldo sem contagem. Fica
    * marcado até alguém completar o cadastro e contar a prateleira no Estoque.

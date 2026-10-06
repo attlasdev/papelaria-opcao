@@ -25,6 +25,18 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-06` — Campos fiscais no cadastro (preparo para a Emitte)
+
+- **Produto** ganhou a seção **"Dados fiscais"** (fora do cadastro rápido da
+  ficha): tributação, origem, NCM, CEST e CFOP dentro/fora do estado. Vem
+  preenchida com o padrão (Simples 102, origem 0, 5102/6102); NCM e CEST ficam
+  em branco até o contador definir. Formato conferido ao salvar.
+- Código de barras que não é GTIN válido **não bloqueia** o cadastro: aparece um
+  lembrete de que na nota ele vai como "SEM GTIN".
+- **Cliente** ganhou **Complemento** e **CEP** no endereço, e o bloco **"Para nota
+  fiscal"** (tipo de contribuinte, tipo de cliente, inscrição estadual).
+- Ainda **sem exportação** para a Emitte; regras em `src/dados/fiscal.ts`.
+
 ### `2026-10-06` — Piloto 0.1: dados no Supabase
 
 - **Tela de login** (`src/telas/entrar/`): aparece antes da loja abrir, na primeira

@@ -1,6 +1,7 @@
 import { useId, useState, type FormEvent } from 'react'
 import { Botao } from '../../componentes/botao/Botao'
-import { Campo } from '../../componentes/campo/Campo'
+import { Campo, Selecao } from '../../componentes/campo/Campo'
+import { conferirCep, FISCAL_CLIENTE_PADRAO, limparFiscalCliente, TIPOS_CLIENTE, TIPOS_CONTRIBUINTE } from '../../dados/fiscal'
 import { Modal } from '../../componentes/modal/Modal'
 import { cadastrarCliente, documentoJaCadastrado, editarCliente, useEstadoDemonstracao, type Cliente } from '../../mock/estado-demonstracao'
 import './janela-cliente.css'
@@ -49,9 +50,10 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
   const { clientes } = useEstadoDemonstracao()
   const atual = clienteId ? clientes.find((c) => c.id === clienteId) : undefined
   const endereco = separarEndereco(atual?.endereco ?? '')
-  const [erros, setErros] = useState<Partial<Record<'nome' | 'documento', string>>>({})
+  const fiscal = atual?.fiscal ?? FISCAL_CLIENTE_PADRAO
+  const [erros, setErros] = useState<Partial<Record<'nome' | 'documento' | 'cep', string>>>({})
 
-  function limparErro(campo: 'nome' | 'documento') {
+  function limparErro(campo: 'nome' | 'documento' | 'cep') {
     setErros((atual) => ({ ...atual, [campo]: undefined }))
   }
 
@@ -67,7 +69,13 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
     if (documentoJaCadastrado(clientes, documentoDigitado, clienteId)) {
       falhas.documento = 'Este documento já está cadastrado. Busque o cliente em vez de cadastrar de novo.'
     }
-    const primeiro = (['nome', 'documento'] as const).find((chave) => falhas[chave])
+    const dadosFiscais = limparFiscalCliente({
+      tipoContribuinte: campo('tipoContribuinte'), tipoCliente: campo('tipoCliente'),
+      inscricaoEstadual: campo('inscricaoEstadual'), cep: campo('cep'), complemento: campo('complemento'),
+    })
+    const erroCep = conferirCep(dadosFiscais.cep)
+    if (erroCep) falhas.cep = erroCep
+    const primeiro = (['nome', 'documento', 'cep'] as const).find((chave) => falhas[chave])
     if (primeiro) {
       setErros(falhas)
       requestAnimationFrame(() => {
@@ -82,6 +90,7 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
       documento: documentoDigitado || SEM_DOCUMENTO,
       telefone: campo('telefone') || SEM_TELEFONE,
       endereco: juntarEndereco(campo('rua'), campo('numero'), campo('bairro'), campo('cidade')),
+      fiscal: dadosFiscais,
     }
     if (atual) {
       if (!editarCliente(atual.id, cadastro)) {
@@ -159,6 +168,19 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
             <Campo rotulo="Número" name="numero" defaultValue={endereco.numero} placeholder="142" />
             <Campo rotulo="Bairro" name="bairro" defaultValue={endereco.bairro} placeholder="Ex.: Centro" />
             <Campo rotulo="Cidade / UF" name="cidade" defaultValue={endereco.cidade} placeholder="Ex.: São Paulo/SP" />
+            <Campo rotulo="Complemento" name="complemento" defaultValue={fiscal.complemento} placeholder="Ex.: Sala 3" />
+            <Campo rotulo="CEP" name="cep" inputMode="numeric" defaultValue={fiscal.cep} placeholder="00000-000" erro={Boolean(erros.cep)} ajuda={erros.cep} onChange={() => limparErro('cep')} />
+          </div>
+        </fieldset>
+
+        <fieldset className="janela-cliente__grupo">
+          <legend>
+            Para nota fiscal <span className="janela-cliente__opcional">(só para nota com dados do cliente, como empresa ou prefeitura)</span>
+          </legend>
+          <div className="janela-cliente__campos">
+            <Selecao rotulo="Tipo de contribuinte" name="tipoContribuinte" opcoes={TIPOS_CONTRIBUINTE} valorInicial={fiscal.tipoContribuinte} />
+            <Selecao rotulo="Tipo de cliente" name="tipoCliente" opcoes={TIPOS_CLIENTE} valorInicial={fiscal.tipoCliente} />
+            <Campo rotulo="Inscrição estadual" name="inscricaoEstadual" opcional inputMode="numeric" defaultValue={fiscal.inscricaoEstadual} />
           </div>
         </fieldset>
       </form>

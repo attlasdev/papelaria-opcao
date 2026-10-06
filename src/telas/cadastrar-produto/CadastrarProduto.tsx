@@ -13,6 +13,7 @@ import { cadastrarProduto, completarProduto, definirProdutoAtivo, editarProduto,
 import { Estoque } from '../estoque/Estoque'
 import { unidades } from './constantes'
 import { CampoCategoria } from './CampoCategoria'
+import { conferirFiscalProduto, FISCAL_PRODUTO_PADRAO, gtinValido, limparFiscalProduto, ORIGENS, TRIBUTACOES } from '../../dados/fiscal'
 import './cadastrar-produto.css'
 
 /** Abre sobre o Estoque: a lista continua visível atrás da janela. */
@@ -103,7 +104,7 @@ type PropsModal = {
   codigoInicial?: string
 }
 
-type CampoCadastro = 'codigoBarras' | 'nome' | 'categoria' | 'unidade' | 'preco' | 'quantidadeVendida' | 'custo' | 'saldo' | 'minimo' | 'embalagem'
+type CampoCadastro = 'codigoBarras' | 'nome' | 'categoria' | 'unidade' | 'preco' | 'quantidadeVendida' | 'custo' | 'saldo' | 'minimo' | 'embalagem' | 'ncm' | 'cest' | 'cfopEstadual' | 'cfopInterestadual'
 
 export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada, naFicha = false, completar, editar, codigoInicial = '' }: PropsModal) {
   const existente = completar ?? editar
@@ -223,7 +224,14 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
     if (!Number.isInteger(minimo) || minimo < 0) falhas.minimo = 'Informe um estoque mínimo válido.'
     if (naFicha && (!Number.isInteger(vendida) || vendida < 1)) falhas.quantidadeVendida = 'Informe quantas unidades vão para a ficha.'
     if (typeof final === 'string') falhas.embalagem = final
-    const primeira = (['codigoBarras', 'nome', 'categoria', 'unidade', 'preco', 'quantidadeVendida', 'custo', 'saldo', 'minimo', 'embalagem'] as CampoCadastro[]).find((campo) => falhas[campo])
+    // Pela ficha o cadastro é rápido: a nota usa o padrão até alguém completar.
+    const fiscal = naFicha ? undefined : limparFiscalProduto({
+      tributacao: String(dados.get('tributacao') ?? ''), origem: String(dados.get('origem') ?? ''),
+      cfopEstadual: String(dados.get('cfopEstadual') ?? ''), cfopInterestadual: String(dados.get('cfopInterestadual') ?? ''),
+      ncm: String(dados.get('ncm') ?? ''), cest: String(dados.get('cest') ?? ''),
+    })
+    if (fiscal) Object.assign(falhas, conferirFiscalProduto(fiscal))
+    const primeira = (['codigoBarras', 'nome', 'categoria', 'unidade', 'preco', 'quantidadeVendida', 'custo', 'saldo', 'minimo', 'embalagem', 'ncm', 'cest', 'cfopEstadual', 'cfopInterestadual'] as CampoCadastro[]).find((campo) => falhas[campo])
     if (primeira) {
       setErros(falhas)
       setErroSalvar(falhas[primeira]!)
@@ -238,7 +246,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
     }
     const grupo = categoria.includes('Caderno') ? 'cadernos' as const : categoria.includes('Escrita') ? 'escrita' as const : categoria.includes('Papéis') ? 'papeis' as const : categoria.includes('Escritório') ? 'escritorio' as const : 'artes' as const
     const dadosProduto: RascunhoProduto = { codigoBarras: semCodigo ? undefined : codigoBarras.trim() || undefined, descricao: nome, categoria, grupo, unidade, preco, saldo: daEntrada ? 0 : saldo, minimo,
-      custo, localizacao: opcional('localizacao'), marca: opcional('marca'), caracteristicas: opcional('caracteristicas'), descricaoAdicional: opcional('descricaoAdicional'),
+      custo, localizacao: opcional('localizacao'), marca: opcional('marca'), caracteristicas: opcional('caracteristicas'), descricaoAdicional: opcional('descricaoAdicional'), fiscal,
       conteudo: daEntrada && embalado && (nPacotes > 0 || nDentro > 0)
         ? { embalagem, pacotes: nPacotes > 0 ? nPacotes : undefined, unidades: nDentro > 0 ? nDentro : undefined }
         : undefined }
@@ -262,6 +270,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
   }
 
   const r = daEntrada?.rascunho ?? existente
+  const fiscalInicial = produtoConsultado?.fiscal ?? r?.fiscal ?? FISCAL_PRODUTO_PADRAO
   const inicial = existente
     ? { nome: existente.descricao, preco: existente.preco, custo: existente.custo ?? null, localizacao: existente.localizacao ?? '', minimo: editar ? String(editar.minimo) : '' }
     : produtoConsultado
@@ -516,6 +525,21 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
             <Campo rotulo="Características" name="caracteristicas" opcional defaultValue={produtoConsultado?.caracteristicas ?? r?.caracteristicas} readOnly={Boolean(produtoConsultado)} placeholder="Cor, tamanho, gramatura..." />
             <Campo rotulo="Descrição adicional" name="descricaoAdicional" opcional defaultValue={produtoConsultado?.descricaoAdicional ?? r?.descricaoAdicional} readOnly={Boolean(produtoConsultado)} />
           </div>
+        </section>}
+
+        {!naFicha && <section className="cadastrar-produto__grupo">
+          <h3 className="cadastrar-produto__titulo">Dados fiscais <span className="cadastrar-produto__nota">· para a nota; os valores vêm do contador</span></h3>
+          <div className="cadastrar-produto__grade">
+            <Selecao rotulo="Tributação" name="tributacao" opcoes={TRIBUTACOES} valorInicial={fiscalInicial.tributacao} disabled={Boolean(produtoConsultado)} />
+            <Selecao rotulo="Origem" name="origem" opcoes={ORIGENS} valorInicial={fiscalInicial.origem} disabled={Boolean(produtoConsultado)} />
+            <Campo rotulo="NCM" name="ncm" opcional inputMode="numeric" defaultValue={fiscalInicial.ncm} readOnly={Boolean(produtoConsultado)} placeholder="8 números" erro={Boolean(erros.ncm)} ajuda={erros.ncm} onChange={() => limparErro('ncm')} />
+            <Campo rotulo="CEST" name="cest" opcional inputMode="numeric" defaultValue={fiscalInicial.cest} readOnly={Boolean(produtoConsultado)} placeholder="Só com substituição" erro={Boolean(erros.cest)} ajuda={erros.cest} onChange={() => limparErro('cest')} />
+            <Campo rotulo="CFOP dentro do estado" name="cfopEstadual" inputMode="numeric" defaultValue={fiscalInicial.cfopEstadual} readOnly={Boolean(produtoConsultado)} erro={Boolean(erros.cfopEstadual)} ajuda={erros.cfopEstadual} onChange={() => limparErro('cfopEstadual')} />
+            <Campo rotulo="CFOP para outro estado" name="cfopInterestadual" inputMode="numeric" defaultValue={fiscalInicial.cfopInterestadual} readOnly={Boolean(produtoConsultado)} erro={Boolean(erros.cfopInterestadual)} ajuda={erros.cfopInterestadual} onChange={() => limparErro('cfopInterestadual')} />
+          </div>
+          {!semCodigo && codigoBarras.trim() && !gtinValido(codigoBarras.trim()) && (
+            <p className="cadastrar-produto__lembrete">Este código de barras não é um GTIN válido: na nota ele vai como “SEM GTIN”.</p>
+          )}
         </section>}
         </form>
       </Modal>

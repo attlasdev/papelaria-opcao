@@ -4,7 +4,7 @@ import { agoraHorario, dataCalendarioValida, hojeISO, minutoDoDia } from './base
 import { apagarBase, carregarBase, salvarBase } from './base/persistencia'
 import { criarBaseVazia, criarSemente } from './base/semente'
 import { comFechamentosExemplo } from './base/cenario-caixa'
-import type { Base, Estorno, Ficha, Meio, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
+import type { Base, Cliente, Estorno, Ficha, Meio, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
 
 export * from './base/derivados'
 export * from './base/datas'
@@ -75,7 +75,7 @@ export function proximoCodigoProduto(atual: Base) {
   return proximoCodigo(atual.produtos.map((p) => p.codigo), 'EST-')
 }
 
-type DadosCliente = { nome: string; documento: string; telefone: string; endereco: string }
+type DadosCliente = { nome: string; documento: string; telefone: string; endereco: string; fiscal?: Cliente['fiscal'] }
 
 export function cadastrarCliente(dados: DadosCliente) {
   if (documentoJaCadastrado(base.clientes, dados.documento)) return null

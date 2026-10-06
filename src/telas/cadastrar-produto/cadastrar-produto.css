@@ -122,6 +122,15 @@
 
 .cadastrar-produto__lembrete--erro { color: var(--color-saida); }
 
+/* Complemento do título de uma seção, mais apagado que ele. */
+.cadastrar-produto__nota {
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-texto-apagado);
+}
+
+.cadastrar-produto__grupo > .cadastrar-produto__lembrete { margin-top: var(--espaco-3); }
+
 
 /* Categoria: lista direta, com "Nova categoria" no topo */
 .campo-categoria { position: relative; }
