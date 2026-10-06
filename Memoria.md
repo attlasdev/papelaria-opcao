@@ -96,6 +96,10 @@ gera as duas planilhas preenchendo o próprio modelo, com textos compartilhados
   dígito a menos na Emitte.
 - Botões ligados só em `npm run dev` (`funcoes.ts`); no instalador, desligados
   até o Agostinho liberar.
+- **Adiado para a 1.0 (`2026-10-06`, Agostinho):** testar o fluxo completo na
+  Emitte (exportar → importar → "Já importei" → só novos na próxima vez;
+  cliente com Praça fica de fora; conferir o telefone do cliente B). A exportação
+  **não entra na 0.1**: no instalador os botões continuam desabilitados.
 
 **SINTEGRA (`2026-10-06`, para depois):** o contador perguntou. Pesquisa: em SP,
 empresa do Simples gera e guarda o arquivo (Convênio ICMS 57/95) e só entrega
@@ -206,6 +210,9 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
 *Antes de distribuir:*
 12. Licença do pacote de ícones do acervo; ícone do aplicativo
     (`electron-builder.json` não aponta nenhum).
+
+*Emitte (para a 1.0):* testar o fluxo de exportação "vai uma vez" na conta de
+teste e liberar os botões (`src/funcoes.ts`); SINTEGRA com o contador.
 
 *Back — próximos passos (Agostinho), em ordem:*
 13. **Responder as perguntas que ainda travam** (seção "Perguntas em aberto"):
