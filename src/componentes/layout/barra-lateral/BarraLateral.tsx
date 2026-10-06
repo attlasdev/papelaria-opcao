@@ -7,6 +7,7 @@ import { Modal } from '../../modal/Modal'
 import { restaurarDemonstracao, useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
 import { useSincronia, type SituacaoGravacao } from '../../../dados/sincronia'
 import { rotas } from '../../../rotas-caminhos'
+import { funcoes } from '../../../funcoes'
 import './barra-lateral.css'
 
 const secoes: { rotulo: string; icone: NomeIcone; caminho: string; exato?: boolean }[] = [
@@ -15,7 +16,7 @@ const secoes: { rotulo: string; icone: NomeIcone; caminho: string; exato?: boole
   { rotulo: 'Financeiro', icone: 'financeiro', caminho: rotas.financeiro },
   { rotulo: 'Caixa', icone: 'dinheiro', caminho: rotas.caixa },
   { rotulo: 'Estoque', icone: 'estoque', caminho: rotas.estoque },
-  { rotulo: 'Notas fiscais', icone: 'notas', caminho: rotas.notas },
+  ...(funcoes.notasFiscais ? [{ rotulo: 'Notas fiscais', icone: 'notas' as const, caminho: rotas.notas }] : []),
 ]
 
 type Props = { recolhida: boolean; ref?: Ref<HTMLElement> }

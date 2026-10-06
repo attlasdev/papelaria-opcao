@@ -53,7 +53,9 @@ permitido); tributação e CFOP vêm da tela de importação (na primeira vez fo
 1101/2101, de compra — o certo para revenda é 5102/6102). **Reimportar o mesmo
 XML DUPLICA os produtos**, embora a Emitte diga que atualiza; motivo não
 descoberto. Por isso o botão **"Exportar produtos para a Emitte" está bloqueado
-no piloto** (`EXPORTACAO_LIBERADA` em `ExportarEmitte.tsx`). Pendente: achar
+no piloto**. Ele fica no **Estoque**; a área de **Notas fiscais está oculta** (menu
+e "Preparar rascunho" na ficha) enquanto a loja emite pela Emitte. Os dois
+interruptores ficam em `src/funcoes.ts`. Pendente: achar
 como a Emitte reconhece um produto já cadastrado (código de barras? código na
 nota? nome?) e decidir se o NCM fica no app (por categoria) ou só na Emitte.
 

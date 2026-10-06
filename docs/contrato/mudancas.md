@@ -25,6 +25,14 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-06` — Notas fiscais oculta; exportação no Estoque
+
+- O botão **"Exportar produtos para a Emitte"** mudou para o **Estoque**, ao lado
+  de "Registrar entrada" (continua desabilitado no piloto).
+- A área de **Notas fiscais saiu do menu**, e a nova ficha não mostra mais
+  "Preparar rascunho de nota fiscal para revisão": a loja emite pela Emitte. As
+  telas e rotas continuam no código; liga e desliga em `src/funcoes.ts`.
+
 ### `2026-10-06` — Exportar produtos para a Emitte; dados fiscais fora do cadastro
 
 - **Notas fiscais** ganhou o botão **"Exportar produtos para a Emitte"** no

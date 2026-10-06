@@ -24,6 +24,7 @@ import {
   type RascunhoFicha,
 } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
+import { funcoes } from '../../funcoes'
 import { ClienteFicha } from './cliente/ClienteFicha'
 import { ItensFicha } from './itens/ItensFicha'
 import { PagamentoFicha } from './pagamento/PagamentoFicha'
@@ -61,7 +62,8 @@ export function CriarFicha() {
   const [desconto, setDesconto] = useState(rascunhoFicha?.desconto ?? 0)
   const [forma, setForma] = useState<FormaPagamento>(rascunhoFicha?.forma ?? 'dinheiro')
   const [recebido, setRecebido] = useState(rascunhoFicha?.recebido ?? 0)
-  const [prepararNota, setPrepararNota] = useState(rascunhoFicha?.prepararNota ?? false)
+  // Com a área de notas oculta, nenhuma venda prepara rascunho (nem um guardado de antes).
+  const [prepararNota, setPrepararNota] = useState(funcoes.notasFiscais && (rascunhoFicha?.prepararNota ?? false))
   const [vencimento, setVencimento] = useState(rascunhoFicha?.vencimento ?? somarDias(hojeISO(), 30))
   const [entrada, setEntrada] = useState(rascunhoFicha?.entrada ?? 0)
   const [meioEntrada, setMeioEntrada] = useState<Meio>(rascunhoFicha?.meioEntrada ?? 'dinheiro')
@@ -272,10 +274,12 @@ export function CriarFicha() {
               </div>
             </dl>
 
-            <label className="criar-ficha__nota">
-              <input type="checkbox" checked={prepararNota} onChange={(e) => setPrepararNota(e.target.checked)} />
-              Preparar rascunho de nota fiscal para revisão
-            </label>
+            {funcoes.notasFiscais && (
+              <label className="criar-ficha__nota">
+                <input type="checkbox" checked={prepararNota} onChange={(e) => setPrepararNota(e.target.checked)} />
+                Preparar rascunho de nota fiscal para revisão
+              </label>
+            )}
 
             <Botao
               variante="primario"

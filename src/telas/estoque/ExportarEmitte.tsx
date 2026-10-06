@@ -3,13 +3,14 @@ import { Botao } from '../../componentes/botao/Botao'
 import { Modal } from '../../componentes/modal/Modal'
 import { gerarXmlProdutos } from '../../dados/emitte'
 import { hojeISO, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { funcoes } from '../../funcoes'
 
 /**
  * Bloqueada no piloto (`2026-10-06`): reimportar o XML na Emitte DUPLICA os
- * produtos, embora a Emitte diga que atualiza. Volta a `true` quando houver um
- * jeito de importar sem duplicar. Ver Memoria.md.
+ * produtos, embora a Emitte diga que atualiza. Liga em `src/funcoes.ts`
+ * quando houver um jeito de importar sem duplicar. Ver Memoria.md.
  */
-const EXPORTACAO_LIBERADA = false
+const EXPORTACAO_LIBERADA = funcoes.exportarEmitte
 
 type Resultado =
   | { tipo: 'salvo'; nome: string; quantidade: number; semGtin: number }
