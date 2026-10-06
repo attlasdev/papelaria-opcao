@@ -25,6 +25,15 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-06` — Exportar produtos para a Emitte; dados fiscais fora do cadastro
+
+- **Notas fiscais** ganhou o botão **"Exportar produtos para a Emitte"** no
+  cabeçalho: gera o XML de produtos e abre a janela do sistema para salvar; ao
+  fim, uma janela diz quantos produtos foram e o que completar na Emitte.
+- A seção **"Dados fiscais" saiu do cadastro de produto** (decisão do
+  Agostinho: a dona preenche isso na Emitte). O código está comentado em
+  `CadastrarProduto.tsx`. O bloco "Para nota fiscal" do cliente continua.
+
 ### `2026-10-06` — Campos fiscais no cadastro (preparo para a Emitte)
 
 - **Produto** ganhou a seção **"Dados fiscais"** (fora do cadastro rápido da

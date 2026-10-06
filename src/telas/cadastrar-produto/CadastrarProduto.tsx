@@ -13,7 +13,10 @@ import { cadastrarProduto, completarProduto, definirProdutoAtivo, editarProduto,
 import { Estoque } from '../estoque/Estoque'
 import { unidades } from './constantes'
 import { CampoCategoria } from './CampoCategoria'
-import { conferirFiscalProduto, FISCAL_PRODUTO_PADRAO, gtinValido, limparFiscalProduto, ORIGENS, TRIBUTACOES } from '../../dados/fiscal'
+// Dados fiscais fora da tela desde 2026-10-06 (decisão do Agostinho): a dona os
+// preenche na própria Emitte, que é quem os exige. O código fica comentado abaixo
+// para voltar se a decisão mudar. Ver Memoria.md.
+// import { conferirFiscalProduto, FISCAL_PRODUTO_PADRAO, gtinValido, limparFiscalProduto, ORIGENS, TRIBUTACOES } from '../../dados/fiscal'
 import './cadastrar-produto.css'
 
 /** Abre sobre o Estoque: a lista continua visível atrás da janela. */
@@ -224,13 +227,14 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
     if (!Number.isInteger(minimo) || minimo < 0) falhas.minimo = 'Informe um estoque mínimo válido.'
     if (naFicha && (!Number.isInteger(vendida) || vendida < 1)) falhas.quantidadeVendida = 'Informe quantas unidades vão para a ficha.'
     if (typeof final === 'string') falhas.embalagem = final
-    // Pela ficha o cadastro é rápido: a nota usa o padrão até alguém completar.
-    const fiscal = naFicha ? undefined : limparFiscalProduto({
-      tributacao: String(dados.get('tributacao') ?? ''), origem: String(dados.get('origem') ?? ''),
-      cfopEstadual: String(dados.get('cfopEstadual') ?? ''), cfopInterestadual: String(dados.get('cfopInterestadual') ?? ''),
-      ncm: String(dados.get('ncm') ?? ''), cest: String(dados.get('cest') ?? ''),
-    })
-    if (fiscal) Object.assign(falhas, conferirFiscalProduto(fiscal))
+    // Fora da tela (ver o import comentado no topo). Editar não apaga o que já havia.
+    // const fiscal = naFicha ? undefined : limparFiscalProduto({
+    //   tributacao: String(dados.get('tributacao') ?? ''), origem: String(dados.get('origem') ?? ''),
+    //   cfopEstadual: String(dados.get('cfopEstadual') ?? ''), cfopInterestadual: String(dados.get('cfopInterestadual') ?? ''),
+    //   ncm: String(dados.get('ncm') ?? ''), cest: String(dados.get('cest') ?? ''),
+    // })
+    // if (fiscal) Object.assign(falhas, conferirFiscalProduto(fiscal))
+    const fiscal = existente?.fiscal
     const primeira = (['codigoBarras', 'nome', 'categoria', 'unidade', 'preco', 'quantidadeVendida', 'custo', 'saldo', 'minimo', 'embalagem', 'ncm', 'cest', 'cfopEstadual', 'cfopInterestadual'] as CampoCadastro[]).find((campo) => falhas[campo])
     if (primeira) {
       setErros(falhas)
@@ -270,7 +274,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
   }
 
   const r = daEntrada?.rascunho ?? existente
-  const fiscalInicial = produtoConsultado?.fiscal ?? r?.fiscal ?? FISCAL_PRODUTO_PADRAO
+  // const fiscalInicial = produtoConsultado?.fiscal ?? r?.fiscal ?? FISCAL_PRODUTO_PADRAO
   const inicial = existente
     ? { nome: existente.descricao, preco: existente.preco, custo: existente.custo ?? null, localizacao: existente.localizacao ?? '', minimo: editar ? String(editar.minimo) : '' }
     : produtoConsultado
@@ -527,6 +531,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
           </div>
         </section>}
 
+{/* Dados fiscais: fora da tela (ver o import comentado no topo).
         {!naFicha && <section className="cadastrar-produto__grupo">
           <h3 className="cadastrar-produto__titulo">Dados fiscais <span className="cadastrar-produto__nota">· para a nota; os valores vêm do contador</span></h3>
           <div className="cadastrar-produto__grade">
@@ -541,6 +546,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
             <p className="cadastrar-produto__lembrete">Este código de barras não é um GTIN válido: na nota ele vai como “SEM GTIN”.</p>
           )}
         </section>}
+        */}
         </form>
       </Modal>
   )

@@ -13,6 +13,7 @@ import { dataCurta, reais } from '../../formatar'
 import { hojeISO, nomeCliente, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import { documentoFornecedor, type Direcao, type Documento } from './constantes'
+import { ExportarProdutosEmitte } from './ExportarEmitte'
 import './notas-fiscais.css'
 
 export function NotasFiscais() {
@@ -51,9 +52,12 @@ export function NotasFiscais() {
       titulo="Notas fiscais"
       subtitulo="Rascunhos preparados a partir de fichas de venda e documentos de entrada."
       acaoCabecalho={
-        <Botao icone="recibo" onClick={() => navegar(rotas.rascunhosNotas)}>
-          Rascunhos
-        </Botao>
+        <>
+          <ExportarProdutosEmitte />
+          <Botao icone="recibo" onClick={() => navegar(rotas.rascunhosNotas)}>
+            Rascunhos
+          </Botao>
+        </>
       }
     >
       <Painel className="notas-fiscais__destaque">

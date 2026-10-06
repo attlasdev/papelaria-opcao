@@ -40,6 +40,14 @@ NCM, origem, CFOP, CEST, grupo de tributação, código de barras com dígito
 verificador; cliente: dados que a Emitte exige para NF-e), sem exportação ainda.
 Operador do piloto: **"Loja"**.
 
+**Dados fiscais na Emitte, não no app (`2026-10-06`, Agostinho):** a seção
+"Dados fiscais" saiu do cadastro de produto (código comentado, não apagado). A
+dona cadastra o produto normal no app, o app exporta o XML de produtos e ela
+completa NCM/tributação/CFOP **na própria Emitte**. **Por quê:** se a Emitte
+mudar regras, o app não precisa mudar; e o campo ela teria de preencher de
+qualquer jeito, tanto faz onde. O XML leva NCM em branco — **a testar:** se a
+Emitte aceita a importação assim. Botão em Notas fiscais.
+
 **Desenho da 0.1 (`2026-10-06`, aceito):** a base inteira vira **um documento só**
 numa tabela do Supabase (`jsonb`), lido e gravado pelo processo principal
 (`carregarBase`/`salvarBase`); regras e telas continuam as da base local, com
