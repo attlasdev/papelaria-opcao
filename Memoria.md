@@ -482,6 +482,38 @@ Um repo para os dois lados. **Por quê:** no mesmo repo o contrato é o mesmo
 arquivo para os dois, sem pacote npm para sincronizar. Descartado: dois repos +
 pacote de contrato; o front entregar React solto e integrar no fim.
 
+### `2026-10-06` — Maquininhas: Mercado Pago integrada, Sicoob manual
+A loja tem **duas maquininhas**. A do **Mercado Pago** é a integrada ao sistema
+(Orders API + Point em modo PDV: o sistema manda o valor, a maquininha cobra, o
+sistema vê o "pago" e conclui a venda). A do **Sicoob** fica **manual**: venda
+**parcelada** (parcelamento fora do sistema por enquanto) e **plano B quando o
+sistema ou a internet caem**. Por isso a forma de pagamento da ficha precisa
+dizer **qual maquininha**. Cartão: a **dona escolhe crédito ou débito no
+sistema**. Pix: QR Code na própria maquininha (para o teste, considerar modelo
+com QR — Point Pro 2/3; a Point Smart não tem Pix na máquina).
+- **0.1 (demonstração):** o fluxo aparece no app, **simulado** (sem credencial
+  na máquina da loja, sem depender do Mercado Pago na hora). Contrato com três
+  operações — iniciar, consultar e cancelar cobrança — que na 1.0 passam a falar
+  com o Mercado Pago sem mudar a tela.
+- **Prova real (`2026-10-06`)** com a credencial de teste e a maquininha virtual
+  `NEWLAND_N950__SBX0000001` (`POST /v1/orders` type `point`; simulação em
+  `POST /v1/orders/{id}/events`): crédito e débito aprovados, recusa, expiração
+  — tudo visto pela consulta `GET /v1/orders/{id}` em 2–10 s. Aprendizados: **só
+  uma cobrança aberta por maquininha** (`already_queued_order_on_terminal`); o
+  simulador **não aceita Pix** (só bandeiras de cartão) e **cancelar pela API**
+  dá `forbidden_checking_device_owner` na maquininha virtual — Pix e cancelamento
+  só se provam com maquininha real. No débito a simulação não aceita parcelas.
+  Sem webhook (app de mesa não tem endereço público): o processo principal
+  consulta o status da order.
+- **Feito na 0.1:** na nova ficha, Cartão escolhe **crédito/débito** e
+  **Mercado Pago/Sicoob**; Pix escolhe **QR na maquininha** ou **Pix manual**
+  (manual fica sempre disponível: plano B). Mercado Pago abre a janela de
+  cobrança (enviando → na maquininha → aprovado, ou recusado com "tentar de
+  novo"/"usar outra forma"; "simular recusa" só na demonstração) e a venda se
+  registra sozinha ao aprovar, com rótulo "Cartão crédito Visa · Mercado Pago".
+  Sicoob e Pix manual seguem como antes (conferir e concluir). Fora: misto e
+  recebimento de notinha pela maquininha, parcelamento (Sicoob).
+
 ### `2026-10-06` — Duas versões: 0.1 (piloto online) e 1.0 (produção)
 A loja **ainda não fechou** contrato. A Attlas monta o sistema para a loja
 testar no dia a dia, com **simulações** (produtos e clientes fictícios), gerar

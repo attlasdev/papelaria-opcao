@@ -25,6 +25,20 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-06` — Maquininha Mercado Pago na nova ficha (demonstração)
+
+- **Forma de pagamento:** Cartão ganhou **Crédito/Débito** e **Mercado
+  Pago/Sicoob**; Pix ganhou **QR na maquininha/Pix manual**, com uma nota curta
+  explicando cada caminho.
+- **Mercado Pago** (cartão ou Pix na maquininha): "Concluir" abre a **janela de
+  cobrança** (`criar-ficha/cobranca/JanelaCobranca.tsx`) com as etapas; ao
+  aprovar, a venda se registra sozinha. Recusa mostra o motivo, com "Tentar de
+  novo" e "Usar outra forma". O subtítulo avisa que é demonstração e há um
+  "Simular recusa" discreto.
+- **Sicoob** e **Pix manual**: como antes.
+- O rótulo do pagamento (ficha, Início, Financeiro) diz por onde passou:
+  "Cartão crédito Visa · Mercado Pago", "Cartão débito · Sicoob", "Pix manual".
+
 ### `2026-10-06` — Exportação para a Emitte: cada item vai uma vez
 
 - **Estoque** e **Clientes**: os botões mostram quantos itens **novos** vão

@@ -181,3 +181,12 @@
 .pagamento-ficha__misto .pagamento-ficha__nota { margin-top: 0; }
 .pagamento-ficha__misto-restante { display: flex; justify-content: space-between; gap: var(--espaco-2); font-size: var(--text-rotulo); color: var(--color-texto-suave); }
 .pagamento-ficha__misto-restante--erro { color: var(--color-saida); }
+
+/* Cartão e Pix: tipo e maquininha, um grupo de botões por linha */
+.pagamento-ficha__maquininha {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+}
+.pagamento-ficha__maquininha .pagamento-ficha__nota { margin-top: 0; }

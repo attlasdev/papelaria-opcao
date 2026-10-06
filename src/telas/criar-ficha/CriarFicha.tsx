@@ -28,6 +28,10 @@ import { funcoes } from '../../funcoes'
 import { ClienteFicha } from './cliente/ClienteFicha'
 import { ItensFicha } from './itens/ItensFicha'
 import { PagamentoFicha } from './pagamento/PagamentoFicha'
+import { JanelaCobranca } from './cobranca/JanelaCobranca'
+import { rotuloPagamento } from '../../dados/pagamento'
+import type { Cobranca, MeioCobranca } from '../../../comum/contrato'
+import type { Maquininha, ModalidadeCartao } from '../../mock/base/tipos'
 import { semIdentificacao, type EscolhaCliente, type FormaPagamento, type ItemFicha } from './tipos'
 import './criar-ficha.css'
 
@@ -69,6 +73,12 @@ export function CriarFicha() {
   const [meioEntrada, setMeioEntrada] = useState<Meio>(rascunhoFicha?.meioEntrada ?? 'dinheiro')
   const [divisaoPagamento, setDivisaoPagamento] = useState<Record<Meio, number>>(rascunhoFicha?.divisaoPagamento ?? divisaoVazia())
   const [recebidoMisto, setRecebidoMisto] = useState(rascunhoFicha?.recebidoMisto ?? 0)
+  // Cartão e Pix: por onde a cobrança passa (Memoria.md, maquininhas).
+  const [cartao, setCartao] = useState<ModalidadeCartao>(rascunhoFicha?.cartao ?? 'credito')
+  const [maquininhaCartao, setMaquininhaCartao] = useState<Maquininha>(rascunhoFicha?.maquininhaCartao ?? 'mercado-pago')
+  const [pixNaMaquininha, setPixNaMaquininha] = useState(rascunhoFicha?.pixNaMaquininha ?? true)
+  // Aberta enquanto a maquininha integrada cobra; a venda só é registrada quando aprova.
+  const [cobrando, setCobrando] = useState<{ meio: MeioCobranca; referencia: string } | null>(null)
   const [tentouConcluir, setTentouConcluir] = useState(false)
   const [erroConclusao, setErroConclusao] = useState('')
   // Muda ao limpar: cliente e itens voltam ao estado de ficha nova.
@@ -85,8 +95,9 @@ export function CriarFicha() {
       semIdentificacao: cliente === semIdentificacao,
       itens: itens.map((item) => ({ codigo: item.codigo, quantidade: item.quantidade })),
       desconto, forma, recebido, prepararNota, vencimento, entrada, meioEntrada, divisaoPagamento, recebidoMisto,
+      cartao, maquininhaCartao, pixNaMaquininha,
     } : null)
-  }, [cliente, itens, desconto, forma, recebido, prepararNota, vencimento, entrada, meioEntrada, divisaoPagamento, recebidoMisto])
+  }, [cliente, itens, desconto, forma, recebido, prepararNota, vencimento, entrada, meioEntrada, divisaoPagamento, recebidoMisto, cartao, maquininhaCartao, pixNaMaquininha])
 
   const subtotal = itens.reduce((soma, i) => soma + i.preco * i.quantidade, 0)
   const total = Math.max(0, subtotal - desconto)
@@ -144,6 +155,9 @@ export function CriarFicha() {
     setMeioEntrada('dinheiro')
     setDivisaoPagamento(divisaoVazia())
     setRecebidoMisto(0)
+    setCartao('credito')
+    setMaquininhaCartao('mercado-pago')
+    setPixNaMaquininha(true)
     setTentouConcluir(false)
     setErroConclusao('')
     setVersao((atual) => atual + 1)
@@ -168,15 +182,39 @@ export function CriarFicha() {
       return
     }
     if (!cliente) return
+    // Maquininha integrada: a venda espera a cobrança aprovar (JanelaCobranca).
+    const integrada = (forma === 'cartao' && maquininhaCartao === 'mercado-pago') || (forma === 'pix' && pixNaMaquininha)
+    if (integrada) {
+      setCobrando({ meio: forma === 'pix' ? 'pix' : cartao, referencia: `ficha-${abertura.numero}-${Date.now()}` })
+      return
+    }
+    registrarVenda()
+  }
+
+  /** Registra a venda. Com `cobranca`, o pagamento leva o que a maquininha devolveu. */
+  function registrarVenda(cobranca?: Cobranca) {
+    if (!cliente) return
     const data = hojeISO()
     const horario = agoraHorario()
+    // Cartão e Pix dizem por onde passaram; o rótulo aparece na ficha e no Financeiro.
+    const viaMaquininha = (meio: Meio): Partial<Pagamento> => {
+      if (meio === 'cartao' && forma === 'cartao') {
+        const bandeira = cobranca?.bandeira
+        return { cartao, maquininha: maquininhaCartao, rotulo: rotuloPagamento({ meio, cartao, maquininha: maquininhaCartao, bandeira }), ...(cobranca ? { cobranca: { id: cobranca.id, bandeira, demonstracao: cobranca.demonstracao } } : {}) }
+      }
+      if (meio === 'pix' && forma === 'pix') {
+        const maquininha = pixNaMaquininha ? 'mercado-pago' as const : undefined
+        return { ...(maquininha ? { maquininha } : {}), rotulo: rotuloPagamento({ meio, maquininha }), ...(cobranca ? { cobranca: { id: cobranca.id, demonstracao: cobranca.demonstracao } } : {}) }
+      }
+      return {}
+    }
     // O Financeiro lê estes pagamentos; nada é lançado à parte.
     const pagamentos: Pagamento[] = notinha
       ? entradaNaNotinha > 0 ? [{ data, horario, meio: meioEntrada, valor: entradaNaNotinha, entrada: true }] : []
       : forma === 'misto' ? (['dinheiro', 'pix', 'cartao'] as const)
         .filter((meio) => divisaoPagamento[meio] > 0)
         .map((meio) => ({ data, horario, meio, valor: divisaoPagamento[meio] }))
-      : [{ data, horario, meio: forma as Meio, valor: total }]
+      : [{ data, horario, meio: forma as Meio, valor: total, ...viaMaquininha(forma as Meio) }]
     const numero = concluirFicha({
       clienteId: cliente === semIdentificacao ? null : cliente.id,
       data,
@@ -243,6 +281,12 @@ export function CriarFicha() {
               erroVencimento={erroVencimento}
               erroEntrada={erroEntrada}
               erroDesconto={erroDesconto}
+              cartao={cartao}
+              aoMudarCartao={setCartao}
+              maquininhaCartao={maquininhaCartao}
+              aoMudarMaquininhaCartao={setMaquininhaCartao}
+              pixNaMaquininha={pixNaMaquininha}
+              aoMudarPixNaMaquininha={setPixNaMaquininha}
             />
           </Painel>
 
@@ -299,6 +343,15 @@ export function CriarFicha() {
           </Painel>
         </aside>
       </div>
+      {cobrando && (
+        <JanelaCobranca
+          valor={total}
+          meio={cobrando.meio}
+          referencia={cobrando.referencia}
+          aoAprovar={(cobranca) => { setCobrando(null); registrarVenda(cobranca) }}
+          aoFechar={() => setCobrando(null)}
+        />
+      )}
     </Tela>
   )
 }

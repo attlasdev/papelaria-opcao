@@ -4,6 +4,7 @@ import { Icone, type NomeIcone } from '../../../componentes/icone/Icone'
 import { Filtros } from '../../../componentes/filtros/Filtros'
 import { centavosDigitados, moedaDigitada, reais } from '../../../formatar'
 import { hojeISO, NOME_MEIO, type Meio } from '../../../mock/estado-demonstracao'
+import type { Maquininha, ModalidadeCartao } from '../../../mock/base/tipos'
 import type { FormaPagamento } from '../tipos'
 import './pagamento-ficha.css'
 
@@ -33,6 +34,14 @@ type Props = {
   erroVencimento?: string
   erroEntrada?: string
   erroDesconto?: string
+  /** Cartão: crédito ou débito, e em qual maquininha (Mercado Pago integrada, Sicoob manual). */
+  cartao: ModalidadeCartao
+  aoMudarCartao: (cartao: ModalidadeCartao) => void
+  maquininhaCartao: Maquininha
+  aoMudarMaquininhaCartao: (maquininha: Maquininha) => void
+  /** Pix: QR Code na maquininha Mercado Pago, ou manual (chave da loja, plano B). */
+  pixNaMaquininha: boolean
+  aoMudarPixNaMaquininha: (naMaquininha: boolean) => void
 }
 
 const formas: { valor: FormaPagamento; rotulo: string; icone: NomeIcone }[] = [
@@ -118,11 +127,44 @@ export function PagamentoFicha(props: Props) {
         </div>
       )}
 
-      {(forma === 'pix' || forma === 'cartao') && (
-        <p className="pagamento-ficha__nota pagamento-ficha__detalhe">
-          <Icone nome="info" tamanho={16} />
-          Conclua só depois de conferir o recebimento.
-        </p>
+      {forma === 'cartao' && (
+        <div className="pagamento-ficha__detalhe pagamento-ficha__maquininha">
+          <Filtros
+            rotulo="Tipo de cartão"
+            valor={props.cartao}
+            aoMudar={props.aoMudarCartao}
+            opcoes={[{ valor: 'credito', rotulo: 'Crédito' }, { valor: 'debito', rotulo: 'Débito' }]}
+          />
+          <Filtros
+            rotulo="Maquininha"
+            valor={props.maquininhaCartao}
+            aoMudar={props.aoMudarMaquininhaCartao}
+            opcoes={[{ valor: 'mercado-pago', rotulo: 'Mercado Pago' }, { valor: 'sicoob', rotulo: 'Sicoob' }]}
+          />
+          <p className="pagamento-ficha__nota">
+            <Icone nome="info" tamanho={16} />
+            {props.maquininhaCartao === 'mercado-pago'
+              ? 'Ao concluir, o valor vai direto para a maquininha Mercado Pago.'
+              : 'Cobre na maquininha Sicoob e conclua só depois de conferir o recebimento.'}
+          </p>
+        </div>
+      )}
+
+      {forma === 'pix' && (
+        <div className="pagamento-ficha__detalhe pagamento-ficha__maquininha">
+          <Filtros
+            rotulo="Como receber o Pix"
+            valor={props.pixNaMaquininha ? 'maquininha' : 'manual'}
+            aoMudar={(valor) => props.aoMudarPixNaMaquininha(valor === 'maquininha')}
+            opcoes={[{ valor: 'maquininha', rotulo: 'QR na maquininha' }, { valor: 'manual', rotulo: 'Pix manual' }]}
+          />
+          <p className="pagamento-ficha__nota">
+            <Icone nome="info" tamanho={16} />
+            {props.pixNaMaquininha
+              ? 'Ao concluir, o QR Code aparece na maquininha Mercado Pago.'
+              : 'Pix direto na chave da loja: conclua só depois de conferir o recebimento.'}
+          </p>
+        </div>
       )}
 
       {forma === 'misto' && (

@@ -1,0 +1,68 @@
+.janela-cobranca {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.janela-cobranca__valor {
+  font-size: var(--text-titulo);
+  line-height: var(--text-titulo--line-height);
+  font-weight: var(--font-weight-forte);
+  font-variant-numeric: tabular-nums;
+}
+
+.janela-cobranca__etapas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.janela-cobranca__etapa {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+  font-size: var(--text-corpo);
+  line-height: var(--text-corpo--line-height);
+  color: var(--color-texto-apagado);
+}
+
+.janela-cobranca__etapa--atual { color: var(--color-tinta); font-weight: var(--font-weight-medio); }
+.janela-cobranca__etapa--feita { color: var(--color-texto-suave); }
+
+.janela-cobranca__marca {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-total);
+  background: var(--color-superficie-2);
+}
+
+.janela-cobranca__etapa--atual .janela-cobranca__marca { background: var(--color-tinta); color: var(--color-superficie); }
+.janela-cobranca__etapa--feita .janela-cobranca__marca { background: var(--color-ok-fundo); color: var(--color-ok-texto); }
+
+.janela-cobranca__resultado {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+  padding: var(--espaco-3) var(--espaco-4);
+  border-radius: var(--radius-medio);
+  font-size: var(--text-corpo);
+  line-height: var(--text-corpo--line-height);
+}
+
+.janela-cobranca__resultado--ok { background: var(--color-ok-fundo); color: var(--color-ok-texto); }
+.janela-cobranca__resultado--erro { background: var(--color-critico-fundo); color: var(--color-critico-texto); }
+.janela-cobranca__resultado .icone { flex: none; margin-top: 1px; }
+
+.janela-cobranca__erro {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+  color: var(--color-critico-texto);
+  font-size: var(--text-corpo);
+  line-height: var(--text-corpo--line-height);
+}
+
+.janela-cobranca__simular { margin-right: auto; color: var(--color-texto-apagado); }

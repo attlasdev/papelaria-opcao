@@ -97,6 +97,14 @@ export type ItemVenda = {
   baixaEstoque?: number
 }
 
+/**
+ * As duas maquininhas da loja (Memoria.md, `2026-10-06`): a do Mercado Pago é
+ * integrada (o sistema manda o valor e vê o "pago"); a do Sicoob é manual
+ * (parcelado e plano B quando o sistema ou a internet caem).
+ */
+export type Maquininha = 'mercado-pago' | 'sicoob'
+export type ModalidadeCartao = 'credito' | 'debito'
+
 /** Um dinheiro que entrou por causa de uma ficha. */
 export type Pagamento = {
   data: string
@@ -108,8 +116,13 @@ export type Pagamento = {
   turnoCaixaId?: string
   /** Notinha: parte paga no ato da venda. */
   entrada?: boolean
-  /** Rótulo mais preciso do meio, como "Cartão crédito (2x)". */
+  /** Rótulo mais preciso do meio, como "Cartão crédito Visa · Mercado Pago". */
   rotulo?: string
+  /** Por qual maquininha passou; ausente no dinheiro e no Pix manual. */
+  maquininha?: Maquininha
+  cartao?: ModalidadeCartao
+  /** Cobrança feita pela maquininha integrada: o id dela e a bandeira devolvida. */
+  cobranca?: { id: string; bandeira?: string; demonstracao?: boolean }
   /** Recebimento lançado por engano: sai do pago e volta a dever. */
   estorno?: Estorno
 }
@@ -196,6 +209,9 @@ export type RascunhoFicha = {
   meioEntrada: Meio
   divisaoPagamento?: Record<Meio, number>
   recebidoMisto?: number
+  cartao?: ModalidadeCartao
+  maquininhaCartao?: Maquininha
+  pixNaMaquininha?: boolean
 }
 
 export type Base = {
