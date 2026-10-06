@@ -30,6 +30,8 @@ componentes, CSS por componente).
 - **Notas fiscais** ganhou o botão **"Exportar produtos para a Emitte"** no
   cabeçalho: gera o XML de produtos e abre a janela do sistema para salvar; ao
   fim, uma janela diz quantos produtos foram e o que completar na Emitte.
+  **No piloto ele aparece desabilitado** ("Indisponível no período de teste"):
+  reimportar na Emitte duplicava os produtos.
 - A seção **"Dados fiscais" saiu do cadastro de produto** (decisão do
   Agostinho: a dona preenche isso na Emitte). O código está comentado em
   `CadastrarProduto.tsx`. O bloco "Para nota fiscal" do cliente continua.

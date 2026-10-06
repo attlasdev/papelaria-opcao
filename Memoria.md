@@ -45,8 +45,24 @@ Operador do piloto: **"Loja"**.
 dona cadastra o produto normal no app, o app exporta o XML de produtos e ela
 completa NCM/tributação/CFOP **na própria Emitte**. **Por quê:** se a Emitte
 mudar regras, o app não precisa mudar; e o campo ela teria de preencher de
-qualquer jeito, tanto faz onde. O XML leva NCM em branco — **a testar:** se a
-Emitte aceita a importação assim. Botão em Notas fiscais.
+qualquer jeito, tanto faz onde. O XML leva NCM em branco.
+
+**Teste na Emitte (`2026-10-06`):** a importação aceitou os 20 produtos (0
+erros); o NCM em branco vira `00000000` (a IA da Emitte avisa que não é
+permitido); tributação e CFOP vêm da tela de importação (na primeira vez foi
+1101/2101, de compra — o certo para revenda é 5102/6102). **Reimportar o mesmo
+XML DUPLICA os produtos**, embora a Emitte diga que atualiza; motivo não
+descoberto. Por isso o botão **"Exportar produtos para a Emitte" está bloqueado
+no piloto** (`EXPORTACAO_LIBERADA` em `ExportarEmitte.tsx`). Pendente: achar
+como a Emitte reconhece um produto já cadastrado (código de barras? código na
+nota? nome?) e decidir se o NCM fica no app (por categoria) ou só na Emitte.
+
+**SINTEGRA (`2026-10-06`, para depois):** o contador perguntou. Pesquisa: em SP,
+empresa do Simples gera e guarda o arquivo (Convênio ICMS 57/95) e só entrega
+se notificada; as notas (registros 50/54) o contador gera dos XMLs da Emitte; o
+que só o app tem é o **inventário** (registros 74/75), que pede NCM e custo.
+Perguntas para o contador: arquivo ou consulta de IE? só inventário? formato
+(planilha ou 74/75)? estado da loja e se vende para fora?
 
 **Desenho da 0.1 (`2026-10-06`, aceito):** a base inteira vira **um documento só**
 numa tabela do Supabase (`jsonb`), lido e gravado pelo processo principal

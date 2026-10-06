@@ -4,6 +4,13 @@ import { Modal } from '../../componentes/modal/Modal'
 import { gerarXmlProdutos } from '../../dados/emitte'
 import { hojeISO, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 
+/**
+ * Bloqueada no piloto (`2026-10-06`): reimportar o XML na Emitte DUPLICA os
+ * produtos, embora a Emitte diga que atualiza. Volta a `true` quando houver um
+ * jeito de importar sem duplicar. Ver Memoria.md.
+ */
+const EXPORTACAO_LIBERADA = false
+
 type Resultado =
   | { tipo: 'salvo'; nome: string; quantidade: number; semGtin: number }
   | { tipo: 'erro'; texto: string }
@@ -20,7 +27,7 @@ export function ExportarProdutosEmitte() {
   const ativos = produtos.filter((p) => !p.inativo).length
 
   async function exportar() {
-    if (gerando) return
+    if (gerando || !EXPORTACAO_LIBERADA) return
     setGerando(true)
     const { xml, quantidade, semGtin } = gerarXmlProdutos(produtos)
     const r = await window.api.salvarArquivo(`produtos-emitte-${hojeISO()}.xml`, xml)
@@ -31,7 +38,12 @@ export function ExportarProdutosEmitte() {
 
   return (
     <>
-      <Botao icone="baixar" onClick={() => void exportar()} disabled={gerando || ativos === 0} title={ativos === 0 ? 'Nenhum produto cadastrado' : undefined}>
+      <Botao
+        icone="baixar"
+        onClick={() => void exportar()}
+        disabled={!EXPORTACAO_LIBERADA || gerando || ativos === 0}
+        title={!EXPORTACAO_LIBERADA ? 'Indisponível no período de teste' : ativos === 0 ? 'Nenhum produto cadastrado' : undefined}
+      >
         {gerando ? 'Gerando…' : 'Exportar produtos para a Emitte'}
       </Botao>
       {resultado && (
