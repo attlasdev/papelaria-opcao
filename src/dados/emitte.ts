@@ -103,7 +103,16 @@ const TIPO_CLIENTE = { consumidor: 'C', revenda: 'R' } as const
 
 export type ClienteDeFora = { nome: string; falta: string[] }
 
-export type PlanilhaClientes = { bytes: Uint8Array; incluidos: number; deFora: ClienteDeFora[] }
+export type PlanilhaClientes = { bytes: Uint8Array; incluidos: number; ids: string[]; deFora: ClienteDeFora[] }
+
+/**
+ * Quem ainda não foi para a Emitte. A importação da Emitte só CRIA: reenviar
+ * duplica (testado em 2026-10-06 — o mesmo código de barras e o mesmo código
+ * na nota viraram um segundo produto, com outro ID). Por isso cada um vai uma vez.
+ */
+export function pendentesEmitte<T extends { emitteEnviadoEm?: string; inativo?: true }>(lista: T[]) {
+  return lista.filter((item) => !item.emitteEnviadoEm && !item.inativo)
+}
 
 /**
  * Só vão os clientes com tudo o que a Emitte exige; os outros voltam com o que
@@ -114,6 +123,7 @@ export type PlanilhaClientes = { bytes: Uint8Array; incluidos: number; deFora: C
  */
 export function gerarPlanilhaClientes(clientes: Cliente[], modelo: Uint8Array, cidades: Set<string>): PlanilhaClientes {
   const linhas: Celula[][] = []
+  const ids: string[] = []
   const deFora: ClienteDeFora[] = []
   for (const c of clientes) {
     const fiscal = c.fiscal ?? FISCAL_CLIENTE_PADRAO
@@ -126,6 +136,8 @@ export function gerarPlanilhaClientes(clientes: Cliente[], modelo: Uint8Array, c
     if (documento.length !== 11 && documento.length !== 14) falta.push('CPF ou CNPJ')
     if (cep.length !== 8) falta.push('CEP')
     if (!logradouro) falta.push('rua')
+    // A Emitte recusa a linha sem tipo de logradouro (testado: "Praça Central").
+    else if (!tipo) falta.push(`tipo de logradouro "${endereco.rua.trim().split(/\s+/)[0]}" não existe na Emitte; cadastre este cliente direto lá`)
     if (!endereco.bairro.trim()) falta.push('bairro')
     if (!cidade || !uf) falta.push('cidade/UF')
     else if (!cidades.has(`${cidadeEmitte(cidade)}|${uf}`)) falta.push(`cidade "${cidade}/${uf}" não está na lista da Emitte`)
@@ -142,8 +154,9 @@ export function gerarPlanilhaClientes(clientes: Cliente[], modelo: Uint8Array, c
       (fiscal.complemento ?? '').slice(0, 60) || null, endereco.bairro.trim().slice(0, 60),
       cidadeEmitte(cidade), uf, null,
     ])
+    ids.push(c.id)
   }
-  return { bytes: preencherPlanilha(modelo, linhas), incluidos: linhas.length, deFora }
+  return { bytes: preencherPlanilha(modelo, linhas), incluidos: linhas.length, ids, deFora }
 }
 
 /** As cidades aceitas, lidas da aba de parâmetros do modelo de clientes. */
@@ -153,7 +166,7 @@ export function cidadesDoModelo(modelo: Uint8Array) {
   return new Set(nomes.map((nome, i) => `${nome}|${ufs[i]}`))
 }
 
-export type PlanilhaProdutos = { bytes: Uint8Array; quantidade: number; semGtin: string[] }
+export type PlanilhaProdutos = { bytes: Uint8Array; quantidade: number; codigos: string[]; semGtin: string[] }
 
 /**
  * Na planilha, NCM e CFOP vão por produto (no XML o CFOP vinha da tela de
@@ -174,5 +187,5 @@ export function gerarPlanilhaProdutos(produtos: Produto[], modelo: Uint8Array): 
       p.fiscal?.cest ?? null, null, null, p.fiscal?.cfopEstadual ?? '5102', p.fiscal?.cfopInterestadual ?? '6102', null,
     ]
   })
-  return { bytes: preencherPlanilha(modelo, linhas), quantidade: lista.length, semGtin }
+  return { bytes: preencherPlanilha(modelo, linhas), quantidade: lista.length, codigos: lista.map((p) => p.codigo), semGtin }
 }

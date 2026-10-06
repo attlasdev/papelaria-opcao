@@ -18,6 +18,8 @@ export type Cliente = {
   desde: string // YYYY-MM-DD
   /** Só para nota fiscal de produto (NF-e); venda de balcão não precisa. */
   fiscal?: FiscalCliente
+  /** Quando foi para a Emitte (ISO). A Emitte só cria na importação, nunca atualiza: vai uma vez. */
+  emitteEnviadoEm?: string
 }
 
 /** O que a Emitte exige do cliente numa NF-e. Rua, número, bairro e cidade vêm do endereço. */
@@ -69,6 +71,8 @@ export type Produto = {
   conteudo?: { embalagem: 'cx' | 'pct'; pacotes?: number; unidades?: number }
   /** Para a nota fiscal. Sem isso, a nota leva os valores padrão. */
   fiscal?: FiscalProduto
+  /** Quando foi para a Emitte (ISO). A Emitte só cria na importação, nunca atualiza: vai uma vez. */
+  emitteEnviadoEm?: string
   /**
    * Cadastrado às pressas numa venda: só o essencial, saldo sem contagem. Fica
    * marcado até alguém completar o cadastro e contar a prateleira no Estoque.

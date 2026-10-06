@@ -28,8 +28,8 @@ export function normalizarBase(bruto: unknown): Base | null {
     ...base,
     avisosLidos: base.avisosLidos ?? {},
     // Conserva o cadastro existente, retirando campos que deixaram de fazer parte dele.
-    clientes: base.clientes.map(({ id, nome, documento, telefone, endereco, descricao, desde, fiscal }) =>
-      ({ id, nome, documento, telefone, endereco, descricao, desde, ...(fiscal ? { fiscal } : {}) })),
+    clientes: base.clientes.map(({ id, nome, documento, telefone, endereco, descricao, desde, fiscal, emitteEnviadoEm }) =>
+      ({ id, nome, documento, telefone, endereco, descricao, desde, ...(fiscal ? { fiscal } : {}), ...(emitteEnviadoEm ? { emitteEnviadoEm } : {}) })),
   }
 }
 

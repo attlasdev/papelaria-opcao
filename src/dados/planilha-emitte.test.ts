@@ -41,6 +41,7 @@ describe('auxiliares de endereço', () => {
     expect(separarLogradouro('Av. Paulista')).toEqual({ tipo: 'Avenida', logradouro: 'Paulista' })
     expect(separarLogradouro('Rua das Flores')).toEqual({ tipo: 'Rua', logradouro: 'das Flores' })
     expect(separarLogradouro('Alameda Santos')).toEqual({ tipo: '', logradouro: 'Alameda Santos' })
+    expect(separarLogradouro('Praça Central')).toEqual({ tipo: '', logradouro: 'Praça Central' })
   })
   it('cidade e UF com barra ou traço', () => {
     expect(separarCidade('São Paulo/SP')).toEqual({ cidade: 'São Paulo', uf: 'SP' })
@@ -58,6 +59,17 @@ describe('gerarPlanilhaClientes', () => {
       K6: '01310100', L6: 'Avenida', M6: 'Paulista', N6: '1000', O6: 'Sala 3', P6: 'Bela Vista', Q6: 'SAO PAULO', R6: 'SP',
     })
     expect(valores.S6).toBeUndefined()
+  })
+
+  it('rua sem tipo que a Emitte conheça fica de fora (ela recusa a linha)', () => {
+    const r = gerarPlanilhaClientes([cliente({ endereco: 'Praça Central, 1 - Centro - Santos/SP' })], modeloClientes, cidades)
+    expect(r.incluidos).toBe(0)
+    expect(r.deFora[0].falta[0]).toMatch(/tipo de logradouro "Praça" não existe/)
+  })
+
+  it('devolve os ids incluídos, para marcar depois da importação', () => {
+    const r = gerarPlanilhaClientes([cliente({ id: 'CLI-0001' }), cliente({ id: 'CLI-0002', documento: '' })], modeloClientes, cidades)
+    expect(r.ids).toEqual(['CLI-0001'])
   })
 
   it('incompleto fica de fora com o que falta; cidade fora da lista também', () => {
@@ -94,5 +106,13 @@ describe('gerarPlanilhaProdutos', () => {
     expect(valores).toMatchObject({ A6: '7890000000017', B6: 'EST-0001', C6: 'Caderno 10 matérias', D6: 'PCT', E6: '24.9', F6: '0', L6: '5102', M6: '6102', A7: 'SEM GTIN' })
     expect(valores.G6).toBeUndefined()
     expect(valores.A8).toBeUndefined()
+  })
+})
+
+describe('pendentesEmitte', () => {
+  it('só quem nunca foi e está ativo', async () => {
+    const { pendentesEmitte } = await import('./emitte')
+    const lista = [{ id: 'a' }, { id: 'b', emitteEnviadoEm: '2026-10-06T00:00:00Z' }, { id: 'c', inativo: true as const }]
+    expect(pendentesEmitte(lista).map((x) => x.id)).toEqual(['a'])
   })
 })

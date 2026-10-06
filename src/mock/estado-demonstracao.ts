@@ -106,7 +106,8 @@ export function cadastrarProduto(dados: Omit<Produto, 'codigo'>) {
 export function completarProduto(codigo: string, dados: Omit<Produto, 'codigo' | 'saldo' | 'cadastroRapido'>, contagem: number) {
   const produto = base.produtos.find((p) => p.codigo === codigo)
   if (!produto || !Number.isInteger(contagem) || contagem < 0) return false
-  const completo: Produto = { ...dados, codigo, saldo: contagem }
+  // A marca de enviado à Emitte sobrevive: o formulário não a conhece.
+  const completo: Produto = { ...dados, codigo, saldo: contagem, ...(produto.emitteEnviadoEm ? { emitteEnviadoEm: produto.emitteEnviadoEm } : {}) }
   const ajuste = contagem !== produto.saldo ? [movimentoEstoque(produto, contagem, 'Ajuste', 'Contagem ao completar cadastro rápido')] : []
   mudar({
     ...base,
@@ -120,7 +121,12 @@ export function completarProduto(codigo: string, dados: Omit<Produto, 'codigo' |
 export function editarProduto(codigo: string, dados: Omit<Produto, 'codigo' | 'saldo' | 'cadastroRapido' | 'inativo'>) {
   const produto = base.produtos.find((p) => p.codigo === codigo)
   if (!produto) return false
-  const editado: Produto = { ...dados, codigo, saldo: produto.saldo, ...(produto.inativo ? { inativo: true as const } : {}) }
+  const editado: Produto = {
+    ...dados, codigo, saldo: produto.saldo,
+    ...(produto.inativo ? { inativo: true as const } : {}),
+    // Sem isto, editar faria o produto ir de novo para a Emitte, que duplicaria.
+    ...(produto.emitteEnviadoEm ? { emitteEnviadoEm: produto.emitteEnviadoEm } : {}),
+  }
   mudar({ ...base, produtos: base.produtos.map((p) => (p.codigo === codigo ? editado : p)) })
   return true
 }
@@ -365,6 +371,17 @@ export function salvarRascunhoFicha(rascunho: RascunhoFicha | null) {
 
 export function prepararRascunho(id: string) {
   if (!base.rascunhosNota.includes(id)) mudar({ ...base, rascunhosNota: [id, ...base.rascunhosNota] })
+}
+
+/**
+ * A dona confirmou que importou na Emitte: esses não vão mais nas próximas
+ * exportações (a Emitte duplicaria — ela só cria, nunca atualiza).
+ */
+export function marcarEnviadosEmitte(tipo: 'produtos' | 'clientes', ids: string[]) {
+  const agora = new Date().toISOString()
+  const marcar = new Set(ids)
+  if (tipo === 'produtos') mudar({ ...base, produtos: base.produtos.map((p) => (marcar.has(p.codigo) && !p.emitteEnviadoEm ? { ...p, emitteEnviadoEm: agora } : p)) })
+  else mudar({ ...base, clientes: base.clientes.map((c) => (marcar.has(c.id) && !c.emitteEnviadoEm ? { ...c, emitteEnviadoEm: agora } : c)) })
 }
 
 export function marcarAvisosLidos(avisos: Notificacao[]) {

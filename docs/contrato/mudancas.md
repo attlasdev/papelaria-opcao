@@ -25,6 +25,17 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-06` — Exportação para a Emitte: cada item vai uma vez
+
+- **Estoque** e **Clientes**: os botões mostram quantos itens **novos** vão
+  ("Exportar 3 produtos novos para a Emitte"); quem já foi não vai de novo (a
+  Emitte duplicaria). Os produtos agora saem em **planilha**, não XML.
+- Depois de salvar, a janela pergunta **"Já importei na Emitte"** / **"Ainda não
+  importei"**; só a confirmação marca os itens como enviados.
+- Clientes com rua sem tipo que a Emitte conheça (Praça, Alameda…) ficam de
+  fora, com o motivo na janela.
+- Ligado só em desenvolvimento por enquanto; no instalador, desabilitado.
+
 ### `2026-10-06` — Exportar clientes para a Emitte (desligado)
 
 - **Clientes** ganhou o botão **"Exportar clientes para a Emitte"** ao lado do

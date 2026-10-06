@@ -11,10 +11,13 @@ export const funcoes = {
    * continuam existindo, só não há caminho até elas.
    */
   notasFiscais: false,
-  /** Exportar produtos para a Emitte: bloqueada porque reimportar duplica os produtos lá. */
-  exportarEmitte: false,
-  /** Exportar clientes para a Emitte (planilha): desligada até o teste de importação passar. */
-  exportarClientesEmitte: false,
+  /**
+   * Exportar produtos e clientes para a Emitte (planilhas). Ligado só em
+   * desenvolvimento enquanto o fluxo "vai uma vez, marca ao confirmar" é testado;
+   * no instalador, desligado até o Agostinho liberar.
+   */
+  exportarEmitte: import.meta.env.DEV,
+  exportarClientesEmitte: import.meta.env.DEV,
   /**
    * "Restaurar dados de exemplo" (clique no operador). Desligado também em
    * desenvolvimento: com o app ligado a um banco, a amostra de 90 dias ia

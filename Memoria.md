@@ -76,6 +76,27 @@ gera as duas planilhas preenchendo o próprio modelo, com textos compartilhados
   planilha **atualiza** em vez de duplicar (o XML duplicou). Ainda sem botão.
 - Arquivos de teste gerados fora do app: `release/emitte-teste/` (não versionado).
 
+**Testes na Emitte e decisão (`2026-10-06`):**
+- **A importação da Emitte só CRIA, nunca atualiza.** Reimportar o mesmo produto
+  (mesmo código de barras e código na nota) gerou outro com novo ID interno.
+  A planilha não tem coluna de ID: não há atualização por arquivo.
+- **Decisão (Agostinho): cada produto e cada cliente vai para a Emitte UMA vez.**
+  O app exporta só os ainda não enviados e marca `emitteEnviadoEm` **só quando a
+  dona confirma** "Já importei na Emitte". Editar não apaga a marca. Mudança de
+  preço/nome depois do envio: alterar também na Emitte, à mão.
+- **NCM fica só na Emitte, de vez:** como nada é reenviado, o que ela preenche lá
+  nunca é sobrescrito. Nenhum dado fiscal de produto no app.
+- **Produtos vão pela planilha, não pelo XML:** a planilha trouxe CFOP 5102/6102
+  e NCM em branco ("SELECIONE", obrigatório lá); o XML trazia `00000000` em
+  silêncio e CFOP da tela de importação.
+- **Clientes:** "Isento" aceito em SP; CNPJ repetido é aceito (duplica);
+  **sem tipo de logradouro a Emitte recusa** — e a lista dela não tem Praça,
+  Alameda, Estrada, Largo. Esses clientes ficam de fora com aviso para cadastrar
+  direto na Emitte. A observar: o telefone celular do cliente B apareceu com um
+  dígito a menos na Emitte.
+- Botões ligados só em `npm run dev` (`funcoes.ts`); no instalador, desligados
+  até o Agostinho liberar.
+
 **SINTEGRA (`2026-10-06`, para depois):** o contador perguntou. Pesquisa: em SP,
 empresa do Simples gera e guarda o arquivo (Convênio ICMS 57/95) e só entrega
 se notificada; as notas (registros 50/54) o contador gera dos XMLs da Emitte; o

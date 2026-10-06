@@ -19,6 +19,8 @@ import {
   completarProduto,
   definirProdutoAtivo,
   editarProduto,
+  editarCliente,
+  marcarEnviadosEmitte,
   excluirProduto,
   marcarAvisosLidos,
   notificacoes,
@@ -467,5 +469,26 @@ describe('comparação com o período anterior', () => {
     const linhas = [linha('2026-09-24', '09:00', 1000), linha('2026-09-24', '17:00', 9000), linha(HOJE, '09:30', 1000)]
     expect(resumoFinanceiro(linhas, 'dia', HOJE, '10:00').variacao?.texto).toBe('+0,0%')
     expect(resumoFinanceiro(linhas, 'dia', HOJE).variacao?.texto).toBe('-90,0%')
+  })
+})
+
+describe('marca de enviado à Emitte', () => {
+  it('marca só os escolhidos e sobrevive a editar e completar', () => {
+    const [a, b] = obterBase().produtos
+    marcarEnviadosEmitte('produtos', [a.codigo])
+    const marcado = obterBase().produtos.find((p) => p.codigo === a.codigo)!
+    expect(marcado.emitteEnviadoEm).toBeTruthy()
+    expect(obterBase().produtos.find((p) => p.codigo === b.codigo)!.emitteEnviadoEm).toBeUndefined()
+    const { codigo: _c, saldo: _s, cadastroRapido: _r, inativo: _i, emitteEnviadoEm: _e, ...dados } = marcado
+    expect(editarProduto(a.codigo, { ...dados, preco: dados.preco + 100 })).toBe(true)
+    expect(obterBase().produtos.find((p) => p.codigo === a.codigo)!.emitteEnviadoEm).toBe(marcado.emitteEnviadoEm)
+  })
+
+  it('cliente marcado continua marcado ao editar', () => {
+    const c = obterBase().clientes[0]
+    marcarEnviadosEmitte('clientes', [c.id])
+    const quando = obterBase().clientes[0].emitteEnviadoEm
+    expect(editarCliente(c.id, { nome: c.nome, documento: c.documento, telefone: c.telefone, endereco: c.endereco })).toBe(true)
+    expect(obterBase().clientes[0].emitteEnviadoEm).toBe(quando)
   })
 })
