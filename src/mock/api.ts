@@ -4,6 +4,7 @@ import { simular } from './simular'
 import { criarSemente } from './base/semente'
 import { comFechamentosExemplo } from './base/cenario-caixa'
 import { hojeISO, minutoDoDia } from './base/datas'
+import { criarMaquininhaDemonstracao } from '../../comum/maquininha-demonstracao'
 
 /**
  * O mock do contrato. E o que permite montar tela inteira no navegador, com
@@ -35,6 +36,7 @@ function gravarServidor(documento: DocumentoBase) {
 }
 
 let sessao: { email: string } | null = { email: 'loja@exemplo.com' }
+const maquininha = criarMaquininhaDemonstracao()
 
 const mock: Contrato = {
   sessaoAtual: () => simular(() => ok(sessao)),
@@ -69,6 +71,10 @@ const mock: Contrato = {
     URL.revokeObjectURL(link.href)
     return ok({ salvo: true, nome: nomeSugerido })
   }),
+  iniciarCobranca: (dados) => simular(() => maquininha.iniciar(dados)),
+  consultarCobranca: (id) => simular(() => maquininha.consultar(id)),
+  cancelarCobranca: (id) => simular(() => maquininha.cancelar(id)),
+  simularCobranca: (id, resultado) => simular(() => maquininha.simular(id, resultado)),
 }
 
 window.api = mock

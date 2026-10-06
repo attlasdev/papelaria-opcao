@@ -2,6 +2,7 @@ import { app, BrowserWindow, dialog } from 'electron'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { falha, ok, type Contrato, type Falha } from '../comum/contrato'
+import { criarMaquininhaDemonstracao } from '../comum/maquininha-demonstracao'
 import { ConexaoAusente } from './conexao'
 import { interpretar, supabase } from './supabase'
 
@@ -34,6 +35,14 @@ const TIPOS_ARQUIVO: Record<string, Electron.FileFilter> = {
 function nomeSeguro(sugerido: string) {
   return path.basename(sugerido).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w.-]+/g, '-').slice(0, 80)
 }
+
+/**
+ * Piloto 0.1: a maquininha é a de demonstração (sem credencial nem rede). Na
+ * 1.0 entra aqui o cliente da Orders API do Mercado Pago, com as mesmas
+ * operações; a prova real dos estados está em Memoria.md (`2026-10-06`).
+ */
+const maquininha = criarMaquininhaDemonstracao()
+const idValido = (id: unknown) => (typeof id === 'string' && id.length <= 80 ? id : '')
 
 /** O dado entra pela IPC sem garantia de tipo: confere antes de usar. */
 const texto = (valor: unknown) => (typeof valor === 'string' ? valor.trim() : '')
@@ -95,6 +104,21 @@ export const operacoes: Contrato = {
     if (escolha.canceled || !escolha.filePath) return ok({ salvo: false })
     await fs.writeFile(escolha.filePath, conteudo)
     return ok({ salvo: true, nome: path.basename(escolha.filePath) })
+  },
+
+  async iniciarCobranca(dados) {
+    if (!dados || typeof dados !== 'object') return falha('validacao', 'Dados da cobrança inválidos.')
+    return maquininha.iniciar({ valor: Number(dados.valor), meio: dados.meio, referencia: texto(dados.referencia).slice(0, 64) })
+  },
+  async consultarCobranca(id) {
+    return maquininha.consultar(idValido(id))
+  },
+  async cancelarCobranca(id) {
+    return maquininha.cancelar(idValido(id))
+  },
+  async simularCobranca(id, resultado) {
+    if (resultado !== 'aprovada' && resultado !== 'recusada') return falha('validacao', 'Resultado inválido.')
+    return maquininha.simular(idValido(id), resultado)
   },
 
   async salvarBase(conteudo, revisaoEsperada) {

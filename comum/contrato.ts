@@ -99,6 +99,28 @@ export type Gravacao = { revisao: number; salvoEm: string }
 export type ArquivoSalvo = { salvo: boolean; nome?: string }
 
 /**
+ * Cobranca na maquininha integrada (Mercado Pago Point, Memoria.md `2026-10-06`).
+ * O sistema manda o valor, a maquininha cobra, o sistema consulta ate o fim.
+ * Os estados espelham a Orders API: created/at_terminal -> processed / failed /
+ * canceled / expired.
+ */
+export type MeioCobranca = 'credito' | 'debito' | 'pix'
+export type SituacaoCobranca = 'enviando' | 'na-maquininha' | 'aprovada' | 'recusada' | 'cancelada' | 'expirada'
+export type Cobranca = {
+  id: string
+  situacao: SituacaoCobranca
+  meio: MeioCobranca
+  /** Centavos. */
+  valor: number
+  /** Piloto 0.1: a maquininha e simulada dentro do app. A tela avisa. */
+  demonstracao: boolean
+  /** Quando aprovada no cartao: "Visa", "Mastercard"... */
+  bandeira?: string
+  /** Quando recusada: o motivo, ja legivel. */
+  motivo?: string
+}
+
+/**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
  * Quem escreve o primeiro corte e o FRONT: as operacoes saem da reuniao com o
@@ -139,6 +161,23 @@ export type Contrato = {
    * So `.xml` e `.xlsx`.
    */
   salvarArquivo(nomeSugerido: string, conteudo: string | Uint8Array): Promise<Resultado<ArquivoSalvo>>
+
+  /**
+   * Manda a cobranca para a maquininha. So uma aberta por vez (a maquininha
+   * recusa a segunda): com outra aberta, devolve `conflito`.
+   * `referencia`: identifica a venda no extrato do Mercado Pago.
+   */
+  iniciarCobranca(dados: { valor: number; meio: MeioCobranca; referencia: string }): Promise<Resultado<Cobranca>>
+  /** A tela consulta a cada ~2 s ate a situacao ser final. */
+  consultarCobranca(id: string): Promise<Resultado<Cobranca>>
+  /** Desistir antes do cliente pagar; libera a maquininha para outra cobranca. */
+  cancelarCobranca(id: string): Promise<Resultado<Cobranca>>
+  /**
+   * So em demonstracao ou com credencial de TESTE do Mercado Pago (la vira o
+   * endpoint de simulacao): faz a cobranca aberta terminar como aprovada ou
+   * recusada. Em producao devolve `permissao`.
+   */
+  simularCobranca(id: string, resultado: 'aprovada' | 'recusada'): Promise<Resultado<Cobranca>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */
