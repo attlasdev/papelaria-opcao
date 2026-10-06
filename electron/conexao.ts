@@ -1,6 +1,7 @@
 import { app } from 'electron'
 import fs from 'node:fs'
 import path from 'node:path'
+import { interpretarConexao, type Conexao } from './conexao-arquivo'
 
 /**
  * A que banco o app se liga. Fica em `userData/conexao.json`, fora do repositorio
@@ -14,7 +15,7 @@ import path from 'node:path'
  * Em desenvolvimento, `PAPELARIA_URL` e `PAPELARIA_CHAVE` no ambiente substituem o
  * arquivo — para apontar para o Supabase local sem tocar no arquivo da maquina.
  */
-export type Conexao = { url: string; chave: string }
+export type { Conexao } from './conexao-arquivo'
 
 export class ConexaoAusente extends Error {}
 
@@ -33,11 +34,7 @@ export function lerConexao(): Conexao {
   } catch {
     throw new ConexaoAusente('Este computador ainda não foi configurado para o banco de dados. Chame o suporte.')
   }
-  try {
-    const dados = JSON.parse(bruto) as Partial<Conexao>
-    if (typeof dados.url !== 'string' || typeof dados.chave !== 'string' || !dados.url.startsWith('http')) throw new Error()
-    return { url: dados.url, chave: dados.chave }
-  } catch {
-    throw new ConexaoAusente('A configuração do banco de dados neste computador está incompleta. Chame o suporte.')
-  }
+  const conexao = interpretarConexao(bruto)
+  if (typeof conexao === 'string') throw new ConexaoAusente(`${conexao} Chame o suporte.`)
+  return conexao
 }

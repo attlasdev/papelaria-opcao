@@ -59,11 +59,27 @@ repositório é privado: baixar exige estar logado no GitHub com acesso a ele.
    `%APPDATA%\papelaria-opcao\` (nome fixo, mesmo com o app se chamando "Papelaria Opção"). A tela vai dizer que o computador não foi
    configurado — é o esperado.
 4. Nessa pasta, criar `conexao.json` com a URL e a chave **pública** do projeto
-   **piloto**:
+   (**dev** para o teste de vocês, **piloto** na loja):
 
    ```json
    { "url": "https://<ref>.supabase.co", "chave": "<chave anon/publishable>" }
    ```
+
+   **Jeito mais seguro — PowerShell** (Iniciar → digitar "PowerShell" → abrir;
+   colar o bloco inteiro depois de trocar URL e chave):
+
+   ```powershell
+   $pasta = "$env:APPDATA\papelaria-opcao"
+   New-Item -ItemType Directory -Force -Path $pasta | Out-Null
+   '{ "url": "https://<ref>.supabase.co", "chave": "<chave publica>" }' | Set-Content -Path "$pasta\conexao.json" -Encoding UTF8
+   Get-Content "$pasta\conexao.json"
+   ```
+
+   A última linha mostra o arquivo, para conferir. Pelo Bloco de Notas também
+   funciona, com dois cuidados: ao salvar, "Tipo" = **Todos os arquivos** (senão
+   vira `conexao.json.txt`), e nada além do bloco `{ ... }`. O app tolera o
+   caractere invisível que o Windows às vezes grava no início, espaços e barra
+   no fim da URL, e **recusa a chave secreta** com uma mensagem clara.
 
 5. Abrir de novo e entrar com o usuário da loja. A sessão fica guardada; a loja
    não precisa entrar todo dia.

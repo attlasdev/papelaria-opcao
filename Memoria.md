@@ -25,7 +25,13 @@ Emitte bloqueada (interruptores em `src/funcoes.ts`; dados fiscais do produto
 comentados no cadastro). Instalador Windows gerado pelo GitHub Actions a cada
 tag `v*` (`.github/workflows/release-win.yml`), publicado como Release.
 Exercitado no Electron contra Supabase local e contra o projeto de **teste**
-(`papelaria-dev`, migration aplicada, semente carregada). 101 testes; build ok.
+(`papelaria-dev`, migration aplicada, semente carregada). Release **v0.1.0**
+gerada pelo Actions (confirmado pelo Agostinho); **v0.1.1** acrescenta a
+maquininha Mercado Pago em demonstração, exportação para a Emitte preparada
+(desligada), logo sem o selo, "restaurar" desligado e `conexao.json` tolerante
+(BOM, espaços; recusa chave secreta). 125 testes; build ok. Projeto **piloto**
+já criado no Supabase (conta da Attlas); falta aplicar a migration nele — com
+OK do Agostinho na hora — quando for para a loja.
 **Falta:** testar o instalador numa máquina Windows, criar e migrar o projeto
 **piloto** (conta da Attlas), instalar na loja. Passo a passo: `docs/piloto.md`.
 
