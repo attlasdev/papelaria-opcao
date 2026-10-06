@@ -52,3 +52,7 @@ componentes, CSS por componente).
   dias continua igual para o trabalho nas telas.
 - Para o código das telas: `useEstadoDemonstracao()` e as funções de gravação
   continuam iguais. Nada nas telas precisou mudar além da barra lateral.
+- **No navegador, a primeira abertura depois desta versão volta à amostra de 90
+  dias**: a cópia guardada antes da sincronia existir não é reaproveitada (ela é
+  sempre a demonstração antiga, e no app instalado subiria como se fosse a loja).
+  Daí em diante, o que se fizer no navegador fica guardado como antes.

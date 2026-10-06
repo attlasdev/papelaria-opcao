@@ -32,8 +32,10 @@ export type Inicio =
  *   e a local é guardada à parte em vez de apagada.
  * - Sem nada pendente: vale o banco; sem banco, uma loja vazia.
  *
- * Cópia local sem marcador é de antes da sincronia existir: conta como pendente
- * sobre a revisão 0, para não ser descartada.
+ * Cópia local sem marcador é de antes da sincronia existir — a demonstração
+ * antiga, com dados de exemplo. Não é enviada: vale o banco. (Enviá-la subia a
+ * amostra de 90 dias como se fosse a loja, em qualquer máquina onde a
+ * demonstração já tinha rodado.)
  */
 export function decidirInicio(
   local: Base | null,
@@ -41,7 +43,7 @@ export function decidirInicio(
   nuvem: DocumentoBase | null,
   vazia: () => Base,
 ): Inicio {
-  const meu = local ? (marcador ?? { revisao: 0, pendente: true }) : null
+  const meu = local ? marcador : null
   const revisaoNuvem = nuvem?.revisao ?? 0
   const daNuvem = nuvem ? normalizarBase(nuvem.conteudo) : null
   if (nuvem && !daNuvem) return { tipo: 'invalida' }
@@ -166,7 +168,9 @@ export function criarSincronia(dep: Dependencias) {
   function abrirSemBanco(r: { erro: string; causa: CausaFalha }) {
     const local = dep.lerLocal()
     if (!local) return definir({ fase: 'erro', causa: r.causa, mensagem: r.erro, podeTentar: true })
-    const meu = lerMarcador() ?? { revisao: 0, pendente: true }
+    const meu = lerMarcador()
+    // Sem marcador, a cópia é a demonstração antiga: não serve como a loja.
+    if (!meu) return definir({ fase: 'erro', causa: r.causa, mensagem: r.erro, podeTentar: true })
     comecar({ tipo: 'usar', base: local, marcador: meu }, 'sem-conexao', r.erro)
   }
 

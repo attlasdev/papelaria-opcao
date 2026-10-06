@@ -34,9 +34,10 @@ describe('decidirInicio', () => {
     expect(r).toMatchObject({ tipo: 'usar', marcador: { revisao: 5, pendente: false }, descartada: local })
   })
 
-  it('cópia de antes da sincronia existir não é descartada', () => {
-    const local = cheia()
-    expect(decidirInicio(local, null, null, vazia)).toEqual({ tipo: 'usar', base: local, marcador: { revisao: 0, pendente: true } })
+  it('cópia de antes da sincronia existir (a demonstração) não sobe: vale o banco', () => {
+    const r = decidirInicio(cheia(), null, null, vazia)
+    expect(r).toMatchObject({ tipo: 'usar', marcador: { revisao: 0, pendente: false } })
+    expect(r.tipo === 'usar' && r.base.fichas).toEqual([])
   })
 
   it('sem pendência: vale o banco, mesmo havendo cópia local', () => {
@@ -50,12 +51,13 @@ describe('decidirInicio', () => {
 })
 
 /** Um banco falso e um relógio que só anda quando o teste manda. */
-function montar(opcoes: { sessao?: boolean; nuvem?: DocumentoBase | null; local?: Base | null; falharCom?: CausaFalha[]; carregarFalha?: CausaFalha } = {}) {
+function montar(opcoes: { sessao?: boolean; nuvem?: DocumentoBase | null; local?: Base | null; falharCom?: CausaFalha[]; carregarFalha?: CausaFalha; marcador?: { revisao: number; pendente: boolean } } = {}) {
   let servidor: DocumentoBase | null = opcoes.nuvem ?? null
   const falhas = [...(opcoes.falharCom ?? [])]
   const chamadas: number[] = []
   const timers: (() => void)[] = []
   const guardado = new Map<string, string>()
+  if (opcoes.marcador) guardado.set('papelaria-opcao:sincronia', JSON.stringify(opcoes.marcador))
   let base: Base = opcoes.local ?? vazia()
   let observador: () => void = () => {}
 
@@ -137,12 +139,18 @@ describe('sincronia', () => {
 
   it('abre sem internet com a cópia do computador e envia o pendente depois', async () => {
     const local = cheia()
-    const m = montar({ local, carregarFalha: 'rede' })
+    const m = montar({ local, carregarFalha: 'rede', marcador: { revisao: 0, pendente: true } })
     await m.s.iniciar()
     expect(m.s.obter()).toMatchObject({ fase: 'pronto', gravacao: 'pendente' })
     await m.correr()
     expect(m.chamadas).toEqual([0])
     expect(m.s.obter()).toMatchObject({ gravacao: 'salvo' })
+  })
+
+  it('sem internet e só a demonstração antiga no computador: não abre', async () => {
+    const m = montar({ local: cheia(), carregarFalha: 'rede' })
+    await m.s.iniciar()
+    expect(m.s.obter()).toMatchObject({ fase: 'erro', causa: 'rede' })
   })
 
   it('sem internet e sem cópia no computador: não abre uma loja vazia por cima', async () => {
