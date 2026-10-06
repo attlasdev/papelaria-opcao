@@ -65,8 +65,11 @@ componentes, CSS por componente).
   "Salvo às 14:10", "Salvando…", "Sem conexão" (vermelho; os dados ficam no
   computador e sobem quando a internet volta) ou "Não salvo" (conflito). Na
   barra recolhida, só o ícone.
-- **"Restaurar dados de exemplo"** só existe em desenvolvimento (`npm run dev`).
-  No app instalado, clicar no operador não faz nada.
+- **"Restaurar dados de exemplo"** está **desligado em todo lugar**, inclusive
+  em `npm run dev` (`funcoes.restaurarExemplo` em `src/funcoes.ts`): com o app
+  ligado a um banco, a amostra ia para o banco por cima dos dados. Clicar no
+  operador não faz nada. No navegador, a amostra continua vindo do mock na
+  primeira abertura.
 - **A loja começa vazia** no app instalado. No navegador (mock), a amostra de 90
   dias continua igual para o trabalho nas telas.
 - Para o código das telas: `useEstadoDemonstracao()` e as funções de gravação

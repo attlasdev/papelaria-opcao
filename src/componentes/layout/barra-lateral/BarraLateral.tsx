@@ -10,6 +10,8 @@ import { rotas } from '../../../rotas-caminhos'
 import { funcoes } from '../../../funcoes'
 import './barra-lateral.css'
 
+const podeRestaurar = funcoes.restaurarExemplo
+
 const secoes: { rotulo: string; icone: NomeIcone; caminho: string; exato?: boolean }[] = [
   { rotulo: 'Início', icone: 'inicio', caminho: rotas.inicio, exato: true },
   { rotulo: 'Clientes', icone: 'clientes', caminho: rotas.clientes },
@@ -96,13 +98,13 @@ export function BarraLateral({ recolhida, ref }: Props) {
           <Icone nome="carrinho" tamanho={18} />
           <span>Criar ficha</span>
         </button>
-        {/* Restaurar a amostra só existe em desenvolvimento: no piloto apagaria os dados da loja. */}
+        {/* Restaurar a amostra: desligado em src/funcoes.ts (apagaria os dados do banco ligado). */}
         <button
           type="button"
           className="barra-lateral__operador"
-          aria-label={import.meta.env.DEV ? `Operador: ${operador}. Restaurar dados de exemplo` : `Operador: ${operador}`}
-          title={recolhida ? `Operador: ${operador}` : import.meta.env.DEV ? 'Restaurar dados de exemplo' : undefined}
-          onClick={import.meta.env.DEV ? () => setRestaurando(true) : undefined}
+          aria-label={podeRestaurar ? `Operador: ${operador}. Restaurar dados de exemplo` : `Operador: ${operador}`}
+          title={recolhida ? `Operador: ${operador}` : podeRestaurar ? 'Restaurar dados de exemplo' : undefined}
+          onClick={podeRestaurar ? () => setRestaurando(true) : undefined}
         >
           <Icone nome="pessoa-circulo" tamanho={24} />
           <span>Operador: {operador}</span>
@@ -110,7 +112,7 @@ export function BarraLateral({ recolhida, ref }: Props) {
         <IndicadorGravacao recolhida={recolhida} />
       </div>
 
-      {import.meta.env.DEV && restaurando && (
+      {podeRestaurar && restaurando && (
         <Modal
           estreito
           titulo="Restaurar dados de exemplo"
