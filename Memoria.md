@@ -12,7 +12,34 @@ Relato de sessão longo vai para `docs/historico/`.
 
 ---
 
-## Onde estamos — `2026-10-01`
+## Onde estamos — `2026-10-06`
+
+**Rumo atual: versão 0.1 (piloto online) para a loja testar.** Ver "Decisões de
+arquitetura", `2026-10-06`. O banco local de `2026-10-05` é o alvo da 1.0.
+
+**Prazo da 0.1 (`2026-10-06`): no máximo 2 dias.** Emitte e formato do piloto
+ficam para reunião do Agostinho mais tarde; materiais em `EMITTE/` (sem API: a
+integração é por arquivos e a nota é montada à mão na Emitte). Notas do piloto
+em **homologação**. Supabase: piloto na conta da Attlas, dev na conta pessoal do
+Agostinho.
+
+**Emitte fora da 0.1 (`2026-10-06`, reunião):** o piloto não integra com a
+Emitte; as notas da loja seguem como hoje. Deixar o ambiente preparado e o fluxo
+explicado para o cliente; a integração (por arquivos — ver `EMITTE/`) vem depois.
+"Ambiente preparado" = **os campos fiscais já existem no cadastro** (produto:
+NCM, origem, CFOP, CEST, grupo de tributação, código de barras com dígito
+verificador; cliente: dados que a Emitte exige para NF-e), sem exportação ainda.
+Operador do piloto: **"Loja"**.
+
+**Desenho da 0.1 (`2026-10-06`, aceito):** a base inteira vira **um documento só**
+numa tabela do Supabase (`jsonb`), lido e gravado pelo processo principal
+(`carregarBase`/`salvarBase`); regras e telas continuam as da base local, com
+cópia no computador para abrir sem internet. **Descartável** — a 1.0 faz o
+contrato por operação. A loja usa **Windows** (há como testar antes). Começa
+**vazia**; uma semente de ~20 produtos existe, mas só é carregada se a loja
+pedir. O botão "Restaurar dados de exemplo" **sai** do piloto. Dados do piloto
+se perdem na 1.0 (a loja já sabe); reforçar "só dados inventados".
+
 
 Só a interface existe, rodando contra uma **base local** (`src/mock/base/`,
 `localStorage`). Tudo o que se faz nas telas grava e aparece igual em todas.
@@ -30,7 +57,11 @@ só a operação de exemplo `ping`.
   separadas conferidas no Chromium a 1300 e 900 px, sem erro de JavaScript ou
   transbordamento do documento, e abertas pelo menu no Electron. Isso não
   substitui a validação de uso do Financeiro e do Caixa.
-- Branch de trabalho: `analise-de-funcao` (ainda não juntada à `main`).
+- Branch: `main`, que já contém tudo de `analise-de-funcao` (mesmo commit, `fe08494`).
+- **Virada de `2026-10-01`:** o Agostinho (back) assume o contrato e toda a parte
+  interna, inclusive a camada de dados de `src/`. Ponto de partida: o mapa tela a
+  tela em `docs/contrato/inventario.md`. O que afetar o Victor vai em
+  `docs/contrato/mudancas.md`.
 - "Restaurar dados de exemplo" (botão do operador, rodapé da barra lateral)
   refaz a amostra de 90 dias até hoje.
 - Na prévia de desenvolvimento, o cenário pedido pelo Victor acrescenta três
@@ -102,15 +133,23 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
 12. Licença do pacote de ícones do acervo; ícone do aplicativo
     (`electron-builder.json` não aponta nenhum).
 
-*Próximos passos de arquitetura (em ordem):*
-13. Contrato de verdade em PR próprio (regra 7): o formato de
-    `src/mock/base/tipos.ts` é a proposta de vocabulário. Nessa etapa as telas
-    ganham estados de carregando e falha (regra 6), que hoje não aparecem porque
-    a base local é síncrona.
-14. Entregar `front-side.md` ao parceiro; esperar o primeiro corte do contrato;
-    aplicar `revisao-de-contrato.md`.
-15. Só depois: banco de **teste**, `supabase/migrations/0001` e
-    `electron/operacoes.ts` de verdade.
+*Back — próximos passos (Agostinho), em ordem:*
+13. **Responder as perguntas que ainda travam** (seção "Perguntas em aberto"):
+    login/operadores, dados iniciais da loja, atualização do app, impressão.
+    Máquina, internet e banco já estão decididos (`2026-10-05`).
+14. **Mock do contrato sobre a base local:** `src/mock/api.ts` implementa o
+    `Contrato` usando a base que já existe, com o atraso e as falhas do
+    `simular`. As telas migram de `useEstadoDemonstracao()` para `window.api`
+    **uma área por vez** (Clientes → Estoque → Ficha/Notinha → Financeiro/Caixa),
+    e cada uma ganha os estados de carregando e falha (regra 6).
+15. **Em paralelo:** banco local SQLite (`node:sqlite`) no processo principal:
+    schema e migrations do SQLite, escritas atômicas em transação, seed com as
+    patologias da base local, e os 75 testes de regra portados como
+    especificação do back. Migration testada numa cópia com dados no formato
+    antigo antes de chegar à máquina da loja (regra 8).
+16. `electron/operacoes.ts` real, área por área, na mesma ordem do 14.
+17. Backup: cópia do arquivo para o Supabase (no máximo a cada 5 min com
+    mudança + ao fechar), cópias locais diárias, e restauração testada.
 
 ---
 
@@ -357,17 +396,72 @@ montada". O que é decisão (e o porquê):
 
 ## Decisões de arquitetura
 
-### `2026-09-22` — Repo único, dono por pasta
-Um repo, dono por pasta (`src/` do parceiro; `electron/` e `supabase/` do
-Victor). **Por quê:** no mesmo repo o contrato é o mesmo arquivo para os dois,
-sem pacote npm para sincronizar. Descartado: dois repos + pacote de contrato; o
-parceiro entregar React solto e integrar no fim.
+### `2026-09-22` — Repo único
+Um repo para os dois lados. **Por quê:** no mesmo repo o contrato é o mesmo
+arquivo para os dois, sem pacote npm para sincronizar. Descartado: dois repos +
+pacote de contrato; o front entregar React solto e integrar no fim.
 
-### `2026-09-22` — O front escreve o contrato; o back revisa num portão
-O contrato é o vocabulário do domínio, e quem faz a reunião com o cliente é o
-parceiro. Com o back ficam atomicidade, catálogo de falhas e gestos
-irreversíveis (`revisao-de-contrato.md`). Portão: depois da primeira ou segunda
-tela, antes da terceira.
+### `2026-10-06` — Duas versões: 0.1 (piloto online) e 1.0 (produção)
+A loja **ainda não fechou** contrato. A Attlas monta o sistema para a loja
+testar no dia a dia, com **simulações** (produtos e clientes fictícios), gerar
+interesse e só então combinar valores — método de conquistar cliente.
+- **Versão 0.1 — piloto:** tudo **online**, app ligado a um **Supabase free**;
+  **login único da loja** só por consciência (dona + funcionária, sem
+  restrição por pessoa); emissão de **NF-e e NFC-e pela Emitte** já no piloto,
+  com **cupom em impressora térmica**; instalação e atualização **manuais**,
+  com a Attlas monitorando.
+- **Versão 1.0 — produção:** começa quando a loja aceitar. Aí entra o desenho
+  de `2026-10-05` (banco local, backup, sem criptografia consciente) e a
+  segurança completa. Supabase pago.
+- Respostas que valem para a 1.0: dados entram do zero (de começo só produtos;
+  clientes e notinhas conforme a demanda); 2 pessoas, um usuário na máquina,
+  sem restrição por pessoa; uma máquina só.
+
+**Por quê:** a 0.1 precisa estar funcionando rápido e ser fácil de testar na
+loja; o investimento pesado só se justifica com o acordo fechado. O que liga as
+duas é o **contrato**: as telas falam com `window.api` nas duas, e a troca de
+online para local fica só em `electron/operacoes.ts`.
+
+### `2026-10-05` — Banco local (SQLite) e cópia do arquivo na nuvem (alvo da 1.0)
+Uma máquina só, sem acesso aos dados fora da loja, e a venda precisa continuar
+quando a internet cai (a nota fiscal fica pendente). Então:
+- **Fonte da verdade: SQLite na máquina**, aberto pelo processo principal com
+  `node:sqlite` (já vem no Electron; nenhum módulo nativo).
+- **Nuvem = backup:** uma cópia do arquivo sobe para o armazenamento do
+  Supabase no máximo a cada 5 minutos quando houve mudança, e ao fechar o app.
+  Perda máxima aceita se o disco morrer: esses minutos. Sem schema de negócio
+  no Postgres. Credencial: chave `anon` + login, nunca `service_role`.
+- **Nota fiscal:** fila local; sem internet fica pendente e sai quando volta.
+- **Modelo preparado para crescer:** id interno único (UUID) com o número da
+  ficha só para exibir; movimentações só inseridas. Se um dia vier segunda
+  máquina ou acesso remoto, o passo seguinte é o espelho linha a linha.
+- **Sem criptografia do banco no app**, de propósito. Ela só cobre o disco fora
+  do lugar (roubo, conserto, descarte), e isso a criptografia do Windows cobre
+  melhor e de graça. O custo no app seria módulo nativo permanente
+  (`better-sqlite3-multiple-ciphers`). No lugar: senha na conta do Windows da
+  loja, BitLocker/"Criptografia do dispositivo" se a máquina tiver, bucket de
+  backup privado. **Revisitar** se virar produto para várias lojas.
+
+**Por quê:** só na nuvem, a internet caída para o balcão — e "nota pendente" só
+existe se a venda acontece. Descartados: espelho linha a linha no Postgres
+(dois schemas para manter sem ninguém consultando de fora) e sync nos dois
+sentidos/PowerSync (só se paga com mais de um escritor). Origem: estudo
+`estoque-electron-licenca-e-banco.docx`; a parte de licença e vários clientes
+continua só estudo.
+
+### `2026-10-01` — O back escreve o contrato e cuida de toda a parte interna
+Victor: o que o usuário vê (telas, textos, visual). Agostinho: `electron/`,
+`supabase/`, `comum/contrato.ts` e a camada de dados dentro de `src/`. O
+Agostinho também pode mexer na tela, com aval do Victor: o mínimo possível, só
+o que acrescenta ou se torna obrigatório (estado de carregando, de falha), no
+padrão visual existente. Sem revisão do Victor; o que o afeta vai em
+`docs/contrato/mudancas.md`.
+**Por quê:** o processo anterior ("o front escreve o contrato, o back revisa
+antes da terceira tela") não aconteceu — as telas foram todas feitas direto sobre
+a base local, com o contrato só com `ping`. O vocabulário já existe em
+`src/mock/base/tipos.ts`; esperar um corte do front só atrasaria.
+Substitui: `2026-09-22` "O front escreve o contrato; o back revisa num portão" e
+`2026-09-22` "dono por pasta" (`src/` do front; `electron/` e `supabase/` do back).
 
 ### `2026-09-22` — Um tipo, três implementações
 `Contrato` existe uma vez; ponte, real e mock se declaram `: Contrato`, e o
@@ -400,11 +494,20 @@ Referências em `docs/electron.md`.
 
 ## Perguntas em aberto (antes do contrato fechar)
 
+**Respondido em `2026-10-03`:** o sistema da Papelaria Opção roda em **uma máquina
+só** (Agostinho). Com um único escritor não há conflito de edição nem numeração
+repetida entre máquinas. O documento `estoque-electron-licenca-e-banco.docx`
+(banco local + sync, licença por inadimplência, vários clientes) é **estudo**,
+ainda em discussão, não decisão.
+
 - **Login / multiusuário?** Muda o sentido de `permissao` e pede sessão.
-- **Funciona sem internet?** Muda o contrato inteiro (cache, fila, conflito).
-- **Duas pessoas na mesma tela?** Define se existe `conflito` de verdade.
+- ~~Funciona sem internet?~~ Decidido em `2026-10-05`: sim, banco local (ver
+  "Decisões de arquitetura").
 - **Impressão / exportação / PDF?** Se sai do processo principal, é operação.
-- **Qual provedor de banco?** Supabase por inércia do `upload-sys`; nada depende.
+- ~~Qual provedor? Que credencial?~~ Decidido em `2026-10-05`: Supabase só para
+  backup (e depois a nota), com chave `anon` + login.
+- **Rascunho da ficha e avisos lidos:** ficam na máquina ou no banco? Com uma
+  máquina só, ficar na máquina basta.
 
 ---
 
