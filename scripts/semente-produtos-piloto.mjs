@@ -21,19 +21,23 @@
  *   node scripts/semente-produtos-piloto.mjs --projeto=<ref> --gravar   # grava
  *
  * Credenciais só no ambiente do terminal: nunca em arquivo do repositório.
+ *
+ * Modo SQL (sem a senha da loja), para quem já tem a CLI ligada ao projeto:
+ *
+ *   node scripts/semente-produtos-piloto.mjs --sql=/tmp/semente.sql
+ *   cat supabase/.temp/project-ref                    # checagem 1
+ *   npx supabase db query --linked "select ..."       # checagem 2: conteúdo
+ *   npx supabase db query --linked -f /tmp/semente.sql
+ *
+ * O SQL faz as mesmas conferências dentro do banco: recusa se já houver
+ * produtos; cria a base se ela não existir; senão guarda a versão anterior e
+ * sobe a revisão (o app aberto na loja daria conflito — fechar antes).
  */
 import { createClient } from '@supabase/supabase-js'
 
+import fs from 'node:fs'
+
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/, '').split('=')).map(([k, v]) => [k, v ?? true]))
-const { PAPELARIA_URL: url, PAPELARIA_CHAVE: chave, PAPELARIA_EMAIL: email, PAPELARIA_SENHA: senha } = process.env
-const parar = (texto) => { console.error(`\n✗ ${texto}\n`); process.exit(1) }
-
-if (!url || !chave || !email || !senha) parar('Defina PAPELARIA_URL, PAPELARIA_CHAVE, PAPELARIA_EMAIL e PAPELARIA_SENHA no ambiente.')
-const host = new URL(url).hostname
-const ref = host.endsWith('.supabase.co') ? host.split('.')[0] : host
-if (!args.projeto) parar(`Informe --projeto=<ref> de propósito. Este ambiente aponta para: ${ref}`)
-if (args.projeto !== ref) parar(`--projeto=${args.projeto} não bate com a URL (${ref}). Nada foi feito.`)
-
 /** EAN-13 fictício com dígito verificador certo (prefixo 789 = Brasil). */
 function ean(numero) {
   const corpo = `78900${String(numero).padStart(7, '0')}`
@@ -65,6 +69,65 @@ const PRODUTOS = [
   ['Fita adesiva transparente 12 mm', 'Escritório', 'escritorio', 'un', 350, 160, 40, 15],
 ]
 
+
+/** Os produtos e as entradas de saldo inicial, para acrescentar a uma base sem produtos. */
+function montarSemente(operador) {
+  const agora = new Date().toISOString()
+  const produtos = PRODUTOS.map(([descricao, categoria, grupo, unidade, preco, custo, saldo, minimo], i) => ({
+    codigo: `EST-${String(i + 1).padStart(4, '0')}`,
+    codigoBarras: ean(i + 1),
+    descricao, categoria, grupo, unidade, preco, custo, saldo, minimo,
+    fiscal: { tributacao: 'simples', origem: '0', cfopEstadual: '5102', cfopInterestadual: '6102' },
+  }))
+  const movimentos = produtos.map((p) => ({
+    id: `${agora}-${p.codigo}-Entrada`, data: agora, produto: p.codigo, descricao: p.descricao,
+    tipo: 'Entrada', antes: 0, depois: p.saldo, motivo: 'Saldo inicial do cadastro', operador,
+  }))
+  return { produtos, movimentos }
+}
+
+if (args.sql) {
+  const { produtos, movimentos } = montarSemente('Loja')
+  const hoje = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+  // Mesma forma de criarBaseVazia (src/mock/base/semente.ts).
+  const vazia = { versao: 1, criadaEm: hoje, operador: 'Loja', clientes: [], produtos: [], fichas: [], movimentosCaixa: [], turnosCaixa: [], movimentosEstoque: [], rascunhosNota: [], rascunhoFicha: null, avisosLidos: {} }
+  const lit = (valor) => `'${JSON.stringify(valor).replaceAll("'", "''")}'::jsonb`
+  const sql = `do $$
+declare
+  v public.base_loja%rowtype;
+  p jsonb := ${lit(produtos)};
+  m jsonb := ${lit(movimentos)};
+begin
+  select * into v from public.base_loja where id = 'loja' for update;
+  if not found then
+    insert into public.base_loja (conteudo, revisao) values (jsonb_set(jsonb_set(${lit(vazia)}, '{produtos}', p), '{movimentosEstoque}', m), 1);
+    raise notice 'base criada com % produtos', jsonb_array_length(p);
+    return;
+  end if;
+  if (v.conteudo->>'versao') <> '1' then raise exception 'base em formato desconhecido; nada foi feito'; end if;
+  if jsonb_array_length(v.conteudo->'produtos') > 0 then raise exception 'a loja ja tem produtos; nada foi feito'; end if;
+  insert into public.base_loja_anteriores (revisao, conteudo, salvo_em) values (v.revisao, v.conteudo, v.salvo_em);
+  update public.base_loja
+    set conteudo = jsonb_set(jsonb_set(v.conteudo, '{produtos}', p), '{movimentosEstoque}', m || (v.conteudo->'movimentosEstoque')),
+        revisao = v.revisao + 1, salvo_em = now()
+    where id = 'loja';
+  raise notice 'semente na revisao %', v.revisao + 1;
+end $$;
+`
+  fs.writeFileSync(args.sql, sql)
+  console.log(`SQL gerado em ${args.sql} (${produtos.length} produtos). Confira o alvo antes de executar.`)
+  process.exit(0)
+}
+
+const { PAPELARIA_URL: url, PAPELARIA_CHAVE: chave, PAPELARIA_EMAIL: email, PAPELARIA_SENHA: senha } = process.env
+const parar = (texto) => { console.error(`\n✗ ${texto}\n`); process.exit(1) }
+
+if (!url || !chave || !email || !senha) parar('Defina PAPELARIA_URL, PAPELARIA_CHAVE, PAPELARIA_EMAIL e PAPELARIA_SENHA no ambiente.')
+const host = new URL(url).hostname
+const ref = host.endsWith('.supabase.co') ? host.split('.')[0] : host
+if (!args.projeto) parar(`Informe --projeto=<ref> de propósito. Este ambiente aponta para: ${ref}`)
+if (args.projeto !== ref) parar(`--projeto=${args.projeto} não bate com a URL (${ref}). Nada foi feito.`)
+
 const supabase = createClient(url, chave, { auth: { persistSession: false } })
 const login = await supabase.auth.signInWithPassword({ email, password: senha })
 if (login.error) parar(`Não entrou como ${email}: ${login.error.message}`)
@@ -81,18 +144,7 @@ console.log(`Produtos já cadastrados: ${base.produtos.length}`)
 console.log(`Clientes: ${base.clientes.length} · Fichas: ${base.fichas.length}`)
 if (base.produtos.length > 0) parar('A loja já tem produtos. A semente é só para loja sem cadastro; nada foi feito.')
 
-const agora = new Date().toISOString()
-const maior = 0
-const produtos = PRODUTOS.map(([descricao, categoria, grupo, unidade, preco, custo, saldo, minimo], i) => ({
-  codigo: `EST-${String(maior + i + 1).padStart(4, '0')}`,
-  codigoBarras: ean(i + 1),
-  descricao, categoria, grupo, unidade, preco, custo, saldo, minimo,
-  fiscal: { tributacao: 'simples', origem: '0', cfopEstadual: '5102', cfopInterestadual: '6102' },
-}))
-const movimentos = produtos.map((p) => ({
-  id: `${agora}-${p.codigo}-Entrada`, data: agora, produto: p.codigo, descricao: p.descricao,
-  tipo: 'Entrada', antes: 0, depois: p.saldo, motivo: 'Saldo inicial do cadastro', operador: base.operador ?? 'Loja',
-}))
+const { produtos, movimentos } = montarSemente(base.operador ?? 'Loja')
 
 console.log(`\nVai acrescentar ${produtos.length} produtos fictícios (EST-0001 a EST-${String(produtos.length).padStart(4, '0')}).`)
 if (!args.gravar) {

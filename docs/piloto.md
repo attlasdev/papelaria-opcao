@@ -82,7 +82,9 @@ Testar antes na máquina Windows de vocês, com o projeto **dev**.
   algo apagado por engano).
 - **Semente de 20 produtos fictícios**, só se a loja pedir e com a base sem
   produtos — `scripts/semente-produtos-piloto.mjs` (instruções no topo do
-  arquivo). Com o app **fechado** na loja.
+  arquivo). Com o app **fechado** na loja. Preferir o **modo SQL** (`--sql=`):
+  roda pela CLI ligada ao projeto, sem a senha da loja passar por terminal ou
+  chat, e faz as conferências dentro do banco. Usado no teste em `2026-10-06`.
 - **Projeto free pausa** após ~7 dias sem uso. Se a loja ficar uma semana sem
   abrir, o app vai mostrar "Sem conexão": reativar no painel (Restore). URL e
   chave continuam as mesmas.
