@@ -14,6 +14,7 @@ efetiva e as decisões do projeto ficam em `AGENTS.md`, `CLAUDE.md` e `Memoria.m
 | `recursos/` | Marca (logo) e acervo de referência visual (`design-system/`), incluindo o script que recorta os ícones do app. |
 | `stitch/` | Histórico: protótipo HTML do Google Stitch, já migrado para `src/`. |
 | `Memoria.md` | Estado atual, pendentes, regras de produto e decisões. |
+| `docs/contrato/` | Inventário do que cada tela lê e grava, e registro das mudanças que afetam a interface. |
 | `docs/auditorias/` | Achados técnicos datados e correções posteriores; conferir o estado atual em `Memoria.md`. |
 | `docs/historico/` | Memória antiga sessão a sessão; não é o estado atual. |
 | `docs/superpowers/` | Planos e especificações de rodadas já executadas. |

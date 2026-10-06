@@ -1,13 +1,14 @@
-# Revisao de contrato — a lista do passo 2
+# Revisao de contrato — checklist de cada operacao
 
-Para mim (back), quando o front entregar o primeiro corte de `comum/contrato.ts`.
+Para mim (back), ao escrever ou mudar uma operacao de `comum/contrato.ts`.
 
-**Quando:** depois da primeira ou segunda tela dele, antes da terceira. Mais cedo ele
-ainda nao sabe do que precisa; mais tarde ja tem tela montada em cima da forma errada.
+**Mudou em `2026-10-01`:** antes, isto era a lista para revisar o primeiro corte
+que o front entregaria. Agora o contrato e escrito por mim (ver `Memoria.md`),
+entao a lista vira a conferencia de cada operacao antes do commit.
 
-**O que isto nao e:** nao e revisao de codigo nem de gosto. O vocabulario e dele — se
-o cliente chama de "pedido", nao renomear para "ordem" porque soa melhor. Eu olho
-sete coisas que ele nao tem como ver de onde esta.
+**O que isto nao e:** nao e revisao de gosto. O vocabulario vem da tela e da dona —
+se a loja chama de "ficha", nao renomear para "pedido" porque soa melhor. Sao sete
+coisas que a tela nao mostra.
 
 ---
 
@@ -90,13 +91,14 @@ Para cada operacao, escrever a lista de causas que ela pode devolver.
 
 ---
 
-## O que eu devolvo para ele
+## O que fica registrado
 
-Um comentario por operacao, em PR no proprio `comum/contrato.ts`:
+O comentario de cada operacao em `comum/contrato.ts` diz:
 
-1. as operacoes que viram uma so, com o motivo (item 1);
-2. o catalogo de falhas de cada uma, para ele forcar no mock (item 2);
-3. os gestos que precisam de confirmacao de verdade (item 3);
-4. o que sai do contrato por ser caro, e o que entra no lugar (item 4).
+1. por que ela e uma so (item 1);
+2. as causas de falha que ela devolve, para o mock poder forcar (item 2);
+3. se o gesto e irreversivel e que confirmacao a tela pede (item 3);
+4. o limite e a paginacao, quando houver (item 4).
 
-Depois disso, mudanca de contrato vem em PR proprio, separado de tela.
+Mudanca de contrato vai em commit proprio, separado de tela; o que afetar o
+Victor ganha uma linha em `docs/contrato/mudancas.md`.

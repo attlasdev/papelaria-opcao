@@ -2,6 +2,15 @@
 
 Preparado em `2026-09-22`, para quem vai montar a interface.
 
+> **Atualização `2026-10-01`:** a divisão mudou. O contrato agora é escrito por
+> mim (Agostinho, back), junto com a camada de dados dentro de `src/`; você não
+> precisa escrever o primeiro corte nem me chamar para revisão. Por isso as
+> seções **5** (você escreve o primeiro corte), **6** (as três coisas em que você
+> me chama) e o PR de contrato da seção **9** estão superados. O resto continua
+> valendo: o que nunca entra em `src/` (seção 8) e o mock que falha e demora
+> (seção 7). Quando eu mexer em tela, é o mínimo e no padrão visual; o que te
+> afeta fica em `docs/contrato/mudancas.md`. O porquê está em `Memoria.md`.
+
 Isto nao e um PWA, mas 90% do que voce sabe de PWA vale aqui sem tradutor. Este
 documento e sobre os 10% que mudam, e sobre onde fica a fronteira entre o seu
 trabalho e o meu.
