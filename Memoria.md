@@ -27,14 +27,14 @@ migration no dev e no piloto, testar o zip numa máquina Windows, instalar na
 loja. Passo a passo: `docs/piloto.md`.
 
 **Prazo da 0.1 (`2026-10-06`): no máximo 2 dias.** Emitte e formato do piloto
-ficam para reunião do Agostinho mais tarde; materiais em `EMITTE/` (sem API: a
+ficam para reunião do Agostinho mais tarde; materiais em `docs/materiais-recebidos/emitte/` (sem API: a
 integração é por arquivos e a nota é montada à mão na Emitte). Notas do piloto
 em **homologação**. Supabase: piloto na conta da Attlas, dev na conta pessoal do
 Agostinho.
 
 **Emitte fora da 0.1 (`2026-10-06`, reunião):** o piloto não integra com a
 Emitte; as notas da loja seguem como hoje. Deixar o ambiente preparado e o fluxo
-explicado para o cliente; a integração (por arquivos — ver `EMITTE/`) vem depois.
+explicado para o cliente; a integração (por arquivos — ver `docs/materiais-recebidos/emitte/`) vem depois.
 "Ambiente preparado" = **os campos fiscais já existem no cadastro** (produto:
 NCM, origem, CFOP, CEST, grupo de tributação, código de barras com dígito
 verificador; cliente: dados que a Emitte exige para NF-e), sem exportação ainda.
@@ -126,8 +126,9 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
 
 *Decidir com o Victor:*
 6. Regras de CPF e aviso de nome repetido no cadastro de cliente (adiado).
-7. `docs/materiais-recebidos/attlas-cobranca-automatica.txt` trata de outra
-   empresa (Attlas), não da papelaria. Mover para o Atlas Victor ou apagar daqui?
+7. ~~`attlas-cobranca-automatica.txt` fica ou sai?~~ Fica (`2026-10-06`): é a
+   cobrança da Attlas, que o estudo de licença prevê ler. Ver
+   `docs/materiais-recebidos/README.md`.
 
 *Visual, a conferir (anotados em 2026-09-25):*
 8. Painel "Cadastro" do detalhe do cliente estica até a altura dos três cartões
@@ -455,7 +456,7 @@ quando a internet cai (a nota fiscal fica pendente). Então:
 existe se a venda acontece. Descartados: espelho linha a linha no Postgres
 (dois schemas para manter sem ninguém consultando de fora) e sync nos dois
 sentidos/PowerSync (só se paga com mais de um escritor). Origem: estudo
-`estoque-electron-licenca-e-banco.docx`; a parte de licença e vários clientes
+`docs/materiais-recebidos/estoque-electron-licenca-e-banco.docx`; a parte de licença e vários clientes
 continua só estudo.
 
 ### `2026-10-01` — O back escreve o contrato e cuida de toda a parte interna
@@ -505,7 +506,7 @@ Referências em `docs/electron.md`.
 
 **Respondido em `2026-10-03`:** o sistema da Papelaria Opção roda em **uma máquina
 só** (Agostinho). Com um único escritor não há conflito de edição nem numeração
-repetida entre máquinas. O documento `estoque-electron-licenca-e-banco.docx`
+repetida entre máquinas. O documento `docs/materiais-recebidos/estoque-electron-licenca-e-banco.docx`
 (banco local + sync, licença por inadimplência, vários clientes) é **estudo**,
 ainda em discussão, não decisão.
 

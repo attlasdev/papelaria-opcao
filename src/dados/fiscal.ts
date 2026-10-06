@@ -2,7 +2,7 @@ import type { FiscalCliente, FiscalProduto } from '../mock/base/tipos'
 
 /**
  * Regras de FORMATO dos dados fiscais, as que a Emitte confere na importação
- * (`EMITTE/Resumo_Integracao_Emitte.md`, seções 6 a 8). O CONTEÚDO — qual NCM,
+ * (`docs/materiais-recebidos/emitte/Resumo_Integracao_Emitte.md`, seções 6 a 8). O CONTEÚDO — qual NCM,
  * qual CFOP — é decisão do contador; o app não tenta adivinhar.
  *
  * Piloto 0.1: os campos já existem no cadastro, sem exportação ainda.
