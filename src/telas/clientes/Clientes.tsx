@@ -24,6 +24,7 @@ import {
   type SituacaoNotinha,
 } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
+import { ExportarClientesEmitte } from './ExportarClientesEmitte'
 import './clientes.css'
 import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
 
@@ -94,6 +95,7 @@ export function Clientes() {
           <Icone nome="adicionar-pessoa" tamanho={18} /> Cadastrar cliente
         </Link>
       }
+      acoesTitulo={<ExportarClientesEmitte />}
     >
       <div className="grade-resumo">
         <CartaoResumo rotulo="Clientes cadastrados" icone="clientes" valor={linhas.length} nota="Na base" />

@@ -62,6 +62,20 @@ interruptores ficam em `src/funcoes.ts`. Pendente: achar
 como a Emitte reconhece um produto já cadastrado (código de barras? código na
 nota? nome?) e decidir se o NCM fica no app (por categoria) ou só na Emitte.
 
+**Planilhas da Emitte (`2026-10-06`):** os modelos v2 de importação por XLS
+(clientes e produtos) estão em `recursos/emitte/` (cópia dos recebidos). O app
+gera as duas planilhas preenchendo o próprio modelo, com textos compartilhados
+(nunca "inline strings"), via `fflate` (`src/dados/planilha.ts`, `emitte.ts`).
+- **Clientes:** só vão os completos (CPF/CNPJ, CEP, rua, bairro, cidade/UF —
+  cidade conferida contra a lista do modelo); os outros voltam com o que falta.
+  Tipo de contribuinte e tipo de cliente são obrigatórios — por isso o bloco
+  "Para nota fiscal" do cliente **fica**. Botão em Clientes, **desligado** até o
+  teste de importação passar (`funcoes.exportarClientesEmitte`).
+- **Produtos:** na planilha, NCM e CFOP vão por produto (CFOP 5102/6102); NCM em
+  branco. **A testar:** se a planilha aceita NCM em branco e se reimportar por
+  planilha **atualiza** em vez de duplicar (o XML duplicou). Ainda sem botão.
+- Arquivos de teste gerados fora do app: `release/emitte-teste/` (não versionado).
+
 **SINTEGRA (`2026-10-06`, para depois):** o contador perguntou. Pesquisa: em SP,
 empresa do Simples gera e guarda o arquivo (Convênio ICMS 57/95) e só entrega
 se notificada; as notas (registros 50/54) o contador gera dos XMLs da Emitte; o

@@ -13,6 +13,8 @@ export const funcoes = {
   notasFiscais: false,
   /** Exportar produtos para a Emitte: bloqueada porque reimportar duplica os produtos lá. */
   exportarEmitte: false,
+  /** Exportar clientes para a Emitte (planilha): desligada até o teste de importação passar. */
+  exportarClientesEmitte: false,
   /**
    * "Restaurar dados de exemplo" (clique no operador). Desligado também em
    * desenvolvimento: com o app ligado a um banco, a amostra de 90 dias ia

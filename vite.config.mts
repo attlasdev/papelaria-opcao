@@ -7,6 +7,8 @@ import electron from 'vite-plugin-electron/simple'
 // `electron-rebuild` e recompilacao por plataforma; nao adicionar sem discutir.
 export default defineConfig({
   base: './',
+  // Modelos de planilha da Emitte (recursos/emitte/), embutidos com `?inline`.
+  assetsInclude: ['**/*.xlsx'],
   plugins: [
     react(),
     tailwindcss(),

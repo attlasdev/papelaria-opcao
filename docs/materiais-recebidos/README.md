@@ -36,3 +36,9 @@ montada à mão nela. Fora do piloto 0.1; os campos fiscais já estão no cadast
 (`src/dados/fiscal.ts`). A planilha validada serve de molde para gerar o XLSX
 de clientes (o resumo registra que um XLSX com "inline strings" travou a
 importação sem erro).
+
+Modelos de importação por planilha (v2), recebidos em 2026-10-06:
+`modelo_importacao_clientes_v2.xlsx` e `modelo_importacao_produtos_v2.xlsx`.
+Cópias usadas pelo app em `recursos/emitte/`. Na de produtos, NCM e CFOP são
+obrigatórios por linha; na de clientes, a aba "paramentros" traz a lista de
+cidades que a Emitte aceita.

@@ -25,6 +25,15 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-06` — Exportar clientes para a Emitte (desligado)
+
+- **Clientes** ganhou o botão **"Exportar clientes para a Emitte"** ao lado do
+  título, **desabilitado** no piloto ("Indisponível no período de teste") até a
+  importação ser testada. Ligado, ele gera a planilha no modelo da Emitte e uma
+  janela lista quem ficou de fora e o que falta.
+- O bloco **"Para nota fiscal"** do cadastro de cliente **continua**: tipo de
+  contribuinte e tipo de cliente são obrigatórios na planilha da Emitte.
+
 ### `2026-10-06` — Notas fiscais oculta; exportação no Estoque
 
 - O botão **"Exportar produtos para a Emitte"** mudou para o **Estoque**, ao lado

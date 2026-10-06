@@ -4,6 +4,7 @@ import { Campo, Selecao } from '../../componentes/campo/Campo'
 import { conferirCep, FISCAL_CLIENTE_PADRAO, limparFiscalCliente, TIPOS_CLIENTE, TIPOS_CONTRIBUINTE } from '../../dados/fiscal'
 import { Modal } from '../../componentes/modal/Modal'
 import { cadastrarCliente, documentoJaCadastrado, editarCliente, useEstadoDemonstracao, type Cliente } from '../../mock/estado-demonstracao'
+import { juntarEndereco, separarEndereco } from '../../dados/endereco'
 import './janela-cliente.css'
 
 type Props = {
@@ -21,25 +22,6 @@ type Props = {
 
 const SEM_DOCUMENTO = 'Sem documento'
 const SEM_TELEFONE = 'Sem telefone'
-
-/**
- * "Rua, nº - Bairro - Cidade/UF" → partes. Sem bairro sobram duas partes: a
- * segunda é cidade se tiver "/UF". Endereço fora do formato vai inteiro para a rua.
- */
-function separarEndereco(endereco: string) {
-  const partes = endereco.split(' - ')
-  const [logradouro = '', segunda = '', terceira = ''] = partes
-  const [bairro, cidade] = partes.length === 2 && segunda.includes('/') ? ['', segunda] : [segunda, terceira]
-  const virgula = logradouro.lastIndexOf(', ')
-  return virgula === -1
-    ? { rua: logradouro, numero: '', bairro, cidade }
-    : { rua: logradouro.slice(0, virgula), numero: logradouro.slice(virgula + 2), bairro, cidade }
-}
-
-function juntarEndereco(rua: string, numero: string, bairro: string, cidade: string) {
-  const logradouro = [rua, numero].filter(Boolean).join(', ')
-  return [logradouro, bairro, cidade].filter(Boolean).join(' - ')
-}
 
 /**
  * O formulário de cliente, um só para cadastrar e editar, em Clientes e na nova
