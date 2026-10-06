@@ -15,7 +15,11 @@ import type { Contrato } from '../comum/contrato'
  * Nenhuma funcao daqui devolve chave, segredo ou caminho de arquivo.
  */
 const api: Contrato = {
-  ping: () => ipcRenderer.invoke('ping'),
+  sessaoAtual: () => ipcRenderer.invoke('sessaoAtual'),
+  entrar: (email, senha) => ipcRenderer.invoke('entrar', email, senha),
+  sair: () => ipcRenderer.invoke('sair'),
+  carregarBase: () => ipcRenderer.invoke('carregarBase'),
+  salvarBase: (conteudo, revisaoEsperada) => ipcRenderer.invoke('salvarBase', conteudo, revisaoEsperada),
 }
 
 contextBridge.exposeInMainWorld('api', api)

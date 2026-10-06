@@ -39,6 +39,8 @@
  */
 export type CausaFalha =
   | 'rede'          // nao alcancei o servidor
+  | 'sessao'        // ninguem entrou, ou a sessao venceu: a tela pede o login
+  | 'configuracao'  // o app nao sabe a que banco se ligar (instalacao incompleta)
   | 'banco'         // alcancei, mas o banco recusou ou nao esta na forma esperada
   | 'permissao'     // a operacao nao e permitida para este usuario
   | 'validacao'     // o dado enviado nao serve; a tela tem como corrigir
@@ -59,10 +61,10 @@ export type Falha = {
  *
  * Uso no front:
  *
- *   const r = await window.api.ping()
+ *   const r = await window.api.sessaoAtual()
  *   if (!r.ok) return <Erro causa={r.causa} texto={r.erro} />
  *   //  aqui dentro o TypeScript ja sabe que `r.dado` existe
- *   return <p>{r.dado.ambiente}</p>
+ *   return <p>{r.dado?.email}</p>
  */
 export type Resultado<T> = { ok: true; dado: T } | Falha
 
@@ -74,13 +76,24 @@ export const falha = (causa: CausaFalha, erro: string): Falha => ({ ok: false, c
 // O contrato
 // ---------------------------------------------------------------------------
 
-/** EXEMPLO — apague junto com `ping` quando o contrato de verdade nascer. */
-export type Pong = {
-  /** De onde a resposta veio: o mock no navegador, ou o app de verdade. */
-  ambiente: 'mock' | 'electron'
-  /** ISO 8601. */
-  quando: string
+/** Quem esta usando o app. No piloto e um usuario so, o da loja. */
+export type Sessao = { email: string }
+
+/**
+ * PILOTO 0.1 — a base inteira da loja como um documento so (Memoria.md,
+ * `2026-10-06`). O conteudo e o formato de `src/mock/base/tipos.ts`; quem o
+ * confere e o front, que ja tem as regras. Na 1.0 isto da lugar a uma operacao
+ * por gesto do usuario.
+ */
+export type DocumentoBase = {
+  conteudo: unknown
+  /** Sobe 1 a cada gravacao. Quem grava diz qual viu por ultimo. */
+  revisao: number
+  /** ISO 8601, UTC. */
+  salvoEm: string
 }
+
+export type Gravacao = { revisao: number; salvoEm: string }
 
 /**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
@@ -101,12 +114,20 @@ export type Pong = {
  *    Tres chamadas separadas deixam estado meio-aplicado quando a segunda falha.
  */
 export type Contrato = {
+  /** `null`: ninguem entrou ainda. Falha `configuracao` se o app nao foi configurado. */
+  sessaoAtual(): Promise<Resultado<Sessao | null>>
+  /** Falha `validacao` quando e-mail ou senha nao conferem. */
+  entrar(email: string, senha: string): Promise<Resultado<Sessao>>
+  sair(): Promise<Resultado<null>>
+
+  /** `null`: a loja ainda nao gravou nada. */
+  carregarBase(): Promise<Resultado<DocumentoBase | null>>
   /**
-   * EXEMPLO — apague quando o contrato de verdade nascer.
-   * Serve para conferir que a tubulacao inteira esta ligada, e para o front ver
-   * se esta rodando contra o mock ou contra o app real.
+   * Grava a base inteira. `revisaoEsperada` e a ultima que o app viu (0 se nunca
+   * houve gravacao). Se outra gravacao entrou no meio, devolve `conflito` e nao
+   * grava — sobrescrever apagaria a outra em silencio.
    */
-  ping(): Promise<Resultado<Pong>>
+  salvarBase(conteudo: unknown, revisaoEsperada: number): Promise<Resultado<Gravacao>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

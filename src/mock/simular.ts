@@ -19,6 +19,8 @@ const params = new URLSearchParams(location.search)
 
 const CAUSAS: CausaFalha[] = [
   'rede',
+  'sessao',
+  'configuracao',
   'banco',
   'permissao',
   'validacao',
