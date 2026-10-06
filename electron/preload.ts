@@ -20,6 +20,7 @@ const api: Contrato = {
   sair: () => ipcRenderer.invoke('sair'),
   carregarBase: () => ipcRenderer.invoke('carregarBase'),
   salvarBase: (conteudo, revisaoEsperada) => ipcRenderer.invoke('salvarBase', conteudo, revisaoEsperada),
+  salvarArquivo: (nomeSugerido, conteudo) => ipcRenderer.invoke('salvarArquivo', nomeSugerido, conteudo),
 }
 
 contextBridge.exposeInMainWorld('api', api)

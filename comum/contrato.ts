@@ -95,6 +95,9 @@ export type DocumentoBase = {
 
 export type Gravacao = { revisao: number; salvoEm: string }
 
+/** `salvo: false` quando a pessoa fechou a janela de salvar sem escolher. */
+export type ArquivoSalvo = { salvo: boolean; nome?: string }
+
 /**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
@@ -128,6 +131,14 @@ export type Contrato = {
    * grava — sobrescrever apagaria a outra em silencio.
    */
   salvarBase(conteudo: unknown, revisaoEsperada: number): Promise<Resultado<Gravacao>>
+
+  /**
+   * Salva um arquivo gerado pela tela (ex.: produtos para a Emitte). A tela manda
+   * o CONTEUDO e um nome sugerido; o lugar e escolhido pela pessoa na janela do
+   * sistema, aberta pelo processo principal (regra 4: a tela nunca manda caminho).
+   * So `.xml` e `.xlsx`.
+   */
+  salvarArquivo(nomeSugerido: string, conteudo: string | Uint8Array): Promise<Resultado<ArquivoSalvo>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

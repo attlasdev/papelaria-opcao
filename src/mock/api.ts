@@ -60,6 +60,15 @@ const mock: Contrato = {
     gravarServidor({ conteudo, ...gravacao })
     return ok(gravacao)
   }),
+  salvarArquivo: (nomeSugerido, conteudo) => simular(() => {
+    // No navegador não há janela de salvar do sistema: vira um download.
+    const tipo = nomeSugerido.endsWith('.xlsx') ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/xml'
+    const parte: BlobPart = typeof conteudo === 'string' ? conteudo : new Uint8Array(conteudo)
+    const link = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([parte], { type: tipo })), download: nomeSugerido })
+    link.click()
+    URL.revokeObjectURL(link.href)
+    return ok({ salvo: true, nome: nomeSugerido })
+  }),
 }
 
 window.api = mock

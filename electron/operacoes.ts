@@ -1,3 +1,6 @@
+import { app, BrowserWindow, dialog } from 'electron'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { falha, ok, type Contrato, type Falha } from '../comum/contrato'
 import { ConexaoAusente } from './conexao'
 import { interpretar, supabase } from './supabase'
@@ -19,6 +22,17 @@ function falhou(nome: string, erro: unknown, status?: number): Falha {
   console.error(`[${nome}]`, erro)
   const { causa, mensagem } = interpretar(erro, status)
   return falha(causa, mensagem)
+}
+
+/** Filtro da janela de salvar; as chaves em inglês são as que o Electron pede. */
+const TIPOS_ARQUIVO: Record<string, Electron.FileFilter> = {
+  '.xml': { name: 'XML', extensions: ['xml'] },
+  '.xlsx': { name: 'Planilha do Excel', extensions: ['xlsx'] },
+}
+
+/** Só o nome, sem pasta, e só com caracteres seguros: o lugar quem escolhe é a pessoa. */
+function nomeSeguro(sugerido: string) {
+  return path.basename(sugerido).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w.-]+/g, '-').slice(0, 80)
 }
 
 /** O dado entra pela IPC sem garantia de tipo: confere antes de usar. */
@@ -68,6 +82,19 @@ export const operacoes: Contrato = {
     } catch (erro) {
       return falhou('carregarBase', erro)
     }
+  },
+
+  async salvarArquivo(nomeSugerido, conteudo) {
+    const nome = nomeSeguro(typeof nomeSugerido === 'string' ? nomeSugerido : '')
+    const tipo = TIPOS_ARQUIVO[path.extname(nome).toLowerCase()]
+    if (!nome || !tipo) return falha('validacao', 'Tipo de arquivo não permitido.')
+    if (typeof conteudo !== 'string' && !(conteudo instanceof Uint8Array)) return falha('validacao', 'Conteúdo do arquivo inválido.')
+    const janela = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0]
+    const opcoes = { defaultPath: path.join(app.getPath('documents'), nome), filters: [tipo] }
+    const escolha = janela ? await dialog.showSaveDialog(janela, opcoes) : await dialog.showSaveDialog(opcoes)
+    if (escolha.canceled || !escolha.filePath) return ok({ salvo: false })
+    await fs.writeFile(escolha.filePath, conteudo)
+    return ok({ salvo: true, nome: path.basename(escolha.filePath) })
   },
 
   async salvarBase(conteudo, revisaoEsperada) {
