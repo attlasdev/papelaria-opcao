@@ -198,6 +198,15 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
 12. Licença do pacote de ícones do acervo; ícone do aplicativo
     (`electron-builder.json` não aponta nenhum).
 
+*Mercado Pago — comprovantes (para a 1.0, `2026-10-07`):* não há comprovante em
+PDF pela API. Ao aprovar, consultar `GET /v1/payments/{reference_id}` e guardar
+no pagamento da ficha autorização, final do cartão, bandeira, parcelas, bruto,
+taxa, líquido e data de liberação; a exportação do Financeiro ganha uma aba
+"Mercado Pago" com isso; opcional: baixar o relatório oficial de liberações do
+período pela API junto com a planilha; decidir se a maquininha imprime a via
+do cliente (`print_on_terminal`). No teste o `reference_id` é fictício
+(`1234567890`, consulta dá 404): só se prova com maquininha real.
+
 *Emitte (para a 1.0):* testar o fluxo de exportação "vai uma vez" na conta de
 teste e liberar os botões (`src/funcoes.ts`); SINTEGRA com o contador.
 
