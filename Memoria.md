@@ -485,6 +485,47 @@ montada". O que é decisão (e o porquê):
 
 ## Decisões de arquitetura
 
+### `2026-10-07` — Comprovante não fiscal na térmica (alvo da 1.0)
+A loja **não emite nota em toda venda**. Então, por padrão, **toda venda
+finalizada imprime um comprovante não fiscal** (opção "Imprimir comprovante"
+marcada por padrão, com reimpressão). A NFC-e pela Emitte fica como opção para
+quando for necessária, **e por enquanto está de lado**. Não discutir com a loja
+quando ela emite ou não emite nota.
+- O comprovante leva "NÃO É DOCUMENTO FISCAL" e não imita a NFC-e (sem DANFE,
+  chave de acesso, QR da SEFAZ ou tributos).
+- **A 0.1 fica como está**: a impressão é da 1.0. Desenvolvimento e teste
+  começam **no Linux**, com a impressora daqui: Elgin i8 (USB `1fc9:2016`),
+  fila CUPS `POS-80`.
+- Achado de `2026-10-07`: a fila `POS-80` foi criada com o driver **HP Designjet
+  T920** (errado), e o Ubuntu não tem driver ESC/POS empacotado.
+- A loja usa **Windows**: o caminho escolhido tem que funcionar lá também.
+- **Abordagem: ESC/POS cru.** O processo principal monta os bytes (função pura,
+  testável) e envia: no Linux, `lp -d POS-80 -o raw` (fila CUPS raw); no
+  Windows, envio cru pelo spooler (a provar numa máquina Windows **antes** de
+  investir na tela). **Por quê:** o Ubuntu não tem driver ESC/POS empacotado,
+  então o caminho HTML + driver travava já no Linux; e bytes se testam no vitest.
+- **Escopo inicial:** sem gaveta, sem notinha. Cabeçalho completo: nome,
+  endereço, telefone e CNPJ da loja.
+- **Fase 0 feita (`2026-10-07`):** fila `POS-80` recriada como **raw** (CUPS
+  2.4 avisa que raw é "deprecated"; funciona, vigiar em upgrade do CUPS).
+  Teste no papel: **48 colunas** na fonte padrão; acentos e "R$" certos em
+  **CP850 (`ESC t 2`) e CP860 (`ESC t 3`)** — usar CP850; centralizar, negrito e
+  **corte** (`GS V 66 0`) funcionam. Node não traz codificador CP850: tabela
+  própria em TS (sem dependência).
+- **Fase 1 feita (`2026-10-07`):** operação `imprimirComprovante` no contrato,
+  montagem e envio no processo principal (`comum/comprovante.ts`,
+  `electron/escpos.ts`, `electron/impressora.ts`), cupom completo impresso de
+  verdade pelo mesmo código. Config da máquina em `userData/comprovante.json`
+  (modelo com dado inventado em `recursos/comprovante.exemplo.json`; na máquina
+  de desenvolvimento já existe, com o exemplo).
+- **PAUSADO até o teste da loja** (Agostinho, `2026-10-07`): o objetivo era
+  provar que funciona. Se a loja aprovar, segue direto para a produção (1.0).
+  **Nenhuma tela chama a operação**, então o instalador da 0.1 não oferece
+  impressão. Falta, na volta: fase 3 (provar o envio cru no **Windows**) e
+  fase 4 (tela: "Imprimir comprovante" marcado por padrão + "Reimprimir", título
+  para a falha `impressora` em `src/falhas.ts`, interruptor em `src/funcoes.ts`
+  se ainda sair release da 0.1 pelo `main`).
+
 ### `2026-09-22` — Repo único
 Um repo para os dois lados. **Por quê:** no mesmo repo o contrato é o mesmo
 arquivo para os dois, sem pacote npm para sincronizar. Descartado: dois repos +
