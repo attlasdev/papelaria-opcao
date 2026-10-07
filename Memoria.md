@@ -29,7 +29,9 @@ Exercitado no Electron contra Supabase local e contra o projeto de **teste**
 gerada pelo Actions (confirmado pelo Agostinho); **v0.1.1** acrescenta a
 maquininha Mercado Pago em demonstração, exportação para a Emitte preparada
 (desligada), logo sem o selo, "restaurar" desligado e `conexao.json` tolerante
-(BOM, espaços; recusa chave secreta). 125 testes; build ok. Projeto **piloto**
+(BOM, espaços; recusa chave secreta); **v0.1.2** (`2026-10-07`) acrescenta
+o "Exportar período" do Financeiro em planilha e o atalho "Mês passado".
+134 testes; build ok. Projeto **piloto**
 já criado no Supabase (conta da Attlas); falta aplicar a migration nele — com
 OK do Agostinho na hora — quando for para a loja.
 **Falta:** testar o instalador numa máquina Windows, criar e migrar o projeto
