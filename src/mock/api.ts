@@ -5,6 +5,15 @@ import { criarSemente } from './base/semente'
 import { comFechamentosExemplo } from './base/cenario-caixa'
 import { hojeISO, minutoDoDia } from './base/datas'
 import { criarMaquininhaDemonstracao } from '../../comum/maquininha-demonstracao'
+import { conferirComprovante, linhasComprovante, textoComprovante, type Loja } from '../../comum/comprovante'
+
+/** Mesmos dados inventados de `recursos/comprovante.exemplo.json`. */
+const LOJA_EXEMPLO: Loja = {
+  nome: 'Papelaria Opção',
+  endereco: 'Rua Exemplo, 123 - Centro - Cidade/UF',
+  telefone: '(00) 0000-0000',
+  cnpj: '00.000.000/0001-00',
+}
 
 /**
  * O mock do contrato. E o que permite montar tela inteira no navegador, com
@@ -75,6 +84,13 @@ const mock: Contrato = {
   consultarCobranca: (id) => simular(() => maquininha.consultar(id)),
   cancelarCobranca: (id) => simular(() => maquininha.cancelar(id)),
   simularCobranca: (id, resultado) => simular(() => maquininha.simular(id, resultado)),
+  imprimirComprovante: (dados) => simular(() => {
+    // No navegador não há impressora: o papel sai no console, igual ao da térmica.
+    const conferido = conferirComprovante(dados)
+    if (typeof conferido === 'string') return falha('validacao', conferido)
+    console.info(`[comprovante]\n${textoComprovante(linhasComprovante(conferido, LOJA_EXEMPLO))}`)
+    return ok(null)
+  }),
 }
 
 window.api = mock

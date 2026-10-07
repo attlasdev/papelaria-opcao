@@ -1,9 +1,12 @@
 import { app, BrowserWindow, dialog } from 'electron'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { conferirComprovante, linhasComprovante } from '../comum/comprovante'
 import { falha, ok, type Contrato, type Falha } from '../comum/contrato'
 import { criarMaquininhaDemonstracao } from '../comum/maquininha-demonstracao'
 import { ConexaoAusente } from './conexao'
+import { bytesComprovante } from './escpos'
+import { enviarCru, lerConfigComprovante } from './impressora'
 import { interpretar, supabase } from './supabase'
 
 /**
@@ -119,6 +122,15 @@ export const operacoes: Contrato = {
   async simularCobranca(id, resultado) {
     if (resultado !== 'aprovada' && resultado !== 'recusada') return falha('validacao', 'Resultado inválido.')
     return maquininha.simular(idValido(id), resultado)
+  },
+
+  async imprimirComprovante(dados) {
+    const conferido = conferirComprovante(dados)
+    if (typeof conferido === 'string') return falha('validacao', conferido)
+    const config = lerConfigComprovante()
+    if (!config.ok) return config
+    const bytes = bytesComprovante(linhasComprovante(conferido, config.dado.loja))
+    return enviarCru(config.dado.impressora, `Venda ${conferido.numero}`, bytes)
   },
 
   async salvarBase(conteudo, revisaoEsperada) {

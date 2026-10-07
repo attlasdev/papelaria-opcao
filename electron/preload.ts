@@ -25,6 +25,7 @@ const api: Contrato = {
   consultarCobranca: (id) => ipcRenderer.invoke('consultarCobranca', id),
   cancelarCobranca: (id) => ipcRenderer.invoke('cancelarCobranca', id),
   simularCobranca: (id, resultado) => ipcRenderer.invoke('simularCobranca', id, resultado),
+  imprimirComprovante: (dados) => ipcRenderer.invoke('imprimirComprovante', dados),
 }
 
 contextBridge.exposeInMainWorld('api', api)

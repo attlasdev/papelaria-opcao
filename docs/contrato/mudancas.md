@@ -22,6 +22,14 @@ componentes, CSS por componente).
   A tela deixa de mostrar o número durante a venda e ele aparece ao concluir.
 - **Código do produto no cadastro.** Mesmo caso: o próximo `EST-` deixa de aparecer
   antes de salvar e é mostrado depois de gravar.
+- **Comprovante não fiscal na térmica (`2026-10-07`).** A operação já existe:
+  `imprimirComprovante(dados)`, com `DadosComprovante` em `comum/contrato.ts`
+  (centavos; a tela manda o que foi vendido, o cabeçalho da loja vem da
+  configuração da máquina). Nova causa de falha **`impressora`** (desligada,
+  fila parada): hoje cai no título genérico de `src/falhas.ts`. No mock, o papel
+  aparece no console do navegador. **Falta a tela:** "Imprimir comprovante"
+  marcado por padrão ao concluir a venda e "Reimprimir" na ficha (com
+  `segundaVia: true`); a venda nunca espera nem depende da impressão.
 
 ## Feitas
 

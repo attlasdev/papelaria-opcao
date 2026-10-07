@@ -46,6 +46,7 @@ export type CausaFalha =
   | 'validacao'     // o dado enviado nao serve; a tela tem como corrigir
   | 'conflito'      // outra pessoa mexeu antes; o dado em tela esta velho
   | 'nao-encontrado'// o id nao existe mais
+  | 'impressora'    // a impressora nao recebeu: desligada, fila parada, sem cabo
   | 'desconhecida'
 
 export type Falha = {
@@ -121,6 +122,35 @@ export type Cobranca = {
 }
 
 /**
+ * Comprovante NAO FISCAL da venda, na impressora termica (Memoria.md,
+ * `2026-10-07`). A tela manda o que foi vendido; o cabecalho da loja (nome,
+ * endereco, telefone, CNPJ) e a impressora vem da configuracao da maquina,
+ * lida pelo processo principal. Dinheiro em centavos.
+ */
+export type ItemComprovante = { descricao: string; quantidade: number; preco: number }
+/** `rotulo`: como a tela ja mostra o meio, ex. "Cartão crédito Visa · Mercado Pago". */
+export type PagamentoComprovante = { rotulo: string; valor: number }
+export type DadosComprovante = {
+  /** Numero da ficha, ex. "1043". */
+  numero: string
+  /** ISO 8601, UTC: quando a venda foi feita (na reimpressao, a data da venda). */
+  dataHora: string
+  operador: string
+  /** Nome do cliente; ausente na venda sem identificacao. */
+  cliente?: string
+  itens: ItemComprovante[]
+  desconto: number
+  /** Ja com desconto. Tem que bater com itens - desconto, senao `validacao`. */
+  total: number
+  pagamentos: PagamentoComprovante[]
+  troco: number
+  /** Venda com dado inventado (piloto): o papel sai marcado "SIMULAÇÃO". */
+  demonstracao: boolean
+  /** Reimpressao pelo botao: o papel sai marcado "2ª VIA". */
+  segundaVia: boolean
+}
+
+/**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
  * Quem escreve o primeiro corte e o FRONT: as operacoes saem da reuniao com o
@@ -178,6 +208,15 @@ export type Contrato = {
    * recusada. Em producao devolve `permissao`.
    */
   simularCobranca(id: string, resultado: 'aprovada' | 'recusada'): Promise<Resultado<Cobranca>>
+
+  /**
+   * Imprime o comprovante nao fiscal. `ok` quer dizer que a impressora ACEITOU
+   * o trabalho, nao que saiu papel (sem bobina passa despercebido): por isso a
+   * tela oferece reimprimir. Falha `impressora` quando a fila esta parada ou nao
+   * existe; `configuracao` quando a maquina nao tem os dados da loja; `validacao`
+   * quando a conta nao fecha. A venda ja gravada nunca depende disto.
+   */
+  imprimirComprovante(dados: DadosComprovante): Promise<Resultado<null>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

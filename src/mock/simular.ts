@@ -26,6 +26,7 @@ const CAUSAS: CausaFalha[] = [
   'validacao',
   'conflito',
   'nao-encontrado',
+  'impressora',
   'desconhecida',
 ]
 
