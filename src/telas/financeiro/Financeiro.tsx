@@ -10,7 +10,6 @@ import { Paginacao } from '../../componentes/paginacao/Paginacao'
 import { CampoData } from '../../componentes/campo/Campo'
 import { Etiqueta, SeloCompacto } from '../../componentes/selo/Selo'
 import type { NomeIcone } from '../../componentes/icone/Icone'
-import { useSemDestino } from '../../componentes/aviso/Aviso'
 import { dataCurta, reais, reaisComSinal } from '../../formatar'
 import {
   CATEGORIA_ESTORNO,
@@ -30,6 +29,7 @@ import {
 import { rotas } from '../../rotas-caminhos'
 import './financeiro.css'
 import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
+import { ExportarPeriodo } from './ExportarPeriodo'
 
 type FiltroMeio = 'todos' | Meio
 type AtalhoPeriodo = Periodo | 'personalizado'
@@ -45,7 +45,6 @@ export function Financeiro() {
   const [meio, setMeio] = useState<FiltroMeio>('todos')
   const [pagina, setPagina] = useState(1)
   const [estornando, setEstornando] = useState<LinhaFinanceiro | null>(null)
-  const semDestino = useSemDestino()
   const navegar = useNavigate()
   const base = useEstadoDemonstracao()
   const hoje = hojeISO()
@@ -74,9 +73,7 @@ export function Financeiro() {
         </Botao>
       }
       acoesTitulo={
-        <Botao icone="baixar" onClick={semDestino('exportar período')}>
-          Exportar período
-        </Botao>
+        <ExportarPeriodo linhas={linhas} de={de} ate={ate} periodoValido={periodoValido} vazio={r.contagem.todos === 0} />
       }
     >
       <Painel titulo="Consultar período" className="financeiro__periodo">

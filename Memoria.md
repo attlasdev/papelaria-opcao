@@ -17,7 +17,7 @@ Relato de sessão longo vai para `docs/historico/`.
 **Rumo atual: versão 0.1 (piloto online) para a loja testar.** Ver "Decisões de
 arquitetura", `2026-10-06`. O banco local de `2026-10-05` é o alvo da 1.0.
 
-**Estado da 0.1 (`2026-10-06`, branch `piloto-0.1`):** app ligado ao Supabase
+**Estado da 0.1 (`2026-10-06`; tudo no `main`, que está à frente do branch `piloto-0.1`):** app ligado ao Supabase
 (login, base como documento único com revisão e 200 versões anteriores, cópia
 local e envio quando a internet volta), semente de 20 produtos sob pedido, nome
 "Papelaria Opção" com ícone da marca, Notas fiscais oculta e exportação para a
@@ -123,36 +123,15 @@ contrato por operação. A loja usa **Windows** (há como testar antes). Começa
 pedir. O botão "Restaurar dados de exemplo" **sai** do piloto. Dados do piloto
 se perdem na 1.0 (a loja já sabe); reforçar "só dados inventados".
 
-
-Só a interface existe, rodando contra uma **base local** (`src/mock/base/`,
-`localStorage`). Tudo o que se faz nas telas grava e aparece igual em todas.
-Ainda não há contrato de verdade, banco nem `supabase/`; `comum/contrato.ts` tem
-só a operação de exemplo `ping`.
-
-- Rodar: `npm run dev` (Vite na porta 5173 e Electron com atualização automática)
-  ou `npm start` (build e Electron). Reutilizar a instância aberta durante a revisão.
-- Conferir: `npm test` (75 testes da camada de dados) e `npm run build`.
-- Última rodada: revisão por telas com o Victor, usando prints e o Electron.
-  Início e Clientes tiveram a revisão desta rodada encerrada e as correções
-  pedidas implementadas. **Financeiro e Caixa NÃO VALIDADOS pelo Victor:** agora
-  são telas independentes, prontas para continuar a avaliação.
-- Verificação técnica mais recente: 75 testes passam; build concluído; telas
-  separadas conferidas no Chromium a 1300 e 900 px, sem erro de JavaScript ou
-  transbordamento do documento, e abertas pelo menu no Electron. Isso não
-  substitui a validação de uso do Financeiro e do Caixa.
-- Branch: `main`, que já contém tudo de `analise-de-funcao` (mesmo commit, `fe08494`).
-- **Virada de `2026-10-01`:** o Agostinho (back) assume o contrato e toda a parte
-  interna, inclusive a camada de dados de `src/`. Ponto de partida: o mapa tela a
-  tela em `docs/contrato/inventario.md`. O que afetar o Victor vai em
-  `docs/contrato/mudancas.md`.
-- "Restaurar dados de exemplo" (botão do operador, rodapé da barra lateral)
-  refaz a amostra de 90 dias até hoje.
-- Na prévia de desenvolvimento, o cenário pedido pelo Victor acrescenta três
-  fechamentos recentes e um mais antigo, incluindo uma falta de R$ 10,00 com
-  motivo. Os movimentos físicos trazem "Exemplo" na descrição; as contagens
-  conferem com esses movimentos. Preserva o caixa atual, não sobrepõe turnos
-  existentes e não duplica exemplos ao recarregar. Não cria dados na versão
-  de produção nem altera receitas/despesas.
+- Rodar: `npm run dev` (Vite na porta 5173 e Electron com atualização
+  automática). No terminal do VS Code, rodar com `env -u ELECTRON_RUN_AS_NODE`:
+  o VS Code repassa essa variável e o Electron sobe como Node puro e cai.
+  Sem `conexao.json` em `~/.config/papelaria-opcao/` (nome **sem** acento) o
+  app mostra "não configurado"; no navegador roda sobre o mock, com a amostra
+  de 90 dias.
+- Conferir: `npm test` e `npm run build`.
+- O histórico da revisão por telas com o Victor (até `2026-10-01`) está em
+  `docs/historico/2026-10-01-revisao-com-victor.md`.
 
 ---
 
@@ -219,6 +198,10 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
 
 *Emitte (para a 1.0):* testar o fluxo de exportação "vai uma vez" na conta de
 teste e liberar os botões (`src/funcoes.ts`); SINTEGRA com o contador.
+
+*Contador:* mandar uma planilha de exemplo do "Exportar período" do Financeiro
+e perguntar o que falta ou sobra (colunas, plano de contas, um arquivo por mês?).
+Levar junto as perguntas do SINTEGRA.
 
 *Back — próximos passos (Agostinho), em ordem:*
 13. **Responder as perguntas que ainda travam** (seção "Perguntas em aberto"):
@@ -353,7 +336,7 @@ o que foi discutido e implementado; a avaliação de uso continua na próxima se
 - Tela e item próprios no menu. Não apresenta prévia do Caixa nem transferências
   físicas da gaveta. "Registrar movimento" oferece Entrada e Despesa em janela
   central compacta; vendas e recebimentos de notinhas vêm das fichas.
-- Atalhos Hoje, Esta semana, Este mês, Este ano e consulta livre De/Até,
+- Atalhos Hoje, Esta semana, Este mês, Mês passado, Este ano e consulta livre De/Até,
   inclusive de um único dia antigo. Cartões, gráfico, contagens e tabela usam
   o mesmo intervalo; "Todos os meios" reúne Pix, cartão e dinheiro dentro dele.
   A tabela mostra até 15 registros por página, com rolagem da tela quando
@@ -369,7 +352,15 @@ o que foi discutido e implementado; a avaliação de uso continua na próxima se
 - Transferências físicas e seus estornos ficam na seção Caixa. As categorias
   antigas "Troco" e "Saída de caixa" são classificadas como registros físicos
   para consulta, sem alterar seus valores, sinais ou datas persistidos.
-- Exportar período para a contabilidade: botão ainda sem destino; formato a combinar.
+- **Exportar período (`2026-10-07`, Agostinho):** planilha `.xlsx` do período
+  consultado (abas Resumo, Por dia — por mês acima de 92 dias — e Movimentos,
+  com as cores dos tokens do app e totais em fórmula), gerada das mesmas funções da tela,
+  então o total do arquivo é o dos cartões. Vai o **período inteiro em todos os
+  meios** (arquivo parcial na contabilidade é armadilha) e **sem a gaveta**
+  (adição/retirada não é receita nem despesa). Dinheiro vai como número, para o
+  contador somar. Formato escolhido por nós, **ainda não visto pelo contador**:
+  ajustar depois da resposta dele (pendente). Atalho "Mês passado" para o
+  fechamento mensal.
 
 ### Caixa
 **Situação de validação: NÃO VALIDADO pelo Victor.** A gaveta tem tela e item

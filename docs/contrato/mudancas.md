@@ -25,6 +25,20 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-07` — Financeiro: "Exportar período" funciona; atalho "Mês passado"
+
+- **"Exportar período"** (ao lado do título) agora gera uma **planilha .xlsx** do
+  período consultado e abre a janela do sistema para salvar
+  (`financeiro/ExportarPeriodo.tsx`). Abas **Resumo** (cartões, totais por meio
+  e por categoria), **Por dia** (por mês acima de 92 dias, com barras) e
+  **Movimentos** (uma linha por registro, com filtro). Cores dos tokens do app;
+  totais com fórmula. Vai o **período
+  inteiro, em todos os meios**, mesmo com a tabela filtrada; adições e
+  retiradas da gaveta não vão. Desabilitado com período inválido ou sem
+  movimentação; "Gerando…" enquanto prepara; janela com o resultado ou o erro.
+- **Atalho "Mês passado"** entre "Este mês" e "Este ano": do dia 1 ao último dia
+  do mês anterior, o fechamento que vai ao contador.
+
 ### `2026-10-06` — Maquininha Mercado Pago na nova ficha (demonstração)
 
 - **Forma de pagamento:** Cartão ganhou **Crédito/Débito** e **Mercado

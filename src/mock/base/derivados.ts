@@ -154,6 +154,8 @@ export type LinhaFinanceiro = {
   descricao: string
   origem: string
   ficha?: string
+  /** Só nas linhas de ficha: o cliente, ou "Não identificado". */
+  cliente?: string
   categoria: string
   meio: Meio
   meioRotulo: string
@@ -181,6 +183,7 @@ export function movimentosFinanceiro(base: Base): LinhaFinanceiro[] {
       descricao: f.forma !== 'notinha' ? `Venda da ficha #${f.id}` : p.entrada ? `Entrada da notinha #${f.id}` : `Recebimento da notinha #${f.id}`,
       origem: `Balcão · ${nomeCliente(base, f.clienteId)}`,
       ficha: f.id,
+      cliente: nomeCliente(base, f.clienteId),
       categoria: f.forma === 'notinha' ? 'Recebimento de notinha' : 'Venda',
       meio: p.meio,
       meioRotulo: p.rotulo ?? NOME_MEIO[p.meio],
@@ -311,9 +314,16 @@ export function resumoFinanceiroIntervalo(linhas: LinhaFinanceiro[], de: string,
   return resumirFinanceiro(linhas, linhasFinanceiroNoIntervalo(linhas, de, ate))
 }
 
+/**
+ * Estorno abate do próprio lado: desfazer uma venda reduz as entradas, desfazer
+ * uma despesa reduz as saídas. Assim nenhum dos dois totais fica inflado.
+ */
+export function ladoFinanceiro(linha: LinhaFinanceiro): 'entrada' | 'saida' {
+  return (linha.categoria === CATEGORIA_ESTORNO ? linha.valor < 0 : linha.valor > 0) ? 'entrada' : 'saida'
+}
+
 function entradasDe(linhas: LinhaFinanceiro[]) {
-  return linhas.filter((linha) => linha.categoria === CATEGORIA_ESTORNO ? linha.valor < 0 : linha.valor > 0)
-    .reduce((total, linha) => total + linha.valor, 0)
+  return linhas.filter((linha) => ladoFinanceiro(linha) === 'entrada').reduce((total, linha) => total + linha.valor, 0)
 }
 
 function resumirFinanceiro(linhas: LinhaFinanceiro[], doPeriodo: LinhaFinanceiro[]) {
@@ -321,11 +331,8 @@ function resumirFinanceiro(linhas: LinhaFinanceiro[], doPeriodo: LinhaFinanceiro
   const ehRetirada = (l: LinhaFinanceiro) => idsRetiradas.has(l.id) || (l.estornoDe !== undefined && idsRetiradas.has(l.estornoDe))
   const fisico = identificarMovimentosFisicos(linhas)
   const operacionais = doPeriodo.filter((l) => !fisico(l))
-  // Estorno abate do próprio lado: desfazer uma venda reduz as entradas, desfazer
-  // uma despesa reduz as saídas. Assim nenhum dos dois totais fica inflado.
-  const ehEntrada = (l: LinhaFinanceiro) => (l.categoria === CATEGORIA_ESTORNO ? l.valor < 0 : l.valor > 0)
   const entradas = entradasDe(operacionais)
-  const saidas = operacionais.filter((l) => !ehEntrada(l)).reduce((t, l) => t - l.valor, 0)
+  const saidas = operacionais.filter((l) => ladoFinanceiro(l) === 'saida').reduce((t, l) => t - l.valor, 0)
   const retiradas = doPeriodo.filter(ehRetirada).reduce((t, l) => t - l.valor, 0)
   const saidasLista = operacionais.filter((l) => l.valor < 0 && l.categoria !== CATEGORIA_ESTORNO)
   return {
