@@ -17,6 +17,7 @@ import {
   estornarMovimentoCaixa,
   hojeISO,
   intervaloAtual,
+  intervaloMesPassado,
   linhasFinanceiroNoIntervalo,
   movimentosFinanceiro,
   movimentosOperacionaisFinanceiro,
@@ -32,7 +33,7 @@ import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
 import { ExportarPeriodo } from './ExportarPeriodo'
 
 type FiltroMeio = 'todos' | Meio
-type AtalhoPeriodo = Periodo | 'personalizado'
+type AtalhoPeriodo = Periodo | 'mesPassado' | 'personalizado'
 
 const iconeMeio: Record<Meio, NomeIcone> = { pix: 'pix', cartao: 'cartao', dinheiro: 'dinheiro' }
 const linhasPorPagina = 15
@@ -84,7 +85,7 @@ export function Financeiro() {
             aoMudar={(atalho) => {
               setPeriodo(atalho)
               if (atalho !== 'personalizado') {
-                const intervalo = intervaloAtual(atalho, hoje)
+                const intervalo = atalho === 'mesPassado' ? intervaloMesPassado(hoje) : intervaloAtual(atalho, hoje)
                 setDe(intervalo.de)
                 setAte(intervalo.ate)
               }
@@ -94,6 +95,7 @@ export function Financeiro() {
               { valor: 'dia', rotulo: 'Hoje' },
               { valor: 'semana', rotulo: 'Esta semana' },
               { valor: 'mes', rotulo: 'Este mês' },
+              { valor: 'mesPassado', rotulo: 'Mês passado' },
               { valor: 'ano', rotulo: 'Este ano' },
               { valor: 'personalizado', rotulo: 'Outro período' },
             ]}

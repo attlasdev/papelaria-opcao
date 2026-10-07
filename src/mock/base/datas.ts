@@ -67,6 +67,12 @@ export function intervaloAtual(periodo: Periodo, hoje: string) {
   return { de, ate: hoje }
 }
 
+/** O mês anterior inteiro, do dia 1 ao último: o fechamento que vai ao contador. */
+export function intervaloMesPassado(hoje: string) {
+  const { ano, mes } = partes(hoje)
+  return { de: paraISO(new Date(ano, mes - 2, 1)), ate: paraISO(new Date(ano, mes - 1, 0)) }
+}
+
 export function noPeriodo(data: string, periodo: Periodo, referencia: string) {
   if (periodo === 'dia') return data === referencia
   if (periodo === 'mes') return data.slice(0, 7) === referencia.slice(0, 7)
