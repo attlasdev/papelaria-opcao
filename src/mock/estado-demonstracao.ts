@@ -1,10 +1,10 @@
 import { useSyncExternalStore } from 'react'
-import { assinaturaAviso, CATEGORIA_ADICAO_CAIXA, CATEGORIA_RETIRADA_CAIXA, CATEGORIA_ESTORNO, distribuir, documentoJaCadastrado, faltaEstoqueParaVenda, MOTIVO_SALDO_INICIAL, notinha, produtoTemHistorico, resumoTurnoCaixa, type Abatimento, type Notificacao, type Notinha } from './base/derivados'
+import { assinaturaAviso, servicoTemHistorico, CATEGORIA_ADICAO_CAIXA, CATEGORIA_RETIRADA_CAIXA, CATEGORIA_ESTORNO, distribuir, documentoJaCadastrado, faltaEstoqueParaVenda, MOTIVO_SALDO_INICIAL, notinha, produtoTemHistorico, resumoTurnoCaixa, type Abatimento, type Notificacao, type Notinha } from './base/derivados'
 import { agoraHorario, dataCalendarioValida, hojeISO, minutoDoDia } from './base/datas'
 import { apagarBase, carregarBase, salvarBase } from './base/persistencia'
 import { criarBaseVazia, criarSemente } from './base/semente'
 import { comFechamentosExemplo } from './base/cenario-caixa'
-import type { Base, Cliente, Estorno, Ficha, Meio, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
+import type { Base, Cliente, Estorno, MotivoPerda, Servico, ServicoVenda, Ficha, Meio, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
 
 export * from './base/derivados'
 export * from './base/datas'
@@ -69,6 +69,60 @@ function proximoCodigo(codigos: string[], prefixo: string) {
 
 export function proximoNumeroFicha(atual: Base) {
   return String(Math.max(0, ...atual.fichas.map((f) => Number(f.id))) + 1).padStart(4, '0')
+}
+
+export function proximoCodigoServico(atual: Base) {
+  return proximoCodigo((atual.servicos ?? []).map((s) => s.codigo), 'SRV-')
+}
+
+type DadosServico = { nome: string; preco: number; descricao?: string }
+
+function dadosServicoValidos(dados: DadosServico) {
+  return Boolean(dados.nome.trim()) && Number.isSafeInteger(dados.preco) && dados.preco >= 0
+}
+
+const MOTIVOS: MotivoPerda[] = ['impressora', 'atendimento', 'cliente', 'outro']
+
+/** Valor inteiro e não negativo; perda com quantidade positiva e motivo conhecido. */
+function servicoVendaValido(s: ServicoVenda) {
+  if (!s.codigo || !s.nome.trim() || !Number.isSafeInteger(s.valor) || s.valor < 0) return false
+  if (s.perdas && (!Number.isSafeInteger(s.perdas.quantidade) || s.perdas.quantidade < 1 || !MOTIVOS.includes(s.perdas.motivo))) return false
+  return true
+}
+
+export function cadastrarServico(dados: DadosServico) {
+  if (!dadosServicoValidos(dados)) return null
+  const codigo = proximoCodigoServico(base)
+  const servico: Servico = { codigo, nome: dados.nome.trim(), preco: dados.preco, ...(dados.descricao?.trim() ? { descricao: dados.descricao.trim() } : {}) }
+  mudar({ ...base, servicos: [...(base.servicos ?? []), servico] })
+  return codigo
+}
+
+export function editarServico(codigo: string, dados: DadosServico) {
+  const atual = (base.servicos ?? []).find((s) => s.codigo === codigo)
+  if (!atual || !dadosServicoValidos(dados)) return false
+  const editado: Servico = { codigo, nome: dados.nome.trim(), preco: dados.preco, ...(dados.descricao?.trim() ? { descricao: dados.descricao.trim() } : {}), ...(atual.inativo ? { inativo: true as const } : {}) }
+  mudar({ ...base, servicos: (base.servicos ?? []).map((s) => (s.codigo === codigo ? editado : s)) })
+  return true
+}
+
+/** Fora de linha: some da ficha, mas as fichas antigas continuam citando. */
+export function definirServicoAtivo(codigo: string, ativo: boolean) {
+  mudar({
+    ...base,
+    servicos: (base.servicos ?? []).map((s) => {
+      if (s.codigo !== codigo) return s
+      const { inativo: _inativo, ...resto } = s
+      return ativo ? resto : { ...resto, inativo: true as const }
+    }),
+  })
+}
+
+/** Apaga só serviço nunca usado numa ficha; usado, o caminho é desativar. */
+export function excluirServico(codigo: string) {
+  if (!(base.servicos ?? []).some((s) => s.codigo === codigo) || servicoTemHistorico(base, codigo)) return false
+  mudar({ ...base, servicos: (base.servicos ?? []).filter((s) => s.codigo !== codigo) })
+  return true
 }
 
 export function proximoCodigoProduto(atual: Base) {
@@ -213,7 +267,11 @@ export function fecharTurnoCaixa(id: string, contadoFechamento: number, justific
 
 /** Venda concluída somente se todas as unidades já existirem no estoque. */
 export function concluirFicha(dados: Omit<Ficha, 'id' | 'operador'>) {
-  if (!dados.itens.length || dados.itens.some((item) => !Number.isSafeInteger(item.quantidade) || item.quantidade < 1) || new Set(dados.itens.map((item) => item.codigo)).size !== dados.itens.length || faltaEstoqueParaVenda(base, dados.itens)) return null
+  // Ficha só de serviço vale: uma cópia não tem item de estoque.
+  const servicos = dados.servicos ?? []
+  if (servicos.some((s) => !servicoVendaValido(s))) return null
+  if (!dados.itens.length && !servicos.length) return null
+  if (dados.itens.some((item) => !Number.isSafeInteger(item.quantidade) || item.quantidade < 1) || new Set(dados.itens.map((item) => item.codigo)).size !== dados.itens.length || faltaEstoqueParaVenda(base, dados.itens)) return null
   const meios = new Set(dados.pagamentos.map((pagamento) => pagamento.meio))
   const somaPagamentos = dados.pagamentos.reduce((total, pagamento) => total + pagamento.valor, 0)
   if (dados.forma === 'misto' && (meios.size < 2 || meios.size !== dados.pagamentos.length || somaPagamentos !== dados.total || dados.pagamentos.some((pagamento) => pagamento.valor <= 0))) return null
@@ -237,6 +295,7 @@ export function concluirFicha(dados: Omit<Ficha, 'id' | 'operador'>) {
       id,
       operador: base.operador,
       itens: dados.itens.map((item) => ({ ...item, baixaEstoque: baixas.get(item.codigo) ?? 0 })),
+      ...(servicos.length ? { servicos } : {}),
       pagamentos: dados.pagamentos.map((pagamento) => ({ ...pagamento, operador: base.operador, registradoEm: new Date().toISOString(), turnoCaixaId: turnoCaixaAberto() })),
     }],
     produtos,

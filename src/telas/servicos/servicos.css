@@ -1,0 +1,38 @@
+/* Serviços: o cadastro e o quadro de perdas para conferência. */
+.servicos__inativo td { color: var(--color-texto-apagado); }
+.servicos__inativo .celula--acoes { display: flex; align-items: center; justify-content: flex-end; gap: var(--espaco-2); }
+
+.servicos__vazio {
+  padding: var(--espaco-6);
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+.servicos__resumo {
+  padding: var(--espaco-4) var(--espaco-6) 0;
+  margin-bottom: var(--espaco-4);
+}
+
+.servicos__ficha {
+  font-weight: var(--font-weight-medio);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.servicos__observacao {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 320px;
+}
+
+/* Janela de cadastro */
+.janela-servico {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.janela-servico__remover { margin-right: auto; color: var(--color-saida); }
+.janela-servico__erro { margin-right: auto; font-size: var(--text-rotulo); color: var(--color-saida); }

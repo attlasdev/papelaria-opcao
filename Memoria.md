@@ -321,6 +321,24 @@ Levar junto as perguntas do SINTEGRA.
 - O calendário de vendas sem identificação permite hoje e qualquer dia passado;
   datas futuras são bloqueadas também na digitação e na navegação por teclado.
 
+### Serviços (`2026-10-19`)
+- Seção **Serviços** no menu, abaixo do Estoque: cadastro com **nome, valor e
+  descrição** (código `SRV-0001`). Sem forma de cobrança: um **valor geral**,
+  sugerido na ficha e ajustável lá (ex.: 2 cópias a R$ 0,50 → cobrar R$ 1,00).
+  Usado em ficha não se exclui, desativa.
+- Na nova ficha, **"Inserir serviço"** ao lado de "Inserir item": serviço,
+  valor cobrado, **perdas** (unidades + motivo: impressora, atendimento,
+  cliente, outro) e **observação** livre. Ficha só de serviço vale.
+- **Perdas são só conferência:** nada mexe no estoque (decisão do Agostinho).
+  A tela Serviços lista as perdas por período e soma por motivo. Cancelar a
+  ficha não apaga a perda (o material se perdeu do mesmo jeito).
+- **Financeiro:** ficha só de serviço é "Serviço"; com produto, "Venda e
+  serviço" — serviço paga ISS e produto ICMS, o contador precisa separar.
+- Exemplos (demonstração e semente sob pedido): Cópia P&B, Cópia colorida,
+  Impressão, Digitalização, Encadernação. A loja não recebe nada pronto.
+- Fora por enquanto: material vinculado ao estoque, forma de cobrança
+  (por cópia), NFS-e.
+
 ### Estoque
 - Saldo só muda por **entrada, ajuste, venda ou cancelamento**, para o histórico
   bater. Editar produto não mexe no saldo. A quantidade informada ao cadastrar

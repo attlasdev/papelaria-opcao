@@ -33,6 +33,23 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-19` — Serviços
+
+- **Menu:** item **Serviços** abaixo do Estoque (`telas/servicos/`): tabela dos
+  serviços cadastrados (código, nome, descrição, valor; editar, desativar,
+  reativar) e o painel **"Perdas anotadas nos serviços"** com período (últimos
+  7 dias, este mês, mês passado), cartões por motivo e a lista, com a ficha
+  clicável.
+- **Nova ficha:** botão **"Inserir serviço"** ao lado de "Inserir item"; abre
+  `criar-ficha/servicos/JanelaServicoFicha.tsx` (serviço, valor cobrado,
+  perdas + motivo, observação). Os serviços aparecem numa tabela abaixo dos
+  produtos, com editar e tirar. Ficha só de serviço esconde o "Nenhum item
+  ainda". A revisão conta os serviços.
+- **Detalhe da ficha:** os serviços entram na tabela ("Produto ou serviço"), com
+  perdas e observação na linha de baixo.
+- **Comprovante (quando a tela dele existir):** serviço vai como item de
+  quantidade 1 e preço = valor cobrado.
+
 ### `2026-10-19` — Cadastro de cliente sem o bloco "Para nota fiscal"
 
 - O bloco **"Para nota fiscal"** (tipo de contribuinte, tipo de cliente,

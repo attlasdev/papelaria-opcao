@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Botao, BotaoIcone } from '../../../componentes/botao/Botao'
 import { Icone } from '../../../componentes/icone/Icone'
@@ -14,10 +14,16 @@ type Props = {
   aoMudar: (itens: ItemFicha[]) => void
   erroFalta?: string
   erroEstoque?: { codigo: string; descricao: string; disponivel: number; solicitado: number }
+  /** Botão ao lado de "Inserir item" (o "Inserir serviço" da ficha). */
+  acaoExtra?: ReactNode
+  /** Conteúdo logo abaixo da tabela de produtos (os serviços da ficha). */
+  depoisDaTabela?: ReactNode
+  /** Ficha só de serviço: sem a linha "Nenhum item ainda". */
+  semAvisoVazio?: boolean
 }
 
 /** Leitura de código de barras e lista de itens. Ler o mesmo código de novo soma 1. */
-export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque }: Props) {
+export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, depoisDaTabela, semAvisoVazio }: Props) {
   const [codigo, setCodigo] = useState('')
   const [erro, setErro] = useState<string | null>(null)
   const [sugestoesAbertas, setSugestoesAbertas] = useState(false)
@@ -206,6 +212,7 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque }: Props) {
         <Botao type="submit" icone="mais">
           Inserir item
         </Botao>
+        {acaoExtra}
       </form>
       {erro && (
         <p className="itens-ficha__erro">
@@ -266,7 +273,7 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque }: Props) {
               </td>
             </tr>
           ))}
-          {itens.length === 0 && (
+          {itens.length === 0 && !semAvisoVazio && (
             <tr>
               <td colSpan={5} className="itens-ficha__vazio">
                 Nenhum item ainda. Bipe um código ou busque pelo nome do produto.
@@ -275,6 +282,7 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque }: Props) {
           )}
         </tbody>
       </table>
+      {depoisDaTabela}
     </section>
   )
 }

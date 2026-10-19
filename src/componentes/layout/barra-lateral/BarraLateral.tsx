@@ -18,6 +18,7 @@ const secoes: { rotulo: string; icone: NomeIcone; caminho: string; exato?: boole
   { rotulo: 'Financeiro', icone: 'financeiro', caminho: rotas.financeiro },
   { rotulo: 'Caixa', icone: 'dinheiro', caminho: rotas.caixa },
   { rotulo: 'Estoque', icone: 'estoque', caminho: rotas.estoque },
+  { rotulo: 'Serviços', icone: 'imprimir', caminho: rotas.servicos },
   ...(funcoes.notasFiscais ? [{ rotulo: 'Notas fiscais', icone: 'notas' as const, caminho: rotas.notas }] : []),
 ]
 

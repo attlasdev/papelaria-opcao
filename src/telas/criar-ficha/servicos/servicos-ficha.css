@@ -1,0 +1,27 @@
+/* Serviços na ficha: a tabela abaixo dos produtos e a janela de inserir. */
+.servicos-ficha { margin-top: var(--espaco-4); }
+.servicos-ficha__acoes { display: flex; justify-content: flex-end; gap: var(--espaco-1); }
+
+.servico-ficha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.servico-ficha__perdas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-3);
+}
+
+.servico-ficha__perdas legend {
+  margin-bottom: var(--espaco-2);
+  font-size: var(--text-rotulo);
+  font-weight: var(--font-weight-forte);
+  color: var(--color-texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.servico-ficha__opcional { font-weight: var(--font-weight-normal); text-transform: none; letter-spacing: 0; }
+.servico-ficha__erro { margin-right: auto; font-size: var(--text-rotulo); color: var(--color-saida); }

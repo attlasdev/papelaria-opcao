@@ -127,6 +127,31 @@ export type Pagamento = {
   estorno?: Estorno
 }
 
+/**
+ * Serviço que a papelaria presta (cópia, impressão, encadernação…). Não tem
+ * saldo nem mexe no estoque (`2026-10-19`): um valor geral, ajustável na ficha.
+ */
+export type Servico = {
+  codigo: string // SRV-0001
+  nome: string
+  preco: number // centavos: o valor sugerido na ficha
+  descricao?: string
+  inativo?: true
+}
+
+/** Por que se perdeu material num serviço. Dado de conferência, sem efeito no estoque. */
+export type MotivoPerda = 'impressora' | 'atendimento' | 'cliente' | 'outro'
+
+/** Um serviço prestado numa ficha. */
+export type ServicoVenda = {
+  codigo: string
+  nome: string
+  valor: number // centavos, o cobrado (pode diferir do cadastro)
+  /** Ex.: pediu 2 cópias, saíram 6, 4 perdidas pela impressora. */
+  perdas?: { quantidade: number; motivo: MotivoPerda }
+  observacao?: string
+}
+
 export type Ficha = {
   id: string // '1043'
   clienteId: string | null // null = venda sem identificação
@@ -134,6 +159,8 @@ export type Ficha = {
   horario: string
   operador: string
   itens: ItemVenda[]
+  /** Serviços prestados na mesma ficha; o total soma itens e serviços. */
+  servicos?: ServicoVenda[]
   desconto: number
   total: number // já com desconto
   forma: FormaVenda
@@ -212,6 +239,7 @@ export type RascunhoFicha = {
   cartao?: ModalidadeCartao
   maquininhaCartao?: Maquininha
   pixNaMaquininha?: boolean
+  servicos?: ServicoVenda[]
 }
 
 export type Base = {
@@ -220,6 +248,8 @@ export type Base = {
   operador: string
   clientes: Cliente[]
   produtos: Produto[]
+  /** Opcional para bases gravadas antes dos serviços existirem. */
+  servicos?: Servico[]
   fichas: Ficha[]
   movimentosCaixa: MovimentoCaixa[]
   turnosCaixa?: TurnoCaixa[] // opcional para bases locais anteriores

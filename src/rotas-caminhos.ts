@@ -24,6 +24,7 @@ export const rotas = {
   entradaRapida: (codigo: string) => `/estoque/entrada-rapida?produto=${codigo}`,
   ajustarEstoque: (codigo?: string) => `/estoque/ajustar${codigo ? `?produto=${codigo}` : ''}`,
   movimentacoesEstoque: (codigo?: string) => `/estoque/movimentacoes${codigo ? `?produto=${codigo}` : ''}`,
+  servicos: '/servicos',
   notas: '/notas-fiscais',
   rascunhosNotas: '/notas-fiscais/rascunhos',
   rascunhoNota: (id: string) => `/notas-fiscais/rascunhos/${id}`,

@@ -19,6 +19,11 @@ import {
   completarProduto,
   definirProdutoAtivo,
   editarProduto,
+  cadastrarServico,
+  editarServico,
+  excluirServico,
+  definirServicoAtivo,
+  perdasServicos,
   editarCliente,
   marcarEnviadosEmitte,
   excluirProduto,
@@ -35,7 +40,7 @@ import {
   resumoDoCliente,
   resumoEstoque,
 } from './estado-demonstracao'
-import { carregarBase } from './base/persistencia'
+import { carregarBase, normalizarBase } from './base/persistencia'
 
 const HOJE = '2026-09-25'
 beforeEach(() => restaurarDemonstracao(HOJE, 15 * 60))
@@ -490,5 +495,61 @@ describe('marca de enviado à Emitte', () => {
     const quando = obterBase().clientes[0].emitteEnviadoEm
     expect(editarCliente(c.id, { nome: c.nome, documento: c.documento, telefone: c.telefone, endereco: c.endereco })).toBe(true)
     expect(obterBase().clientes[0].emitteEnviadoEm).toBe(quando)
+  })
+})
+
+describe('serviços', () => {
+  const venda = (servicos: Parameters<typeof concluirFicha>[0]['servicos'], itens: Parameters<typeof concluirFicha>[0]['itens'] = []) => {
+    const total = (servicos ?? []).reduce((t, s) => t + s.valor, 0) + itens.reduce((t, i) => t + i.preco * i.quantidade, 0)
+    return concluirFicha({ clienteId: null, data: HOJE, horario: '15:00', itens, servicos, desconto: 0, total, forma: 'dinheiro', pagamentos: [{ data: HOJE, horario: '15:00', meio: 'dinheiro', valor: total }] })
+  }
+  const copia = { codigo: 'SRV-0001', nome: 'Cópia P&B', valor: 100 }
+
+  it('a semente traz os cinco serviços de exemplo', () => {
+    expect(obterBase().servicos?.map((s) => s.nome)).toEqual(['Cópia P&B', 'Cópia colorida', 'Impressão', 'Digitalização', 'Encadernação'])
+  })
+
+  it('ficha só de serviço vale, com perda e observação, e não mexe no estoque', () => {
+    const estoqueAntes = obterBase().movimentosEstoque.length
+    const id = venda([{ ...copia, perdas: { quantidade: 4, motivo: 'impressora' }, observacao: 'Saíram 6, 4 manchadas' }])
+    expect(id).toBeTruthy()
+    const ficha = obterBase().fichas.find((f) => f.id === id)!
+    expect(ficha.servicos?.[0]).toMatchObject({ perdas: { quantidade: 4, motivo: 'impressora' } })
+    expect(obterBase().movimentosEstoque.length).toBe(estoqueAntes)
+    expect(perdasServicos(obterBase(), HOJE, HOJE)).toEqual([expect.objectContaining({ ficha: id, servico: 'Cópia P&B', quantidade: 4, motivo: 'impressora' })])
+  })
+
+  it('perda sem quantidade ou com motivo desconhecido é recusada; ficha vazia também', () => {
+    expect(venda([{ ...copia, perdas: { quantidade: 0, motivo: 'impressora' } }])).toBeNull()
+    expect(venda([{ ...copia, perdas: { quantidade: 2, motivo: 'chuva' as never } }])).toBeNull()
+    expect(venda([])).toBeNull()
+  })
+
+  it('no Financeiro: só serviço é "Serviço"; com produto, "Venda e serviço"', () => {
+    const so = venda([copia])!
+    const borracha = obterBase().produtos.find((p) => p.codigo === 'EST-0022')!
+    const misto = venda([copia], [{ codigo: borracha.codigo, descricao: borracha.descricao, quantidade: 1, preco: borracha.preco }])!
+    const categoria = (ficha: string) => movimentosFinanceiro(obterBase()).find((l) => l.ficha === ficha)?.categoria
+    expect(categoria(so)).toBe('Serviço')
+    expect(movimentosFinanceiro(obterBase()).find((l) => l.ficha === so)?.descricao).toBe(`Serviço da ficha #${so}`)
+    expect(categoria(misto)).toBe('Venda e serviço')
+  })
+
+  it('cadastro: código novo, edição mantém, usado não se exclui (desativa)', () => {
+    const codigo = cadastrarServico({ nome: 'Plastificação', preco: 500 })!
+    expect(codigo).toBe('SRV-0006')
+    expect(cadastrarServico({ nome: '  ', preco: 100 })).toBeNull()
+    expect(editarServico(codigo, { nome: 'Plastificação A4', preco: 600, descricao: 'Por folha' })).toBe(true)
+    expect(obterBase().servicos?.find((s) => s.codigo === codigo)).toMatchObject({ nome: 'Plastificação A4', preco: 600 })
+    expect(excluirServico(codigo)).toBe(true)
+    venda([copia])
+    expect(excluirServico('SRV-0001')).toBe(false)
+    definirServicoAtivo('SRV-0001', false)
+    expect(obterBase().servicos?.find((s) => s.codigo === 'SRV-0001')?.inativo).toBe(true)
+  })
+
+  it('base gravada antes dos serviços abre com a lista vazia', () => {
+    const { servicos: _s, ...antiga } = obterBase()
+    expect(normalizarBase(antiga)?.servicos).toEqual([])
   })
 })

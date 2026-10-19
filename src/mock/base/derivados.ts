@@ -1,7 +1,7 @@
 import { dataCurta, reais } from '../../formatar'
 import { rotas } from '../../rotas-caminhos'
 import { dataCalendarioValida, diaDoInstante, diasEntre, noPeriodo, periodoAnterior, type Periodo } from './datas'
-import type { Base, Cliente, Ficha, ItemVenda, Meio, Produto, TurnoCaixa } from './tipos'
+import type { Base, Cliente, Ficha, ItemVenda, Meio, MotivoPerda, Produto, TurnoCaixa } from './tipos'
 
 /**
  * Tudo o que se calcula a partir da base. Funções puras: recebem a base e a
@@ -28,7 +28,44 @@ export function nomeCliente(base: Base, clienteId: string | null) {
 }
 
 export function resumoItens(ficha: Ficha) {
-  return ficha.itens.map((i) => `${i.descricao} (${i.quantidade}x)`).join(', ')
+  return [...ficha.itens.map((i) => `${i.descricao} (${i.quantidade}x)`), ...(ficha.servicos ?? []).map((s) => s.nome)].join(', ')
+}
+
+/** Serviço citado em alguma ficha (ou na venda em andamento) não se apaga: desativa. */
+export function servicoTemHistorico(base: Base, codigo: string) {
+  return base.fichas.some((f) => f.servicos?.some((s) => s.codigo === codigo))
+    || Boolean(base.rascunhoFicha?.servicos?.some((s) => s.codigo === codigo))
+}
+
+export const ROTULO_MOTIVO_PERDA: Record<MotivoPerda, string> = {
+  impressora: 'Problema na impressora',
+  atendimento: 'Erro no atendimento',
+  cliente: 'Cliente pediu de novo',
+  outro: 'Outro motivo',
+}
+
+export type PerdaServico = { ficha: string; data: string; horario: string; servico: string; quantidade: number; motivo: MotivoPerda; observacao?: string }
+
+/**
+ * As perdas anotadas nos serviços do período (dia da ficha), mais recentes
+ * primeiro. Só conferência: nada disso mexe no estoque (decisão de 2026-10-19).
+ * Ficha cancelada continua: o material se perdeu do mesmo jeito.
+ */
+export function perdasServicos(base: Base, de: string, ate: string): PerdaServico[] {
+  return base.fichas
+    .filter((f) => f.data >= de && f.data <= ate)
+    .flatMap((f) => (f.servicos ?? []).flatMap((s) => (s.perdas ? [{ ficha: f.id, data: f.data, horario: f.horario, servico: s.nome, quantidade: s.perdas.quantidade, motivo: s.perdas.motivo, observacao: s.observacao }] : [])))
+    .sort(porDataDecrescente)
+}
+
+/**
+ * Categoria no Financeiro: serviço paga ISS e produto ICMS, então o contador
+ * precisa separar. Ficha só de serviço é "Serviço"; com os dois, "Venda e serviço".
+ */
+function categoriaDaFicha(f: Ficha) {
+  if (f.forma === 'notinha') return 'Recebimento de notinha'
+  if (!f.servicos?.length) return 'Venda'
+  return f.itens.length ? 'Venda e serviço' : 'Serviço'
 }
 
 /** A venda só pode baixar unidades que já constam no estoque. */
@@ -49,7 +86,10 @@ export function faltaEstoqueParaVenda(base: Base, itens: Pick<ItemVenda, 'codigo
 
 export function contagemItens(ficha: Ficha) {
   const unidades = ficha.itens.reduce((t, i) => t + i.quantidade, 0)
-  return `${ficha.itens.length} ${ficha.itens.length === 1 ? 'tipo de item' : 'tipos de itens'} · ${unidades} ${unidades === 1 ? 'unidade' : 'unidades'}`
+  const servicos = ficha.servicos?.length ?? 0
+  const itens = ficha.itens.length ? `${ficha.itens.length} ${ficha.itens.length === 1 ? 'tipo de item' : 'tipos de itens'} · ${unidades} ${unidades === 1 ? 'unidade' : 'unidades'}` : ''
+  const comServicos = servicos ? `${servicos} ${servicos === 1 ? 'serviço' : 'serviços'}` : ''
+  return [itens, comServicos].filter(Boolean).join(' · ')
 }
 
 export function rotuloForma(ficha: Ficha) {
@@ -180,11 +220,11 @@ export function movimentosFinanceiro(base: Base): LinhaFinanceiro[] {
       id: `${f.id}-${indice}`,
       data: p.data,
       horario: p.horario,
-      descricao: f.forma !== 'notinha' ? `Venda da ficha #${f.id}` : p.entrada ? `Entrada da notinha #${f.id}` : `Recebimento da notinha #${f.id}`,
+      descricao: f.forma !== 'notinha' ? `${categoriaDaFicha(f) === 'Serviço' ? 'Serviço' : 'Venda'} da ficha #${f.id}` : p.entrada ? `Entrada da notinha #${f.id}` : `Recebimento da notinha #${f.id}`,
       origem: `Balcão · ${nomeCliente(base, f.clienteId)}`,
       ficha: f.id,
       cliente: nomeCliente(base, f.clienteId),
-      categoria: f.forma === 'notinha' ? 'Recebimento de notinha' : 'Venda',
+      categoria: categoriaDaFicha(f),
       meio: p.meio,
       meioRotulo: p.rotulo ?? NOME_MEIO[p.meio],
       valor: p.valor,

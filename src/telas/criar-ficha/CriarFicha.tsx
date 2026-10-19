@@ -29,9 +29,11 @@ import { ClienteFicha } from './cliente/ClienteFicha'
 import { ItensFicha } from './itens/ItensFicha'
 import { PagamentoFicha } from './pagamento/PagamentoFicha'
 import { JanelaCobranca } from './cobranca/JanelaCobranca'
+import { JanelaServicoFicha } from './servicos/JanelaServicoFicha'
+import { ServicosFicha } from './servicos/ServicosFicha'
 import { rotuloPagamento } from '../../dados/pagamento'
 import type { Cobranca, MeioCobranca } from '../../../comum/contrato'
-import type { Maquininha, ModalidadeCartao } from '../../mock/base/tipos'
+import type { Maquininha, ModalidadeCartao, ServicoVenda } from '../../mock/base/tipos'
 import { semIdentificacao, type EscolhaCliente, type FormaPagamento, type ItemFicha } from './tipos'
 import './criar-ficha.css'
 
@@ -62,6 +64,9 @@ export function CriarFicha() {
   // Abre vazia: a pessoa no balcão escolhe o cliente e bipa os itens.
   const [cliente, setCliente] = useState<EscolhaCliente | null>(() => clienteDoRascunho(base, rascunhoFicha))
   const [itens, setItens] = useState<ItemFicha[]>(() => itensDoRascunho(base, rascunhoFicha))
+  // Serviços prestados (cópia, impressão…): valor, perdas e observação; sem estoque.
+  const [servicos, setServicos] = useState<ServicoVenda[]>(() => rascunhoFicha?.servicos ?? [])
+  const [janelaServico, setJanelaServico] = useState<{ indice?: number } | null>(null)
   const [abertura] = useState(() => ({ numero: proximoNumeroFicha(base), horario: agoraHorario() }))
   const [desconto, setDesconto] = useState(rascunhoFicha?.desconto ?? 0)
   const [forma, setForma] = useState<FormaPagamento>(rascunhoFicha?.forma ?? 'dinheiro')
@@ -88,18 +93,20 @@ export function CriarFicha() {
   // A venda em andamento se guarda sozinha: sair pelo menu, busca ou sino não a
   // perde, e o Início oferece retomar. Ficha vazia não vira rascunho.
   useEffect(() => {
-    const temAlgo = cliente !== null || itens.length > 0
+    const temAlgo = cliente !== null || itens.length > 0 || servicos.length > 0
     if (!temAlgo && !obterBase().rascunhoFicha) return
     salvarRascunhoFicha(temAlgo ? {
       clienteId: cliente && cliente !== semIdentificacao ? cliente.id : null,
       semIdentificacao: cliente === semIdentificacao,
       itens: itens.map((item) => ({ codigo: item.codigo, quantidade: item.quantidade })),
+      servicos,
       desconto, forma, recebido, prepararNota, vencimento, entrada, meioEntrada, divisaoPagamento, recebidoMisto,
       cartao, maquininhaCartao, pixNaMaquininha,
     } : null)
-  }, [cliente, itens, desconto, forma, recebido, prepararNota, vencimento, entrada, meioEntrada, divisaoPagamento, recebidoMisto, cartao, maquininhaCartao, pixNaMaquininha])
+  }, [cliente, itens, desconto, forma, recebido, prepararNota, vencimento, entrada, meioEntrada, divisaoPagamento, recebidoMisto, cartao, maquininhaCartao, pixNaMaquininha, servicos])
 
-  const subtotal = itens.reduce((soma, i) => soma + i.preco * i.quantidade, 0)
+  const subtotal = itens.reduce((soma, i) => soma + i.preco * i.quantidade, 0) + servicos.reduce((soma, s) => soma + s.valor, 0)
+  const temConteudo = itens.length > 0 || servicos.length > 0
   const total = Math.max(0, subtotal - desconto)
   const unidades = itens.reduce((soma, i) => soma + i.quantidade, 0)
   const faltaDinheiro = forma === 'dinheiro' && recebido < total
@@ -117,14 +124,14 @@ export function CriarFicha() {
     : !vencimento ? 'Informe o vencimento da notinha.'
     : vencimento < hojeISO() ? 'O vencimento não pode ser antes de hoje.'
     : entrada >= total && total > 0 ? 'A entrada cobre o total: escolha outra forma.' : null
-  const problemaDesconto = itens.length > 0 && desconto > subtotal ? `O desconto passa do subtotal (${reais(subtotal)}).` : null
+  const problemaDesconto = temConteudo && desconto > subtotal ? `O desconto passa do subtotal (${reais(subtotal)}).` : null
   const problema = !cliente ? 'Falta escolher o cliente.'
-    : itens.length === 0 ? 'Inclua ao menos um item.'
+    : !temConteudo ? 'Inclua ao menos um item ou serviço.'
     : faltaEstoque ? `Estoque insuficiente para ${faltaEstoque.descricao}: ${faltaEstoque.disponivel} disponível, ${faltaEstoque.solicitado} na ficha.`
     : problemaDesconto ?? problemaNotinha ?? problemaMisto ?? (faltaDinheiro ? 'O valor recebido é menor que o total.' : null)
   const erroCliente = tentouConcluir && !cliente ? problema ?? undefined : undefined
-  const erroItens = tentouConcluir && cliente && itens.length === 0 ? problema ?? undefined : undefined
-  const podeMostrar = tentouConcluir && cliente && itens.length > 0
+  const erroItens = tentouConcluir && cliente && !temConteudo ? problema ?? undefined : undefined
+  const podeMostrar = tentouConcluir && cliente && temConteudo
   // O desconto errado aparece na hora: o total que a pessoa lê já estaria errado.
   const erroDesconto = problemaDesconto ?? undefined
   const erroVencimentoNotinha = notinha && (!vencimento || vencimento < hojeISO())
@@ -146,6 +153,7 @@ export function CriarFicha() {
   function limpar() {
     setCliente(null)
     setItens([])
+    setServicos([])
     setDesconto(0)
     setForma('dinheiro')
     setRecebido(0)
@@ -168,7 +176,7 @@ export function CriarFicha() {
     if (problema) {
       setTentouConcluir(true)
       const seletor = !cliente ? '.cliente-ficha__busca input'
-        : itens.length === 0 ? '.itens-ficha__leitor input'
+        : !temConteudo ? '.itens-ficha__leitor input'
         : faltaEstoque ? '.itens-ficha__tabela input'
         : problemaDesconto ? '.pagamento-ficha__desconto input'
         : notinha && vencimento && vencimento >= hojeISO() ? '.pagamento-ficha__notinha .campo:nth-child(2) input'
@@ -217,6 +225,7 @@ export function CriarFicha() {
       : [{ data, horario, meio: forma as Meio, valor: total, ...viaMaquininha(forma as Meio) }]
     const numero = concluirFicha({
       clienteId: cliente === semIdentificacao ? null : cliente.id,
+      ...(servicos.length ? { servicos } : {}),
       data,
       horario,
       itens: itens.map((item) => ({ codigo: item.codigo, descricao: item.descricao, quantidade: item.quantidade, preco: item.preco })),
@@ -251,7 +260,22 @@ export function CriarFicha() {
             <ClienteFicha key={versao} cliente={cliente} aoEscolher={escolherCliente} erro={erroCliente} />
           </Painel>
           <Painel>
-            <ItensFicha key={versao} itens={itens} aoMudar={(proximos) => { setItens(proximos); setTentouConcluir(false); setErroConclusao('') }} erroFalta={erroItens} erroEstoque={faltaEstoque ?? undefined} />
+            <ItensFicha
+              key={versao}
+              itens={itens}
+              aoMudar={(proximos) => { setItens(proximos); setTentouConcluir(false); setErroConclusao('') }}
+              erroFalta={erroItens}
+              erroEstoque={faltaEstoque ?? undefined}
+              acaoExtra={<Botao icone="mais" onClick={() => setJanelaServico({})}>Inserir serviço</Botao>}
+              semAvisoVazio={servicos.length > 0}
+              depoisDaTabela={
+                <ServicosFicha
+                  servicos={servicos}
+                  aoEditar={(indice) => setJanelaServico({ indice })}
+                  aoRemover={(indice) => setServicos((atuais) => atuais.filter((_, i) => i !== indice))}
+                />
+              }
+            />
           </Painel>
         </div>
 
@@ -300,6 +324,7 @@ export function CriarFicha() {
                 <dt>Itens</dt>
                 <dd>
                   {itens.length} {itens.length === 1 ? 'produto' : 'produtos'} · {unidades} {unidades === 1 ? 'unidade' : 'unidades'}
+                  {servicos.length > 0 && ` · ${servicos.length} ${servicos.length === 1 ? 'serviço' : 'serviços'}`}
                 </dd>
               </div>
               <div>
@@ -343,6 +368,19 @@ export function CriarFicha() {
           </Painel>
         </aside>
       </div>
+      {janelaServico && (
+        <JanelaServicoFicha
+          atual={janelaServico.indice !== undefined ? servicos[janelaServico.indice] : undefined}
+          aoFechar={() => setJanelaServico(null)}
+          aoSalvar={(servico) => {
+            const indice = janelaServico.indice
+            setServicos((atuais) => (indice !== undefined ? atuais.map((s, i) => (i === indice ? servico : s)) : [...atuais, servico]))
+            setJanelaServico(null)
+            setTentouConcluir(false)
+            setErroConclusao('')
+          }}
+        />
+      )}
       {cobrando && (
         <JanelaCobranca
           valor={total}

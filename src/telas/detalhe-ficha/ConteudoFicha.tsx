@@ -22,6 +22,7 @@ import {
   type Ficha,
   type FormaVenda,
   type SituacaoNotinha,
+  ROTULO_MOTIVO_PERDA,
 } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import './detalhe-ficha.css'
@@ -93,7 +94,7 @@ export function TabelaItensFicha({ ficha }: { ficha: Ficha }) {
     <Tabela larguraMinima={520}>
       <thead>
         <tr>
-          <th>Produto</th>
+          <th>{ficha.servicos?.length ? 'Produto ou serviço' : 'Produto'}</th>
           <th className="celula--numero">Qtd.</th>
           <th className="celula--numero">Preço</th>
           <th className="celula--numero">Total</th>
@@ -111,6 +112,19 @@ export function TabelaItensFicha({ ficha }: { ficha: Ficha }) {
             <td className="celula--numero detalhe-ficha__valor">{reais(item.preco * item.quantidade)}</td>
           </tr>
         ))}
+        {(ficha.servicos ?? []).map((s, i) => (
+          <tr key={`servico-${s.codigo}-${i}`}>
+            <td>
+              <span className="celula-principal">{s.nome}</span>
+              <span className="celula-secundaria">
+                Serviço{s.perdas && ` · ${s.perdas.quantidade} ${s.perdas.quantidade === 1 ? 'perda' : 'perdas'} (${ROTULO_MOTIVO_PERDA[s.perdas.motivo].toLowerCase()})`}{s.observacao && ` · ${s.observacao}`}
+              </span>
+            </td>
+            <td className="celula--numero numero">—</td>
+            <td className="celula--numero">{reais(s.valor)}</td>
+            <td className="celula--numero detalhe-ficha__valor">{reais(s.valor)}</td>
+          </tr>
+        ))}
       </tbody>
     </Tabela>
   )
@@ -119,7 +133,7 @@ export function TabelaItensFicha({ ficha }: { ficha: Ficha }) {
 /** Subtotal e desconto quando houver; na notinha, pago e em aberto. */
 export function TotaisFicha({ ficha, hoje }: Omit<Props, 'base'>) {
   const notinha = notinhaDa(ficha, hoje)
-  const subtotal = ficha.itens.reduce((t, i) => t + i.preco * i.quantidade, 0)
+  const subtotal = ficha.itens.reduce((t, i) => t + i.preco * i.quantidade, 0) + (ficha.servicos ?? []).reduce((t, s) => t + s.valor, 0)
   return (
     <dl className="detalhe-ficha__saldo">
       {ficha.desconto > 0 && (
