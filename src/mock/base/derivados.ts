@@ -1,7 +1,7 @@
 import { dataCurta, reais } from '../../formatar'
 import { rotas } from '../../rotas-caminhos'
 import { dataCalendarioValida, diaDoInstante, diasEntre, noPeriodo, periodoAnterior, type Periodo } from './datas'
-import type { Base, Cliente, Ficha, ItemVenda, Meio, MotivoPerda, Produto, TurnoCaixa } from './tipos'
+import type { Base, Cliente, Ficha, ItemVenda, Meio, Produto, TurnoCaixa } from './tipos'
 
 /**
  * Tudo o que se calcula a partir da base. Funções puras: recebem a base e a
@@ -31,20 +31,7 @@ export function resumoItens(ficha: Ficha) {
   return [...ficha.itens.map((i) => `${i.descricao} (${i.quantidade}x)`), ...(ficha.servicos ?? []).map((s) => s.nome)].join(', ')
 }
 
-/** Serviço citado em alguma ficha (ou na venda em andamento) não se apaga: desativa. */
-export function servicoTemHistorico(base: Base, codigo: string) {
-  return base.fichas.some((f) => f.servicos?.some((s) => s.codigo === codigo))
-    || Boolean(base.rascunhoFicha?.servicos?.some((s) => s.codigo === codigo))
-}
-
-export const ROTULO_MOTIVO_PERDA: Record<MotivoPerda, string> = {
-  impressora: 'Problema na impressora',
-  atendimento: 'Erro no atendimento',
-  cliente: 'Cliente pediu de novo',
-  outro: 'Outro motivo',
-}
-
-export type PerdaServico = { ficha: string; data: string; horario: string; servico: string; quantidade: number; motivo: MotivoPerda; observacao?: string }
+export type PerdaServico = { ficha: string; data: string; horario: string; servico: string; quantidade: number; observacao?: string }
 
 /**
  * As perdas anotadas nos serviços do período (dia da ficha), mais recentes
@@ -54,7 +41,7 @@ export type PerdaServico = { ficha: string; data: string; horario: string; servi
 export function perdasServicos(base: Base, de: string, ate: string): PerdaServico[] {
   return base.fichas
     .filter((f) => f.data >= de && f.data <= ate)
-    .flatMap((f) => (f.servicos ?? []).flatMap((s) => (s.perdas ? [{ ficha: f.id, data: f.data, horario: f.horario, servico: s.nome, quantidade: s.perdas.quantidade, motivo: s.perdas.motivo, observacao: s.observacao }] : [])))
+    .flatMap((f) => (f.servicos ?? []).flatMap((s) => (s.perdas ? [{ ficha: f.id, data: f.data, horario: f.horario, servico: s.nome, quantidade: s.perdas.quantidade, observacao: s.observacao }] : [])))
     .sort(porDataDecrescente)
 }
 

@@ -1,6 +1,6 @@
 import { BotaoIcone } from '../../../componentes/botao/Botao'
 import { reais } from '../../../formatar'
-import { ROTULO_MOTIVO_PERDA, type ServicoVenda } from '../../../mock/estado-demonstracao'
+import type { ServicoVenda } from '../../../mock/estado-demonstracao'
 import './servicos-ficha.css'
 
 type Props = {
@@ -23,12 +23,12 @@ export function ServicosFicha({ servicos, aoEditar, aoRemover }: Props) {
       </thead>
       <tbody>
         {servicos.map((s, i) => (
-          <tr key={`${s.codigo}-${i}`}>
+          <tr key={i}>
             <td>
               <span className="itens-ficha__nome">{s.nome}</span>
               {(s.perdas || s.observacao) && (
                 <span className="itens-ficha__detalhe">
-                  {s.perdas && `${s.perdas.quantidade} ${s.perdas.quantidade === 1 ? 'perda' : 'perdas'} · ${ROTULO_MOTIVO_PERDA[s.perdas.motivo]}`}
+                  {s.perdas && `${s.perdas.quantidade} ${s.perdas.quantidade === 1 ? 'perda' : 'perdas'}`}
                   {s.perdas && s.observacao && ' · '}
                   {s.observacao}
                 </span>

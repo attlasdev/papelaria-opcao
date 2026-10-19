@@ -22,7 +22,6 @@ import {
   type Ficha,
   type FormaVenda,
   type SituacaoNotinha,
-  ROTULO_MOTIVO_PERDA,
 } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import './detalhe-ficha.css'
@@ -113,11 +112,11 @@ export function TabelaItensFicha({ ficha }: { ficha: Ficha }) {
           </tr>
         ))}
         {(ficha.servicos ?? []).map((s, i) => (
-          <tr key={`servico-${s.codigo}-${i}`}>
+          <tr key={`servico-${i}`}>
             <td>
               <span className="celula-principal">{s.nome}</span>
               <span className="celula-secundaria">
-                Serviço{s.perdas && ` · ${s.perdas.quantidade} ${s.perdas.quantidade === 1 ? 'perda' : 'perdas'} (${ROTULO_MOTIVO_PERDA[s.perdas.motivo].toLowerCase()})`}{s.observacao && ` · ${s.observacao}`}
+                Serviço{s.perdas && ` · ${s.perdas.quantidade} ${s.perdas.quantidade === 1 ? 'perda' : 'perdas'}`}{s.observacao && ` · ${s.observacao}`}
               </span>
             </td>
             <td className="celula--numero numero">—</td>

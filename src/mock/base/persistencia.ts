@@ -1,4 +1,4 @@
-import { VERSAO_BASE, type Base } from './tipos'
+import { VERSAO_BASE, type Base, type ServicoVenda } from './tipos'
 
 const CHAVE = 'papelaria-opcao:base'
 
@@ -23,15 +23,23 @@ export function normalizarBase(bruto: unknown): Base | null {
   if (!bruto || typeof bruto !== 'object') return null
   const base = bruto as Base
   if (base.versao !== VERSAO_BASE || !Array.isArray(base.clientes) || !Array.isArray(base.produtos) || !Array.isArray(base.fichas)) return null
+  // O cadastro de serviços saiu (`2026-10-19`); a lista antiga, se houver, é descartada.
+  const { servicos: _catalogoAntigo, ...semCatalogo } = base as Base & { servicos?: unknown }
   // Campos que chegaram depois ganham valor vazio em vez de apagar a base guardada.
   return {
-    ...base,
+    ...semCatalogo,
     avisosLidos: base.avisosLidos ?? {},
-    servicos: base.servicos ?? [],
+    fichas: base.fichas.map((f) => (f.servicos ? { ...f, servicos: f.servicos.map(servicoAtual) } : f)),
+    ...(base.rascunhoFicha ? { rascunhoFicha: { ...base.rascunhoFicha, ...(base.rascunhoFicha.servicos ? { servicos: base.rascunhoFicha.servicos.map(servicoAtual) } : {}) } } : {}),
     // Conserva o cadastro existente, retirando campos que deixaram de fazer parte dele.
     clientes: base.clientes.map(({ id, nome, documento, telefone, endereco, descricao, desde, fiscal, emitteEnviadoEm }) =>
       ({ id, nome, documento, telefone, endereco, descricao, desde, ...(fiscal ? { fiscal } : {}), ...(emitteEnviadoEm ? { emitteEnviadoEm } : {}) })),
   }
+}
+
+/** Serviço gravado antes de `2026-10-19` trazia código do cadastro e motivo da perda: saem. */
+function servicoAtual({ nome, valor, perdas, observacao }: ServicoVenda): ServicoVenda {
+  return { nome, valor, ...(perdas ? { perdas: { quantidade: perdas.quantidade } } : {}), ...(observacao ? { observacao } : {}) }
 }
 
 export function salvarBase(base: Base) {

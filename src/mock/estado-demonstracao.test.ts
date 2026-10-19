@@ -19,10 +19,6 @@ import {
   completarProduto,
   definirProdutoAtivo,
   editarProduto,
-  cadastrarServico,
-  editarServico,
-  excluirServico,
-  definirServicoAtivo,
   perdasServicos,
   editarCliente,
   marcarEnviadosEmitte,
@@ -503,25 +499,22 @@ describe('serviços', () => {
     const total = (servicos ?? []).reduce((t, s) => t + s.valor, 0) + itens.reduce((t, i) => t + i.preco * i.quantidade, 0)
     return concluirFicha({ clienteId: null, data: HOJE, horario: '15:00', itens, servicos, desconto: 0, total, forma: 'dinheiro', pagamentos: [{ data: HOJE, horario: '15:00', meio: 'dinheiro', valor: total }] })
   }
-  const copia = { codigo: 'SRV-0001', nome: 'Cópia P&B', valor: 100 }
-
-  it('a semente traz os cinco serviços de exemplo', () => {
-    expect(obterBase().servicos?.map((s) => s.nome)).toEqual(['Cópia P&B', 'Cópia colorida', 'Impressão', 'Digitalização', 'Encadernação'])
-  })
+  const copia = { nome: 'Cópia P&B', valor: 100 }
 
   it('ficha só de serviço vale, com perda e observação, e não mexe no estoque', () => {
     const estoqueAntes = obterBase().movimentosEstoque.length
-    const id = venda([{ ...copia, perdas: { quantidade: 4, motivo: 'impressora' }, observacao: 'Saíram 6, 4 manchadas' }])
+    const id = venda([{ ...copia, nome: '  2 cópias P&B  ', perdas: { quantidade: 4 }, observacao: 'Saíram 6, 4 manchadas' }])
     expect(id).toBeTruthy()
     const ficha = obterBase().fichas.find((f) => f.id === id)!
-    expect(ficha.servicos?.[0]).toMatchObject({ perdas: { quantidade: 4, motivo: 'impressora' } })
+    expect(ficha.servicos?.[0]).toEqual({ nome: '2 cópias P&B', valor: 100, perdas: { quantidade: 4 }, observacao: 'Saíram 6, 4 manchadas' })
     expect(obterBase().movimentosEstoque.length).toBe(estoqueAntes)
-    expect(perdasServicos(obterBase(), HOJE, HOJE)).toEqual([expect.objectContaining({ ficha: id, servico: 'Cópia P&B', quantidade: 4, motivo: 'impressora' })])
+    expect(perdasServicos(obterBase(), HOJE, HOJE)).toEqual([expect.objectContaining({ ficha: id, servico: '2 cópias P&B', quantidade: 4, observacao: 'Saíram 6, 4 manchadas' })])
   })
 
-  it('perda sem quantidade ou com motivo desconhecido é recusada; ficha vazia também', () => {
-    expect(venda([{ ...copia, perdas: { quantidade: 0, motivo: 'impressora' } }])).toBeNull()
-    expect(venda([{ ...copia, perdas: { quantidade: 2, motivo: 'chuva' as never } }])).toBeNull()
+  it('serviço sem nome, perda sem quantidade e ficha vazia são recusados', () => {
+    expect(venda([{ ...copia, nome: '   ' }])).toBeNull()
+    expect(venda([{ ...copia, perdas: { quantidade: 0 } }])).toBeNull()
+    expect(venda([{ ...copia, perdas: { quantidade: 1.5 } }])).toBeNull()
     expect(venda([])).toBeNull()
   })
 
@@ -535,21 +528,19 @@ describe('serviços', () => {
     expect(categoria(misto)).toBe('Venda e serviço')
   })
 
-  it('cadastro: código novo, edição mantém, usado não se exclui (desativa)', () => {
-    const codigo = cadastrarServico({ nome: 'Plastificação', preco: 500 })!
-    expect(codigo).toBe('SRV-0006')
-    expect(cadastrarServico({ nome: '  ', preco: 100 })).toBeNull()
-    expect(editarServico(codigo, { nome: 'Plastificação A4', preco: 600, descricao: 'Por folha' })).toBe(true)
-    expect(obterBase().servicos?.find((s) => s.codigo === codigo)).toMatchObject({ nome: 'Plastificação A4', preco: 600 })
-    expect(excluirServico(codigo)).toBe(true)
-    venda([copia])
-    expect(excluirServico('SRV-0001')).toBe(false)
-    definirServicoAtivo('SRV-0001', false)
-    expect(obterBase().servicos?.find((s) => s.codigo === 'SRV-0001')?.inativo).toBe(true)
-  })
-
-  it('base gravada antes dos serviços abre com a lista vazia', () => {
-    const { servicos: _s, ...antiga } = obterBase()
-    expect(normalizarBase(antiga)?.servicos).toEqual([])
+  it('base gravada com o cadastro de serviços abre sem ele, e as fichas perdem código e motivo', () => {
+    const id = venda([copia])!
+    const atual = obterBase()
+    const antigo = { codigo: 'SRV-0001', nome: 'Cópia P&B', valor: 100, perdas: { quantidade: 2, motivo: 'impressora' }, observacao: 'Manchou' }
+    const gravada = {
+      ...atual,
+      servicos: [{ codigo: 'SRV-0001', nome: 'Cópia P&B', preco: 50 }],
+      fichas: atual.fichas.map((f) => (f.id === id ? { ...f, servicos: [antigo] } : f)),
+      rascunhoFicha: { ...(atual.rascunhoFicha ?? {}), servicos: [antigo] },
+    }
+    const aberta = normalizarBase(gravada)!
+    expect('servicos' in aberta).toBe(false)
+    expect(aberta.fichas.find((f) => f.id === id)?.servicos).toEqual([{ nome: 'Cópia P&B', valor: 100, perdas: { quantidade: 2 }, observacao: 'Manchou' }])
+    expect(aberta.rascunhoFicha?.servicos).toEqual([{ nome: 'Cópia P&B', valor: 100, perdas: { quantidade: 2 }, observacao: 'Manchou' }])
   })
 })

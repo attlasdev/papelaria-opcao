@@ -9,7 +9,6 @@ import {
   type MovimentoCaixa,
   type MovimentoEstoque,
   type Produto,
-  type Servico,
 } from './tipos'
 
 /**
@@ -97,15 +96,6 @@ const ROTULOS_CARTAO = ['Cartão débito', 'Cartão crédito (1x)', 'Cartão cr�
 type FichaSemId = Omit<Ficha, 'id'>
 
 /** A base de uma loja que acabou de começar: nada cadastrado, nada vendido. */
-/** Os serviços de exemplo (`2026-10-19`): só para demonstração e semente sob pedido. */
-export const SERVICOS_EXEMPLO: Servico[] = [
-  { codigo: 'SRV-0001', nome: 'Cópia P&B', preco: 50, descricao: 'Por cópia, A4.' },
-  { codigo: 'SRV-0002', nome: 'Cópia colorida', preco: 200, descricao: 'Por cópia, A4.' },
-  { codigo: 'SRV-0003', nome: 'Impressão', preco: 100, descricao: 'Arquivo enviado pelo cliente, por página.' },
-  { codigo: 'SRV-0004', nome: 'Digitalização', preco: 150, descricao: 'Por página, enviada por e-mail ou WhatsApp.' },
-  { codigo: 'SRV-0005', nome: 'Encadernação', preco: 800, descricao: 'Espiral com capa e contracapa.' },
-]
-
 export function criarBaseVazia(hoje: string, operador = 'Loja'): Base {
   return {
     versao: VERSAO_BASE,
@@ -113,7 +103,6 @@ export function criarBaseVazia(hoje: string, operador = 'Loja'): Base {
     operador,
     clientes: [],
     produtos: [],
-    servicos: [],
     fichas: [],
     movimentosCaixa: [],
     turnosCaixa: [],
@@ -237,7 +226,6 @@ export function criarSemente(hoje: string, minutoAtual = 24 * 60): Base {
     operador: OPERADOR,
     clientes,
     produtos,
-    servicos: SERVICOS_EXEMPLO.map((s) => ({ ...s })),
     fichas: comId,
     movimentosCaixa: caixaManual(hoje, minutoAtual),
     turnosCaixa: [],

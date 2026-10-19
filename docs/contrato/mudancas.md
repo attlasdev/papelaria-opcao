@@ -33,6 +33,19 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-19` — Serviços sem cadastro
+
+- **Sai o cadastro de serviços:** a tela **Serviços** fica só com o painel
+  **"Perdas anotadas nos serviços"** (subtítulo novo; `JanelaServico.tsx`
+  apagado). Saem os cartões por motivo e a coluna Motivo; a coluna **Serviço**
+  fica e mostra o nome digitado na ficha.
+- **"Inserir serviço" na ficha:** campo **Serviço** em texto livre
+  (obrigatório), **Valor cobrado** (obrigatório, sem valor sugerido),
+  **Unidades perdidas** (opcional, sem motivo) e **Observação**.
+- **Tipos:** `ServicoVenda` vira `{ nome, valor, perdas?: { quantidade },
+  observacao? }`; somem `Servico`, `MotivoPerda`, `ROTULO_MOTIVO_PERDA` e
+  `base.servicos`. Base gravada no formato antigo abre convertida.
+
 ### `2026-10-19` — Serviços
 
 - **Menu:** item **Serviços** abaixo do Estoque (`telas/servicos/`): tabela dos
