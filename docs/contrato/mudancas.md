@@ -33,6 +33,13 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-19` — Cadastro de cliente sem o bloco "Para nota fiscal"
+
+- O bloco **"Para nota fiscal"** (tipo de contribuinte, tipo de cliente,
+  inscrição estadual) **saiu da tela** do cadastro de cliente. Liga e desliga em
+  `src/funcoes.ts` (`dadosFiscaisCliente`). Oculto, salvar mantém o que o
+  cliente já tinha nesses campos. **CEP e Complemento continuam** no endereço.
+
 ### `2026-10-07` — Financeiro: "Exportar período" funciona; atalho "Mês passado"
 
 - **"Exportar período"** (ao lado do título) agora gera uma **planilha .xlsx** do

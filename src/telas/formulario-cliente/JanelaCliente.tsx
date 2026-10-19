@@ -2,6 +2,7 @@ import { useId, useState, type FormEvent } from 'react'
 import { Botao } from '../../componentes/botao/Botao'
 import { Campo, Selecao } from '../../componentes/campo/Campo'
 import { conferirCep, FISCAL_CLIENTE_PADRAO, limparFiscalCliente, TIPOS_CLIENTE, TIPOS_CONTRIBUINTE } from '../../dados/fiscal'
+import { funcoes } from '../../funcoes'
 import { Modal } from '../../componentes/modal/Modal'
 import { cadastrarCliente, documentoJaCadastrado, editarCliente, useEstadoDemonstracao, type Cliente } from '../../mock/estado-demonstracao'
 import { juntarEndereco, separarEndereco } from '../../dados/endereco'
@@ -51,9 +52,13 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
     if (documentoJaCadastrado(clientes, documentoDigitado, clienteId)) {
       falhas.documento = 'Este documento já está cadastrado. Busque o cliente em vez de cadastrar de novo.'
     }
+    // Com o bloco "Para nota fiscal" oculto, o que o cliente já tinha nele fica.
+    const fiscalVisivel = funcoes.dadosFiscaisCliente
     const dadosFiscais = limparFiscalCliente({
-      tipoContribuinte: campo('tipoContribuinte'), tipoCliente: campo('tipoCliente'),
-      inscricaoEstadual: campo('inscricaoEstadual'), cep: campo('cep'), complemento: campo('complemento'),
+      tipoContribuinte: fiscalVisivel ? campo('tipoContribuinte') : fiscal.tipoContribuinte,
+      tipoCliente: fiscalVisivel ? campo('tipoCliente') : fiscal.tipoCliente,
+      inscricaoEstadual: fiscalVisivel ? campo('inscricaoEstadual') : fiscal.inscricaoEstadual ?? '',
+      cep: campo('cep'), complemento: campo('complemento'),
     })
     const erroCep = conferirCep(dadosFiscais.cep)
     if (erroCep) falhas.cep = erroCep
@@ -155,7 +160,7 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
           </div>
         </fieldset>
 
-        <fieldset className="janela-cliente__grupo">
+        {funcoes.dadosFiscaisCliente && <fieldset className="janela-cliente__grupo">
           <legend>
             Para nota fiscal <span className="janela-cliente__opcional">(só para nota com dados do cliente, como empresa ou prefeitura)</span>
           </legend>
@@ -164,7 +169,7 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
             <Selecao rotulo="Tipo de cliente" name="tipoCliente" opcoes={TIPOS_CLIENTE} valorInicial={fiscal.tipoCliente} />
             <Campo rotulo="Inscrição estadual" name="inscricaoEstadual" opcional inputMode="numeric" defaultValue={fiscal.inscricaoEstadual} />
           </div>
-        </fieldset>
+        </fieldset>}
       </form>
     </Modal>
   )

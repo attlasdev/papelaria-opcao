@@ -24,4 +24,10 @@ export const funcoes = {
    * para o banco por cima dos dados (aconteceu no projeto de teste).
    */
   restaurarExemplo: false,
+  /**
+   * Bloco "Para nota fiscal" do cadastro de cliente (tipo de contribuinte, tipo
+   * de cliente, inscrição estadual). Oculto no piloto (`2026-10-19`); oculto, o
+   * cadastro mantém o que o cliente já tinha nesses campos.
+   */
+  dadosFiscaisCliente: false,
 }
