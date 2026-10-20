@@ -1,4 +1,5 @@
 import { dataCurta, reais } from '../../formatar'
+import { funcoes } from '../../funcoes'
 import { rotas } from '../../rotas-caminhos'
 import { dataCalendarioValida, diaDoInstante, diasEntre, noPeriodo, periodoAnterior, type Periodo } from './datas'
 import type { Base, Cliente, Ficha, ItemVenda, Meio, Produto, TurnoCaixa } from './tipos'
@@ -207,8 +208,10 @@ export type LinhaFinanceiro = {
   turnoCaixaId?: string
   /** Lançamento manual que ainda pode ser estornado. */
   estornavel?: boolean
-  /** Lançamento manual já desfeito por um estorno. */
+  /** Já desfeito por um estorno (lançamento manual, recebimento ou ficha cancelada). */
   estornado?: boolean
+  /** Venda à vista ainda ativa: "Estornar" cancela a ficha inteira (`2026-10-19`). */
+  vendaEstornavel?: boolean
 }
 
 /**
@@ -235,8 +238,8 @@ export function movimentosFinanceiro(base: Base): LinhaFinanceiro[] {
     }
     // O dinheiro que entrou continua no dia em que entrou; o estorno sai no dia do estorno.
     const desfeito = p.estorno ?? f.cancelamento
-    if (!desfeito) return [linha]
-    return [linha, {
+    if (!desfeito) return [f.forma !== 'notinha' ? { ...linha, vendaEstornavel: true } : linha]
+    return [{ ...linha, estornado: true }, {
       ...linha,
       id: `${linha.id}-estorno`,
       data: desfeito.data,
@@ -543,7 +546,8 @@ export function notificacoes(base: Base, hoje: string): Notificacao[] {
       detalhe: `${nomes(rapidos)} · feito na venda`, destino: rotas.estoqueACompletar,
     })
   }
-  if (base.rascunhosNota.length) {
+  // Com a área de notas oculta, o aviso levaria a uma tela sem caminho (`2026-10-19`).
+  if (funcoes.notasFiscais && base.rascunhosNota.length) {
     avisos.push({
       id: 'rascunho', tipo: 'rascunho', tom: 'neutro',
       titulo: plural(base.rascunhosNota.length, 'rascunho de nota em revisão', 'rascunhos de nota em revisão'),

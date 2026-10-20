@@ -289,7 +289,12 @@ Levar junto as perguntas do SINTEGRA.
   - **Cancelar ficha** (página e janela da ficha): a baixa registrada volta ao estoque
     (movimento "Cancelamento"), o pago sai do Financeiro **no dia do
     cancelamento** (dias fechados não mudam), a ficha fica marcada "Cancelada" e
-    sai das compras do cliente, das vendas do dia e da cobrança.
+    sai das compras do cliente, das vendas do dia e da cobrança. **Também pelo
+    "Estornar" da venda à vista no Financeiro** (Agostinho, `2026-10-19`): o
+    mesmo diálogo, avisando que a ficha é cancelada inteira (ficha mista tem
+    uma linha por pagamento; qualquer uma cancela tudo). Linhas de notinha
+    continuam sem o botão no Financeiro: corrigem-se na ficha (decidido pelo
+    Agostinho; descartado o "Estornar" do recebimento direto no Financeiro).
   - **Estornar recebimento de notinha:** pagamento riscado com o motivo; a
     notinha volta a dever.
   - **Estornar lançamento manual** do Financeiro: entra um lançamento de sinal
@@ -383,7 +388,9 @@ o que foi discutido e implementado; a avaliação de uso continua na próxima se
   Cada pagamento registrado numa ficha (venda, entrada ou recebimento de
   notinha, **em qualquer meio**) vira uma linha; lançamento manual também.
 - **Estorno abate do próprio lado:** desfazer venda reduz Entradas, desfazer
-  despesa reduz Saídas; selo "Estorno".
+  despesa reduz Saídas; selo "Estorno". O original desfeito (venda, recebimento
+  ou lançamento) fica "Estornado". O filtro **"Estornos"**, ao lado dos meios,
+  mostra só as linhas de estorno (`2026-10-19`).
 - Os três cartões resumem somente o período selecionado. Entradas menos
   despesas não representa lucro nem saldo bancário; não há comparação com o
   período anterior. A tabela "Movimentações financeiras" contém somente fatos

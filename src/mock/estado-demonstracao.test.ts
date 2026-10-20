@@ -383,6 +383,18 @@ describe('cancelar ficha', () => {
 })
 
 describe('estornos', () => {
+  it('venda à vista tem "Estornar" (cancela a ficha); notinha e venda cancelada não', () => {
+    const linhas = movimentosFinanceiro(obterBase())
+    const daVenda = linhas.find((l) => l.ficha && l.categoria === 'Venda' && !obterBase().fichas.find((f) => f.id === l.ficha)?.cancelamento)!
+    expect(daVenda.vendaEstornavel).toBe(true)
+    expect(linhas.filter((l) => l.categoria === 'Recebimento de notinha').every((l) => !l.vendaEstornavel)).toBe(true)
+    expect(cancelarFicha(daVenda.ficha!, 'Cliente devolveu')).toBe(true)
+    const depois = movimentosFinanceiro(obterBase()).filter((l) => l.ficha === daVenda.ficha)
+    expect(depois.some((l) => l.vendaEstornavel)).toBe(false)
+    expect(depois.find((l) => l.categoria === 'Venda')?.estornado).toBe(true)
+    expect(depois.some((l) => l.categoria === 'Estorno')).toBe(true)
+  })
+
   it('recebimento estornado volta a dever e sai do caixa no dia do estorno', () => {
     const aberta = notinhasDoCliente(obterBase(), 'CLI-0106', HOJE).find((n) => n.emAberto > 0)!
     receberNotinhas([aberta.ficha.id], { data: HOJE, horario: '15:00', meio: 'dinheiro', valor: aberta.emAberto })

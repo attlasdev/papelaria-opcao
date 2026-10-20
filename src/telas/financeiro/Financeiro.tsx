@@ -30,9 +30,11 @@ import {
 import { rotas } from '../../rotas-caminhos'
 import './financeiro.css'
 import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
+import { ModalCancelarFicha } from '../detalhe-ficha/ConteudoFicha'
 import { ExportarPeriodo } from './ExportarPeriodo'
 
-type FiltroMeio = 'todos' | Meio
+/** Os meios, mais "Estornos": só as linhas de estorno (`2026-10-19`). */
+type FiltroMeio = 'todos' | Meio | 'estornos'
 type AtalhoPeriodo = Periodo | 'mesPassado' | 'personalizado'
 
 const iconeMeio: Record<Meio, NomeIcone> = { pix: 'pix', cartao: 'cartao', dinheiro: 'dinheiro' }
@@ -46,13 +48,16 @@ export function Financeiro() {
   const [meio, setMeio] = useState<FiltroMeio>('todos')
   const [pagina, setPagina] = useState(1)
   const [estornando, setEstornando] = useState<LinhaFinanceiro | null>(null)
+  const [estornandoVenda, setEstornandoVenda] = useState<string | null>(null)
   const navegar = useNavigate()
   const base = useEstadoDemonstracao()
   const hoje = hojeISO()
   const linhas = movimentosOperacionaisFinanceiro(movimentosFinanceiro(base))
   const r = resumoFinanceiroIntervalo(linhas, de, ate)
   const doPeriodo = linhasFinanceiroNoIntervalo(linhas, de, ate)
-  const lista = meio === 'todos' ? doPeriodo : doPeriodo.filter((m) => m.meio === meio)
+  const estornos = doPeriodo.filter((m) => m.categoria === CATEGORIA_ESTORNO)
+  const lista = meio === 'todos' ? doPeriodo : meio === 'estornos' ? estornos : doPeriodo.filter((m) => m.meio === meio)
+  const fichaEstornando = estornandoVenda ? base.fichas.find((f) => f.id === estornandoVenda) : undefined
   const periodoValido = dataCalendarioValida(de) && dataCalendarioValida(ate) && de <= ate && ate <= hoje
   const totalPaginas = Math.max(1, Math.ceil(lista.length / linhasPorPagina))
   const paginaAtual = Math.min(pagina, totalPaginas)
@@ -166,6 +171,7 @@ export function Financeiro() {
               { valor: 'pix', rotulo: 'Pix', contagem: r.contagem.pix },
               { valor: 'cartao', rotulo: 'Cartão', contagem: r.contagem.cartao },
               { valor: 'dinheiro', rotulo: 'Dinheiro', contagem: r.contagem.dinheiro },
+              { valor: 'estornos', rotulo: 'Estornos', contagem: estornos.length },
             ]}
           />
         }
@@ -223,10 +229,15 @@ export function Financeiro() {
                     {reaisComSinal(mov.valor)}
                   </td>
                   <td className="celula--acoes">
-                    {/* Venda e recebimento se corrigem na ficha; aqui só o lançamento manual. */}
+                    {/* Lançamento manual: estorno de sinal contrário. Venda à vista: cancela a ficha inteira. Notinha se corrige na ficha. */}
                     {mov.estornado && <SeloCompacto tom="neutro">Estornado</SeloCompacto>}
                     {mov.estornavel && (
                       <Botao tamanho="pequeno" variante="fantasma" onClick={() => setEstornando(mov)}>
+                        Estornar
+                      </Botao>
+                    )}
+                    {mov.vendaEstornavel && mov.ficha && (
+                      <Botao tamanho="pequeno" variante="fantasma" onClick={() => setEstornandoVenda(mov.ficha!)}>
                         Estornar
                       </Botao>
                     )}
@@ -242,6 +253,9 @@ export function Financeiro() {
       <p className="financeiro__nota">
         Entradas incluem vendas, notinhas recebidas e lançamentos avulsos em dinheiro, Pix e cartão. O resultado não representa lucro nem saldo bancário.
       </p>
+      {fichaEstornando && (
+        <ModalCancelarFicha ficha={fichaEstornando} titulo={`Estornar a venda da ficha #${fichaEstornando.id}`} textoConfirmar="Estornar venda" aoFechar={() => setEstornandoVenda(null)} />
+      )}
       {estornando && (
         <ModalMotivo
           titulo="Estornar lançamento"

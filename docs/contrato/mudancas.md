@@ -33,6 +33,19 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-19` — Clientes, Financeiro e avisos de nota
+
+- **Detalhe do cliente:** saem os botões **"Extrato"** e **"Exportar"** do
+  histórico de compras (não faziam nada; `useSemDestino` saiu da tela).
+- **Financeiro:** venda à vista ganha **"Estornar"**, que abre o diálogo de
+  cancelar a ficha (`ModalCancelarFicha`, tirado de `BotaoCancelarFicha` em
+  `detalhe-ficha/ConteudoFicha.tsx` e usado nos dois lugares). Venda ou
+  recebimento desfeito mostra "Estornado", como o lançamento manual. Filtro
+  novo **"Estornos"** (só as linhas de estorno). `LinhaFinanceiro` ganha
+  `vendaEstornavel`.
+- **Sino:** o aviso "rascunhos de nota em revisão" só aparece com
+  `funcoes.notasFiscais` ligado.
+
 ### `2026-10-19` — Histórico de serviços
 
 - **Tela Serviços:** painel novo **"Serviços feitos"** acima das perdas, com

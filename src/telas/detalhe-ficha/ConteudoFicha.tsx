@@ -241,34 +241,44 @@ export function FaixaCancelada({ ficha }: { ficha: Ficha }) {
 export function BotaoCancelarFicha({ ficha }: { ficha: Ficha }) {
   const [aberto, setAberto] = useState(false)
   if (ficha.cancelamento) return null
-  const unidades = ficha.itens.reduce((t, i) => t + (i.baixaEstoque ?? i.quantidade), 0)
-  const semBaixa = ficha.itens.some((i) => (i.baixaEstoque ?? i.quantidade) < i.quantidade)
-  const pago = pagamentosValidos(ficha).reduce((t, p) => t + p.valor, 0)
-  const emAberto = ficha.forma === 'notinha' ? Math.max(0, ficha.total - pago) : 0
   return (
     <>
       <Botao variante="fantasma" icone="erro" className="detalhe-ficha__cancelar" onClick={() => setAberto(true)}>
         Cancelar ficha
       </Botao>
-      {aberto && (
-        <ModalMotivo
-          titulo={`Cancelar ficha #${ficha.id}`}
-          subtitulo={`${reais(ficha.total)} · ${dataCurta(ficha.data)} às ${ficha.horario}`}
-          consequencias={
-            <ul>
-              <li>{unidades === 0 ? 'Nenhuma unidade volta' : unidades === 1 ? '1 unidade volta' : `${unidades} unidades voltam`} ao saldo registrado do estoque.</li>
-              {semBaixa && <li>A venda passou com saldo insuficiente. Confira a prateleira e use Ajustar estoque se houver diferença física.</li>}
-              {pago > 0 && <li><strong>{reais(pago)}</strong> saem do Financeiro hoje, como estorno. Os dias já fechados não mudam.</li>}
-              {emAberto > 0 && <li>Os {reais(emAberto)} em aberto deixam de ser cobrados.</li>}
-              <li>A ficha continua no histórico, marcada como cancelada.</li>
-            </ul>
-          }
-          textoConfirmar="Cancelar ficha"
-          aoConfirmar={(motivo) => { cancelarFicha(ficha.id, motivo); setAberto(false) }}
-          aoFechar={() => setAberto(false)}
-        />
-      )}
+      {aberto && <ModalCancelarFicha ficha={ficha} aoFechar={() => setAberto(false)} />}
     </>
+  )
+}
+
+/**
+ * A confirmação de cancelar a ficha. Usada pelo detalhe e pelo "Estornar" de uma
+ * venda no Financeiro (`2026-10-19`): estornar a venda é cancelar a ficha inteira.
+ */
+export function ModalCancelarFicha({ ficha, titulo, textoConfirmar = 'Cancelar ficha', aoFechar }: { ficha: Ficha; titulo?: string; textoConfirmar?: string; aoFechar: () => void }) {
+  const unidades = ficha.itens.reduce((t, i) => t + (i.baixaEstoque ?? i.quantidade), 0)
+  const semBaixa = ficha.itens.some((i) => (i.baixaEstoque ?? i.quantidade) < i.quantidade)
+  const validos = pagamentosValidos(ficha)
+  const pago = validos.reduce((t, p) => t + p.valor, 0)
+  const emAberto = ficha.forma === 'notinha' ? Math.max(0, ficha.total - pago) : 0
+  return (
+    <ModalMotivo
+      titulo={titulo ?? `Cancelar ficha #${ficha.id}`}
+      subtitulo={`${reais(ficha.total)} · ${dataCurta(ficha.data)} às ${ficha.horario}`}
+      consequencias={
+        <ul>
+          {titulo && <li>A ficha <strong>#{ficha.id}</strong> é cancelada inteira{validos.length > 1 && `, com os ${validos.length} pagamentos`}.</li>}
+          <li>{unidades === 0 ? 'Nenhuma unidade volta' : unidades === 1 ? '1 unidade volta' : `${unidades} unidades voltam`} ao saldo registrado do estoque.</li>
+          {semBaixa && <li>A venda passou com saldo insuficiente. Confira a prateleira e use Ajustar estoque se houver diferença física.</li>}
+          {pago > 0 && <li><strong>{reais(pago)}</strong> saem do Financeiro hoje, como estorno. Os dias já fechados não mudam.</li>}
+          {emAberto > 0 && <li>Os {reais(emAberto)} em aberto deixam de ser cobrados.</li>}
+          <li>A ficha continua no histórico, marcada como cancelada.</li>
+        </ul>
+      }
+      textoConfirmar={textoConfirmar}
+      aoConfirmar={(motivo) => { cancelarFicha(ficha.id, motivo); aoFechar() }}
+      aoFechar={aoFechar}
+    />
   )
 }
 

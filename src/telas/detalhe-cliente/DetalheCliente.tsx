@@ -9,7 +9,6 @@ import { SeloSituacao, type Tom } from '../../componentes/selo/Selo'
 import { ComIcone } from '../../componentes/icone/Icone'
 import { Paginacao } from '../../componentes/paginacao/Paginacao'
 import { useLinhasPorPagina } from '../../componentes/paginacao/useLinhasPorPagina'
-import { useSemDestino } from '../../componentes/aviso/Aviso'
 import { dataCurta, reais } from '../../formatar'
 import {
   contagemItens,
@@ -45,7 +44,6 @@ export function DetalheCliente() {
   /** Notinhas abertas na janela de recebimento; null = fechada. */
   // Janela de recebimento: 'todas' abre com todas marcadas; um id abre só com ela marcada.
   const [receber, setReceber] = useState<'todas' | string | null>(null)
-  const semDestino = useSemDestino()
   const base = useEstadoDemonstracao()
   const hoje = hojeISO()
   const cadastro = base.clientes.find((item) => item.id === id)
@@ -152,25 +150,17 @@ export function DetalheCliente() {
         colado
         titulo="Histórico de compras"
         acoes={
-          <>
-            <Filtros
-              rotulo="Filtrar compras"
-              valor={filtro}
-              aoMudar={(proximoFiltro) => { setFiltro(proximoFiltro); setPagina(1) }}
-              opcoes={[
-                { valor: 'todas', rotulo: 'Todas', contagem: contagem.todas },
-                { valor: 'pago', rotulo: 'Pagas', contagem: contagem.pagas },
-                { valor: 'pendente', rotulo: 'Notinhas a vencer', contagem: contagem.pendentes },
-                { valor: 'vencido', rotulo: 'Notinhas em atraso', contagem: contagem.vencidas },
-              ]}
-            />
-            <Botao tamanho="pequeno" icone="imprimir" onClick={semDestino('imprimir extrato')}>
-              Extrato
-            </Botao>
-            <Botao tamanho="pequeno" icone="baixar" onClick={semDestino('exportar CSV')}>
-              Exportar
-            </Botao>
-          </>
+          <Filtros
+            rotulo="Filtrar compras"
+            valor={filtro}
+            aoMudar={(proximoFiltro) => { setFiltro(proximoFiltro); setPagina(1) }}
+            opcoes={[
+              { valor: 'todas', rotulo: 'Todas', contagem: contagem.todas },
+              { valor: 'pago', rotulo: 'Pagas', contagem: contagem.pagas },
+              { valor: 'pendente', rotulo: 'Notinhas a vencer', contagem: contagem.pendentes },
+              { valor: 'vencido', rotulo: 'Notinhas em atraso', contagem: contagem.vencidas },
+            ]}
+          />
         }
       >
         <Tabela larguraMinima={900}>
