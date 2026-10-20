@@ -540,7 +540,8 @@ quando ela emite ou não emite nota.
 - **Fase 1 feita (`2026-10-07`):** operação `imprimirComprovante` no contrato,
   montagem e envio no processo principal (`comum/comprovante.ts`,
   `electron/escpos.ts`, `electron/impressora.ts`), cupom completo impresso de
-  verdade pelo mesmo código. Config da máquina em `userData/comprovante.json`
+  verdade pelo mesmo código — **o papel saiu idêntico à prévia em texto**
+  (confirmado pelo Agostinho): a prévia do mock é confiável para ajustar layout. Config da máquina em `userData/comprovante.json`
   (modelo com dado inventado em `recursos/comprovante.exemplo.json`; na máquina
   de desenvolvimento já existe, com o exemplo).
 - **PAUSADO até o teste da loja** (Agostinho, `2026-10-07`): o objetivo era
