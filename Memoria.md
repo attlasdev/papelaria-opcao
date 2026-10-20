@@ -39,10 +39,13 @@ OK do Agostinho na hora — quando for para a loja.
 
 **Banco da loja (produção `kjntvpksckmkfqjznatx`) em `2026-10-19`:** migration
 aplicada (RLS ligado, cadastro público desligado, usuário `papelaria@loja.com`).
-Está **PREENCHIDO COM DADOS DE EXEMPLO** para o teste do Agostinho e do Victor
-(16 produtos, 24 clientes, 448 fichas, 6 serviços, 16 fichas de serviço com
-perdas; revisão 7). **Limpar antes da loja começar** (reset da base: vazia, ou
-só produtos/serviços de exemplo, a decidir). Release atual: **v0.1.3**.
+Está **PREENCHIDO COM DADOS DE EXEMPLO** para o teste do Agostinho e do Victor,
+regravado na **revisão 37** no formato de serviços sem cadastro: semente de
+demonstração (24 clientes, 16 produtos, 90 dias até 19/10, caixa com turnos de
+exemplo, 2 rascunhos de nota) mais 16 fichas de serviço (4 com produtos, 6
+perdas), operador "Loja". A revisão 36 ficou em `base_loja_anteriores`.
+**Limpar antes da loja começar** (reset da base: vazia, ou só produtos de
+exemplo, a decidir). Release atual: **v0.1.6**.
 
 **Prazo da 0.1 (`2026-10-06`): no máximo 2 dias.** Emitte e formato do piloto
 ficam para reunião do Agostinho mais tarde; materiais em `docs/materiais-recebidos/emitte/` (sem API: a
