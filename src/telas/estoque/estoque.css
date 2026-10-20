@@ -1,19 +1,28 @@
+/*
+ * Saldo e situação à esquerda; categorias encostadas à direita (`2026-10-20`).
+ * Sem espaço ao lado, as categorias descem inteiras, ainda à direita.
+ */
 .estoque__filtros {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: var(--espaco-3);
   margin-bottom: var(--espaco-4);
 }
 
+.estoque__filtros > .filtros { flex-shrink: 0; }
+
 .estoque__categorias {
-  flex: 1;
-  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+  max-width: 100%;
+  margin-left: auto;
 }
 
 .estoque__categorias .filtros {
   display: flex;
   flex-wrap: wrap;
-  width: 100%;
+  justify-content: flex-end;
   max-height: 108px;
   overflow-y: auto;
 }

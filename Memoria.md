@@ -364,9 +364,13 @@ Levar junto as perguntas do SINTEGRA.
 - **Excluir x desativar:** apaga só produto sem histórico (cadastro por engano).
   Com histórico, desativa: some da venda, da entrada, do ajuste, das contas e dos
   avisos; aba "Desativados" para reativar. Bipado, avisa que está desativado.
-- **Cadastro rápido** fica pendente até ser completado: card, aba "A completar",
-  selo "Sem contagem", aviso no sino. "Completar" exige a contagem da
-  prateleira. Sem contagem, o zero dele não é falta e ele não entra no Ajustar.
+- **Cadastro rápido: OCULTO até a 1.0** (`funcoes.cadastroRapido`, Agostinho,
+  `2026-10-20`). Nenhuma tela o cria desde `2026-10-01`: saiu da nova ficha
+  junto com a regra "sem saldo, sem venda" (o produto nasceria com saldo 0 e a
+  venda travaria). Ocultos: card "Cadastro a completar", filtro "A completar" e
+  aviso no sino. O código fica: pendente até ser completado, "Completar" exige a
+  contagem da prateleira, sem contagem o zero não é falta e não entra no
+  Ajustar. A 1.0 decide se volta (e como convive com o "sem saldo, sem venda").
 - "+ Entrada" da linha abre a gaveta Entrada rápida (um produto). Entrega com
   vários itens vai pela página Registrar entrada, com bloco "Bipados" (bipar de
   novo não duplica; produto novo precisa de cadastro antes de ir à tabela).

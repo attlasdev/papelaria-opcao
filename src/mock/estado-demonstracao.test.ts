@@ -38,6 +38,7 @@ import {
   resumoEstoque,
 } from './estado-demonstracao'
 import { carregarBase, normalizarBase } from './base/persistencia'
+import { funcoes } from '../funcoes'
 
 const HOJE = '2026-09-25'
 beforeEach(() => restaurarDemonstracao(HOJE, 15 * 60))
@@ -66,7 +67,8 @@ describe('cadastro rápido feito na venda', () => {
   it('fica pendente no estoque e no sino até ser completado', () => {
     const codigo = cadastrarProduto(rapido)
     expect(resumoEstoque(obterBase()).aCompletar).toBe(1)
-    expect(notificacoes(obterBase(), HOJE).some((a) => a.id === 'cadastro-rapido')).toBe(true)
+    // Oculto no piloto (`funcoes.cadastroRapido`): o aviso só existe com ele ligado.
+    expect(notificacoes(obterBase(), HOJE).some((a) => a.id === 'cadastro-rapido')).toBe(funcoes.cadastroRapido)
     // Saldo sem contagem não é falta: não entra em zerado nem em baixo.
     expect(notificacoes(obterBase(), HOJE).find((a) => a.id === 'estoque-zerado')?.detalhe).not.toMatch(/Cola rápida/)
 

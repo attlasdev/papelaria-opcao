@@ -539,7 +539,7 @@ export function notificacoes(base: Base, hoje: string): Notificacao[] {
     })
   }
   const rapidos = produtosAtivos(base).filter((p) => p.cadastroRapido)
-  if (rapidos.length) {
+  if (funcoes.cadastroRapido && rapidos.length) {
     avisos.push({
       id: 'cadastro-rapido', tipo: 'cadastro-rapido', tom: 'atencao',
       titulo: plural(rapidos.length, 'cadastro rápido a completar', 'cadastros rápidos a completar'),

@@ -30,4 +30,11 @@ export const funcoes = {
    * cadastro mantém o que o cliente já tinha nesses campos.
    */
   dadosFiscaisCliente: false,
+  /**
+   * Cadastro rápido na venda e o que cobra completá-lo: cartão "Cadastro a
+   * completar", filtro "A completar" do Estoque e aviso no sino. Nenhuma tela
+   * cria cadastro rápido desde `2026-10-01` ("sem saldo, sem venda"); oculto
+   * até a 1.0 decidir (`2026-10-20`, Agostinho).
+   */
+  cadastroRapido: false,
 }

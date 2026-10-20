@@ -33,6 +33,17 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-20` — Filtros do Estoque
+
+- Filtro novo **"Sem código de barras"** (produtos ativos sem código, mesma
+  conta do cartão), no grupo da esquerda: Todos, Estoque baixo, Sem código de
+  barras (e Desativados, quando houver).
+- **Cadastro rápido oculto até a 1.0** (`funcoes.cadastroRapido`): saem o cartão
+  "Cadastro a completar", o filtro "A completar" e o aviso do sino.
+- As **categorias** saem do resto da linha e ficam **encostadas à direita**; sem
+  espaço ao lado, descem inteiras para a linha de baixo, ainda à direita
+  (`estoque.css`).
+
 ### `2026-10-19` — Clientes, Financeiro e avisos de nota
 
 - **Detalhe do cliente:** saem os botões **"Extrato"** e **"Exportar"** do

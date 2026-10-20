@@ -11,6 +11,7 @@ import { useLinhasPorPagina } from '../../componentes/paginacao/useLinhasPorPagi
 import { Icone } from '../../componentes/icone/Icone'
 import { reais } from '../../formatar'
 import { definirProdutoAtivo, normalizar, resumoEstoque, situacaoSaldo, useEstadoDemonstracao, type SituacaoSaldo } from '../../mock/estado-demonstracao'
+import { funcoes } from '../../funcoes'
 import { rotas } from '../../rotas-caminhos'
 import { ExportarProdutosEmitte } from './ExportarEmitte'
 import './estoque.css'
@@ -51,7 +52,8 @@ export function Estoque() {
     if ((filtro === 'desativados') !== Boolean(p.inativo)) return false
     if (filtro === 'baixo' && (p.cadastroRapido || situacaoSaldo(p) === 'normal')) return false
     if (filtro === 'completar' && !p.cadastroRapido) return false
-    if (!['todos', 'baixo', 'completar', 'desativados'].includes(filtro) && p.categoria !== filtro) return false
+    if (filtro === 'sem-codigo' && p.codigoBarras) return false
+    if (!['todos', 'baixo', 'completar', 'sem-codigo', 'desativados'].includes(filtro) && p.categoria !== filtro) return false
     return !termo || normalizar(`${p.codigo} ${p.codigoBarras ?? ''} ${p.descricao} ${p.categoria}`).includes(termo)
   })
   const totalPaginas = Math.max(1, Math.ceil(lista.length / linhasPorPagina))
@@ -96,13 +98,15 @@ export function Estoque() {
           nota="Abaixo do mínimo"
         />
         <CartaoResumo rotulo="Sem código de barras" icone="codigo-barras" valor={`${resumo.semCodigo} ${resumo.semCodigo === 1 ? 'item' : 'itens'}`} nota="Fracionados e avulsos" />
-        <CartaoResumo
-          rotulo="Cadastro a completar"
-          icone="pacote"
-          tom={resumo.aCompletar ? 'atencao' : 'neutro'}
-          valor={`${resumo.aCompletar} ${resumo.aCompletar === 1 ? 'item' : 'itens'}`}
-          nota="Feitos às pressas na venda"
-        />
+        {funcoes.cadastroRapido && (
+          <CartaoResumo
+            rotulo="Cadastro a completar"
+            icone="pacote"
+            tom={resumo.aCompletar ? 'atencao' : 'neutro'}
+            valor={`${resumo.aCompletar} ${resumo.aCompletar === 1 ? 'item' : 'itens'}`}
+            nota="Feitos às pressas na venda"
+          />
+        )}
       </div>
 
       <div className="estoque__filtros">
@@ -113,7 +117,8 @@ export function Estoque() {
           opcoes={[
             { valor: 'todos', rotulo: 'Todos', contagem: resumo.produtos },
             { valor: 'baixo', rotulo: 'Estoque baixo', contagem: resumo.baixo },
-            { valor: 'completar', rotulo: 'A completar', contagem: resumo.aCompletar },
+            ...(funcoes.cadastroRapido ? [{ valor: 'completar', rotulo: 'A completar', contagem: resumo.aCompletar }] : []),
+            { valor: 'sem-codigo', rotulo: 'Sem código de barras', contagem: resumo.semCodigo },
             ...(resumo.desativados ? [{ valor: 'desativados', rotulo: 'Desativados', contagem: resumo.desativados }] : []),
           ]}
         />
