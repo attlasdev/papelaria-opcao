@@ -20,6 +20,7 @@ import {
   definirProdutoAtivo,
   editarProduto,
   perdasServicos,
+  servicosFeitos,
   editarCliente,
   marcarEnviadosEmitte,
   excluirProduto,
@@ -516,6 +517,20 @@ describe('serviços', () => {
     expect(venda([{ ...copia, perdas: { quantidade: 0 } }])).toBeNull()
     expect(venda([{ ...copia, perdas: { quantidade: 1.5 } }])).toBeNull()
     expect(venda([])).toBeNull()
+  })
+
+  it('histórico: cada serviço com a ficha, marca a ficha com produtos e deixa a cancelada de fora', () => {
+    const so = venda([{ ...copia, perdas: { quantidade: 2 } }])!
+    const borracha = obterBase().produtos.find((p) => p.codigo === 'EST-0022')!
+    const misto = venda([{ nome: 'Encadernação', valor: 800 }], [{ codigo: borracha.codigo, descricao: borracha.descricao, quantidade: 1, preco: borracha.preco }])!
+    const cancelada = venda([{ nome: 'Plastificação', valor: 500, perdas: { quantidade: 1 } }])!
+    expect(cancelarFicha(cancelada, 'Teste')).toBeTruthy()
+    const feitos = servicosFeitos(obterBase(), HOJE, HOJE)
+    expect(feitos.find((f) => f.ficha === so)).toMatchObject({ servico: 'Cópia P&B', valor: 100, perdas: 2, comProdutos: false })
+    expect(feitos.find((f) => f.ficha === misto)).toMatchObject({ servico: 'Encadernação', valor: 800, perdas: 0, comProdutos: true })
+    expect(feitos.some((f) => f.ficha === cancelada)).toBe(false)
+    // A perda da cancelada continua: o material se perdeu do mesmo jeito.
+    expect(perdasServicos(obterBase(), HOJE, HOJE).some((p) => p.ficha === cancelada)).toBe(true)
   })
 
   it('no Financeiro: só serviço é "Serviço"; com produto, "Venda e serviço"', () => {

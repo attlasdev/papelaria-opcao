@@ -31,6 +31,20 @@ export function resumoItens(ficha: Ficha) {
   return [...ficha.itens.map((i) => `${i.descricao} (${i.quantidade}x)`), ...(ficha.servicos ?? []).map((s) => s.nome)].join(', ')
 }
 
+export type ServicoFeito = { ficha: string; data: string; horario: string; cliente: string; servico: string; valor: number; perdas: number; comProdutos: boolean; observacao?: string }
+
+/**
+ * Os serviços prestados no período (dia da ficha), mais recentes primeiro, com
+ * o número da ficha: uma ficha pode ter produtos e serviços juntos. Ficha
+ * cancelada fica de fora (`2026-10-19`, Agostinho).
+ */
+export function servicosFeitos(base: Base, de: string, ate: string): ServicoFeito[] {
+  return base.fichas
+    .filter((f) => !f.cancelamento && f.data >= de && f.data <= ate)
+    .flatMap((f) => (f.servicos ?? []).map((s) => ({ ficha: f.id, data: f.data, horario: f.horario, cliente: nomeCliente(base, f.clienteId), servico: s.nome, valor: s.valor, perdas: s.perdas?.quantidade ?? 0, comProdutos: f.itens.length > 0, observacao: s.observacao })))
+    .sort(porDataDecrescente)
+}
+
 export type PerdaServico = { ficha: string; data: string; horario: string; servico: string; quantidade: number; observacao?: string }
 
 /**

@@ -33,6 +33,15 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-19` — Histórico de serviços
+
+- **Tela Serviços:** painel novo **"Serviços feitos"** acima das perdas, com
+  cartão (valor e quantidade no período) e tabela Data, Ficha (número clicável;
+  "com produtos" embaixo quando a ficha tem produtos), Cliente, Serviço (com a
+  observação embaixo), Perdas e Valor. Ficha cancelada não entra.
+- O filtro de período saiu do painel de perdas e foi para o lado do título
+  (`acoesTitulo`), valendo para os dois painéis. Subtítulo novo.
+
 ### `2026-10-19` — Serviços sem cadastro
 
 - **Sai o cadastro de serviços:** a tela **Serviços** fica só com o painel

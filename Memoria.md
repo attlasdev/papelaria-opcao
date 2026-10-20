@@ -335,8 +335,11 @@ Levar junto as perguntas do SINTEGRA.
   perdidas** (opcional, sem motivo) e **observação**. Ficha só de serviço vale.
   Descartados: o cadastro (código `SRV-`, valor sugerido, desativar) e o motivo
   da perda.
-- A tela **Serviços** fica no menu só com as **perdas** do período, para
-  conferência: data, ficha, serviço (o nome digitado), unidades e observação.
+- A tela **Serviços** tem, no mesmo período, o **histórico de serviços feitos**
+  (cada serviço com o número da ficha, que abre o detalhe; "com produtos"
+  quando a ficha tem os dois; cliente, perdas e valor) e, abaixo, as
+  **perdas** (data, ficha, serviço, unidades e observação). **Ficha cancelada
+  some do histórico** (Agostinho), mas a perda dela continua nas perdas.
 - **Perdas são só conferência:** nada mexe no estoque (decisão do Agostinho).
   Cancelar a ficha não apaga a perda (o material se perdeu do mesmo jeito).
 - **Financeiro:** ficha só de serviço é "Serviço"; com produto, "Venda e
