@@ -33,6 +33,13 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-23` — Filtros de categoria do Estoque até a metade da linha
+
+- **Estoque:** `.estoque__categorias` ficou com no máximo 50% da linha, à
+  direita dos filtros de estado; as categorias que não cabem quebram dentro
+  dessa metade. Abaixo de 900px, linha inteira. Pedido da loja: em 720p a lista
+  descia e se espalhava por baixo dos filtros de estado.
+
 ### `2026-10-23` — Nova ficha numa coluna só
 
 - **Nova ficha:** Valores e Revisão saíram da coluna lateral fixa e foram para
