@@ -6,6 +6,8 @@ export const rotas = {
   inicio: '/',
   busca: (termo: string) => `/busca?q=${encodeURIComponent(termo)}`,
   criarFicha: '/ficha/nova',
+  /** Produto que a ficha não achou: o modal abre sobre a ficha, com o código lido. */
+  cadastrarProdutoNaFicha: (codigo?: string) => `/ficha/nova/produto/novo${codigo ? `?codigo=${encodeURIComponent(codigo)}` : ''}`,
   ficha: (id: string, origem: 'inicio' | 'historico' = 'inicio') => `/fichas/${id}?origem=${origem}`,
   clientes: '/clientes',
   cadastrarCliente: '/clientes/novo',

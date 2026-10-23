@@ -327,6 +327,11 @@ no vitest); e um importador da 0.1 para o SQLite entra desde o começo.
 - **Sem saldo, sem venda:** conferir a prateleira e registrar entrada ou ajuste
   no Estoque antes de concluir. A ação de dados também recusa a venda sem
   alterar ficha, financeiro ou estoque.
+- **Produto que a ficha não acha (`2026-10-23`, pedido da loja):** o link
+  "Cadastrar produto" abre o cadastro completo (com quantidade inicial) **por
+  cima da ficha**, com o código bipado já preenchido. Cancelar volta à ficha;
+  salvar volta à ficha **com o produto já inserido, quantidade 1** (decisão do
+  Agostinho). Antes o link ia para o Estoque e ficava lá.
 - **Pagamento misto à vista:** distribuir exatamente o total entre pelo menos
   dois meios, cada um com valor positivo. Cada parcela aparece separada no
   Financeiro; o troco é calculado só sobre a parte em dinheiro.

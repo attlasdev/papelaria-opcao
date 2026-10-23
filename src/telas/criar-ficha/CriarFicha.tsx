@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { Tela } from '../../componentes/layout/tela/Tela'
 import { Botao } from '../../componentes/botao/Botao'
 import { Painel } from '../../componentes/painel/Painel'
@@ -47,8 +47,11 @@ function clienteDoRascunho(base: Base, rascunho: RascunhoFicha | null): EscolhaC
   return base.clientes.find((c) => c.id === rascunho.clienteId) ?? null
 }
 
-function itensDoRascunho(base: Base, rascunho: RascunhoFicha | null): ItemFicha[] {
-  return (rascunho?.itens ?? []).flatMap(({ codigo, quantidade }) => {
+/** `novo`: produto recém-cadastrado pela ficha, que já volta inserido com 1. */
+function itensDoRascunho(base: Base, rascunho: RascunhoFicha | null, novo?: string): ItemFicha[] {
+  const guardados = rascunho?.itens ?? []
+  const comNovo = novo && !guardados.some((item) => item.codigo === novo) ? [...guardados, { codigo: novo, quantidade: 1 }] : guardados
+  return comNovo.flatMap(({ codigo, quantidade }) => {
     // Produto desativado depois de guardar o rascunho não volta para a venda.
     const p = base.produtos.find((produto) => produto.codigo === codigo && !produto.inativo)
     return p ? [{ codigo, codigoBarras: p.codigoBarras ?? p.codigo, descricao: p.descricao, preco: p.preco, quantidade }] : []
@@ -61,9 +64,12 @@ export function CriarFicha() {
   const semDestino = useSemDestino()
   const base = useEstadoDemonstracao()
   const { rascunhoFicha } = base
+  // Volta do "Cadastrar produto" da ficha com o código do produto criado.
+  const { state } = useLocation()
+  const novo = (state as { inserir?: string } | null)?.inserir
   // Abre vazia: a pessoa no balcão escolhe o cliente e bipa os itens.
   const [cliente, setCliente] = useState<EscolhaCliente | null>(() => clienteDoRascunho(base, rascunhoFicha))
-  const [itens, setItens] = useState<ItemFicha[]>(() => itensDoRascunho(base, rascunhoFicha))
+  const [itens, setItens] = useState<ItemFicha[]>(() => itensDoRascunho(base, rascunhoFicha, novo))
   // Serviços prestados (cópia, impressão…): valor, perdas e observação; sem estoque.
   const [servicos, setServicos] = useState<ServicoVenda[]>(() => rascunhoFicha?.servicos ?? [])
   const [janelaServico, setJanelaServico] = useState<{ indice?: number } | null>(null)
@@ -89,6 +95,11 @@ export function CriarFicha() {
   // Muda ao limpar: cliente e itens voltam ao estado de ficha nova.
   const [versao, setVersao] = useState(0)
   const areaFicha = useRef<HTMLDivElement>(null)
+
+  // Inserido uma vez: tira o código do histórico para voltar/recarregar não somar de novo.
+  useEffect(() => {
+    if (novo) navegar(rotas.criarFicha, { replace: true, state: null })
+  }, [novo, navegar])
 
   // A venda em andamento se guarda sozinha: sair pelo menu, busca ou sino não a
   // perde, e o Início oferece retomar. Ficha vazia não vira rascunho.

@@ -36,6 +36,8 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
   // semAtalho: o aviso não oferece "Fazer cadastro rápido" (desativado, campo vazio, ambíguo).
   const produtos = todos.filter((produto) => !produto.inativo)
   const [semAtalho, setSemAtalho] = useState(false)
+  // Código que não achou: vai preenchido para o cadastro aberto pela ficha.
+  const [semCadastro, setSemCadastro] = useState<string | undefined>()
   const termo = normalizar(codigo.trim())
   const sugestoes = termo ? produtos
     .filter((produto) => {
@@ -81,6 +83,7 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
   function naoAchou(lido: string, ehCodigo: boolean) {
     const fora = todos.find((item) => item.inativo && (item.codigo === lido || item.codigoBarras === lido))
     setSemAtalho(Boolean(fora))
+    setSemCadastro(ehCodigo && !fora ? lido : undefined)
     setErro(fora ? `“${fora.descricao}” está desativado. Reative no Estoque para vender.`
       : ehCodigo ? `Código “${lido}” sem cadastro.` : `Produto “${lido}” não encontrado.`)
   }
@@ -217,7 +220,7 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
       {erro && (
         <p className="itens-ficha__erro">
           {erro}{' '}
-          {!semAtalho && <>Cadastre e conte o produto no Estoque antes de vender. <Link to={rotas.cadastrarProduto}>Cadastrar no Estoque</Link></>}
+          {!semAtalho && <>Cadastre e conte o produto antes de vender. <Link to={rotas.cadastrarProdutoNaFicha(semCadastro)}>Cadastrar produto</Link></>}
         </p>
       )}
       {!erro && erroFalta && <p className="itens-ficha__erro" role="alert">{erroFalta}</p>}

@@ -3,6 +3,7 @@ import { Moldura } from './componentes/layout/moldura/Moldura'
 import { Inicio } from './telas/inicio/Inicio'
 import { ResultadosBusca } from './telas/resultados-busca/ResultadosBusca'
 import { CriarFicha } from './telas/criar-ficha/CriarFicha'
+import { CadastrarProdutoNaFicha } from './telas/criar-ficha/CadastrarProdutoNaFicha'
 import { DetalheFicha } from './telas/detalhe-ficha/DetalheFicha'
 import { Clientes } from './telas/clientes/Clientes'
 import { DetalheCliente } from './telas/detalhe-cliente/DetalheCliente'
@@ -33,6 +34,7 @@ export const roteador = createHashRouter([
       { path: '/', element: <Inicio /> },
       { path: '/busca', element: <ResultadosBusca /> },
       { path: '/ficha/nova', element: <CriarFicha /> },
+      { path: '/ficha/nova/produto/novo', element: <CadastrarProdutoNaFicha /> },
       { path: '/fichas/:id', element: <DetalheFicha /> },
       // Cadastrar e editar são gavetas por cima da lista e do detalhe (Outlet).
       { path: '/clientes', element: <Clientes />, children: [{ path: 'novo', element: <CadastrarCliente /> }] },

@@ -33,6 +33,15 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-23` — Cadastrar produto pela ficha volta para a ficha
+
+- **Nova ficha:** o link do aviso "sem cadastro" virou "Cadastrar produto" e
+  abre a rota nova `/ficha/nova/produto/novo` (`rotas.cadastrarProdutoNaFicha`),
+  que mostra a ficha atrás do `ModalProduto`, com o código bipado no campo.
+  Cancelar volta à ficha; salvar volta com o produto inserido (quantidade 1),
+  passado por `state: { inserir }` da navegação. Texto do aviso: "Cadastre e
+  conte o produto antes de vender." (sem "no Estoque").
+
 ### `2026-10-23` — NCM e CEST no cadastro de produto
 
 - **Cadastrar/Editar produto:** dois campos opcionais, **NCM** e **CEST**, no fim
