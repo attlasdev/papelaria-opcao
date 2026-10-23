@@ -524,8 +524,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
           <h3 className="cadastrar-produto__titulo">Dados complementares</h3>
           <div className="cadastrar-produto__grade">
             <Campo rotulo="Marca" name="marca" opcional defaultValue={produtoConsultado?.marca ?? r?.marca} readOnly={Boolean(produtoConsultado)} />
-            {/* Na entrada, o fornecedor já está no topo da tela: não pedir de novo. */}
-            {!daEntrada && <Campo rotulo="Fornecedor" opcional readOnly={Boolean(produtoConsultado)} />}
+            {/* Sem campo "Fornecedor": o produto não o guarda; o fornecedor fica em cada entrada de mercadoria. */}
             <Campo rotulo="Características" name="caracteristicas" opcional defaultValue={produtoConsultado?.caracteristicas ?? r?.caracteristicas} readOnly={Boolean(produtoConsultado)} placeholder="Cor, tamanho, gramatura..." />
             <Campo rotulo="Descrição adicional" name="descricaoAdicional" opcional defaultValue={produtoConsultado?.descricaoAdicional ?? r?.descricaoAdicional} readOnly={Boolean(produtoConsultado)} />
           </div>

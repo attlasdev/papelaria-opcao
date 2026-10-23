@@ -50,6 +50,7 @@ export function RegistrarEntrada() {
   const [observacoes, setObservacoes] = useState('')
   const [erroData, setErroData] = useState(false)
   const [tentouConfirmar, setTentouConfirmar] = useState(false)
+  const [recusados, setRecusados] = useState<string[]>([])
   // Leitor ligado: o painel com o laser toma o lugar da busca. Liga pelo botão ou
   // sozinho no primeiro bipe, para ela sempre ver que a leitura chegou.
   const [lendo, setLendo] = useState(false)
@@ -76,7 +77,8 @@ export function RegistrarEntrada() {
     .slice(0, 6) : []
 
   function mudarQuantidade(codigo: string, quantidade: number) {
-    setItens((atual) => atual.map((i) => (i.codigo === codigo ? { ...i, quantidade: Math.max(1, quantidade) } : i)))
+    // Só inteiro, como na Entrada rápida: o estoque recusa saldo fracionado.
+    setItens((atual) => atual.map((i) => (i.codigo === codigo ? { ...i, quantidade: Math.max(1, Math.floor(quantidade) || 1) } : i)))
   }
 
   function mudarCusto(codigo: string, custo: number | null) {
@@ -230,15 +232,22 @@ export function RegistrarEntrada() {
       referencia: referencia.trim() || undefined,
       observacoes: observacoes.trim() || undefined,
     }
+    // A base recusa sem dizer o motivo; quem não entrou fica na tela, nunca some em silêncio.
+    const naoEntraram: ItemEntrada[] = []
     itens.forEach((item) => {
       const entrada = { ...cabecalho, custoUnitario: item.custo }
       if (item.novo) {
         const codigo = cadastrarProduto({ ...item.novo, custo: item.custo, saldo: 0 })
-        alterarSaldo(codigo, item.quantidade, 'Recebimento de mercadorias', 'Entrada', entrada)
+        if (!alterarSaldo(codigo, item.quantidade, 'Recebimento de mercadorias', 'Entrada', entrada)) naoEntraram.push(item)
         return
       }
-      alterarSaldo(item.codigo, (produtos.find((produto) => produto.codigo === item.codigo)?.saldo ?? item.saldoAtual) + item.quantidade, 'Recebimento de mercadorias', 'Entrada', entrada)
+      if (!alterarSaldo(item.codigo, (produtos.find((produto) => produto.codigo === item.codigo)?.saldo ?? item.saldoAtual) + item.quantidade, 'Recebimento de mercadorias', 'Entrada', entrada)) naoEntraram.push(item)
     })
+    if (naoEntraram.length > 0) {
+      setItens(naoEntraram.filter((item) => !item.novo))
+      setRecusados(naoEntraram.map((item) => item.descricao))
+      return
+    }
     navegar(rotas.movimentacoesEstoque())
   }
 
@@ -380,6 +389,7 @@ export function RegistrarEntrada() {
                     <input
                       type="number"
                       min={1}
+                      step={1}
                       value={item.quantidade}
                       onChange={(e) => mudarQuantidade(item.codigo, Number(e.target.value))}
                       aria-label={`Quantidade de ${item.descricao}`}
@@ -446,6 +456,11 @@ export function RegistrarEntrada() {
         </dl>
       </div>
 
+      {recusados.length > 0 && (
+        <p className="registrar-entrada__recusa" role="alert">
+          Não entrou no estoque: {recusados.join(', ')}. Os outros itens foram registrados. Confira a quantidade e confirme de novo.
+        </p>
+      )}
       <div className="registrar-entrada__acoes">
         <Botao variante="fantasma" onClick={() => navegar(rotas.estoque)}>
           Cancelar
