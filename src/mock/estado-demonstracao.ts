@@ -4,7 +4,7 @@ import { agoraHorario, dataCalendarioValida, hojeISO, minutoDoDia } from './base
 import { apagarBase, carregarBase, salvarBase } from './base/persistencia'
 import { criarBaseVazia, criarSemente } from './base/semente'
 import { comFechamentosExemplo } from './base/cenario-caixa'
-import type { Base, Cliente, Estorno, ServicoVenda, Ficha, Meio, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
+import type { Base, Boleto, Cliente, Estorno, ServicoVenda, Ficha, Meio, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
 
 export * from './base/derivados'
 export * from './base/datas'
@@ -394,6 +394,54 @@ export function marcarEnviadosEmitte(tipo: 'produtos' | 'clientes', ids: string[
   const marcar = new Set(ids)
   if (tipo === 'produtos') mudar({ ...base, produtos: base.produtos.map((p) => (marcar.has(p.codigo) && !p.emitteEnviadoEm ? { ...p, emitteEnviadoEm: agora } : p)) })
   else mudar({ ...base, clientes: base.clientes.map((c) => (marcar.has(c.id) && !c.emitteEnviadoEm ? { ...c, emitteEnviadoEm: agora } : c)) })
+}
+
+type DadosBoleto = Pick<Boleto, 'descricao' | 'valor' | 'numero' | 'vencimento'>
+
+/** Descrição e número com texto, valor positivo em centavos, vencimento de calendário. */
+function dadosBoleto(dados: DadosBoleto): DadosBoleto | null {
+  const descricao = dados.descricao.trim()
+  const numero = dados.numero.trim()
+  if (!descricao || !numero || !Number.isSafeInteger(dados.valor) || dados.valor <= 0 || !dataCalendarioValida(dados.vencimento)) return null
+  return { descricao, valor: dados.valor, numero, vencimento: dados.vencimento }
+}
+
+/** A data de cadastro nasce aqui, não vem da tela (`2026-10-23`). */
+export function cadastrarBoleto(dados: DadosBoleto) {
+  const limpos = dadosBoleto(dados)
+  if (!limpos) return null
+  const id = proximoCodigo(base.boletos.map((b) => b.id), 'BOL-')
+  mudar({ ...base, boletos: [...base.boletos, { ...limpos, id, cadastradoEm: new Date().toISOString() }] })
+  return id
+}
+
+/** Corrige os dados; data de cadastro e pagamento ficam como estavam. */
+export function editarBoleto(id: string, dados: DadosBoleto) {
+  const limpos = dadosBoleto(dados)
+  if (!limpos || !base.boletos.some((b) => b.id === id)) return false
+  mudar({ ...base, boletos: base.boletos.map((b) => (b.id === id ? { ...b, ...limpos } : b)) })
+  return true
+}
+
+/**
+ * Marca como pago hoje, por quem está no balcão, ou desfaz. Só anotação: não
+ * lança no Financeiro. A confirmação do operador está sendo desenhada à parte
+ * (Memoria.md, PENDENTE); por ora a tela pede um segundo clique.
+ */
+export function marcarBoletoPago(id: string, pago: boolean) {
+  const boleto = base.boletos.find((b) => b.id === id)
+  if (!boleto || Boolean(boleto.pagoEm) === pago) return false
+  const { pagoEm: _pagoEm, pagoPor: _pagoPor, ...aberto } = boleto
+  const proximo: Boleto = pago ? { ...aberto, pagoEm: hojeISO(), pagoPor: base.operador } : aberto
+  mudar({ ...base, boletos: base.boletos.map((b) => (b.id === id ? proximo : b)) })
+  return true
+}
+
+/** Boleto lançado por engano. Não há histórico ligado a ele. */
+export function excluirBoleto(id: string) {
+  if (!base.boletos.some((b) => b.id === id)) return false
+  mudar({ ...base, boletos: base.boletos.filter((b) => b.id !== id) })
+  return true
 }
 
 export function marcarAvisosLidos(avisos: Notificacao[]) {

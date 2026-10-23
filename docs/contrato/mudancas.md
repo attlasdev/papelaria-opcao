@@ -33,6 +33,19 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-23` — Tela nova: Boletos
+
+- **Menu:** item "Boletos" abaixo de Serviços (ícone `documento`), rota
+  `/boletos` (`rotas.boletos`).
+- **Tela** `src/telas/boletos/`: `Boletos.tsx` (resumo, filtros, busca, tabela)
+  e `JanelaBoleto.tsx` (cadastrar/editar no `Modal estreito`, excluir com
+  segundo clique). Só componentes existentes (`CartaoResumo`, `Filtros`,
+  `Tabela`, `SeloCompacto`, `Campo`, `CampoMoeda`, `CampoData`); CSS em `boletos.css`.
+- **Sino:** dois tipos novos de aviso, `boleto-vencido` e `boleto-vencendo`,
+  com ícone `documento` em `Tela.tsx`.
+- "Marcar como pago" ainda usa segundo clique; vai trocar pela confirmação do
+  operador quando ela for desenhada.
+
 ### `2026-10-23` — Filtros de categoria do Estoque até a metade da linha
 
 - **Estoque:** `.estoque__categorias` ficou com no máximo 50% da linha, à

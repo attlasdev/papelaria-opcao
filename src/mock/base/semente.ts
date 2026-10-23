@@ -2,6 +2,7 @@ import { diasEntre, somarDias } from './datas'
 import {
   VERSAO_BASE,
   type Base,
+  type Boleto,
   type Cliente,
   type Ficha,
   type ItemVenda,
@@ -110,6 +111,7 @@ export function criarBaseVazia(hoje: string, operador = 'Loja'): Base {
     rascunhosNota: [],
     rascunhoFicha: null,
     avisosLidos: {},
+    boletos: [],
   }
 }
 
@@ -233,7 +235,30 @@ export function criarSemente(hoje: string, minutoAtual = 24 * 60): Base {
     rascunhosNota: comId.filter((f) => f.clienteId).slice(-2).map((f) => f.id).reverse(),
     rascunhoFicha: null,
     avisosLidos: {},
+    boletos: boletosExemplo(hoje),
   }
+}
+
+/**
+ * Um boleto de cada situação que a tela e o sino tratam, inclusive as chatas:
+ * vencido há dias, vence hoje, no limite do aviso, logo depois dele, pago (no
+ * prazo e atrasado) e dois com o mesmo número de arquivo.
+ */
+function boletosExemplo(hoje: string): Boleto[] {
+  const boleto = (n: number, descricao: string, valor: number, numero: string, vence: number, cadastrado: number, pago?: number): Boleto => ({
+    id: `BOL-${String(n).padStart(4, '0')}`, descricao, valor, numero, vencimento: somarDias(hoje, vence),
+    cadastradoEm: `${somarDias(hoje, cadastrado)}T12:30:00.000Z`,
+    ...(pago !== undefined ? { pagoEm: somarDias(hoje, pago), pagoPor: OPERADOR } : {}),
+  })
+  return [
+    boleto(1, 'Aluguel da loja', 250000, '1', 20, -10),
+    boleto(2, 'Fornecedor Tilibra · NF 4821', 184590, '12', -4, -30),
+    boleto(3, 'Conta de luz', 41237, '7', 0, -12),
+    boleto(4, 'Distribuidora Faber-Castell', 96000, '12', 5, -8),
+    boleto(5, 'Internet e telefone', 15990, '3', 6, -6),
+    boleto(6, 'Contador · honorários', 60000, '5', -15, -40, -16),
+    boleto(7, 'Fornecedor Bic', 73250, '9', -9, -35, -2),
+  ]
 }
 
 /** Lançamentos manuais recorrentes: fundo de troco, despesas, retiradas e avulsos. */

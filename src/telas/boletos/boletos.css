@@ -1,0 +1,75 @@
+/* Boletos: filtros e busca na mesma linha, tabela e a janela de cadastro. */
+
+.boletos__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-4);
+}
+
+.boletos__busca {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  width: min(100%, 400px);
+  height: var(--altura-controle);
+  padding: 0 var(--espaco-3);
+  border: 1px solid var(--color-borda-forte);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-superficie);
+  color: var(--color-texto-suave);
+}
+
+.boletos__busca:focus-within { border-color: var(--color-tinta); }
+
+.boletos__busca input {
+  flex: 1;
+  min-width: 0;
+  outline: none;
+  color: var(--color-tinta);
+}
+
+.boletos__descricao {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.boletos__vencimento {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.boletos__vazio {
+  padding: var(--espaco-8);
+  text-align: center;
+  color: var(--color-texto-suave);
+}
+
+/* Colunas do tamanho do conteúdo; a descrição fica com o resto. */
+.boletos__tabela th:nth-child(1) { width: 64px; }
+.boletos__tabela th:nth-child(3) { width: 230px; }
+.boletos__tabela th:nth-child(4) { width: 110px; }
+.boletos__tabela th:nth-child(5) { width: 120px; }
+.boletos__tabela th:nth-child(6) { width: 200px; }
+
+/* Largura do rótulo mais longo ("Confirmar pagamento"): o botão não pula ao trocar. */
+.boletos__pagar { min-width: 160px; }
+
+.janela-boleto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.janela-boleto__erro { margin-right: auto; font-size: var(--text-rotulo); color: var(--color-saida); }
+
+.janela-boleto__excluir { margin-right: auto; color: var(--color-critico-texto); }
+.janela-boleto__excluir--confirmar {
+  background: var(--color-critico-fundo);
+  color: var(--color-critico-texto);
+}

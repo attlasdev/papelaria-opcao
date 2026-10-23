@@ -36,6 +36,13 @@ import {
   restaurarDemonstracao,
   resumoDoCliente,
   resumoEstoque,
+  boletoComMesmoNumero,
+  cadastrarBoleto,
+  editarBoleto,
+  excluirBoleto,
+  marcarBoletoPago,
+  resumoBoletos,
+  situacaoBoleto,
 } from './estado-demonstracao'
 import { carregarBase, normalizarBase } from './base/persistencia'
 import { funcoes } from '../funcoes'
@@ -571,5 +578,72 @@ describe('serviços', () => {
     expect('servicos' in aberta).toBe(false)
     expect(aberta.fichas.find((f) => f.id === id)?.servicos).toEqual([{ nome: 'Cópia P&B', valor: 100, perdas: { quantidade: 2 }, observacao: 'Manchou' }])
     expect(aberta.rascunhoFicha?.servicos).toEqual([{ nome: 'Cópia P&B', valor: 100, perdas: { quantidade: 2 }, observacao: 'Manchou' }])
+  })
+})
+
+describe('boletos', () => {
+  const dados = { descricao: '  Papel A4 Chamex ', valor: 32000, numero: ' 21 ', vencimento: '2026-10-01' }
+
+  it('cadastra com a data de cadastro gravada na hora e os textos limpos', () => {
+    const id = cadastrarBoleto(dados)!
+    const boleto = obterBase().boletos.find((b) => b.id === id)!
+    expect(boleto).toMatchObject({ descricao: 'Papel A4 Chamex', numero: '21', valor: 32000, vencimento: '2026-10-01' })
+    expect(Date.now() - Date.parse(boleto.cadastradoEm)).toBeLessThan(5000)
+  })
+
+  it('recusa sem descrição, sem número, valor zero ou vencimento inválido', () => {
+    expect(cadastrarBoleto({ ...dados, descricao: ' ' })).toBeNull()
+    expect(cadastrarBoleto({ ...dados, numero: '' })).toBeNull()
+    expect(cadastrarBoleto({ ...dados, valor: 0 })).toBeNull()
+    expect(cadastrarBoleto({ ...dados, vencimento: '2026-02-30' })).toBeNull()
+  })
+
+  it('editar não mexe na data de cadastro nem no pagamento', () => {
+    const id = cadastrarBoleto(dados)!
+    marcarBoletoPago(id, true)
+    const antes = obterBase().boletos.find((b) => b.id === id)!
+    expect(editarBoleto(id, { ...dados, valor: 35000 })).toBe(true)
+    expect(obterBase().boletos.find((b) => b.id === id)).toEqual({ ...antes, valor: 35000 })
+  })
+
+  it('situação pelo vencimento: vencido, vencendo até 5 dias, a vencer e pago', () => {
+    const b = (vencimento: string, pagoEm?: string) => ({ id: 'x', descricao: 'x', valor: 1, numero: '1', vencimento, cadastradoEm: '', ...(pagoEm ? { pagoEm } : {}) })
+    expect(situacaoBoleto(b('2026-09-24'), HOJE)).toEqual({ situacao: 'vencido', dias: -1 })
+    expect(situacaoBoleto(b('2026-09-25'), HOJE).situacao).toBe('vencendo')
+    expect(situacaoBoleto(b('2026-09-30'), HOJE).situacao).toBe('vencendo')
+    expect(situacaoBoleto(b('2026-10-01'), HOJE).situacao).toBe('a-vencer')
+    expect(situacaoBoleto(b('2026-09-01', '2026-09-20'), HOJE).situacao).toBe('pago')
+  })
+
+  it('sino: vencidos e os que vencem em breve; pagar tira do aviso', () => {
+    const avisos = () => notificacoes(obterBase(), HOJE).filter((a) => a.tipo.startsWith('boleto'))
+    // Semente: 1 vencido (Tilibra) e 2 no prazo do aviso (luz hoje, Faber-Castell em 5 dias).
+    expect(avisos().map((a) => [a.id, a.titulo])).toEqual([['boleto-vencido', '1 boleto vencido'], ['boleto-vencendo', '2 boletos vencem em breve']])
+    expect(avisos()[1].detalhe).toMatch(/^Conta de luz e mais 1 · o primeiro vence hoje · R\$\s1\.372,37$/)
+    marcarBoletoPago('BOL-0002', true)
+    expect(avisos().map((a) => a.id)).toEqual(['boleto-vencendo'])
+    expect(resumoBoletos(obterBase(), HOJE).vencidos.quantidade).toBe(0)
+  })
+
+  it('marcar como pago guarda dia e operador; desfazer volta a ficar em aberto', () => {
+    expect(marcarBoletoPago('BOL-0003', true)).toBe(true)
+    expect(obterBase().boletos.find((b) => b.id === 'BOL-0003')).toMatchObject({ pagoEm: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), pagoPor: obterBase().operador })
+    expect(marcarBoletoPago('BOL-0003', true)).toBe(false)
+    expect(marcarBoletoPago('BOL-0003', false)).toBe(true)
+    const aberto = obterBase().boletos.find((b) => b.id === 'BOL-0003')!
+    expect('pagoEm' in aberto || 'pagoPor' in aberto).toBe(false)
+  })
+
+  it('número repetido só é apontado; excluir apaga', () => {
+    expect(boletoComMesmoNumero(obterBase(), ' 12 ')?.id).toBe('BOL-0002')
+    expect(boletoComMesmoNumero(obterBase(), '12', 'BOL-0002')?.id).toBe('BOL-0004')
+    expect(cadastrarBoleto({ ...dados, numero: '12' })).not.toBeNull()
+    expect(excluirBoleto('BOL-0001')).toBe(true)
+    expect(obterBase().boletos.some((b) => b.id === 'BOL-0001')).toBe(false)
+  })
+
+  it('base guardada antes dos boletos abre com a lista vazia', () => {
+    const { boletos: _boletos, ...antiga } = obterBase()
+    expect(normalizarBase(antiga)?.boletos).toEqual([])
   })
 })

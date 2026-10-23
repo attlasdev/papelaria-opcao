@@ -189,6 +189,11 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
   o CEST junto com CSOSN 102 (Simples), combinação nunca testada; conferir se a
   Emitte aceita, ignora ou recusa. O texto do diálogo ("complete o NCM de cada
   produto novo") também precisa mudar para "o NCM que faltar".
+- [ ] **Boletos: confirmação do operador ao marcar como pago** (`2026-10-23`,
+  pedido do Agostinho). A confirmação está sendo planejada em outra sessão;
+  quando sair, substitui o segundo clique provisório de "Marcar como pago" e
+  "Desfazer pagamento" (`AcaoPagar` em `src/telas/boletos/Boletos.tsx`). Hoje o
+  boleto já guarda `pagoPor` com o operador da base.
 - [ ] **Validar Financeiro e Caixa com o Victor** após a separação: no Caixa,
   percorrer o cenário de fechamentos e a rotina de abrir/adicionar/retirar/fechar;
   no Financeiro, revisar filtro de datas, resumo, movimentos e estornos. Não
@@ -398,6 +403,27 @@ no vitest); e um importador da 0.1 para o SQLite entra desde o começo.
   a divisão dos pagamentos no detalhe da ficha, como no Início.
 - O calendário de vendas sem identificação permite hoje e qualquer dia passado;
   datas futuras são bloqueadas também na digitação e na navegação por teclado.
+
+### Boletos (`2026-10-23`)
+- Pedido da dona: **só anotar** os boletos da loja e ser avisada perto do
+  vencimento. Campos: descrição, valor, **número do boleto** (organização dela
+  no arquivo físico: texto livre, obrigatório) e vencimento, mais a **data de
+  cadastro**, gravada sozinha ao salvar e que a edição não muda (acréscimo do
+  Agostinho).
+- **Número repetido é aceito**, só com aviso no campo ("Já existe o boleto Nº
+  12: ...").
+- **Marcar como pago** grava o dia e o operador; dá para desfazer. Hoje pede um
+  segundo clique; vai pedir a confirmação do operador (PENDENTE).
+- **Pagar não lança nada no Financeiro** (Agostinho): é anotação, e lançar
+  sozinho duplicaria a despesa que ela já registra à mão.
+- **Sino:** "N boletos vencidos" (crítico) e "N boletos vencem em breve"
+  (atenção) para os que vencem em até **5 dias** (`DIAS_AVISO_BOLETO`; as
+  notinhas usam 3). Pago sai do aviso.
+- Tela no menu, abaixo de Serviços: resumo (vencidos, vencem em até 5 dias, a
+  pagar), filtros A pagar/Vencidos/Pagos/Todos e busca por descrição ou número.
+  Excluir fica em Editar, para boleto lançado por engano.
+- Piloto: os boletos vão no documento da base; base antiga abre com a lista
+  vazia. Nada mudou no Supabase.
 
 ### Serviços (`2026-10-19`)
 - **Sem cadastro** (Agostinho, `2026-10-19`, no mesmo dia da primeira versão):

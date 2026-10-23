@@ -230,6 +230,22 @@ export type RascunhoFicha = {
   servicos?: ServicoVenda[]
 }
 
+/**
+ * Boleto a pagar da loja, só anotado (`2026-10-23`): pagar não lança no
+ * Financeiro. `numero` é a organização da dona no arquivo físico: texto livre,
+ * pode repetir.
+ */
+export type Boleto = {
+  id: string // BOL-0001
+  descricao: string
+  valor: number // centavos
+  numero: string
+  vencimento: string // YYYY-MM-DD
+  cadastradoEm: string // ISO 8601 UTC, gravado no cadastro; editar não muda
+  pagoEm?: string // YYYY-MM-DD
+  pagoPor?: string // operador que marcou
+}
+
 export type Base = {
   versao: number
   criadaEm: string
@@ -244,4 +260,5 @@ export type Base = {
   rascunhoFicha: RascunhoFicha | null
   /** Aviso do sino já lido: id → assinatura do texto lido. Mudou o texto, volta a ser novo. */
   avisosLidos: Record<string, string>
+  boletos: Boleto[]
 }

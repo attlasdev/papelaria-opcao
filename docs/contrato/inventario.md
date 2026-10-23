@@ -151,6 +151,7 @@ Com banco, restaurar dados é seed do ambiente de teste, nunca botão no app.
 | `entrar/Entrar` e `src/dados/sincronia.ts` | sessão e a base inteira | `sessaoAtual`, `entrar`, `carregarBase`, `salvarBase` (já no contrato; do piloto) |
 | `estoque/ExportarEmitte`, `clientes/ExportarClientesEmitte`, `financeiro/ExportarPeriodo` | produtos, clientes, movimentos do período | `salvarArquivo` (já no contrato); `marcarEnviadosEmitte` (base local) |
 | comprovante (ainda sem tela) | — | `imprimirComprovante` (já no contrato) |
+| `boletos/Boletos`, `boletos/JanelaBoleto` (`2026-10-23`) | boletos da loja; avisos de vencimento no sino | `cadastrarBoleto`, `editarBoleto`, `marcarBoletoPago`, `excluirBoleto` (base local; no piloto vão no documento) |
 
 Para o back:
 - **Serviços fazem parte da ficha:** `concluirFicha` recebe e confere os
@@ -167,6 +168,11 @@ Para o back:
   id da cobrança (checagem `2026-10-21`, A4).
 - **O pagamento guarda o troco e, no misto, a maquininha e a modalidade do
   cartão** (checagem `2026-10-21`, M6).
+- **Boletos da loja (`2026-10-23`):** na 1.0, tabela própria e as operações
+  `listarBoletos`, `cadastrarBoleto`, `editarBoleto`, `marcarBoletoPago` e
+  `excluirBoleto`. `cadastradoEm` nasce no back (instante UTC), nunca vem da
+  tela; `marcarBoletoPago` grava dia e operador e vai receber a confirmação do
+  operador em desenho à parte. Nenhuma delas toca o Financeiro.
 
 ---
 

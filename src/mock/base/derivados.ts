@@ -2,7 +2,7 @@ import { dataCurta, reais } from '../../formatar'
 import { funcoes } from '../../funcoes'
 import { rotas } from '../../rotas-caminhos'
 import { dataCalendarioValida, diaDoInstante, diasEntre, noPeriodo, periodoAnterior, type Periodo } from './datas'
-import type { Base, Cliente, Ficha, ItemVenda, Meio, Produto, TurnoCaixa } from './tipos'
+import type { Base, Boleto, Cliente, Ficha, ItemVenda, Meio, Produto, TurnoCaixa } from './tipos'
 
 /**
  * Tudo o que se calcula a partir da base. Funções puras: recebem a base e a
@@ -471,7 +471,45 @@ export function buscar(base: Base, termo: string): { clientes: Cliente[]; fichas
   }
 }
 
-export type TipoNotificacao = 'atraso' | 'vencendo' | 'estoque-zerado' | 'estoque-baixo' | 'cadastro-rapido' | 'rascunho'
+/** Boleto que vence nestes dias entra no sino antes de vencer (`2026-10-23`, Agostinho). */
+export const DIAS_AVISO_BOLETO = 5
+
+export type SituacaoBoleto = 'pago' | 'vencido' | 'vencendo' | 'a-vencer'
+
+/** `dias`: até o vencimento; negativo quando já passou. */
+export function situacaoBoleto(boleto: Boleto, hoje: string): { situacao: SituacaoBoleto; dias: number } {
+  const dias = diasEntre(hoje, boleto.vencimento)
+  if (boleto.pagoEm) return { situacao: 'pago', dias }
+  return { situacao: dias < 0 ? 'vencido' : dias <= DIAS_AVISO_BOLETO ? 'vencendo' : 'a-vencer', dias }
+}
+
+/** "vence hoje", "vence amanhã", "vence em 3 dias", "venceu há 2 dias". */
+export function prazoBoleto(dias: number) {
+  if (dias === 0) return 'vence hoje'
+  if (dias === 1) return 'vence amanhã'
+  if (dias > 1) return `vence em ${dias} dias`
+  return dias === -1 ? 'venceu ontem' : `venceu há ${-dias} dias`
+}
+
+type GrupoBoletos = { quantidade: number; valor: number }
+
+export function resumoBoletos(base: Base, hoje: string): Record<'vencidos' | 'vencendo' | 'aPagar', GrupoBoletos> {
+  const grupo = (lista: Boleto[]): GrupoBoletos => ({ quantidade: lista.length, valor: lista.reduce((t, b) => t + b.valor, 0) })
+  const abertos = base.boletos.filter((b) => !b.pagoEm)
+  return {
+    vencidos: grupo(abertos.filter((b) => situacaoBoleto(b, hoje).situacao === 'vencido')),
+    vencendo: grupo(abertos.filter((b) => situacaoBoleto(b, hoje).situacao === 'vencendo')),
+    aPagar: grupo(abertos),
+  }
+}
+
+/** Outro boleto com o mesmo número de arquivo: só avisa, não impede (`2026-10-23`). */
+export function boletoComMesmoNumero(base: Base, numero: string, ignorar?: string) {
+  const alvo = numero.trim().toLowerCase()
+  return alvo ? base.boletos.find((b) => b.id !== ignorar && b.numero.trim().toLowerCase() === alvo) : undefined
+}
+
+export type TipoNotificacao = 'atraso' | 'vencendo' | 'estoque-zerado' | 'estoque-baixo' | 'cadastro-rapido' | 'rascunho' | 'boleto-vencido' | 'boleto-vencendo'
 
 export type Notificacao = {
   id: string
@@ -519,6 +557,28 @@ export function notificacoes(base: Base, hoje: string): Notificacao[] {
         destino: rotas.cliente(c.id),
       })
     }
+  }
+  // Boletos da loja: os vencidos logo depois das notinhas em atraso; os que vencem, depois das que vencem.
+  const abertos = base.boletos.filter((b) => !b.pagoEm).sort((a, b) => a.vencimento.localeCompare(b.vencimento))
+  const boletosVencidos = abertos.filter((b) => situacaoBoleto(b, hoje).situacao === 'vencido')
+  const boletosVencendo = abertos.filter((b) => situacaoBoleto(b, hoje).situacao === 'vencendo')
+  const descricoes = (lista: Boleto[]) => lista.length === 1 ? lista[0].descricao : `${lista[0].descricao} e mais ${lista.length - 1}`
+  const total = (lista: Boleto[]) => reais(lista.reduce((t, b) => t + b.valor, 0))
+  if (boletosVencidos.length) {
+    atrasos.push({
+      id: 'boleto-vencido', tipo: 'boleto-vencido', tom: 'critico',
+      titulo: plural(boletosVencidos.length, 'boleto vencido', 'boletos vencidos'),
+      detalhe: `${descricoes(boletosVencidos)} · ${total(boletosVencidos)}`, destino: rotas.boletos,
+    })
+  }
+  if (boletosVencendo.length) {
+    const prazo = prazoBoleto(situacaoBoleto(boletosVencendo[0], hoje).dias)
+    vencendo.push({
+      id: 'boleto-vencendo', tipo: 'boleto-vencendo', tom: 'atencao',
+      titulo: boletosVencendo.length === 1 ? '1 boleto vence em breve' : `${boletosVencendo.length} boletos vencem em breve`,
+      detalhe: `${descricoes(boletosVencendo)} · ${boletosVencendo.length === 1 ? prazo : `o primeiro ${prazo}`} · ${total(boletosVencendo)}`,
+      destino: rotas.boletos,
+    })
   }
   const avisos = [...atrasos, ...vencendo]
 

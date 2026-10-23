@@ -29,6 +29,7 @@ export function normalizarBase(bruto: unknown): Base | null {
   return {
     ...semCatalogo,
     avisosLidos: base.avisosLidos ?? {},
+    boletos: Array.isArray(base.boletos) ? base.boletos : [],
     fichas: base.fichas.map((f) => (f.servicos ? { ...f, servicos: f.servicos.map(servicoAtual) } : f)),
     ...(base.rascunhoFicha ? { rascunhoFicha: { ...base.rascunhoFicha, ...(base.rascunhoFicha.servicos ? { servicos: base.rascunhoFicha.servicos.map(servicoAtual) } : {}) } } : {}),
     // Conserva o cadastro existente, retirando campos que deixaram de fazer parte dele.

@@ -28,6 +28,8 @@ const iconeAviso: Record<TipoNotificacao, NomeIcone> = {
   'estoque-baixo': 'pacote',
   'cadastro-rapido': 'pacote',
   rascunho: 'notas',
+  'boleto-vencido': 'documento',
+  'boleto-vencendo': 'documento',
 }
 
 /**
