@@ -77,6 +77,24 @@ export function conferirFiscalProduto(fiscal: FiscalProduto): ErrosFiscalProduto
   return erros
 }
 
+/**
+ * NCM e CEST como anotação, para a dona cadastrar na Emitte sem procurar a nota
+ * (`2026-10-23`). Só o formato: tributação e CFOP não estão na tela, então fica o
+ * que o produto já tinha, ou o padrão. Sem nada anotado e sem fiscal antes, não
+ * grava fiscal.
+ */
+export function anotarNcmCest(anterior: FiscalProduto | undefined, ncmDigitado: string, cestDigitado: string) {
+  const ncm = digitos(ncmDigitado) || undefined
+  const cest = digitos(cestDigitado) || undefined
+  const erros: Pick<ErrosFiscalProduto, 'ncm' | 'cest'> = {}
+  if (ncm && ncm.length !== 8) erros.ncm = 'O NCM tem 8 números.'
+  if (cest && cest.length !== 7) erros.cest = 'O CEST tem 7 números.'
+  if (!anterior && !ncm && !cest) return { fiscal: undefined, erros }
+  const { ncm: _ncm, cest: _cest, ...resto } = anterior ?? FISCAL_PRODUTO_PADRAO
+  const fiscal: FiscalProduto = { ...resto, ...(ncm && { ncm }), ...(cest && { cest }) }
+  return { fiscal, erros }
+}
+
 /** Do formulário para o dado guardado: só números onde a nota pede números. */
 export function limparFiscalProduto(bruto: Record<keyof FiscalProduto, string>): FiscalProduto {
   return {

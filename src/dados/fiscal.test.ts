@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { conferirCep, conferirFiscalProduto, FISCAL_PRODUTO_PADRAO, gtinValido, limparFiscalCliente, limparFiscalProduto } from './fiscal'
+import { anotarNcmCest, conferirCep,conferirFiscalProduto, FISCAL_PRODUTO_PADRAO, gtinValido, limparFiscalCliente, limparFiscalProduto } from './fiscal'
 
 describe('gtinValido', () => {
   it('aceita os códigos do XML que a Emitte validou', () => {
@@ -33,6 +33,32 @@ describe('dados fiscais do produto', () => {
   it('aponta NCM curto, CEST sem ST e CFOP trocado', () => {
     const fiscal = limparFiscalProduto({ tributacao: 'simples', origem: '0', cfopEstadual: '6102', cfopInterestadual: '5102', ncm: '4820', cest: '1902400' })
     expect(Object.keys(conferirFiscalProduto(fiscal)).sort()).toEqual(['cest', 'cfopEstadual', 'cfopInterestadual', 'ncm'])
+  })
+})
+
+describe('NCM e CEST como anotação', () => {
+  it('sem nada anotado e sem fiscal antes, não grava fiscal', () => {
+    expect(anotarNcmCest(undefined, ' ', '')).toEqual({ fiscal: undefined, erros: {} })
+  })
+
+  it('produto novo: padrão mais o anotado, só números', () => {
+    expect(anotarNcmCest(undefined, '4820.20.00', '19.024.00')).toEqual({
+      fiscal: { ...FISCAL_PRODUTO_PADRAO, ncm: '48202000', cest: '1902400' },
+      erros: {},
+    })
+  })
+
+  it('CEST sem substituição tributária é aceito: é só anotação', () => {
+    expect(anotarNcmCest(undefined, '', '1902400').erros).toEqual({})
+  })
+
+  it('editar troca só NCM e CEST e mantém o resto; apagar tira o campo', () => {
+    const anterior = { tributacao: 'substituicao' as const, origem: '2', cfopEstadual: '5405', cfopInterestadual: '6404', ncm: '48202000', cest: '1902400' }
+    expect(anotarNcmCest(anterior, '', '1902400').fiscal).toEqual({ tributacao: 'substituicao', origem: '2', cfopEstadual: '5405', cfopInterestadual: '6404', cest: '1902400' })
+  })
+
+  it('aponta tamanho errado', () => {
+    expect(anotarNcmCest(undefined, '4820', '19024').erros).toEqual({ ncm: 'O NCM tem 8 números.', cest: 'O CEST tem 7 números.' })
   })
 })
 

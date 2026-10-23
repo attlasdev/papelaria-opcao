@@ -33,6 +33,13 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-23` — NCM e CEST no cadastro de produto
+
+- **Cadastrar/Editar produto:** dois campos opcionais, **NCM** e **CEST**, no fim
+  de "Dados complementares", com a ajuda "Anotação para o cadastro na Emitte".
+  Mesmo componente `Campo` dos vizinhos; erro de tamanho aparece no próprio
+  campo. O resto do bloco "Dados fiscais" continua comentado.
+
 ### `2026-10-23` — Correções do piloto (v0.1.8)
 
 - **Registrar entrada:** a quantidade só aceita inteiro (`1.5` vira `1`), como na

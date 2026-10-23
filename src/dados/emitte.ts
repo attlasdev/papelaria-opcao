@@ -170,9 +170,9 @@ export type PlanilhaProdutos = { bytes: Uint8Array; quantidade: number; codigos:
 
 /**
  * Na planilha, NCM e CFOP vão por produto (no XML o CFOP vinha da tela de
- * importação). CFOP de revenda: 5102 dentro do estado, 6102 fora. NCM vai em
- * branco: a dona completa na Emitte (decisão de 2026-10-06) — a testar se a
- * planilha aceita assim.
+ * importação). CFOP de revenda: 5102 dentro do estado, 6102 fora. NCM e CEST vão
+ * como anotados no cadastro (`2026-10-23`), ou em branco para a dona completar
+ * na Emitte — a testar se a planilha aceita os dois casos (Memoria.md, PENDENTE).
  */
 export function gerarPlanilhaProdutos(produtos: Produto[], modelo: Uint8Array): PlanilhaProdutos {
   const lista = produtos.filter((p) => !p.inativo)

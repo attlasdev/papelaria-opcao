@@ -15,7 +15,9 @@ import { unidades } from './constantes'
 import { CampoCategoria } from './CampoCategoria'
 // Dados fiscais fora da tela desde 2026-10-06 (decisão do Agostinho): a dona os
 // preenche na própria Emitte, que é quem os exige. O código fica comentado abaixo
-// para voltar se a decisão mudar. Ver Memoria.md.
+// para voltar se a decisão mudar. Ver Memoria.md. Exceção (`2026-10-23`): NCM e
+// CEST voltaram em "Dados complementares", só como anotação.
+import { anotarNcmCest } from '../../dados/fiscal'
 // import { conferirFiscalProduto, FISCAL_PRODUTO_PADRAO, gtinValido, limparFiscalProduto, ORIGENS, TRIBUTACOES } from '../../dados/fiscal'
 import './cadastrar-produto.css'
 
@@ -234,7 +236,10 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
     //   ncm: String(dados.get('ncm') ?? ''), cest: String(dados.get('cest') ?? ''),
     // })
     // if (fiscal) Object.assign(falhas, conferirFiscalProduto(fiscal))
-    const fiscal = existente?.fiscal
+    // Só NCM e CEST voltaram, como anotação para a Emitte (`2026-10-23`).
+    const anotado = anotarNcmCest((daEntrada?.rascunho ?? existente)?.fiscal, String(dados.get('ncm') ?? ''), String(dados.get('cest') ?? ''))
+    Object.assign(falhas, anotado.erros)
+    const fiscal = anotado.fiscal
     const primeira = (['codigoBarras', 'nome', 'categoria', 'unidade', 'preco', 'quantidadeVendida', 'custo', 'saldo', 'minimo', 'embalagem', 'ncm', 'cest', 'cfopEstadual', 'cfopInterestadual'] as CampoCadastro[]).find((campo) => falhas[campo])
     if (primeira) {
       setErros(falhas)
@@ -527,6 +532,8 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
             {/* Sem campo "Fornecedor": o produto não o guarda; o fornecedor fica em cada entrada de mercadoria. */}
             <Campo rotulo="Características" name="caracteristicas" opcional defaultValue={produtoConsultado?.caracteristicas ?? r?.caracteristicas} readOnly={Boolean(produtoConsultado)} placeholder="Cor, tamanho, gramatura..." />
             <Campo rotulo="Descrição adicional" name="descricaoAdicional" opcional defaultValue={produtoConsultado?.descricaoAdicional ?? r?.descricaoAdicional} readOnly={Boolean(produtoConsultado)} />
+            <Campo rotulo="NCM" name="ncm" opcional inputMode="numeric" defaultValue={produtoConsultado?.fiscal?.ncm ?? r?.fiscal?.ncm} readOnly={Boolean(produtoConsultado)} placeholder="8 números" erro={Boolean(erros.ncm)} ajuda={erros.ncm ?? 'Anotação para o cadastro na Emitte.'} onChange={() => limparErro('ncm')} />
+            <Campo rotulo="CEST" name="cest" opcional inputMode="numeric" defaultValue={produtoConsultado?.fiscal?.cest ?? r?.fiscal?.cest} readOnly={Boolean(produtoConsultado)} placeholder="7 números" erro={Boolean(erros.cest)} ajuda={erros.cest ?? 'Anotação para o cadastro na Emitte.'} onChange={() => limparErro('cest')} />
           </div>
         </section>}
 

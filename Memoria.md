@@ -113,7 +113,9 @@ gera as duas planilhas preenchendo o próprio modelo, com textos compartilhados
   dona confirma** "Já importei na Emitte". Editar não apaga a marca. Mudança de
   preço/nome depois do envio: alterar também na Emitte, à mão.
 - **NCM fica só na Emitte, de vez:** como nada é reenviado, o que ela preenche lá
-  nunca é sobrescrito. Nenhum dado fiscal de produto no app.
+  nunca é sobrescrito. Nenhum dado fiscal de produto no app. **Revisto em
+  `2026-10-23`** (pedido da loja): NCM e CEST voltaram ao cadastro do produto
+  **só como anotação** — ver "Regras de produto > Estoque".
 - **Produtos vão pela planilha, não pelo XML:** a planilha trouxe CFOP 5102/6102
   e NCM em branco ("SELECIONE", obrigatório lá); o XML trazia `00000000` em
   silêncio e CFOP da tela de importação.
@@ -182,6 +184,11 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
   `docs/superpowers/plans/2026-10-23-versao-1.0.md` (rascunho de `2026-10-23`,
   a revisar). Antes da etapa 1, decidir D1 (de qual branch sai a 1.0 e de qual
   saem as correções do piloto).
+- [ ] **Antes de ligar a exportação de produtos para a Emitte:** testar na
+  importação um produto com NCM e CEST anotados (`2026-10-23`). A planilha leva
+  o CEST junto com CSOSN 102 (Simples), combinação nunca testada; conferir se a
+  Emitte aceita, ignora ou recusa. O texto do diálogo ("complete o NCM de cada
+  produto novo") também precisa mudar para "o NCM que faltar".
 - [ ] **Validar Financeiro e Caixa com o Victor** após a separação: no Caixa,
   percorrer o cenário de fechamentos e a rotina de abrir/adicionar/retirar/fechar;
   no Financeiro, revisar filtro de datas, resumo, movimentos e estornos. Não
@@ -430,6 +437,13 @@ no vitest); e um importador da 0.1 para o SQLite entra desde o começo.
   continua sendo a data atual, mantendo a ordem dos saldos antes/depois.
 - Cadastrar produto (topo do Estoque) aceita bipe; código já cadastrado mostra o
   produto existente em vez de duplicar.
+- **NCM e CEST no cadastro, como anotação (`2026-10-23`, pedido da loja):** dois
+  campos opcionais em "Dados complementares", para a dona cadastrar na Emitte
+  sem procurar a nota. Só o formato é conferido (8 e 7 números; pontos aceitos);
+  CEST sem substituição tributária é aceito. Tributação, origem e CFOP continuam
+  fora da tela; guardados em `fiscal` com o padrão (Simples, 0, 5102/6102) ou o
+  que o produto já tinha. **A exportação para a Emitte manda o anotado** (decisão
+  do Agostinho, opção "deixar ir") — ver PENDENTE.
 
 ### Financeiro
 **Situação de validação: NÃO VALIDADO pelo Victor.** As regras abaixo descrevem
