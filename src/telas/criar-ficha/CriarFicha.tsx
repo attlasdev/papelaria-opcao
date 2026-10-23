@@ -290,7 +290,8 @@ export function CriarFicha() {
           </Painel>
         </div>
 
-        <aside className="criar-ficha__lateral">
+        {/* Abaixo dos itens, não na lateral: no monitor da loja a coluna espremia a ficha. */}
+        <div className="criar-ficha__fechamento">
           <Painel>
             <PagamentoFicha
               subtotal={subtotal}
@@ -377,7 +378,7 @@ export function CriarFicha() {
               </Botao>
             </div>
           </Painel>
-        </aside>
+        </div>
       </div>
       {janelaServico && (
         <JanelaServicoFicha

@@ -1,21 +1,16 @@
-/* Duas colunas: trabalho à esquerda, valores e conclusão à direita (fixos ao rolar). */
-.criar-ficha {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  align-items: start;
-  gap: var(--espaco-4);
-}
-
-.criar-ficha__principal,
-.criar-ficha__lateral {
+/* Uma coluna: cliente e itens; embaixo, valores e revisão lado a lado (`2026-10-23`). */
+.criar-ficha,
+.criar-ficha__principal {
   display: flex;
   flex-direction: column;
   gap: var(--espaco-4);
 }
 
-.criar-ficha__lateral {
-  position: sticky;
-  top: 0;
+.criar-ficha__fechamento {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--espaco-4);
 }
 
 /* Revisão */
@@ -71,12 +66,8 @@
   margin-top: var(--espaco-2);
 }
 
-@media (max-width: 1180px) {
-  .criar-ficha {
+@media (max-width: 900px) {
+  .criar-ficha__fechamento {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .criar-ficha__lateral {
-    position: static;
   }
 }

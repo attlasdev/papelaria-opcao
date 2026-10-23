@@ -33,6 +33,13 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-23` — Nova ficha numa coluna só
+
+- **Nova ficha:** Valores e Revisão saíram da coluna lateral fixa e foram para
+  baixo dos itens, lado a lado (`criar-ficha__fechamento`, duas metades; uma só
+  abaixo de 900px). Pedido da loja: no monitor de 1280px a lateral espremia a
+  ficha. Sai o `position: sticky`: com muitos itens, rola-se até o Concluir.
+
 ### `2026-10-23` — Cadastrar produto pela ficha volta para a ficha
 
 - **Nova ficha:** o link do aviso "sem cadastro" virou "Cadastrar produto" e
