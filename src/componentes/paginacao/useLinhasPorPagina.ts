@@ -1,9 +1,13 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 
-/** Ajusta a quantidade de linhas ao espaço da tela, preservando o rodapé e o conteúdo seguinte. */
-export function useLinhasPorPagina(inicial = 5, limite = 12) {
+/**
+ * Ajusta a quantidade de linhas ao espaço da tela, preservando o rodapé e o conteúdo seguinte.
+ * Nunca desce de `minimo`: em tela baixa (1280x720 da loja) caberia uma linha só; ali a
+ * página rola em vez de a tabela encolher.
+ */
+export function useLinhasPorPagina(inicial = 8, limite = 12, minimo = 8) {
   const referencia = useRef<HTMLDivElement>(null)
-  const [linhasPorPagina, setLinhasPorPagina] = useState(inicial)
+  const [linhasPorPagina, setLinhasPorPagina] = useState(Math.max(inicial, minimo))
 
   useLayoutEffect(() => {
     const caixa = referencia.current
@@ -28,7 +32,7 @@ export function useLinhasPorPagina(inicial = 5, limite = 12) {
           : 0
         const margemInferior = Number.parseFloat(getComputedStyle(conteudo).paddingBottom) || 0
         const disponivel = conteudo.clientHeight - topo - alturaFixa - reservaSeguinte - margemInferior
-        const quantidade = Math.max(1, Math.min(limite, Math.floor(disponivel / alturaLinha)))
+        const quantidade = Math.max(minimo, Math.min(limite, Math.floor(disponivel / alturaLinha)))
         setLinhasPorPagina((atual) => atual === quantidade ? atual : quantidade)
       })
     }
@@ -38,7 +42,7 @@ export function useLinhasPorPagina(inicial = 5, limite = 12) {
     observador.observe(painelOuCaixa(caixa))
     medir()
     return () => { cancelAnimationFrame(quadro); observador.disconnect() }
-  }, [limite])
+  }, [limite, minimo])
 
   return { referencia, linhasPorPagina }
 }

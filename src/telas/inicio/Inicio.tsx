@@ -128,7 +128,7 @@ export function Inicio() {
           </div>
         }
       >
-        <Tabela larguraMinima={1120} className="inicio__tabela">
+        <Tabela larguraMinima={920} className="inicio__tabela">
           <colgroup>
             <col className="inicio__coluna--ficha" />
             <col className="inicio__coluna--cliente" />

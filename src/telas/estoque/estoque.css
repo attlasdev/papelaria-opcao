@@ -67,6 +67,18 @@
 .estoque__tabela th:nth-child(5) { width: 320px; }
 .estoque__tabela th:nth-child(6) { width: 190px; }
 
+/* Monitor de 1280 (o da loja): sobram ~940px; as colunas fixas cedem para a
+   descrição não sumir e as ações não saírem da tela. */
+@media (max-width: 1440px) {
+  .estoque__tabela th:nth-child(1) { width: 120px; }
+  .estoque__tabela th:nth-child(3) { width: 130px; }
+  .estoque__tabela th:nth-child(4) { width: 92px; }
+  .estoque__tabela th:nth-child(5) { width: 232px; }
+  .estoque__tabela th:nth-child(6) { width: 216px; }
+  .estoque__tabela .estoque__sem-codigo { white-space: normal; }
+  .estoque__saldo { grid-template-columns: 92px 1fr; gap: var(--espaco-3); }
+}
+
 .estoque__sem-codigo {
   font-style: italic;
   white-space: nowrap;

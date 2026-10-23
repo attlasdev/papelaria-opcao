@@ -271,3 +271,11 @@
   gap: var(--espaco-2);
   flex-wrap: wrap;
 }
+
+/* Tela baixa (1280x720 da loja, menos barra de tarefas): menos ar em volta do título,
+   para a tabela começar mais acima. Em 1080 de altura nada muda. */
+@media (max-height: 800px) {
+  .tela__conteudo { padding-top: var(--espaco-4); padding-bottom: var(--espaco-6); }
+  .tela__titulo-linha { margin-bottom: var(--espaco-4); }
+  .tela__voltar { margin-bottom: var(--espaco-3); min-height: 36px; padding-block: var(--espaco-1); }
+}

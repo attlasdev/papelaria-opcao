@@ -135,3 +135,10 @@
   gap: var(--espaco-4);
   margin-bottom: var(--espaco-6);
 }
+
+/* Tela baixa: cartões de resumo mais rasos e menos espaço até o painel seguinte. */
+@media (max-height: 800px) {
+  .cartao-resumo { padding-block: var(--espaco-3); }
+  .grade-resumo { margin-bottom: var(--espaco-4); }
+  .painel__topo { padding-block: var(--espaco-3); }
+}

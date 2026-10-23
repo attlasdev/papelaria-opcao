@@ -59,6 +59,15 @@
   white-space: nowrap;
 }
 
+/* Monitor de 1280 (o da loja): sobram ~940px; os itens encolhem (o nome inteiro
+   segue na dica) e a forma de pagamento pode quebrar, para "Ações" não sair da tela. */
+@media (max-width: 1440px) {
+  .detalhe-cliente__itens,
+  .detalhe-cliente__itens .celula-principal { max-width: 120px; }
+  .detalhe-cliente__pagamento,
+  .tabela .detalhe-cliente__aberto { white-space: normal; }
+}
+
 .detalhe-cliente__valor {
   font-weight: var(--font-weight-forte);
 }
