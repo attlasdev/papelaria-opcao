@@ -1,8 +1,9 @@
 /**
  * A FRONTEIRA.
  *
- * Este e o unico arquivo que os dois lados leem. Tudo em `src/` e do front;
- * tudo em `electron/` e `supabase/` e do back. Aqui no meio fica o acordo.
+ * Este e o unico arquivo que os dois lados leem. As telas (`src/`) sao do front;
+ * `electron/`, `supabase/` e a camada de dados de `src/` sao do back, que
+ * escreve este arquivo desde 2026-10-01. Aqui no meio fica o acordo.
  *
  * O tipo `Contrato` abaixo e implementado TRES vezes, e o compilador confere
  * as tres contra este arquivo:
@@ -33,9 +34,9 @@
  * Erro como `string` solta parece mais simples e nao e: sem este tipo fechado a
  * tela nao tem como decidir o que oferecer, e todo erro vira um alerta generico.
  *
- * ESTA LISTA E PROVISORIA. Ela se fecha no passo 2 (ver `revisao-de-contrato.md`):
- * o front propoe as causas que a tela precisa distinguir, o back confirma quais
- * o banco realmente produz.
+ * ESTA LISTA E PROVISORIA. Ela se fecha na 1.0, quando cada operacao declarar
+ * as causas que devolve (`revisao-de-contrato.md`, item 2): so entra causa que
+ * a tela precisa distinguir porque oferece acao diferente.
  */
 export type CausaFalha =
   | 'rede'          // nao alcancei o servidor
@@ -153,9 +154,9 @@ export type DadosComprovante = {
 /**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
- * Quem escreve o primeiro corte e o FRONT: as operacoes saem da reuniao com o
- * cliente e das telas, nao do banco. O back faz uma passada tecnica depois
- * (`revisao-de-contrato.md`) e ajusta atomicidade, falhas e gestos irreversiveis.
+ * O vocabulario sai das telas e da loja, nao do banco. Quem escreve e o back
+ * (desde 2026-10-01), conferindo cada operacao com `revisao-de-contrato.md`:
+ * atomicidade, falhas e gestos irreversiveis.
  *
  * Regras de forma:
  *
