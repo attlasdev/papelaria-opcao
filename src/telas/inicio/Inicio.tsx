@@ -174,8 +174,10 @@ export function Inicio() {
                 <td className="inicio__itens">
                   <span className="inicio__resumo-itens" title={resumoItens(ficha)}>{resumoItens(ficha)}</span>
                 </td>
-                <td>
-                  <Etiqueta icone={iconePagamento[ficha.forma]}>{rotuloForma(ficha)}</Etiqueta>
+                <td className="inicio__pagamento" title={rotuloForma(ficha)}>
+                  <Etiqueta icone={iconePagamento[ficha.forma]}>
+                    <span className="inicio__pagamento-texto">{rotuloForma(ficha)}</span>
+                  </Etiqueta>
                 </td>
                 <td className="celula--numero inicio__valor">
                   {ficha.cancelamento ? <SeloCompacto tom="neutro">Cancelada</SeloCompacto> : valor(ficha.total)}

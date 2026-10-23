@@ -33,10 +33,10 @@
 }
 
 .inicio__coluna--ficha { width: 76px; }
-.inicio__coluna--cliente { width: clamp(190px, 18%, 290px); }
+.inicio__coluna--cliente { width: 220px; } /* largura fixa: em % a coluna engolia a sobra da tabela */
 .inicio__coluna--data { width: 112px; }
 .inicio__coluna--horario { width: 84px; }
-.inicio__coluna--pagamento { width: 184px; }
+.inicio__coluna--pagamento { width: 320px; } /* cabe "Cartão crédito Mastercard · Mercado Pago" */
 .inicio__coluna--valor { width: 128px; }
 .inicio__coluna--acoes { width: 104px; }
 
@@ -44,10 +44,10 @@
    para "Itens principais" não sumir e "Valor total" não sair da tela. */
 @media (max-width: 1440px) {
   .inicio__coluna--ficha { width: 68px; }
-  .inicio__coluna--cliente { width: clamp(140px, 16%, 290px); }
+  .inicio__coluna--cliente { width: 150px; }
   .inicio__coluna--data { width: 100px; }
   .inicio__coluna--horario { width: 68px; }
-  .inicio__coluna--pagamento { width: 176px; }
+  .inicio__coluna--pagamento { width: 196px; }
   .inicio__coluna--valor { width: 112px; }
   .inicio__coluna--acoes { width: 96px; }
 }
@@ -58,6 +58,18 @@
   -webkit-line-clamp: 2;
   overflow: hidden;
   overflow-wrap: anywhere;
+}
+
+/* Rótulo longo de pagamento corta com reticências dentro da coluna, nunca invade o
+   valor; o texto inteiro aparece na dica. */
+.inicio__pagamento .etiqueta {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.inicio__pagamento-texto {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .inicio__valor {
