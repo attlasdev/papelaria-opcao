@@ -12,10 +12,14 @@ Relato de sessão longo vai para `docs/historico/`.
 
 ---
 
-## Onde estamos — `2026-10-06`
+## Onde estamos — `2026-10-21`
 
-**Rumo atual: versão 0.1 (piloto online) para a loja testar.** Ver "Decisões de
-arquitetura", `2026-10-06`. O banco local de `2026-10-05` é o alvo da 1.0.
+**Rumo atual: a 1.0 foi aprovada pelo cliente em `2026-10-21`.** Antes de
+planejar a execução foi feita uma checagem completa do projeto (commit
+`000cb47`, v0.1.7): `docs/auditorias/2026-10-21-checagem-1.0.md`. Ela traz os
+defeitos da 0.1, os riscos da 1.0 e as decisões em aberto, resumidas no
+PENDENTE. O desenho da 1.0 segue o de `2026-10-05` (banco local) e o de
+`2026-10-06` (contrato por operação); até ela chegar, a 0.1 é o piloto.
 
 **Estado da 0.1 (`2026-10-06`; tudo no `main`, que está à frente do branch `piloto-0.1`):** app ligado ao Supabase
 (login, base como documento único com revisão e 200 versões anteriores, cópia
@@ -31,11 +35,11 @@ maquininha Mercado Pago em demonstração, exportação para a Emitte preparada
 (desligada), logo sem o selo, "restaurar" desligado e `conexao.json` tolerante
 (BOM, espaços; recusa chave secreta); **v0.1.2** (`2026-10-07`) acrescenta
 o "Exportar período" do Financeiro em planilha e o atalho "Mês passado".
-134 testes; build ok. Projeto **piloto**
-já criado no Supabase (conta da Attlas); falta aplicar a migration nele — com
-OK do Agostinho na hora — quando for para a loja.
-**Falta:** testar o instalador numa máquina Windows, criar e migrar o projeto
-**piloto** (conta da Attlas), instalar na loja. Passo a passo: `docs/piloto.md`.
+Em `2026-10-21` (v0.1.7): 163 testes, typecheck e build ok. O projeto
+**piloto** (a produção da loja, conta da Attlas) já está criado e migrado: ver
+o parágrafo abaixo.
+**Falta:** testar o instalador numa máquina Windows e instalar na loja. Passo a
+passo: `docs/piloto.md`.
 
 **Banco da loja (produção `kjntvpksckmkfqjznatx`) em `2026-10-19`:** migration
 aplicada (RLS ligado, cadastro público desligado, usuário `papelaria@loja.com`).
@@ -45,7 +49,11 @@ demonstração (24 clientes, 16 produtos, 90 dias até 19/10, caixa com turnos d
 exemplo, 2 rascunhos de nota) mais 16 fichas de serviço (4 com produtos, 6
 perdas), operador "Loja". A revisão 36 ficou em `base_loja_anteriores`.
 **Limpar antes da loja começar** (reset da base: vazia, ou só produtos de
-exemplo, a decidir). Release atual: **v0.1.6**.
+exemplo, a decidir), **pelo `salvar_base` ou limpando `base_loja` e
+`base_loja_anteriores` juntas.** Apagar só a linha de `base_loja` faz a revisão
+recomeçar em 1: a segunda gravação colide com a revisão 1 antiga guardada e o
+app trava em "Sem conexão" (checagem `2026-10-21`, A2; passo a passo em
+`docs/piloto.md`, seção 4). Release atual: **v0.1.7**.
 
 **Prazo da 0.1 (`2026-10-06`): no máximo 2 dias.** Emitte e formato do piloto
 ficam para reunião do Agostinho mais tarde; materiais em `docs/materiais-recebidos/emitte/` (sem API: a
@@ -168,10 +176,38 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
 ## PENDENTE
 
 *Retomar na próxima sessão — prioridade:*
+- [ ] **Planejar a 1.0:** o Agostinho analisa a checagem de `2026-10-21`
+  (`docs/auditorias/2026-10-21-checagem-1.0.md`) e responde as decisões abaixo;
+  com elas, montar o plano de execução.
 - [ ] **Validar Financeiro e Caixa com o Victor** após a separação: no Caixa,
   percorrer o cenário de fechamentos e a rotina de abrir/adicionar/retirar/fechar;
   no Financeiro, revisar filtro de datas, resumo, movimentos e estornos. Não
   marcar as áreas como validadas apenas porque os testes e o build passam.
+
+*Decidir antes de planejar a 1.0 (checagem `2026-10-21`; detalhe e
+recomendações no relatório):*
+- **Nota fiscal na 1.0:** Emitte manual com comprovante não fiscal, ou emissor
+  com API. É o que mais muda o tamanho da 1.0.
+- **Dados do piloto:** se a loja operar de verdade na 0.1, notinha é dinheiro a
+  receber e não pode se perder; o importador da 0.1 para o SQLite passa a ser
+  obrigatório (e é a melhor semente com patologias, regra 8).
+- **Autoria:** hoje tudo sai como "Loja". Seletor de operador (nome e PIN
+  curto, sem login por pessoa)?
+- **Licença e bloqueio por inadimplência** (estudo em
+  `docs/materiais-recebidos/`): entram na 1.0?
+- **Infraestrutura:** atualização manual ou automática; assinar o instalador;
+  impressão no Windows (ESC/POS cru pelo spooler, ou driver da Elgin com a
+  impressão silenciosa do Electron); tirar as ferramentas de desenvolvedor do
+  instalador, mantendo a barra de menu.
+- **Mercado Pago real:** quando ficam disponíveis a conta, a credencial de
+  produção e a maquininha física.
+
+*Corrigir na 0.1, se sair nova versão do piloto (checagem `2026-10-21`):*
+- Entrada de mercadorias: quantidade fracionada descarta o item em silêncio
+  (A1).
+- Comprovante: os bytes juntam os espaços e as colunas saem desalinhadas no
+  papel (A3).
+- Cadastro de produto: o campo "Fornecedor" descarta o que se digita (M1).
 
 *Decidir com a dona:*
 1. Cancelar ficha: hoje liberado em qualquer data. Limitar a "só no mesmo dia"?
@@ -205,8 +241,8 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
 11. A versão atual inteira no Electron.
 
 *Antes de distribuir:*
-12. Licença do pacote de ícones do acervo; ícone do aplicativo
-    (`electron-builder.json` não aponta nenhum).
+12. Licença do pacote de ícones do acervo. (O ícone do aplicativo já está
+    configurado: `recursos/icone/icone.png`.)
 
 *Mercado Pago — comprovantes (para a 1.0, `2026-10-07`):* não há comprovante em
 PDF pela API. Ao aprovar, consultar `GET /v1/payments/{reference_id}` e guardar
@@ -222,12 +258,15 @@ teste e liberar os botões (`src/funcoes.ts`); SINTEGRA com o contador.
 
 *Contador:* mandar uma planilha de exemplo do "Exportar período" do Financeiro
 e perguntar o que falta ou sobra (colunas, plano de contas, um arquivo por mês?).
-Levar junto as perguntas do SINTEGRA.
+Perguntar também se precisa do valor de serviço e de produto separados: hoje o
+recebimento de notinha e a "Venda e serviço" não separam (checagem
+`2026-10-21`, M5). Levar junto as perguntas do SINTEGRA.
 
 *Back — próximos passos (Agostinho), em ordem:*
-13. **Responder as perguntas que ainda travam** (seção "Perguntas em aberto"):
-    login/operadores, dados iniciais da loja, atualização do app, impressão.
-    Máquina, internet e banco já estão decididos (`2026-10-05`).
+13. **Responder as perguntas que ainda travam** (seção "Perguntas em aberto" e
+    as decisões da checagem, no topo desta lista): login/operadores, dados
+    iniciais da loja, atualização do app, impressão. Máquina, internet e banco
+    já estão decididos (`2026-10-05`).
 14. **Mock do contrato sobre a base local:** `src/mock/api.ts` implementa o
     `Contrato` usando a base que já existe, com o atraso e as falhas do
     `simular`. As telas migram de `useEstadoDemonstracao()` para `window.api`
@@ -235,12 +274,18 @@ Levar junto as perguntas do SINTEGRA.
     e cada uma ganha os estados de carregando e falha (regra 6).
 15. **Em paralelo:** banco local SQLite (`node:sqlite`) no processo principal:
     schema e migrations do SQLite, escritas atômicas em transação, seed com as
-    patologias da base local, e os 75 testes de regra portados como
+    patologias da base local, e os testes de regra de `src/mock/` portados como
     especificação do back. Migration testada numa cópia com dados no formato
     antigo antes de chegar à máquina da loja (regra 8).
 16. `electron/operacoes.ts` real, área por área, na mesma ordem do 14.
 17. Backup: cópia do arquivo para o Supabase (no máximo a cada 5 min com
     mudança + ao fechar), cópias locais diárias, e restauração testada.
+
+*Recomendação da checagem de `2026-10-21` para o 14–16 (a decidir no plano):*
+não escrever as regras duas vezes, no mock e no SQLite. As regras viram funções
+puras em `comum/`, chamadas pelos dois; os mesmos testes de contrato rodam
+contra o mock e contra o SQLite (o Node 24 já tem `node:sqlite`, então rodam
+no vitest); e um importador da 0.1 para o SQLite entra desde o começo.
 
 ---
 
@@ -492,7 +537,8 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
 
 ### Notas fiscais (fora do escopo atual)
 - Área mínima: Entradas e Saídas simuladas; "Preparar nota" cria rascunho para
-  revisão. Emissor provável: Focus NFe (~98%). Tipo fiscal e campos dependem da
+  revisão. Emissor: hoje a Emitte, com a nota montada à mão (sem API); o da 1.0
+  está em aberto (PENDENTE). Tipo fiscal e campos dependem da
   contabilidade. Rascunho nunca aparece como nota emitida. Impressão, extrato e
   exportação mostram "Ainda sem destino" até existir o programa fiscal.
 
@@ -557,8 +603,12 @@ quando ela emite ou não emite nota.
 - **Fase 1 feita (`2026-10-07`):** operação `imprimirComprovante` no contrato,
   montagem e envio no processo principal (`comum/comprovante.ts`,
   `electron/escpos.ts`, `electron/impressora.ts`), cupom completo impresso de
-  verdade pelo mesmo código — **o papel saiu idêntico à prévia em texto**
-  (confirmado pelo Agostinho): a prévia do mock é confiável para ajustar layout. Config da máquina em `userData/comprovante.json`
+  verdade pelo mesmo código; o teste no papel foi registrado como igual à
+  prévia em texto (confirmado pelo Agostinho). **Mas o código atual não
+  sustenta isso:** `codificarCp850` passa cada linha por `limpar()`, que junta
+  os espaços do alinhamento, e as colunas saem desalinhadas (checagem
+  `2026-10-21`, A3). Corrigir e testar o cupom inteiro antes de confiar na
+  prévia para ajustar layout. Config da máquina em `userData/comprovante.json`
   (modelo com dado inventado em `recursos/comprovante.exemplo.json`; na máquina
   de desenvolvimento já existe, com o exemplo).
 - **PAUSADO até o teste da loja** (Agostinho, `2026-10-07`): o objetivo era
@@ -615,7 +665,8 @@ interesse e só então combinar valores — método de conquistar cliente.
   restrição por pessoa); emissão de **NF-e e NFC-e pela Emitte** já no piloto,
   com **cupom em impressora térmica**; instalação e atualização **manuais**,
   com a Attlas monitorando.
-- **Versão 1.0 — produção:** começa quando a loja aceitar. Aí entra o desenho
+- **Versão 1.0 — produção:** começa quando a loja aceitar (**aceita em
+  `2026-10-21`**). Aí entra o desenho
   de `2026-10-05` (banco local, backup, sem criptografia consciente) e a
   segurança completa. Supabase pago.
 - Respostas que valem para a 1.0: dados entram do zero (de começo só produtos;
@@ -729,3 +780,9 @@ ainda em discussão, não decisão.
   próprio lado.
 - O formatador de moeda usa espaço não separável depois de "R$": teste com
   valor monta o esperado com `reais()`.
+- **Teste de formato compara a saída inteira com a referência.** O teste dos
+  bytes do comprovante conferia só o começo, o fim e uma linha centralizada, e
+  o desalinhamento das colunas passou (checagem `2026-10-21`).
+- **Recusa silenciosa mais retorno ignorado é perda silenciosa.** A ação da
+  base recusava a entrada fracionada com `false` e a tela seguia em frente. O
+  `Resultado<T>` do contrato da 1.0 obriga a tratar a recusa.

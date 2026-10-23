@@ -5,7 +5,8 @@
 > Este é o diagnóstico histórico da versão examinada. As correções posteriores
 > estão no fim do relatório; a revisão de uso de 01/10 está em
 > [Revisão com o Victor](../historico/2026-10-01-revisao-com-victor.md).
-> O estado atual fica em [Memoria.md](../../Memoria.md).
+> O estado atual fica em [Memoria.md](../../Memoria.md). A checagem seguinte,
+> antes da 1.0, está em [2026-10-21-checagem-1.0.md](2026-10-21-checagem-1.0.md).
 > **Financeiro continua NÃO VALIDADO pelo Victor**, mesmo após as implementações
 > e verificações técnicas.
 

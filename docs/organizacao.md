@@ -9,8 +9,8 @@ efetiva e as decisões do projeto ficam em `AGENTS.md`, `CLAUDE.md` e `Memoria.m
 | Local | Papel |
 | --- | --- |
 | `comum/contrato.ts` | Tipos e operações da fronteira entre interface e Electron. |
-| `src/` | React: telas (`telas/`), componentes (`componentes/`), tokens e base de CSS (`estilos/`), rotas e mock. Detalhes em `AGENTS.md`. |
-| `electron/` | Janela, preload, IPC e futuras operações com o banco. |
+| `src/` | React: telas (`telas/`), componentes (`componentes/`), tokens e base de CSS (`estilos/`), rotas, mock e camada de dados (`mock/`, `dados/`). Detalhes em `AGENTS.md`. |
+| `electron/` | Janela, preload, IPC e as operações reais (Supabase no piloto 0.1, maquininha de demonstração, impressão do comprovante). |
 | `recursos/` | Marca (logo) e acervo de referência visual (`design-system/`), incluindo o script que recorta os ícones do app. |
 | `stitch/` | Histórico: protótipo HTML do Google Stitch, já migrado para `src/`. |
 | `Memoria.md` | Estado atual, pendentes, regras de produto e decisões. |

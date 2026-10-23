@@ -4,6 +4,12 @@ Esta é a proposta de campos para a primeira rodada da interface. Ela cobre a
 venda comum por unidade e deixa espaço para outros formatos sem exigir uma
 ficha extensa para cada item. Ainda não define banco nem contrato de IPC.
 
+> **Situação (`2026-10-21`):** proposta da primeira rodada. Parte virou o
+> cadastro atual (`src/telas/cadastrar-produto/`); parte ficou de fora (imagem,
+> "controla estoque", apresentação em caixa na venda, dados fiscais). O campo
+> Fornecedor aparece na tela, mas não é guardado (checagem `2026-10-21`, M1). O
+> que vale hoje está no código e nas regras de Estoque do `Memoria.md`.
+
 ## Campos principais
 
 | Campo | Preenchimento | Uso na interface |

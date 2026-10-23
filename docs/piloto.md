@@ -109,9 +109,19 @@ Sem `wine` no Linux não se gera o `.exe` aqui; o `zip` sai com
 - **Indicador no rodapé da barra lateral:** "Salvo às …" está tudo no banco;
   "Sem conexão" os dados estão no computador e sobem quando a internet voltar
   (pode fechar o app, nada se perde); "Não salvo" é conflito — fechar e abrir.
+  O app mostra "Sem conexão" para **qualquer** falha que não seja conflito ou
+  sessão: se persistir com a internet funcionando, olhar os logs da API no
+  painel do Supabase (checagem `2026-10-21`, M3).
 - **Ver o que a loja fez:** no painel, Table Editor → `base_loja` (o documento
   inteiro) e `base_loja_anteriores` (as 200 versões anteriores, para recuperar
-  algo apagado por engano).
+  algo apagado por engano). Cada pausa de uso gera uma versão (a ficha em
+  andamento se grava sozinha), então as 200 cobrem pouco tempo: algo como um dia
+  de movimento, não semanas (checagem `2026-10-21`, A5).
+- **Tamanho da base:** a cópia no computador aceita uns 5,2 milhões de
+  caracteres; passando disso, ela para de gravar sem aviso e o "nada se perde"
+  sem internet deixa de valer (checagem `2026-10-21`, A5). Conferir de tempos em
+  tempos no SQL Editor, só leitura: `select length(conteudo::text) from
+  public.base_loja;`. Acima de uns 4 milhões, avisar o Agostinho.
 - **Semente de 20 produtos fictícios**, só se a loja pedir e com a base sem
   produtos — `scripts/semente-produtos-piloto.mjs` (instruções no topo do
   arquivo). Com o app **fechado** na loja. Preferir o **modo SQL** (`--sql=`):
@@ -121,3 +131,32 @@ Sem `wine` no Linux não se gera o `.exe` aqui; o `zip` sai com
   abrir, o app vai mostrar "Sem conexão": reativar no painel (Restore). URL e
   chave continuam as mesmas.
 - **Lembrete para a loja:** só dados inventados; tudo do piloto se perde na 1.0.
+  (A revisar: se a loja operar de verdade na 0.1, ver "Dados do piloto" no
+  PENDENTE do `Memoria.md`.)
+
+---
+
+## 4. Limpar a base da loja (reset)
+
+Antes de a loja começar, ou para recomeçar o teste. É escrita em produção: com
+o app **fechado** na loja e com OK do Agostinho na hora.
+
+1. Conferir o alvo antes de escrever, de duas formas independentes: o ref na
+   URL do painel e o conteúdo (`select email from auth.users;` responde com o
+   usuário da loja no piloto e com o nosso de teste no dev).
+2. No SQL Editor do projeto, limpar **as duas tabelas juntas**:
+
+   ```sql
+   begin;
+   truncate public.base_loja_anteriores;
+   delete from public.base_loja;
+   commit;
+   ```
+
+   Apagar só `base_loja` trava o app: a revisão recomeça em 1, a segunda
+   gravação colide com a revisão 1 antiga guardada em `base_loja_anteriores`, e
+   o indicador fica em "Sem conexão" para sempre (checagem `2026-10-21`, A2).
+3. Se a loja quiser os 20 produtos fictícios, rodar a semente depois (seção 3).
+4. Ao abrir, o app começa com a loja vazia. Se aquele computador tinha mudança
+   ainda não enviada, ela fica guardada à parte (cópia descartada) e não volta
+   para o banco.

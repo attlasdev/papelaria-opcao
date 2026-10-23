@@ -1,6 +1,7 @@
 # Papelaria Opção — orientação para agentes
 
-Este projeto é um aplicativo desktop em estágio inicial. Antes de alterar código, leia
+Este projeto é um aplicativo desktop: o piloto 0.1 está em uso e a 1.0 foi aprovada
+em `2026-10-21`. Antes de alterar código, leia
 `CLAUDE.md` para as regras de fronteira e `Memoria.md` para decisões e pendências.
 `front-side.md` orienta o trabalho da interface; `revisao-de-contrato.md` orienta
 a revisão do contrato. A organização adaptada da Stack está em
@@ -12,15 +13,18 @@ a revisão do contrato. A organização adaptada da Stack está em
 - Electron + electron-builder; Vite + React 19 + TypeScript + Tailwind CSS v4.
 - `npm run dev` inicia Vite na porta 5173 e Electron com atualização automática
   do front; `npm start` faz build e abre Electron. Reutilize a janela aberta.
-- O banco online ainda não está integrado. Supabase é uma hipótese registrada em
-  `Memoria.md`, não uma dependência instalada.
+- Piloto 0.1: o processo principal fala com o Supabase (`@supabase/supabase-js`
+  só em `electron/`), com a base inteira como um documento e cópia no computador.
+  A 1.0 troca por SQLite local (`node:sqlite`), com o Supabase só como cópia do
+  arquivo. Ver `Memoria.md`.
 - GSAP e `@gsap/react` estão instalados para as microinterações aprovadas.
   Consulte `Memoria.md` antes de ampliar o uso: o usuário quer movimento mínimo.
 
 ## Fronteiras que devem sobreviver à organização
 
 - `comum/contrato.ts` define a única interface entre front, preload e operações.
-  Mudanças nele precisam ser isoladas para revisão dos dois responsáveis.
+  Desde `2026-10-01` quem escreve é o back; mudança nele vem em commit próprio,
+  sem tela junto, e o que afeta a interface vai em `docs/contrato/mudancas.md`.
 - `src/` contém interface e mock. Credenciais, cliente de banco, acesso ao disco e
   módulos Node ficam fora do renderer.
 - `electron/` contém janela, preload e operações reais. Toda chamada do front
@@ -52,8 +56,8 @@ a revisão do contrato. A organização adaptada da Stack está em
   de executar trabalhos de Tailwind, GSAP, modelagem de domínio ou arquitetura.
 - `web-design-guidelines` fica em `.agents/skills/web-design-guidelines/` para
   revisão de acessibilidade e interação; o mapa está em `docs/organizacao.md`.
-- Antes de uma entrega de código, rode `npm run build` quando as dependências
-  estiverem instaladas. Não presuma que o esqueleto já foi validado.
+- Antes de uma entrega de código, rode `npm test` e `npm run build` quando as
+  dependências estiverem instaladas. Não presuma que algo já foi validado.
 
 ## Interface: como está montada
 
@@ -72,19 +76,27 @@ src/
     botao, selo, painel (Painel + CartaoResumo), tabela, filtros, paginacao,
     campo, modal, aviso, icone
   telas/<tela>/       Tela.tsx + tela.css (+ tipos.ts / constantes.ts quando há)
-    inicio, criar-ficha (blocos cliente/, itens/, pagamento/), clientes,
-    detalhe-cliente, financeiro, caixa, estoque, cadastrar-produto, registrar-entrada,
-    notas-fiscais
-    detalhe-ficha, formulario-cliente, ajustar-estoque, movimentacoes-estoque,
-    registrar-movimento, rascunhos-notas, detalhe-fiscal, resultados-busca,
+    inicio, criar-ficha (blocos cliente/, itens/, pagamento/, servicos/,
+    cobranca/), clientes, detalhe-cliente, financeiro, caixa, estoque,
+    cadastrar-produto, registrar-entrada, servicos, entrar, notas-fiscais
+    detalhe-ficha, formulario-cliente, ajustar-estoque, entrada-rapida,
+    movimentacoes-estoque, registrar-movimento, rascunhos-notas, detalhe-fiscal,
+    resultados-busca,
     vendas-sem-identificacao (fichas sem cliente; nao e um cadastro)
     formulario-cliente/JanelaCliente: o formulario de cliente, gaveta em Clientes e janela na nova ficha
     caixa/             CaixaAtual, ConferenciaCaixa, MovimentarDinheiro,
                        FechamentosRecentes, HistoricoCaixa (base compartilhada)
+    entrar/            login e "carregando os dados da loja" (piloto 0.1)
   mock/base/          base local única: tipos (fatos), semente, derivados, persistência
                       derivados.ts também tem normalizar() (busca sem acento): não duplicar
                       cenario-caixa.ts: exemplos de fechamento só em desenvolvimento
   mock/estado-demonstracao.ts  store (useEstadoDemonstracao) e ações sobre a base
+  mock/api.ts         o mock do contrato (navegador); simular.ts põe atraso e falha
+  dados/              sincronia.ts (base <-> banco, piloto 0.1), planilhas da Emitte
+                      e do Financeiro, regras fiscais, rótulo do pagamento
+  leitor/             leitor de código de barras (detector, hook e painel)
+  funcoes.ts          interruptores do que está ligado nesta versão
+  falhas.ts           título de tela por causa de falha
   rotas.tsx           rotas (react-router, modo hash)
   rotas-caminhos.ts   endereços das telas; botões usam estas constantes
   formatar.ts         dinheiro: centavos -> "R$ 1.234,56"
@@ -95,7 +107,9 @@ Regras para mexer na interface:
 - **Tela não guarda dado próprio.** Lê `useEstadoDemonstracao()` e as funções de
   `src/mock/base/derivados.ts`; grava pelas ações de `estado-demonstracao.ts`.
   Fato novo entra em `mock/base/tipos.ts` e na semente; número ou situação
-  calculada vira função em `derivados.ts`, com teste (`npm test`).
+  calculada vira função em `derivados.ts`, com teste (`npm test`). Assim é na
+  0.1; na 1.0 a tela passa a ler e gravar por `window.api`, uma operação por
+  gesto (`docs/contrato/inventario.md`).
 
 - **CSS por componente**, decisão do usuário. Estilo vai no `.css` ao lado do
   `.tsx`, com classes `bloco__parte--variante`. Tailwind só dá o preflight e
@@ -138,10 +152,12 @@ Regras para mexer na interface:
   acrescentar: ache a posição no PDF, inclua em `ICONES` de
   `recursos/design-system/componentes/icones/biblioteca/extrair_icones.py` e
   rode o script (`pip install pymupdf`). Não edite `desenhos.ts` à mão.
-- **Verificação antes de entregar:** `npm run build`; abrir as telas afetadas em
-  `npm run dev` (prévia configurada em `.claude/launch.json`, porta 5173) na
-  largura de 1300 px e na mínima de 900 px, conferindo que nada transborda e que
-  o console não tem erro.
+- **Verificação antes de entregar:** `npm test` e `npm run build`; abrir as telas
+  afetadas em `npm run dev` (prévia configurada em `.claude/launch.json`, porta
+  5173) na largura de 1300 px e na mínima de 900 px, conferindo que nada
+  transborda e que o console não tem erro. No navegador a tela usa o mock; no
+  Electron, ela grava no banco do `conexao.json` da máquina: use o projeto de
+  teste.
 
 As instruções do usuário e as decisões específicas deste projeto prevalecem sobre
 os exemplos e padrões genéricos copiados da Stack.

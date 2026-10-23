@@ -1,6 +1,7 @@
 # papelaria-opcao
 
-Aplicacao de mesa (Electron) que fala com um banco online. **Dois donos:** o
+Aplicacao de mesa (Electron) da Papelaria Opcao: no piloto 0.1 fala com um banco
+online; na 1.0, com um banco local no computador da loja. **Dois donos:** o
 Victor cuida do que o usuario ve (telas, textos, visual); eu (Agostinho) cuido do
 processo principal, do banco (`electron/`, `supabase/`), do contrato e de toda a
 parte interna, inclusive a camada de dados dentro de `src/`. A fronteira tecnica
@@ -31,6 +32,7 @@ para o Codex e catalogo de habilidades: `AGENTS.md` e `.agents/skills/`.
 | o que cada tela le e grava, e a operacao que vira | `docs/contrato/inventario.md` |
 | mudancas que afetam o Victor | `docs/contrato/mudancas.md` |
 | montar e instalar o piloto 0.1 (Supabase, Windows, semente) | `docs/piloto.md` |
+| a checagem completa antes da 1.0 (achados, decisoes em aberto) | `docs/auditorias/2026-10-21-checagem-1.0.md` |
 | checklist para conferir cada operacao do contrato | `revisao-de-contrato.md` |
 | estado atual, PENDENTES, regras de produto, decisoes | `Memoria.md` |
 | o passado sessao a sessao (ideias descartadas, porques antigos) | `docs/historico/` |
@@ -42,12 +44,16 @@ para o Codex e catalogo de habilidades: `AGENTS.md` e `.agents/skills/`.
 Electron + electron-builder, Vite + React + TypeScript, Tailwind. Cliente de banco
 **so no processo principal**. Duas fases (`Memoria.md`, `2026-10-06`):
 
-- **0.1, piloto (agora):** tudo online, Supabase free com o schema de negocio;
-  notas e cupons pela Emitte; login unico da loja.
-- **1.0, producao:** banco local SQLite (`node:sqlite`) como fonte da verdade e
-  Supabase so com a copia do arquivo (`Memoria.md`, `2026-10-05`).
+- **0.1, piloto (em uso):** online, Supabase free guardando a base inteira como
+  um documento, com copia no computador; notas como a loja ja faz, a mao na
+  Emitte; login unico da loja.
+- **1.0, producao (aprovada em `2026-10-21`; em planejamento):** banco local
+  SQLite (`node:sqlite`) como fonte da verdade e Supabase so com a copia do
+  arquivo (`Memoria.md`, `2026-10-05`).
 
-O contrato e o mesmo nas duas: muda so `electron/operacoes.ts`.
+A fronteira e a mesma nas duas (`window.api` tipado por `Contrato`). Na 1.0 o
+contrato passa a ter uma operacao por gesto do usuario, e as do documento
+(`carregarBase`, `salvarBase`) saem: ver `docs/contrato/inventario.md`.
 
 Sem modulo nativo. Dependencia nativa obriga `electron-rebuild` e recompilacao por
 plataforma — nao adicionar sem discutir.

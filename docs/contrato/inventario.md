@@ -3,6 +3,9 @@
 Levantado em `2026-10-01` a partir do código (commit `fe08494`). É o ponto de
 partida para escrever `comum/contrato.ts`: mostra o que as telas usam hoje da
 base local (`src/mock/estado-demonstracao.ts`) e em que operação isso vira.
+O que entrou depois (serviços, login e sincronia do piloto, arquivos, maquininha
+e comprovante) foi acrescentado em `2026-10-21` (commit `000cb47`), no fim de
+"Por área".
 
 Os nomes de operação abaixo são **propostas**: o nome definitivo é o que entrar
 no contrato. Quem decide é o back (ver `Memoria.md`, decisão de `2026-10-01`).
@@ -137,6 +140,33 @@ Operações propostas: `resumoDoDia(dia)`, `listarFichas(filtro, pagina)`,
 
 `restaurarDemonstracao` **não entra no contrato**: é ferramenta da base local.
 Com banco, restaurar dados é seed do ambiente de teste, nunca botão no app.
+
+### Acréscimos depois do levantamento (`2026-10-21`, commit `000cb47`)
+
+| Tela ou peça | Lê | Grava / chama |
+| --- | --- | --- |
+| `servicos/Servicos` | serviços feitos e perdas do período (das fichas) | — |
+| `criar-ficha/servicos/*` | — | serviços entram na ficha (`ServicoVenda`) e são gravados por `concluirFicha` |
+| `criar-ficha/cobranca/JanelaCobranca` | — | `iniciarCobranca`, `consultarCobranca`, `cancelarCobranca`, `simularCobranca` (já no contrato) |
+| `entrar/Entrar` e `src/dados/sincronia.ts` | sessão e a base inteira | `sessaoAtual`, `entrar`, `carregarBase`, `salvarBase` (já no contrato; do piloto) |
+| `estoque/ExportarEmitte`, `clientes/ExportarClientesEmitte`, `financeiro/ExportarPeriodo` | produtos, clientes, movimentos do período | `salvarArquivo` (já no contrato); `marcarEnviadosEmitte` (base local) |
+| comprovante (ainda sem tela) | — | `imprimirComprovante` (já no contrato) |
+
+Para o back:
+- **Serviços fazem parte da ficha:** `concluirFicha` recebe e confere os
+  serviços (nome, valor, perdas) junto com os itens. Histórico de serviços e
+  perdas são leituras por período; nada mexe no estoque.
+- **Login e documento único são do piloto.** `carregarBase` e `salvarBase` saem
+  na 1.0; o login fica, porque o backup no Supabase usa a chave pública com
+  login (decisão de `2026-10-05`).
+- **Exportações** continuam gerando o arquivo na tela e salvando por
+  `salvarArquivo`; `marcarEnviadosEmitte` vira operação.
+- **Cobrança na maquininha:** guardar a cobrança antes de mandá-la, consultar
+  com nova tentativa, nunca abrir outra sem resolver a anterior, reconciliar
+  pela referência ao abrir o app e registrar a venda de forma idempotente pelo
+  id da cobrança (checagem `2026-10-21`, A4).
+- **O pagamento guarda o troco e, no misto, a maquininha e a modalidade do
+  cartão** (checagem `2026-10-21`, M6).
 
 ---
 

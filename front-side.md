@@ -2,14 +2,18 @@
 
 Preparado em `2026-09-22`, para quem vai montar a interface.
 
-> **Atualização `2026-10-01`:** a divisão mudou. O contrato agora é escrito por
-> mim (Agostinho, back), junto com a camada de dados dentro de `src/`; você não
-> precisa escrever o primeiro corte nem me chamar para revisão. Por isso as
-> seções **5** (você escreve o primeiro corte), **6** (as três coisas em que você
-> me chama) e o PR de contrato da seção **9** estão superados. O resto continua
-> valendo: o que nunca entra em `src/` (seção 8) e o mock que falha e demora
-> (seção 7). Quando eu mexer em tela, é o mínimo e no padrão visual; o que te
-> afeta fica em `docs/contrato/mudancas.md`. O porquê está em `Memoria.md`.
+> **Atualização `2026-10-01` (revista em `2026-10-21`):** a divisão mudou. O
+> contrato agora é escrito por mim (Agostinho, back), junto com a camada de dados
+> dentro de `src/` (`mock/`, `dados/`); telas, textos e visual continuam seus.
+> Você não precisa escrever o primeiro corte nem me chamar para revisão. Por isso
+> as seções **5** (você escreve o primeiro corte), **6** (as três coisas em que
+> você me chama) e o PR de contrato da seção **9** estão superados, e a seção
+> **10** ficou como registro. O resto continua valendo: o que nunca entra em
+> `src/` (seção 8) e o mock que falha e demora (seção 7). Quando eu mexer em
+> tela, é o mínimo e no padrão visual; o que te afeta fica em
+> `docs/contrato/mudancas.md`. O porquê está em `Memoria.md`. A 1.0 foi aprovada
+> em `2026-10-21`; o que ela muda nas telas está em `docs/contrato/mudancas.md`,
+> "Previstas para a 1.0".
 
 Isto nao e um PWA, mas 90% do que voce sabe de PWA vale aqui sem tradutor. Este
 documento e sobre os 10% que mudam, e sobre onde fica a fronteira entre o seu
@@ -24,12 +28,14 @@ trabalho e o meu.
 2. Em vez de `fetch('/api/coisa')`, voce chama `window.api.coisa()`. Async, tipada,
    com autocomplete.
 3. Voce roda `npm run dev`: Vite serve o front na porta 5173 e o plugin abre o
-   Electron com atualização automática. Também pode consultar no navegador.
-   **Sem banco ou credenciais**; hoje as telas usam a base local de demonstração.
-4. Quando eu implementar o lado real, **nada em `src/` muda**. Nenhuma linha. A
-   mesma chamada passa a falar com o banco.
-5. Para isso funcionar, a lista de operacoes (`comum/contrato.ts`) precisa existir
-   antes das telas. **Voce escreve o primeiro corte dela** — ver secao 5.
+   Electron com atualização automática. Também pode consultar no navegador, onde
+   o mock responde **sem banco nem credencial**. No Electron, o app usa o banco
+   do `conexao.json` da máquina (na de desenvolvimento, o projeto de teste).
+4. A mesma chamada fala com o mock ou com o banco: a tela nao sabe qual. Na 1.0,
+   as telas passam a chamar uma operacao por gesto, com estados de carregando e
+   de falha (`docs/contrato/mudancas.md`, "Previstas para a 1.0").
+5. A lista de operacoes (`comum/contrato.ts`) existe antes das telas. Desde
+   `2026-10-01`, quem a escreve sou eu (ver a atualizacao no topo).
 
 ---
 
@@ -83,8 +89,9 @@ la, e voce perde o tipo.
 npm install
 
 npm run dev     # Vite + Electron, com atualização automática do front
-npm start       # build + Electron; ainda usa a base local, sem banco integrado
+npm start       # build + Electron, ligado ao banco do conexao.json da máquina
 npm run build   # typecheck + build. Isto tem que passar antes de PR
+npm test        # testes da base local e dos cálculos
 ```
 
 Reutilize o Electron já aberto durante a revisão; não rode esses comandos de
@@ -98,14 +105,15 @@ Ver secao 7.
 
 | Pasta | Dono | |
 | --- | --- | --- |
-| `src/` | **voce** | React, Tailwind, telas, estados, o mock |
-| `comum/contrato.ts` | **nos dois** | a fronteira. PR proprio, sempre |
-| `electron/` | eu | janela, ponte, banco |
-| `supabase/` | eu | schema, migrations (ainda nao existe) |
+| `src/` (telas, componentes, estilos) | **voce** | React, Tailwind, telas, estados de tela |
+| `src/` (`mock/`, `dados/`) | eu | a camada de dados e o mock do contrato (desde `2026-10-01`) |
+| `comum/contrato.ts` | eu | a fronteira; o que te afeta vai em `docs/contrato/mudancas.md` |
+| `electron/` | eu | janela, ponte, Supabase, maquininha, impressora |
+| `supabase/` | eu | migrations do piloto 0.1 |
 
-Voce nao precisa de permissao para nada dentro de `src/`. Crie subpastas, componha
-como preferir, instale dependencia de front (avise no PR). O unico arquivo fora de
-`src/` que voce mexe e o contrato.
+Nas telas voce nao precisa de permissao: crie subpastas, componha como preferir,
+instale dependencia de front (avise). A camada de dados e o contrato sao meus; se
+a tela precisar de algo novo deles, me chame.
 
 ## 5. O contrato — voce escreve o primeiro corte
 
@@ -231,7 +239,10 @@ contrato. Me chame — a resposta e sempre operacao nova, nunca atalho no front.
 - `npm run build` tem que passar antes de abrir PR (ele roda typecheck).
 - Nao comite `node_modules/`, `dist/`, `dist-electron/`, `release/`, `.env`.
 
-## 10. Por onde comecar
+## 10. Por onde comecar (registro de `2026-09-22`)
+
+Lista original, guardada como registro: os itens de contrato estão superados
+pela atualização do topo.
 
 - [x] `npm install && npm run dev`. (A tela de exemplo do `ping` ja foi trocada
       pelas nove telas migradas do Stitch; ver `Memoria.md`.)
