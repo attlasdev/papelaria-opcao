@@ -33,6 +33,22 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-23` — Telas no monitor da loja (1280x720)
+
+O monitor da loja é (provavelmente) 1280x720; a interface foi feita em 1920x1080.
+Em 1280, Clientes mostrava **1 cliente por página** (24 páginas).
+
+- **`useLinhasPorPagina` ganhou um mínimo (8 linhas).** Antes ele encolhia a
+  tabela até caber sem rolar, e em tela baixa chegava a 1 linha. Agora, se não
+  couberem 8, a página rola. Em 1920 continua enchendo até 12. Vale para Início,
+  Clientes, detalhe do cliente, Vendas sem identificação, Estoque e Notas fiscais.
+- **Tabelas em até 1440 px de largura** (`@media (max-width: 1440px)`): Início,
+  Estoque e histórico do detalhe do cliente estreitam as colunas fixas, para
+  "Valor"/"Ações" não saírem da tela. Em 1920 nada muda.
+- **Tela baixa** (`@media (max-height: 800px)`, em `tela.css` e `painel.css`):
+  menos espaço em volta do título, cartões de resumo e topo dos painéis mais
+  rasos. Em 1080 de altura nada muda.
+
 ### `2026-10-20` — Filtros do Estoque
 
 - Filtro novo **"Sem código de barras"** (produtos ativos sem código, mesma

@@ -568,6 +568,11 @@ montada". O que é decisão (e o porquê):
   usuário não vê endereço.
 - A barra de menu padrão do Electron (File/Edit/View/Window) fica como está, por
   decisão do Victor.
+- **Monitor da loja: 1280x720 (`2026-10-23`, provável, não confirmado).** Toda
+  tela tem que funcionar ali, descontando barra de tarefas e menu do Electron
+  (~650 px de altura útil). Tabela paginada mostra no mínimo 8 linhas e a página
+  rola; nunca encolher até caber. Conferir 1280x720 e 1920x1080 a cada mudança
+  de tela.
 
 ---
 
