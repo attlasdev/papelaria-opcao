@@ -33,6 +33,14 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-23` — Correções do piloto (v0.1.8)
+
+- **Registrar entrada:** a quantidade só aceita inteiro (`1.5` vira `1`), como na
+  Entrada rápida. Se a base recusar algum item, ele fica na tabela com um aviso
+  vermelho acima dos botões, em vez de sumir (`registrar-entrada__recusa`).
+- **Cadastrar produto:** sai o campo **"Fornecedor"** de "Dados complementares".
+  Ele não era guardado; o fornecedor fica em cada entrada de mercadoria.
+
 ### `2026-10-23` — Telas no monitor da loja (1280x720)
 
 O monitor da loja é (provavelmente) 1280x720; a interface foi feita em 1920x1080.

@@ -33,6 +33,7 @@ para o Codex e catalogo de habilidades: `AGENTS.md` e `.agents/skills/`.
 | mudancas que afetam o Victor | `docs/contrato/mudancas.md` |
 | montar e instalar o piloto 0.1 (Supabase, Windows, semente) | `docs/piloto.md` |
 | a checagem completa antes da 1.0 (achados, decisoes em aberto) | `docs/auditorias/2026-10-21-checagem-1.0.md` |
+| o plano da 1.0 (etapas, criterio de pronto, decisoes que faltam) | `docs/superpowers/plans/2026-10-23-versao-1.0.md` |
 | checklist para conferir cada operacao do contrato | `revisao-de-contrato.md` |
 | estado atual, PENDENTES, regras de produto, decisoes | `Memoria.md` |
 | o passado sessao a sessao (ideias descartadas, porques antigos) | `docs/historico/` |

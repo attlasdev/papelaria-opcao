@@ -38,22 +38,24 @@ o "Exportar período" do Financeiro em planilha e o atalho "Mês passado".
 Em `2026-10-21` (v0.1.7): 163 testes, typecheck e build ok. O projeto
 **piloto** (a produção da loja, conta da Attlas) já está criado e migrado: ver
 o parágrafo abaixo.
-**Falta:** testar o instalador numa máquina Windows e instalar na loja. Passo a
-passo: `docs/piloto.md`.
+**Em teste na loja (confirmado pelo Agostinho em `2026-10-23`):** a 0.1 está
+instalada e funcionando conforme o esperado; uso só para teste, com dados
+inventados (decisão de `2026-10-23`, no PENDENTE). Passo a passo de instalação:
+`docs/piloto.md`.
 
 **Banco da loja (produção `kjntvpksckmkfqjznatx`) em `2026-10-19`:** migration
 aplicada (RLS ligado, cadastro público desligado, usuário `papelaria@loja.com`).
-Está **PREENCHIDO COM DADOS DE EXEMPLO** para o teste do Agostinho e do Victor,
-regravado na **revisão 37** no formato de serviços sem cadastro: semente de
-demonstração (24 clientes, 16 produtos, 90 dias até 19/10, caixa com turnos de
-exemplo, 2 rascunhos de nota) mais 16 fichas de serviço (4 com produtos, 6
-perdas), operador "Loja". A revisão 36 ficou em `base_loja_anteriores`.
-**Limpar antes da loja começar** (reset da base: vazia, ou só produtos de
-exemplo, a decidir), **pelo `salvar_base` ou limpando `base_loja` e
+Está **PREENCHIDO COM DADOS DE EXEMPLO**, regravado na **revisão 37** no
+formato de serviços sem cadastro: semente de demonstração (24 clientes, 16
+produtos, 90 dias até 19/10, caixa com turnos de exemplo, 2 rascunhos de nota)
+mais 16 fichas de serviço (4 com produtos, 6 perdas), operador "Loja". A
+revisão 36 ficou em `base_loja_anteriores`. **É a base que a loja está usando
+no teste, a pedido dela** (Agostinho, `2026-10-23`): não limpar. Se um dia for
+preciso limpar, fazer **pelo `salvar_base` ou limpando `base_loja` e
 `base_loja_anteriores` juntas.** Apagar só a linha de `base_loja` faz a revisão
 recomeçar em 1: a segunda gravação colide com a revisão 1 antiga guardada e o
 app trava em "Sem conexão" (checagem `2026-10-21`, A2; passo a passo em
-`docs/piloto.md`, seção 4). Release atual: **v0.1.7**.
+`docs/piloto.md`, seção 4). Instalada na loja: **v0.1.7**; a **v0.1.8** (`2026-10-23`) vai substituir.
 
 **Prazo da 0.1 (`2026-10-06`): no máximo 2 dias.** Emitte e formato do piloto
 ficam para reunião do Agostinho mais tarde; materiais em `docs/materiais-recebidos/emitte/` (sem API: a
@@ -176,25 +178,31 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
 ## PENDENTE
 
 *Retomar na próxima sessão — prioridade:*
-- [ ] **Planejar a 1.0:** o Agostinho analisa a checagem de `2026-10-21`
-  (`docs/auditorias/2026-10-21-checagem-1.0.md`) e responde as decisões abaixo;
-  com elas, montar o plano de execução.
+- [ ] **Executar a 1.0:** plano em
+  `docs/superpowers/plans/2026-10-23-versao-1.0.md` (rascunho de `2026-10-23`,
+  a revisar). Antes da etapa 1, decidir D1 (de qual branch sai a 1.0 e de qual
+  saem as correções do piloto).
 - [ ] **Validar Financeiro e Caixa com o Victor** após a separação: no Caixa,
   percorrer o cenário de fechamentos e a rotina de abrir/adicionar/retirar/fechar;
   no Financeiro, revisar filtro de datas, resumo, movimentos e estornos. Não
   marcar as áreas como validadas apenas porque os testes e o build passam.
 
-*Decidir antes de planejar a 1.0 (checagem `2026-10-21`; detalhe e
-recomendações no relatório):*
-- **Nota fiscal na 1.0:** Emitte manual com comprovante não fiscal, ou emissor
-  com API. É o que mais muda o tamanho da 1.0.
-- **Dados do piloto:** se a loja operar de verdade na 0.1, notinha é dinheiro a
-  receber e não pode se perder; o importador da 0.1 para o SQLite passa a ser
-  obrigatório (e é a melhor semente com patologias, regra 8).
-- **Autoria:** hoje tudo sai como "Loja". Seletor de operador (nome e PIN
-  curto, sem login por pessoa)?
-- **Licença e bloqueio por inadimplência** (estudo em
-  `docs/materiais-recebidos/`): entram na 1.0?
+*Decidido para a 1.0 (Agostinho, `2026-10-23`, sobre a checagem `2026-10-21`):*
+- **Piloto 0.1 fica na loja só para teste**, com dados inventados. O
+  importador da 0.1 para o SQLite **não** é obrigatório; tudo do piloto se perde
+  na 1.0, como já combinado. A semente da 1.0 sai da base de exemplo, com as
+  patologias acrescentadas de propósito (regra 8).
+- **Nota fiscal: Emitte manual.** Comprovante não fiscal na térmica em toda
+  venda; a nota segue montada à mão na Emitte quando precisar (mantém a decisão
+  de `2026-10-07`). Emissor com API fica fora da 1.0.
+- **Operador: seletor sem PIN, preparado para PIN futuro.** Dona e funcionária
+  escolhem o nome; todo registro guarda quem fez. O schema já nasce com o
+  operador como cadastro próprio e espaço para o PIN, para ligá-lo depois sem
+  migration de dados.
+- **Licença e bloqueio por inadimplência entram na 1.0, como última etapa**, se
+  possível. Não bloqueia o resto do plano.
+
+*Ainda a decidir (não travam o schema):*
 - **Infraestrutura:** atualização manual ou automática; assinar o instalador;
   impressão no Windows (ESC/POS cru pelo spooler, ou driver da Elgin com a
   impressão silenciosa do Electron); tirar as ferramentas de desenvolvedor do
@@ -202,12 +210,10 @@ recomendações no relatório):*
 - **Mercado Pago real:** quando ficam disponíveis a conta, a credencial de
   produção e a maquininha física.
 
-*Corrigir na 0.1, se sair nova versão do piloto (checagem `2026-10-21`):*
-- Entrada de mercadorias: quantidade fracionada descarta o item em silêncio
-  (A1).
-- Comprovante: os bytes juntam os espaços e as colunas saem desalinhadas no
-  papel (A3).
-- Cadastro de produto: o campo "Fornecedor" descarta o que se digita (M1).
+*Piloto 0.1 (checagem `2026-10-21`):* A1 e M1 corrigidos na **v0.1.8**
+(`2026-10-23`, etapa 0 do plano), junto com as telas para o monitor de 1280x720.
+Fica para a 1.0: comprovante com as colunas desalinhadas no papel (A3; a
+impressão não está no piloto).
 
 *Decidir com a dona:*
 1. Cancelar ficha: hoje liberado em qualquer data. Limitar a "só no mesmo dia"?
