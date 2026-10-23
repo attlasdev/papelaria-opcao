@@ -45,6 +45,10 @@ Em 1280, Clientes mostrava **1 cliente por página** (24 páginas).
 - **Tabelas em até 1440 px de largura** (`@media (max-width: 1440px)`): Início,
   Estoque e histórico do detalhe do cliente estreitam as colunas fixas, para
   "Valor"/"Ações" não saírem da tela. Em 1920 nada muda.
+- **Início, coluna Pagamento:** rótulo real ("Cartão crédito Mastercard · Mercado
+  Pago") passava por cima do valor. A coluna foi de 184 para 320 px e "Cliente"
+  ficou fixa em 220 px (em % ela engolia a sobra). Em 1280, o rótulo corta com
+  reticências e aparece inteiro na dica.
 - **Tela baixa** (`@media (max-height: 800px)`, em `tela.css` e `painel.css`):
   menos espaço em volta do título, cartões de resumo e topo dos painéis mais
   rasos. Em 1080 de altura nada muda.
