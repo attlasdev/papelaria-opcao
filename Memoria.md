@@ -55,7 +55,7 @@ preciso limpar, fazer **pelo `salvar_base` ou limpando `base_loja` e
 `base_loja_anteriores` juntas.** Apagar só a linha de `base_loja` faz a revisão
 recomeçar em 1: a segunda gravação colide com a revisão 1 antiga guardada e o
 app trava em "Sem conexão" (checagem `2026-10-21`, A2; passo a passo em
-`docs/piloto.md`, seção 4). Instalada na loja: **v0.1.7**; a **v0.1.8** (`2026-10-23`) vai substituir.
+`docs/piloto.md`, seção 4). Instalada na loja: **v0.1.7**; a **v0.1.9** (`2026-10-23`: correções da 0.1.8, NCM/CEST no produto, cadastro pela ficha, ficha em uma coluna, filtros do Estoque e Boletos) vai substituir.
 
 **Prazo da 0.1 (`2026-10-06`): no máximo 2 dias.** Emitte e formato do piloto
 ficam para reunião do Agostinho mais tarde; materiais em `docs/materiais-recebidos/emitte/` (sem API: a
