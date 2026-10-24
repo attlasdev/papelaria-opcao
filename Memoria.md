@@ -182,18 +182,21 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
 *Retomar na próxima sessão — prioridade:*
 - [ ] **Executar a 1.0:** plano em
   `docs/superpowers/plans/2026-10-23-versao-1.0.md` (rascunho de `2026-10-23`,
-  a revisar). Antes da etapa 1, decidir D1 (de qual branch sai a 1.0 e de qual
-  saem as correções do piloto).
+  revisto em `2026-10-24`). Antes do primeiro commit da etapa 1, decidir D1 (de
+  qual branch sai a 1.0 e de qual saem as correções do piloto). **Piloto e 1.0
+  em conversas separadas desde `2026-10-23`;** recurso novo no piloto entra com
+  linha no inventário e no plano (plano, "Processo enquanto o piloto evolui").
 - [ ] **Antes de ligar a exportação de produtos para a Emitte:** testar na
   importação um produto com NCM e CEST anotados (`2026-10-23`). A planilha leva
   o CEST junto com CSOSN 102 (Simples), combinação nunca testada; conferir se a
   Emitte aceita, ignora ou recusa. O texto do diálogo ("complete o NCM de cada
   produto novo") também precisa mudar para "o NCM que faltar".
 - [ ] **Boletos: confirmação do operador ao marcar como pago** (`2026-10-23`,
-  pedido do Agostinho). A confirmação está sendo planejada em outra sessão;
-  quando sair, substitui o segundo clique provisório de "Marcar como pago" e
-  "Desfazer pagamento" (`AcaoPagar` em `src/telas/boletos/Boletos.tsx`). Hoje o
-  boleto já guarda `pagoPor` com o operador da base.
+  pedido do Agostinho). Desenhada **para a 1.0**, junto com o seletor de
+  operador: plano da 1.0, "Confirmação do operador" (`2026-10-24`). No piloto
+  fica o segundo clique provisório de "Marcar como pago" e "Desfazer pagamento"
+  (`AcaoPagar` em `src/telas/boletos/Boletos.tsx`); não fazer outra confirmação
+  no piloto. Hoje o boleto já guarda `pagoPor` com o nome do operador da base.
 - [ ] **Validar Financeiro e Caixa com o Victor** após a separação: no Caixa,
   percorrer o cenário de fechamentos e a rotina de abrir/adicionar/retirar/fechar;
   no Financeiro, revisar filtro de datas, resumo, movimentos e estornos. Não
