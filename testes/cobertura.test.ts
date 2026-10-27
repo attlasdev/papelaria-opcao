@@ -35,10 +35,22 @@ const citados = new Set(arquivosDeTeste.flatMap((arquivo) =>
 
 const ordenar = (lista: Iterable<string>) => [...lista].sort()
 
+// Os itens das regras (do "## Regras de produto" até as decisões): cada um tem
+// número ou começa com "Nota:". Senão, regra nova escaparia sem número.
+const memoria = ler('Memoria.md')
+const secaoRegras = memoria.slice(memoria.indexOf('## Regras de produto'), memoria.indexOf('## Decisões de arquitetura'))
+const semNumero = secaoRegras.split('\n')
+  .filter((linha) => /^\s*- /.test(linha) && !/`R-[A-Z]+-\d{2}`/.test(linha) && !/^\s*- Nota: /.test(linha))
+
 describe('cobertura da suíte', () => {
   it('acha as regras e os bugs numerados', () => {
+    expect(secaoRegras.length).toBeGreaterThan(1000)
     expect(regras.size).toBeGreaterThan(50)
     expect(bugs.size).toBeGreaterThan(15)
+  })
+
+  it('todo item das regras tem número ou é nota', () => {
+    expect(semNumero).toEqual([])
   })
 
   it('toda regra e todo bug tem teste ou está nos pendentes', () => {

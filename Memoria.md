@@ -330,7 +330,8 @@ no vitest); e um importador da 0.1 para o SQLite entra desde o começo.
 
 Cada regra tem um número (`R-ÁREA-NN`) que o teste dela cita; a suíte confere
 que toda regra numerada tem teste ou está nos pendentes de `docs/testes.md`
-(`2026-10-27`). Regra nova entra com número. Item sem número é nota, não regra.
+(`2026-10-27`). Regra nova entra com número; item que não é regra começa
+com "Nota:". Item sem um dos dois quebra a suíte.
 
 ### Venda (ficha)
 - `R-VENDA-01` **Uma tela só:** cliente, itens, pagamento e revisão. A ficha abre vazia.
@@ -445,7 +446,7 @@ que toda regra numerada tem teste ou está nos pendentes de `docs/testes.md`
 - `R-BOLETO-06` Tela no menu, abaixo de Serviços: resumo (vencidos, vencem em até 5 dias, a
   pagar), filtros A pagar/Vencidos/Pagos/Todos e busca por descrição ou número.
   Excluir fica em Editar, para boleto lançado por engano.
-- Piloto: os boletos vão no documento da base; base antiga abre com a lista
+- Nota: Piloto: os boletos vão no documento da base; base antiga abre com a lista
   vazia. Nada mudou no Supabase.
 
 ### Serviços (`2026-10-19`)
@@ -464,9 +465,9 @@ que toda regra numerada tem teste ou está nos pendentes de `docs/testes.md`
   Cancelar a ficha não apaga a perda (o material se perdeu do mesmo jeito).
 - `R-SERVICO-04` **Financeiro:** ficha só de serviço é "Serviço"; com produto, "Venda e
   serviço" — serviço paga ISS e produto ICMS, o contador precisa separar.
-- Base gravada no formato anterior abre convertida (`normalizarBase`): o
+- Nota: Base gravada no formato anterior abre convertida (`normalizarBase`): o
   catálogo é descartado, as fichas perdem código e motivo.
-- Fora por enquanto: material vinculado ao estoque, quantidade/preço por
+- Nota: Fora por enquanto: material vinculado ao estoque, quantidade/preço por
   unidade, NFS-e.
 
 ### Estoque
@@ -476,7 +477,7 @@ que toda regra numerada tem teste ou está nos pendentes de `docs/testes.md`
 - `R-ESTOQUE-02` **Excluir x desativar:** apaga só produto sem histórico (cadastro por engano).
   Com histórico, desativa: some da venda, da entrada, do ajuste, das contas e dos
   avisos; aba "Desativados" para reativar. Bipado, avisa que está desativado.
-- **Cadastro rápido: OCULTO até a 1.0** (`funcoes.cadastroRapido`, Agostinho,
+- Nota: **Cadastro rápido: OCULTO até a 1.0** (`funcoes.cadastroRapido`, Agostinho,
   `2026-10-20`). Nenhuma tela o cria desde `2026-10-01`: saiu da nova ficha
   junto com a regra "sem saldo, sem venda" (o produto nasceria com saldo 0 e a
   venda travaria). Ocultos: card "Cadastro a completar", filtro "A completar" e
@@ -580,7 +581,7 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
 ### Pagamentos (Pix e cartão)
 - `R-PAGAMENTO-01` A funcionária marca Pix ou cartão **depois de conferir** no balcão; não há
   etapa "aguardando conferência".
-- Na base local todo pagamento marcado entra no Financeiro. Em produção a tela
+- Nota: Na base local todo pagamento marcado entra no Financeiro. Em produção a tela
   não muda; muda **de onde** vem o registro (pendente 5). Não assumir que a API
   do Mercado Pago cobre Pix de outro banco nem cobranças feitas fora do app;
   não prometer caixa completo antes de testar com transações reais. Separar
@@ -602,7 +603,7 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   filtro exclusivo para Misto (decisão do Victor): uma venda mista aparece em
   Todos e em cada meio usado no pagamento. O detalhe da ficha conserva a divisão
   dos valores; nas notinhas, mostra a entrada e os recebimentos registrados.
-- Revisão com o Victor: manter uma única janela do Electron em desenvolvimento
+- Nota: Revisão com o Victor: manter uma única janela do Electron em desenvolvimento
   (`npm run dev`), aproveitando a atualização automática da interface. Reutilizar
   essa janela nas alterações do front, sem abrir outra instância a cada conferência.
 - `R-INICIO-05` Sino: notinha em atraso, notinha que vence em até 3 dias, produto zerado,
@@ -610,7 +611,7 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   menos grave. Lido volta a ser novo se o texto mudar.
 
 ### Notas fiscais (fora do escopo atual)
-- Área mínima: Entradas e Saídas simuladas; "Preparar nota" cria rascunho para
+- Nota: Área mínima: Entradas e Saídas simuladas; "Preparar nota" cria rascunho para
   revisão. Emissor: hoje a Emitte, com a nota montada à mão (sem API); o da 1.0
   está em aberto (PENDENTE). Tipo fiscal e campos dependem da
   contabilidade. Rascunho nunca aparece como nota emitida. Impressão, extrato e

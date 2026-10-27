@@ -9,14 +9,15 @@ Agostinho em `2026-10-27`.
   push** (`.github/workflows/testes.yml`) e de novo antes de cada versão
   (`release-win.yml`).
 - **Regras têm número** (`R-ÁREA-NN`, em `Memoria.md`, "Regras de produto" e
-  "Regras de interface"). **Bugs têm número** (`A1`…`M11` da checagem,
+  "Regras de interface"); item que não é regra começa com "Nota:". **Bugs têm número** (`A1`…`M11` da checagem,
   `B-NNN` depois; em [`bugs.md`](bugs.md)).
 - **O teste cita o número no nome**, entre colchetes:
   `it('[R-VENDA-07] bloqueia a venda sem saldo…')`, `it('[B-003] …')`. Um
   teste pode citar mais de um; um número pode ter vários testes.
 - **`testes/cobertura.test.ts` confere os outros:** todo número tem teste ou
   está na tabela abaixo, com o motivo. Quebra a suíte se aparecer número sem
-  nenhum dos dois, se um pendente já ganhou teste (sai da tabela) ou se um
+  nenhum dos dois, se um item das regras não tiver número nem "Nota:", se um
+  pendente já ganhou teste (sai da tabela) ou se um
   teste cita número que não existe.
 - **Por grupo:** `npm run test:regras` (só `[R-…]`) e `npm run test:regressao`
   (só bugs).
