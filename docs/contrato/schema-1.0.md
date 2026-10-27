@@ -1,7 +1,9 @@
-# Schema da 1.0 — desenho para revisão
+# Schema da 1.0
 
-**Estado:** rascunho de `2026-10-27`, para o Agostinho revisar antes de virar a
-primeira migration (plano da 1.0, fase 1, passo 2). Nada aqui está implementado.
+**Estado:** revisado em `2026-10-27` (P1–P6 decididos, no fim) e escrito como a
+primeira migration: `electron/banco/migracoes/0001-inicial.sql`, com os testes
+em `electron/banco/banco.test.ts`. Mudança no schema daqui em diante é uma
+migration nova, e este documento acompanha.
 
 Fontes: tipos da 0.1 (`src/mock/base/tipos.ts`), regras e cálculos
 (`src/mock/estado-demonstracao.ts`, `src/mock/base/derivados.ts`), o que cada
@@ -112,7 +114,8 @@ escreve `produto.saldo`: só insere `movimento_estoque`. Três gatilhos fecham o
 laço:
 
 1. *antes de inserir o movimento:* recusa se `saldo_antes` não for o `saldo`
-   atual do produto ou se `saldo_depois ≠ saldo_antes + quantidade`;
+   atual do produto (e um `check` recusa `saldo_depois ≠ saldo_antes +
+   quantidade`);
 2. *depois de inserir:* copia `saldo_depois` para `produto.saldo`;
 3. *antes de mudar `produto.saldo`:* recusa valor diferente do `saldo_depois`
    do último movimento do produto (fecha a atualização direta por engano).
@@ -377,6 +380,39 @@ evento.
 | `operador_id`, `autorizado_por_id`, `registrado_em` | | |
 
 Pagar não lança no Financeiro (decisão de `2026-10-23`).
+
+---
+
+## O que o banco garante (além das colunas)
+
+Escritas na migration como `check` ou gatilho, cada uma com teste. A tela e o
+back continuam conferindo antes, para responder com a mensagem certa; o banco
+é a última porta.
+
+- **Fato não recebe `update` nem `delete`** (gatilhos `*_sem_update` e
+  `*_sem_delete`). Exceções: `cobranca` muda de situação; o produto sem
+  histórico sai levando o movimento do saldo inicial.
+- **Saldo:** os três gatilhos de P4; produto nasce com saldo 0.
+- **Movimento de estoque:** venda tira, entrada e cancelamento põem, ajuste
+  tem motivo; venda e cancelamento apontam a ficha.
+- **Ficha:** `total = subtotal − desconto`; notinha tem vencimento (≥ o dia) e
+  cliente.
+- **Caixa:** um aberto por vez; caixa fechado não recebe pagamento,
+  lançamento, estorno, cancelamento nem movimento da gaveta (o esperado do
+  fechamento depende disso); diferença no fechamento exige justificativa.
+- **Estorno** (lançamento e gaveta): inverte o original (mesmo valor, sinal ou
+  tipo oposto), um por original, e estorno não se estorna. Só recebimento de
+  notinha tem `pagamento_estorno`.
+- **Cobrança (A4):** só a aprovada vira pagamento, uma vez; aprovada não volta
+  atrás; meio, valor e data não mudam.
+- **Boleto:** eventos seguem a situação (não paga duas vezes, só desfaz o
+  pago, excluído é final); boleto nunca é apagado (D7).
+- **Formatos:** documento, telefone, CEP, NCM e CEST só dígitos; `dia` e
+  instante no formato certo; valores fechados por `check`; tabelas `strict`.
+
+O que **não** está no banco, e fica com o back: `subtotal` igual à soma de
+itens e serviços (os itens entram depois da ficha), datas "até hoje" (o banco
+não sabe o dia de São Paulo) e os números de exibição (lidos da `sequencia`).
 
 ---
 
