@@ -182,8 +182,13 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
 *Retomar na próxima sessão — prioridade:*
 - [ ] **Executar a 1.0:** plano em
   `docs/superpowers/plans/2026-10-23-versao-1.0.md` (rascunho de `2026-10-23`,
-  revisto em `2026-10-24`). Antes do primeiro commit da etapa 1, decidir D1 (de
-  qual branch sai a 1.0 e de qual saem as correções do piloto). **Piloto e 1.0
+  revisto em `2026-10-24`). **Branches (D1, `2026-10-24`):** a 1.0 no `main`; o
+  piloto commita e tira versão (tag `v0.1.x`) do `piloto-0.1`, que vai para o
+  `main` por merge quando preciso, nunca o contrário. **Cada branch na sua
+  pasta** (worktree do git): o piloto em
+  `/home/agostinho/Desktop/projetos/papelaria-opcao-piloto`, a 1.0 em
+  `/home/agostinho/Desktop/projetos/papelaria-opcao`. Nunca trocar de branch
+  com `checkout` numa das pastas: a outra conversa perde o chão. **Piloto e 1.0
   em conversas separadas desde `2026-10-23`;** recurso novo no piloto entra com
   linha no inventário e no plano (plano, "Processo enquanto o piloto evolui").
 - [ ] **Antes de ligar a exportação de produtos para a Emitte:** testar na
