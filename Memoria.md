@@ -161,6 +161,10 @@ se perdem na 1.0 (a loja já sabe); reforçar "só dados inventados".
 
 ## Como retomar com o Victor
 
+**Superado em `2026-10-27`:** a validação das telas passa a ser o percurso tela
+a tela da 1.0, feito pelo Agostinho sem o Victor (plano da 1.0, "O ritual de
+cada tela"). A tabela abaixo fica como registro da rodada de `2026-10-01`.
+
 O objetivo é manter as regras robustas e tornar a interface simples para a dona,
 que não trabalha com tecnologia. O Victor simula o usuário e aponta telas,
 componentes e mensagens; explicar o que o código realmente faz antes de sugerir
@@ -182,7 +186,9 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
 *Retomar na próxima sessão — prioridade:*
 - [ ] **Executar a 1.0:** plano em
   `docs/superpowers/plans/2026-10-23-versao-1.0.md` (rascunho de `2026-10-23`,
-  revisto em `2026-10-24`). **Branches (D1, `2026-10-24`):** a 1.0 no `main`; o
+  reescrito em `2026-10-27` no processo **linear, tela a tela**: fundação com o
+  schema inteiro, depois cada tela percorrida e validada pelo Agostinho e
+  deixada pronta, na ordem do plano). **Branches (D1, `2026-10-24`):** a 1.0 no `main`; o
   piloto commita e tira versão (tag `v0.1.x`) do `piloto-0.1`, que vai para o
   `main` por merge quando preciso, nunca o contrário. **Cada branch na sua
   pasta** (worktree do git): o piloto em
@@ -202,10 +208,12 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
   fica o segundo clique provisório de "Marcar como pago" e "Desfazer pagamento"
   (`AcaoPagar` em `src/telas/boletos/Boletos.tsx`); não fazer outra confirmação
   no piloto. Hoje o boleto já guarda `pagoPor` com o nome do operador da base.
-- [ ] **Validar Financeiro e Caixa com o Victor** após a separação: no Caixa,
-  percorrer o cenário de fechamentos e a rotina de abrir/adicionar/retirar/fechar;
-  no Financeiro, revisar filtro de datas, resumo, movimentos e estornos. Não
-  marcar as áreas como validadas apenas porque os testes e o build passam.
+- [ ] **Validar Financeiro e Caixa** (Agostinho; o Victor não participa da
+  validação das telas desde `2026-10-27`): é o percurso da tela 7 do plano da
+  1.0. No Caixa, o cenário de fechamentos e a rotina de
+  abrir/adicionar/retirar/fechar; no Financeiro, filtro de datas, resumo,
+  movimentos e estornos. Não marcar como validadas só porque testes e build
+  passam.
 
 *Decidido para a 1.0 (Agostinho, `2026-10-23`, sobre a checagem `2026-10-21`):*
 - **Piloto 0.1 fica na loja só para teste**, com dados inventados. O
@@ -221,6 +229,9 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
   migration de dados.
 - **Licença e bloqueio por inadimplência entram na 1.0, como última etapa**, se
   possível. Não bloqueia o resto do plano.
+- **`2026-10-27`:** a migração das telas é nossa (D2); excluir boleto vira
+  "excluído" com motivo (D7); **Notas fiscais fica fora da 1.0** (D8) e a área
+  sai do código da 1.0.
 
 *Ainda a decidir (não travam o schema):*
 - **Infraestrutura:** atualização manual ou automática; assinar o instalador;
