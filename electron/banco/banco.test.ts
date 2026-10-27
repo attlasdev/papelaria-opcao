@@ -93,7 +93,7 @@ describe('abrir e migrar', () => {
   })
 })
 
-describe('saldo mantido pelo banco (P4)', () => {
+describe('[R-ESTOQUE-01] saldo mantido pelo banco (P4)', () => {
   it('produto nasce com saldo 0; o saldo inicial é um movimento', () => {
     expect(() => inserir('produto', { id: 'p', numero: 1, descricao: 'X', categoria: '', unidade: 'un', preco: 1, saldo: 5, criado_em: AGORA }))
       .toThrow(/nasce com saldo 0/)
@@ -102,7 +102,7 @@ describe('saldo mantido pelo banco (P4)', () => {
     expect(saldo('p')).toBe(10)
   })
 
-  it('cada movimento atualiza o saldo, e venda além do saldo é recusada', () => {
+  it('[R-VENDA-07] cada movimento atualiza o saldo, e venda além do saldo é recusada', () => {
     produto('p', 1)
     ficha('f', 1)
     movimento('p', 'entrada', 3)
@@ -135,7 +135,7 @@ describe('saldo mantido pelo banco (P4)', () => {
     expect(() => movimento('p', 'venda', -1)).toThrow(/CHECK constraint failed/)
   })
 
-  it('produto só com o saldo inicial sai de verdade; com histórico, não', () => {
+  it('[R-ESTOQUE-02] produto só com o saldo inicial sai de verdade; com histórico, não', () => {
     produto('p', 1)
     movimento('p', 'entrada', 5, { motivo: 'Saldo inicial do cadastro' })
     expect(() => banco.prepare("delete from movimento_estoque where produto_id = 'p'").run()).toThrow(/fato nao se apaga/)
@@ -164,7 +164,7 @@ describe('saldo mantido pelo banco (P4)', () => {
 })
 
 describe('fato só se insere', () => {
-  it('recusa update e delete em fatos', () => {
+  it('[R-CORRECAO-01] recusa update e delete em fatos', () => {
     ficha('f', 1)
     expect(() => banco.prepare("update ficha set total = 1 where id = 'f'").run()).toThrow(/fato nao se altera: ficha/)
     expect(() => banco.prepare("delete from ficha where id = 'f'").run()).toThrow(/fato nao se apaga: ficha/)
@@ -192,7 +192,7 @@ describe('caixa e dinheiro', () => {
     inserir('lancamento', { id, tipo, descricao: 'Água', origem: 'Balcão', meio: 'dinheiro', valor, dia: HOJE, operador_id: 'op', registrado_em: AGORA, ...extra })
   }
 
-  it('um caixa aberto por vez; fechamento com diferença exige justificativa', () => {
+  it('[R-CAIXA-04] [R-CAIXA-02] um caixa aberto por vez; fechamento com diferença exige justificativa', () => {
     abrirCaixa('c1')
     expect(() => abrirCaixa('c2')).toThrow(/ja existe um caixa aberto/)
     expect(() => fechar('c1', 10000, 9500)).toThrow(/CHECK constraint failed/)
@@ -200,7 +200,7 @@ describe('caixa e dinheiro', () => {
     abrirCaixa('c2')
   })
 
-  it('caixa fechado não recebe dinheiro', () => {
+  it('[R-CAIXA-06] caixa fechado não recebe dinheiro', () => {
     abrirCaixa('c1')
     fechar('c1', 10000, 10000)
     expect(() => lancamento('l', 'despesa', -500, { caixa_id: 'c1' })).toThrow(/caixa fechado/)
@@ -208,7 +208,7 @@ describe('caixa e dinheiro', () => {
       .toThrow(/caixa fechado/)
   })
 
-  it('lançamento: o sinal segue o tipo, e o estorno inverte o original', () => {
+  it('[R-CORRECAO-04] lançamento: o sinal segue o tipo, e o estorno inverte o original', () => {
     expect(() => lancamento('l0', 'despesa', 500)).toThrow(/CHECK constraint failed/)
     lancamento('l1', 'despesa', -500)
     expect(() => lancamento('e1', 'despesa', 400, { estorno_de: 'l1', motivo: 'Engano' })).toThrow(/inverter o lancamento original/)
@@ -218,7 +218,7 @@ describe('caixa e dinheiro', () => {
   })
 })
 
-describe('cobrança da maquininha (A4)', () => {
+describe('[A4] cobrança da maquininha', () => {
   function cobranca(id: string, situacao: string) {
     inserir('cobranca', { id, meio: 'credito', valor: 1500, situacao, criada_em: AGORA, atualizada_em: AGORA })
   }
@@ -249,7 +249,7 @@ describe('boletos (D7)', () => {
     inserir('boleto_evento', { id, boleto_id: 'b', tipo, operador_id: 'op', registrado_em: AGORA, ...extra })
   }
 
-  it('eventos seguem a situação; excluir é evento com motivo, nunca delete', () => {
+  it('[R-BOLETO-03] eventos seguem a situação; excluir é evento com motivo, nunca delete', () => {
     inserir('boleto', { id: 'b', numero_exibicao: 1, descricao: 'Luz', valor: 25000, numero: '12', vencimento: HOJE, criado_em: AGORA })
     expect(() => evento('e0', 'pagamento-desfeito', { motivo: 'x' })).toThrow(/fora de ordem/)
     evento('e1', 'pago', { dia: HOJE })
@@ -267,7 +267,7 @@ describe('cliente', () => {
     inserir('cliente', { id, numero, nome: 'Maria', documento, criado_em: AGORA })
   }
 
-  it('documento só com dígitos, único quando preenchido', () => {
+  it('[R-CLIENTE-04] documento só com dígitos, único quando preenchido', () => {
     cliente('c1', 1, '12345678901')
     cliente('c2', 2, null)
     cliente('c3', 3, null)

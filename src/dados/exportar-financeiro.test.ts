@@ -59,7 +59,7 @@ const linhas: LinhaFinanceiro[] = [
   linha({ id: '4-0', data: '2026-10-01', valor: 88800, categoria: 'Venda', ficha: '4' }),
 ]
 
-describe('planilha do período do Financeiro', () => {
+describe('[R-FINANCEIRO-06] planilha do período do Financeiro', () => {
   const { bytes, quantidade, nome } = planilhaFinanceiro(linhas, '2026-09-01', '2026-09-30', '2026-10-07T17:00:00.000Z')
   const resumo = lerAba(bytes, 1)
   const porDia = lerAba(bytes, 2)

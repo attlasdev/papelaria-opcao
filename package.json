@@ -12,7 +12,9 @@
     "build": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json && vite build",
     "dist:linux": "npm run build && electron-builder --linux",
     "dist:win": "npm run build && electron-builder --win",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:regras": "vitest run -t \"\\[R-\"",
+    "test:regressao": "vitest run -t \"\\[([AM][0-9]|B-[0-9])\""
   },
   "license": "UNLICENSED",
   "dependencies": {

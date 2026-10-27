@@ -35,6 +35,8 @@ para o Codex e catalogo de habilidades: `AGENTS.md` e `.agents/skills/`.
 | a checagem completa antes da 1.0 (achados, decisoes em aberto) | `docs/auditorias/2026-10-21-checagem-1.0.md` |
 | o plano da 1.0 (etapas, criterio de pronto, decisoes que faltam) | `docs/superpowers/plans/2026-10-23-versao-1.0.md` |
 | checklist para conferir cada operacao do contrato | `revisao-de-contrato.md` |
+| como a suite de testes funciona, e o que ainda nao tem teste | `docs/testes.md` |
+| bugs encontrados, com numero e teste de regressao | `docs/bugs.md` |
 | estado atual, PENDENTES, regras de produto, decisoes | `Memoria.md` |
 | o passado sessao a sessao (ideias descartadas, porques antigos) | `docs/historico/` |
 | como a interface esta montada (tokens, CSS por componente, telas) | `AGENTS.md`, "Interface: como esta montada" |
@@ -101,6 +103,12 @@ plataforma — nao adicionar sem discutir.
    local). No Supabase, a dupla checagem da regra global (`project-ref` +
    discriminador de conteudo) antes de qualquer escrita; o link da CLI fica
    apontando para o teste.
+
+9. **Regra e bug tem numero e teste.** Regra nova entra no `Memoria.md` com
+   `R-AREA-NN`; bug corrigido entra em `docs/bugs.md` com um teste que falhava
+   antes da correcao. O teste cita o numero no nome; `testes/cobertura.test.ts`
+   quebra a suite se um numero ficar sem teste e sem pendencia declarada em
+   `docs/testes.md`.
 
 ## Nomes
 

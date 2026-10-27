@@ -37,7 +37,7 @@ const fichaNotinha = (total: number, pagos: number[], vencimento: string, id = '
 })
 
 describe('consulta de fechamentos', () => {
-  it('filtra sete dias inclusivos pelo fechamento em São Paulo, não pela abertura', () => {
+  it('[R-CAIXA-07] filtra sete dias inclusivos pelo fechamento em São Paulo, não pela abertura', () => {
     const turno = (id: string, abertoEm: string, fechadoEm?: string): TurnoCaixa => ({ id, abertoEm, fechadoEm, operadorAbertura: 'Operador', fundoInicial: 1000, contadoFechamento: fechadoEm ? 1000 : undefined, esperadoFechamento: fechadoEm ? 1000 : undefined })
     const amostra = { ...base, turnosCaixa: [
       turno('aberto', '2026-10-01T10:00:00Z'),
@@ -57,7 +57,7 @@ describe('consulta de fechamentos', () => {
 })
 
 describe('notinha', () => {
-  it('calcula aberto, situação e texto do prazo', () => {
+  it('[R-NOTINHA-01] calcula aberto, situação e texto do prazo', () => {
     expect(notinha(fichaNotinha(10000, [3000], '2026-10-07'), HOJE)).toMatchObject({ pago: 3000, emAberto: 7000, situacao: 'pendente', detalhe: 'Vence em 12 dias' })
     expect(notinha(fichaNotinha(10000, [], '2026-09-15'), HOJE)).toMatchObject({ situacao: 'vencido', detalhe: 'Venceu há 10 dias' })
     expect(notinha(fichaNotinha(10000, [4000, 6000], '2026-09-15'), HOJE)).toMatchObject({ situacao: 'pago', emAberto: 0, detalhe: 'Quitada em 02/09/2026' })
@@ -68,7 +68,7 @@ describe('notinha', () => {
 })
 
 describe('cliente', () => {
-  it('encontra documento e telefone com ou sem pontuação', () => {
+  it('[R-CLIENTE-03] encontra documento e telefone com ou sem pontuação', () => {
     const cliente = { ...base.clientes[0], documento: 'CPF 123.456.789-00', telefone: '(11) 98452-1100' }
     for (const termo of ['12345678900', '123.456.789-00', 'CPF 12345678900', '11984521100', '(11) 98452-1100', '984521100', '98452 1100']) {
       expect(clienteCorrespondeBusca(cliente, termo), termo).toBe(true)
@@ -77,7 +77,7 @@ describe('cliente', () => {
     expect(clienteCorrespondeBusca({ ...cliente, documento: '12345678900', telefone: '11984521100' }, '(11) 98452-1100')).toBe(true)
     expect(clienteCorrespondeBusca({ ...cliente, documento: '12345678900' }, '123.456.789-00')).toBe(true)
   })
-  it('preserva nomes/códigos e não junta números de campos diferentes', () => {
+  it('[R-CLIENTE-03] preserva nomes/códigos e não junta números de campos diferentes', () => {
     const cliente = { ...base.clientes[0], nome: 'João da Conceição', documento: '123.456', telefone: '789-000' }
     expect(clienteCorrespondeBusca(cliente, 'joao da conceicao')).toBe(true)
     expect(clienteCorrespondeBusca(cliente, cliente.id.toLowerCase())).toBe(true)
@@ -86,15 +86,15 @@ describe('cliente', () => {
     expect(clienteCorrespondeBusca(cliente, 'outro nome 123')).toBe(false)
     expect(clienteCorrespondeBusca(cliente, '()---')).toBe(false)
   })
-  it('Mariana está com notinha a vencer, visível no resumo', () => {
+  it('[R-CLIENTE-05] Mariana está com notinha a vencer, visível no resumo', () => {
     const r = resumoDoCliente(base, 'CLI-0104', HOJE)
     expect(r.abertas.some((n) => n.ficha.vencimento === '2026-10-07')).toBe(true)
     expect(r.detalheSituacao).toBe(`${reais(r.emAberto)} em aberto`)
   })
-  it('atraso pesa mais que prazo', () => {
+  it('[R-CLIENTE-01] atraso pesa mais que prazo', () => {
     expect(resumoDoCliente(base, 'CLI-0106', HOJE).situacao).toBe('vencido')
   })
-  it('Ana Beatriz está em dia e o total bate com as fichas', () => {
+  it('[R-CLIENTE-05] Ana Beatriz está em dia e o total bate com as fichas', () => {
     const r = resumoDoCliente(base, 'CLI-0107', HOJE)
     expect(r.situacao).toBe('em-dia')
     expect(r.totalComprado).toBe(r.fichas.reduce((t, f) => t + f.total, 0))
@@ -106,7 +106,7 @@ describe('cliente', () => {
 })
 
 describe('distribuir', () => {
-  it('abate da mais antiga para a mais nova', () => {
+  it('[R-NOTINHA-03] abate da mais antiga para a mais nova', () => {
     const antiga = notinha(fichaNotinha(14500, [], '2026-09-10', 'A', '2026-08-01'), HOJE)!
     const nova = notinha(fichaNotinha(10220, [], '2026-10-20', 'B', '2026-09-20'), HOJE)!
     expect(distribuir([nova, antiga], 20000)).toEqual([
@@ -123,7 +123,7 @@ describe('itens', () => {
 })
 
 describe('financeiro', () => {
-  it('consulta dias antigos e intervalos inclusivos, com cartões e lista no mesmo recorte', () => {
+  it('[R-FINANCEIRO-02] [R-FINANCEIRO-04] consulta dias antigos e intervalos inclusivos, com cartões e lista no mesmo recorte', () => {
     const movimento = (id: string, data: string, valor: number, categoria: string, meio: 'pix' | 'dinheiro'): LinhaFinanceiro => ({
       id, data, horario: '10:00', descricao: id, origem: 'Teste', categoria, meio, meioRotulo: meio, valor,
     })
@@ -142,7 +142,7 @@ describe('financeiro', () => {
     expect(linhasFinanceiroNoIntervalo(registros, '2026-09-11', '2026-09-10')).toEqual([])
     expect(linhasFinanceiroNoIntervalo(registros, '', '2026-09-10')).toEqual([])
   })
-  it('separa também estornos físicos e categorias antigas sem mudar os registros', () => {
+  it('[R-FINANCEIRO-05] separa também estornos físicos e categorias antigas sem mudar os registros', () => {
     const dados = { data: '2026-09-10', horario: '10:00', origem: 'Teste', meio: 'dinheiro' as const }
     const movimentosCaixa = [
       { ...dados, id: 'venda-avulsa', descricao: 'Venda avulsa', categoria: 'Avulso', valor: 5000 },
@@ -160,19 +160,19 @@ describe('financeiro', () => {
     })
     expect(cenario.movimentosCaixa).toEqual(movimentosCaixa)
   })
-  it('atalhos financeiros usam o período atual e terminam hoje', () => {
+  it('[R-FINANCEIRO-02] atalhos financeiros usam o período atual e terminam hoje', () => {
     expect(intervaloAtual('dia', '2026-10-01')).toEqual({ de: '2026-10-01', ate: '2026-10-01' })
     expect(intervaloAtual('semana', '2026-10-01')).toEqual({ de: '2026-09-27', ate: '2026-10-01' })
     expect(intervaloAtual('mes', '2026-10-01')).toEqual({ de: '2026-10-01', ate: '2026-10-01' })
     expect(intervaloAtual('ano', '2026-10-01')).toEqual({ de: '2026-01-01', ate: '2026-10-01' })
   })
-  it('explica falta, sobra e valor conferido no caixa', () => {
+  it('[R-CAIXA-04] explica falta, sobra e valor conferido no caixa', () => {
     expect(textoDiferencaCaixa(-1000)).toBe('Faltam R$ 10,00 em relação ao esperado.')
     expect(textoDiferencaCaixa(1000)).toBe('Há R$ 10,00 a mais que o esperado.')
     expect(textoDiferencaCaixa(0)).toBe('O valor contado confere.')
   })
   const linhas = movimentosFinanceiro(base)
-  it('tem uma entrada por pagamento, nenhuma a mais', () => {
+  it('[R-FINANCEIRO-02] tem uma entrada por pagamento, nenhuma a mais', () => {
     const pagamentos = base.fichas.flatMap((f) => f.pagamentos)
     expect(linhas.filter((l) => l.ficha).length).toBe(pagamentos.length)
     expect(linhas.filter((l) => l.ficha).reduce((t, l) => t + l.valor, 0)).toBe(pagamentos.reduce((t, p) => t + p.valor, 0))
@@ -191,7 +191,7 @@ describe('financeiro', () => {
 })
 
 describe('início', () => {
-  it('conta as vendas e os recebimentos de hoje', () => {
+  it('[R-INICIO-01] conta as vendas e os recebimentos de hoje', () => {
     const r = resumoDoDia(base, HOJE)
     expect(r.vendas).toBe(base.fichas.filter((f) => f.data === HOJE).length)
     expect(r.recebimentos).toBe(base.fichas.flatMap((f) => f.pagamentos).filter((p) => p.data === HOJE).reduce((t, p) => t + p.valor, 0)
@@ -210,7 +210,7 @@ describe('estoque, busca e sino', () => {
     expect(r.fichas.every((f) => f.clienteId === 'CLI-0104')).toBe(true)
     expect(buscar(base, '789102711').produtos[0].codigo).toBe('EST-0021')
   })
-  it('avisa notinhas em atraso, estoque e (com a área de notas ligada) rascunhos, do mais grave para o menos grave', () => {
+  it('[R-INICIO-05] avisa notinhas em atraso, estoque e (com a área de notas ligada) rascunhos, do mais grave para o menos grave', () => {
     const avisos = notificacoes(base, HOJE)
     const texto = avisos.map((n) => `${n.titulo} ${n.detalhe}`).join(' | ')
     expect(texto).toMatch(/Associação Girassol/)
@@ -223,7 +223,7 @@ describe('estoque, busca e sino', () => {
     const pesos = avisos.map((n) => peso[n.tom])
     expect([...pesos].sort((a, b) => a - b)).toEqual(pesos)
   })
-  it('avisa notinha que vence em até 3 dias', () => {
+  it('[R-INICIO-05] avisa notinha que vence em até 3 dias', () => {
     const hojeMais = '2026-10-05' // a notinha da Mariana vence em 07/10
     const avisos = notificacoes(base, hojeMais).filter((n) => n.tipo === 'vencendo')
     expect(avisos.some((n) => n.titulo === 'Mariana Costa' && /vence em 2 dias/.test(n.detalhe))).toBe(true)

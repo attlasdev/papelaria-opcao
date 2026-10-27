@@ -328,55 +328,59 @@ no vitest); e um importador da 0.1 para o SQLite entra desde o começo.
 
 ## Regras de produto que valem hoje
 
+Cada regra tem um número (`R-ÁREA-NN`) que o teste dela cita; a suíte confere
+que toda regra numerada tem teste ou está nos pendentes de `docs/testes.md`
+(`2026-10-27`). Regra nova entra com número. Item sem número é nota, não regra.
+
 ### Venda (ficha)
-- **Uma tela só:** cliente, itens, pagamento e revisão. A ficha abre vazia.
-- **Cliente:** buscar cadastrado (ignora acento, acha pelos dígitos do
+- `R-VENDA-01` **Uma tela só:** cliente, itens, pagamento e revisão. A ficha abre vazia.
+- `R-VENDA-02` **Cliente:** buscar cadastrado (ignora acento, acha pelos dígitos do
   documento), cadastrar novo em janela sem sair da venda, ou **vender sem
   identificação** — a ficha fica sem cliente (`clienteId: null`), rótulo "Não
   identificado", consulta própria em Clientes › Vendas sem identificação. Não
   existe cliente genérico (apareceria na lista com milhares de compras).
-- **Quem já deve aparece ao escolher o cliente:** atraso em vermelho, em aberto
+- `R-VENDA-03` **Quem já deve aparece ao escolher o cliente:** atraso em vermelho, em aberto
   no prazo em laranja. Só avisa; vender ou não é do balcão.
-- **Itens:** bipe (leitura contínua pelo ícone), busca por nome ou código;
+- `R-VENDA-04` **Itens:** bipe (leitura contínua pelo ícone), busca por nome ou código;
   vários resultados pedem escolha. Quantidade digitável e com + e −. Código sem
   cadastro leva ao Estoque para cadastrar e contar antes de vender; a ficha em
   andamento fica guardada para ser retomada.
-- **A venda em andamento se guarda sozinha** (rascunho único na base); o Início
+- `R-VENDA-05` **A venda em andamento se guarda sozinha** (rascunho único na base); o Início
   oferece "Retomar ficha". "Limpar ficha" zera tudo, inclusive cliente e forma.
-- **Bloqueios ao concluir:** sem cliente, sem item, desconto maior que o
+- `R-VENDA-06` **Bloqueios ao concluir:** sem cliente, sem item, desconto maior que o
   subtotal, dinheiro recebido menor que o total, notinha sem vencimento ou com
   vencimento antes de hoje, entrada que cobre o total, produto sem saldo
   suficiente e pagamento misto cuja soma não fecha ou cujo dinheiro entregue
   é menor que a parcela em espécie.
-- **Sem saldo, sem venda:** conferir a prateleira e registrar entrada ou ajuste
+- `R-VENDA-07` **Sem saldo, sem venda:** conferir a prateleira e registrar entrada ou ajuste
   no Estoque antes de concluir. A ação de dados também recusa a venda sem
   alterar ficha, financeiro ou estoque.
-- **Produto que a ficha não acha (`2026-10-23`, pedido da loja):** o link
+- `R-VENDA-08` **Produto que a ficha não acha (`2026-10-23`, pedido da loja):** o link
   "Cadastrar produto" abre o cadastro completo (com quantidade inicial) **por
   cima da ficha**, com o código bipado já preenchido. Cancelar volta à ficha;
   salvar volta à ficha **com o produto já inserido, quantidade 1** (decisão do
   Agostinho). Antes o link ia para o Estoque e ficava lá.
-- **Pagamento misto à vista:** distribuir exatamente o total entre pelo menos
+- `R-VENDA-09` **Pagamento misto à vista:** distribuir exatamente o total entre pelo menos
   dois meios, cada um com valor positivo. Cada parcela aparece separada no
   Financeiro; o troco é calculado só sobre a parte em dinheiro.
 
 ### Notinha (compra fiada)
-- Rótulo na tela: "Notinha". Situação calculada: pendente, vencida, paga,
+- `R-NOTINHA-01` Rótulo na tela: "Notinha". Situação calculada: pendente, vencida, paga,
   cancelada. O identificador interno antigo era `futuro`.
-- Vencimento padrão hoje + 30 dias; **não muda depois** (decisão do Victor): se a
+- `R-NOTINHA-02` Vencimento padrão hoje + 30 dias; **não muda depois** (decisão do Victor): se a
   dona der mais prazo, a notinha continua vencida — é o controle. O combinado vai
   numa **anotação** na ficha (só se acrescenta, com data).
-- Entrada na hora (valor + meio) e pagamento parcial valem. Receber: janela que
+- `R-NOTINHA-03` Entrada na hora (valor + meio) e pagamento parcial valem. Receber: janela que
   lista todas as notinhas abertas do cliente, com caixa por notinha; o valor
   abate da mais antiga para a mais nova; cada notinha segue separada (juntar =
   marcar mais caixas, não fundir fichas). Data do pagamento entre a notinha mais
   antiga marcada e hoje.
-- Ficha pendente mostra faixa com as outras notinhas do cliente e "Receber todas".
+- `R-NOTINHA-04` Ficha pendente mostra faixa com as outras notinhas do cliente e "Receber todas".
 
 ### Corrigir sem apagar
-- Nada lançado se apaga ou se edita livremente. Três desfazeres, todos com
+- `R-CORRECAO-01` Nada lançado se apaga ou se edita livremente. Três desfazeres, todos com
   **motivo obrigatório** (`ModalMotivo`), e o registro original fica visível:
-  - **Cancelar ficha** (página e janela da ficha): a baixa registrada volta ao estoque
+  - `R-CORRECAO-02` **Cancelar ficha** (página e janela da ficha): a baixa registrada volta ao estoque
     (movimento "Cancelamento"), o pago sai do Financeiro **no dia do
     cancelamento** (dias fechados não mudam), a ficha fica marcada "Cancelada" e
     sai das compras do cliente, das vendas do dia e da cobrança. **Também pelo
@@ -385,80 +389,80 @@ no vitest); e um importador da 0.1 para o SQLite entra desde o começo.
     uma linha por pagamento; qualquer uma cancela tudo). Linhas de notinha
     continuam sem o botão no Financeiro: corrigem-se na ficha (decidido pelo
     Agostinho; descartado o "Estornar" do recebimento direto no Financeiro).
-  - **Estornar recebimento de notinha:** pagamento riscado com o motivo; a
+  - `R-CORRECAO-03` **Estornar recebimento de notinha:** pagamento riscado com o motivo; a
     notinha volta a dever.
-  - **Estornar lançamento manual** do Financeiro: entra um lançamento de sinal
+  - `R-CORRECAO-04` **Estornar lançamento manual** do Financeiro: entra um lançamento de sinal
     contrário; o original fica "Estornado".
-- Entrada ou ajuste de estoque errado se corrige com outro ajuste.
+- `R-CORRECAO-05` Entrada ou ajuste de estoque errado se corrige com outro ajuste.
 
 ### Ficha consultada
-- Qualquer "Ver ficha" abre **janela** por cima da tela; fechar devolve filtro,
+- `R-FICHA-01` Qualquer "Ver ficha" abre **janela** por cima da tela; fechar devolve filtro,
   página e rolagem. A página `/fichas/:id` fica só para depois de concluir a
   venda. Janela sobre janela: Esc fecha só a de cima.
 
 ### Clientes
-- Os cartões de notinhas contam **clientes**, não a quantidade de notinhas:
+- `R-CLIENTE-01` Os cartões de notinhas contam **clientes**, não a quantidade de notinhas:
   quarenta notinhas em atraso de quatro clientes correspondem a "4 clientes".
   Hoje a classificação dá prioridade ao atraso: quem tem notinha atrasada aparece
   em atraso mesmo se também tiver outra a vencer; não é contado nas duas situações.
-- Lista alfabética com número estável (`CLI-0104`), busca no topo, filtros
+- `R-CLIENTE-02` Lista alfabética com número estável (`CLI-0104`), busca no topo, filtros
   "Notinhas a vencer" e "Notinhas em atraso" (contam clientes). Linha expande
   com as três compras recentes; "Ver histórico completo" abre o cliente.
-- A busca de clientes aceita CPF/CNPJ e telefone com ou sem pontuação e nomes
+- `R-CLIENTE-03` A busca de clientes aceita CPF/CNPJ e telefone com ou sem pontuação e nomes
   sem acento. A mesma regra vale no cabeçalho e na identificação da nova ficha.
-- Cadastro e edição num formulário só, em gaveta (ou janela na ficha): só o nome
+- `R-CLIENTE-04` Cadastro e edição num formulário só, em gaveta (ou janela na ficha): só o nome
   é obrigatório; documento repetido é barrado; endereço gravado como
   "Rua, nº - Bairro - Cidade/UF". Não se cadastra e-mail (decisão do Victor):
   o contato é por telefone/WhatsApp, sem esse campo nos formulários ou detalhes.
-- Detalhe do cliente: cartões Total comprado, Notinhas em aberto (clicar recebe)
+- `R-CLIENTE-05` Detalhe do cliente: cartões Total comprado, Notinhas em aberto (clicar recebe)
   e Ticket médio; histórico com filtros e "Receber" por linha.
-- Receber notinhas permite Dinheiro, Pix, Cartão ou Misto, inclusive em pagamento
+- `R-CLIENTE-06` Receber notinhas permite Dinheiro, Pix, Cartão ou Misto, inclusive em pagamento
   parcial e com várias notinhas selecionadas. No Misto, duas ou três formas
   somam exatamente o valor a pagar agora; só a parte em dinheiro calcula troco
   e entra na gaveta. O recebimento abate as notinhas da mais antiga para a mais
   nova, conserva cada meio no histórico/Financeiro e grava tudo junto.
-- Vendas sem identificação: filtros Todos, Dinheiro, Pix e Cartão, sem filtro
+- `R-CLIENTE-07` Vendas sem identificação: filtros Todos, Dinheiro, Pix e Cartão, sem filtro
   exclusivo para Misto. Vendas mistas aparecem em cada meio usado e conservam
   a divisão dos pagamentos no detalhe da ficha, como no Início.
-- O calendário de vendas sem identificação permite hoje e qualquer dia passado;
+- `R-CLIENTE-08` O calendário de vendas sem identificação permite hoje e qualquer dia passado;
   datas futuras são bloqueadas também na digitação e na navegação por teclado.
 
 ### Boletos (`2026-10-23`)
-- Pedido da dona: **só anotar** os boletos da loja e ser avisada perto do
+- `R-BOLETO-01` Pedido da dona: **só anotar** os boletos da loja e ser avisada perto do
   vencimento. Campos: descrição, valor, **número do boleto** (organização dela
   no arquivo físico: texto livre, obrigatório) e vencimento, mais a **data de
   cadastro**, gravada sozinha ao salvar e que a edição não muda (acréscimo do
   Agostinho).
-- **Número repetido é aceito**, só com aviso no campo ("Já existe o boleto Nº
+- `R-BOLETO-02` **Número repetido é aceito**, só com aviso no campo ("Já existe o boleto Nº
   12: ...").
-- **Marcar como pago** grava o dia e o operador; dá para desfazer. Hoje pede um
+- `R-BOLETO-03` **Marcar como pago** grava o dia e o operador; dá para desfazer. Hoje pede um
   segundo clique; vai pedir a confirmação do operador (PENDENTE).
-- **Pagar não lança nada no Financeiro** (Agostinho): é anotação, e lançar
+- `R-BOLETO-04` **Pagar não lança nada no Financeiro** (Agostinho): é anotação, e lançar
   sozinho duplicaria a despesa que ela já registra à mão.
-- **Sino:** "N boletos vencidos" (crítico) e "N boletos vencem em breve"
+- `R-BOLETO-05` **Sino:** "N boletos vencidos" (crítico) e "N boletos vencem em breve"
   (atenção) para os que vencem em até **5 dias** (`DIAS_AVISO_BOLETO`; as
   notinhas usam 3). Pago sai do aviso.
-- Tela no menu, abaixo de Serviços: resumo (vencidos, vencem em até 5 dias, a
+- `R-BOLETO-06` Tela no menu, abaixo de Serviços: resumo (vencidos, vencem em até 5 dias, a
   pagar), filtros A pagar/Vencidos/Pagos/Todos e busca por descrição ou número.
   Excluir fica em Editar, para boleto lançado por engano.
 - Piloto: os boletos vão no documento da base; base antiga abre com a lista
   vazia. Nada mudou no Supabase.
 
 ### Serviços (`2026-10-19`)
-- **Sem cadastro** (Agostinho, `2026-10-19`, no mesmo dia da primeira versão):
+- `R-SERVICO-01` **Sem cadastro** (Agostinho, `2026-10-19`, no mesmo dia da primeira versão):
   na nova ficha, **"Inserir serviço"** pede **Serviço** em texto livre (o que
   foi feito, ex.: "10 cópias coloridas"), **valor cobrado**, **unidades
   perdidas** (opcional, sem motivo) e **observação**. Ficha só de serviço vale.
   Descartados: o cadastro (código `SRV-`, valor sugerido, desativar) e o motivo
   da perda.
-- A tela **Serviços** tem, no mesmo período, o **histórico de serviços feitos**
+- `R-SERVICO-02` A tela **Serviços** tem, no mesmo período, o **histórico de serviços feitos**
   (cada serviço com o número da ficha, que abre o detalhe; "com produtos"
   quando a ficha tem os dois; cliente, perdas e valor) e, abaixo, as
   **perdas** (data, ficha, serviço, unidades e observação). **Ficha cancelada
   some do histórico** (Agostinho), mas a perda dela continua nas perdas.
-- **Perdas são só conferência:** nada mexe no estoque (decisão do Agostinho).
+- `R-SERVICO-03` **Perdas são só conferência:** nada mexe no estoque (decisão do Agostinho).
   Cancelar a ficha não apaga a perda (o material se perdeu do mesmo jeito).
-- **Financeiro:** ficha só de serviço é "Serviço"; com produto, "Venda e
+- `R-SERVICO-04` **Financeiro:** ficha só de serviço é "Serviço"; com produto, "Venda e
   serviço" — serviço paga ISS e produto ICMS, o contador precisa separar.
 - Base gravada no formato anterior abre convertida (`normalizarBase`): o
   catálogo é descartado, as fichas perdem código e motivo.
@@ -466,10 +470,10 @@ no vitest); e um importador da 0.1 para o SQLite entra desde o começo.
   unidade, NFS-e.
 
 ### Estoque
-- Saldo só muda por **entrada, ajuste, venda ou cancelamento**, para o histórico
+- `R-ESTOQUE-01` Saldo só muda por **entrada, ajuste, venda ou cancelamento**, para o histórico
   bater. Editar produto não mexe no saldo. A quantidade informada ao cadastrar
   vira a primeira entrada ("Saldo inicial do cadastro").
-- **Excluir x desativar:** apaga só produto sem histórico (cadastro por engano).
+- `R-ESTOQUE-02` **Excluir x desativar:** apaga só produto sem histórico (cadastro por engano).
   Com histórico, desativa: some da venda, da entrada, do ajuste, das contas e dos
   avisos; aba "Desativados" para reativar. Bipado, avisa que está desativado.
 - **Cadastro rápido: OCULTO até a 1.0** (`funcoes.cadastroRapido`, Agostinho,
@@ -479,15 +483,15 @@ no vitest); e um importador da 0.1 para o SQLite entra desde o começo.
   aviso no sino. O código fica: pendente até ser completado, "Completar" exige a
   contagem da prateleira, sem contagem o zero não é falta e não entra no
   Ajustar. A 1.0 decide se volta (e como convive com o "sem saldo, sem venda").
-- "+ Entrada" da linha abre a gaveta Entrada rápida (um produto). Entrega com
+- `R-ESTOQUE-03` "+ Entrada" da linha abre a gaveta Entrada rápida (um produto). Entrega com
   vários itens vai pela página Registrar entrada, com bloco "Bipados" (bipar de
   novo não duplica; produto novo precisa de cadastro antes de ir à tabela).
-- Entrada completa preserva data física do recebimento, fornecedor, referência,
+- `R-ESTOQUE-04` Entrada completa preserva data física do recebimento, fornecedor, referência,
   observações e custo informado por item no histórico. A data do lançamento
   continua sendo a data atual, mantendo a ordem dos saldos antes/depois.
-- Cadastrar produto (topo do Estoque) aceita bipe; código já cadastrado mostra o
+- `R-ESTOQUE-05` Cadastrar produto (topo do Estoque) aceita bipe; código já cadastrado mostra o
   produto existente em vez de duplicar.
-- **NCM e CEST no cadastro, como anotação (`2026-10-23`, pedido da loja):** dois
+- `R-ESTOQUE-06` **NCM e CEST no cadastro, como anotação (`2026-10-23`, pedido da loja):** dois
   campos opcionais em "Dados complementares", para a dona cadastrar na Emitte
   sem procurar a nota. Só o formato é conferido (8 e 7 números; pontos aceitos);
   CEST sem substituição tributária é aceito. Tributação, origem e CFOP continuam
@@ -499,28 +503,28 @@ no vitest); e um importador da 0.1 para o SQLite entra desde o começo.
 **Situação de validação: NÃO VALIDADO pelo Victor.** As regras abaixo descrevem
 o que foi discutido e implementado; a avaliação de uso continua na próxima sessão.
 
-- Tela e item próprios no menu. Não apresenta prévia do Caixa nem transferências
+- `R-FINANCEIRO-01` Tela e item próprios no menu. Não apresenta prévia do Caixa nem transferências
   físicas da gaveta. "Registrar movimento" oferece Entrada e Despesa em janela
   central compacta; vendas e recebimentos de notinhas vêm das fichas.
-- Atalhos Hoje, Esta semana, Este mês, Mês passado, Este ano e consulta livre De/Até,
+- `R-FINANCEIRO-02` Atalhos Hoje, Esta semana, Este mês, Mês passado, Este ano e consulta livre De/Até,
   inclusive de um único dia antigo. Cartões, gráfico, contagens e tabela usam
   o mesmo intervalo; "Todos os meios" reúne Pix, cartão e dinheiro dentro dele.
   A tabela mostra até 15 registros por página, com rolagem da tela quando
   necessário, sem reduzir a lista a uma linha pelo espaço restante.
   Cada pagamento registrado numa ficha (venda, entrada ou recebimento de
   notinha, **em qualquer meio**) vira uma linha; lançamento manual também.
-- **Estorno abate do próprio lado:** desfazer venda reduz Entradas, desfazer
+- `R-FINANCEIRO-03` **Estorno abate do próprio lado:** desfazer venda reduz Entradas, desfazer
   despesa reduz Saídas; selo "Estorno". O original desfeito (venda, recebimento
   ou lançamento) fica "Estornado". O filtro **"Estornos"**, ao lado dos meios,
   mostra só as linhas de estorno (`2026-10-19`).
-- Os três cartões resumem somente o período selecionado. Entradas menos
+- `R-FINANCEIRO-04` Os três cartões resumem somente o período selecionado. Entradas menos
   despesas não representa lucro nem saldo bancário; não há comparação com o
   período anterior. A tabela "Movimentações financeiras" contém somente fatos
   financeiros e seus estornos.
-- Transferências físicas e seus estornos ficam na seção Caixa. As categorias
+- `R-FINANCEIRO-05` Transferências físicas e seus estornos ficam na seção Caixa. As categorias
   antigas "Troco" e "Saída de caixa" são classificadas como registros físicos
   para consulta, sem alterar seus valores, sinais ou datas persistidos.
-- **Exportar período (`2026-10-07`, Agostinho):** planilha `.xlsx` do período
+- `R-FINANCEIRO-06` **Exportar período (`2026-10-07`, Agostinho):** planilha `.xlsx` do período
   consultado (abas Resumo, Por dia — por mês acima de 92 dias — e Movimentos,
   com as cores dos tokens do app e totais em fórmula), gerada das mesmas funções da tela,
   então o total do arquivo é o dos cartões. Vai o **período inteiro em todos os
@@ -534,25 +538,25 @@ o que foi discutido e implementado; a avaliação de uso continua na próxima se
 **Situação de validação: NÃO VALIDADO pelo Victor.** A gaveta tem tela e item
 próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
 
-- Retirada física só aceita dinheiro, fica fora das despesas financeiras e
+- `R-CAIXA-01` Retirada física só aceita dinheiro, fica fora das despesas financeiras e
   reduz o esperado na conferência da gaveta.
-- Conferência em espécie: abertura com contagem, somente movimentos lançados
+- `R-CAIXA-02` Conferência em espécie: abertura com contagem, somente movimentos lançados
   durante aquele turno, fechamento com valor contado e justificativa obrigatória
   para diferença. Pix/cartão não entram. A abertura é opcional e informa todo
   dinheiro já na gaveta, inclusive troco vindo do dia anterior. Movimentos
   antigos entram nessa contagem inicial, sem recalcular períodos fechados.
-- "Caixa atual" acompanha o turno aberto e mostra "Esperado na gaveta". Sem
+- `R-CAIXA-03` "Caixa atual" acompanha o turno aberto e mostra "Esperado na gaveta". Sem
   caixa aberto, orienta a contar o dinheiro e oferece "Abrir caixa".
-- Abertura, retirada e fechamento usam janelas centrais compactas. "Cancelar"
+- `R-CAIXA-04` Abertura, retirada e fechamento usam janelas centrais compactas. "Cancelar"
   apenas sai da janela; "Fechar caixa" registra a contagem final. Diferenças são
   explicadas como falta ou sobra e exigem "Motivo da diferença". Abertura não
   lança receita e fechamento não cria despesa. Só um caixa permanece aberto;
   não há abertura ou fechamento automático na virada do dia.
-- "Abrir caixa" aparece no lugar das ações do caixa aberto quando não existe
+- `R-CAIXA-05` "Abrir caixa" aparece no lugar das ações do caixa aberto quando não existe
   turno aberto. Pode ser usado em qualquer horário; depois de confirmar um
   fechamento, reaparece. A rotina de abrir ao chegar e fechar ao sair depende da
   pessoa. Vendas e recebimentos não são bloqueados pela falta de conferência.
-- O Caixa atual identifica a abertura com ícone de dinheiro, data/horário e
+- `R-CAIXA-06` O Caixa atual identifica a abertura com ícone de dinheiro, data/horário e
   operador em linhas separadas. "Adicionar dinheiro" pede valor e "Origem ou
   motivo"; "Retirar dinheiro" pede valor e "Destino ou motivo". As duas ações
   exigem caixa aberto, conservam operador/vínculo e alteram só o esperado da
@@ -560,21 +564,21 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   também ficam fora dos totais financeiros. Compra/conta continua sendo despesa.
   Registros antigos sem turno vinculado seguem consultáveis com seus valores
   e sinais originais. O histórico também mostra estornos físicos e seu motivo.
-- Fechamentos dos últimos sete dias corridos (hoje e seis anteriores) aparecem
+- `R-CAIXA-07` Fechamentos dos últimos sete dias corridos (hoje e seis anteriores) aparecem
   abaixo do Caixa atual, com data do fechamento, dinheiro contado, situação e
   "Ver". Cada fechamento é individual, sem somar saldos entre dias.
-- "Consultar outro período" abre o histórico com datas De/Até, atalhos Últimos
+- `R-CAIXA-08` "Consultar outro período" abre o histórico com datas De/Até, atalhos Últimos
   7 dias e Este mês; nenhuma data futura. Fechados são filtrados pelo dia do
   fechamento em São Paulo, inclusive quando abertos em outro dia; abertos pela
   abertura. O histórico separa Aberturas e fechamentos / Adições e retiradas.
   Conserva contagens, esperado, diferenças, motivos, operadores e estornos;
   "Ver" abre os movimentos em dinheiro e as fichas do caixa escolhido.
   Fechamentos anteriores são preservados.
-- Novos movimentos, pagamentos e estornos guardam o operador da base local;
+- `R-CAIXA-09` Novos movimentos, pagamentos e estornos guardam o operador da base local;
   isto identifica o operador configurado, sem autenticar quem está na máquina.
 
 ### Pagamentos (Pix e cartão)
-- A funcionária marca Pix ou cartão **depois de conferir** no balcão; não há
+- `R-PAGAMENTO-01` A funcionária marca Pix ou cartão **depois de conferir** no balcão; não há
   etapa "aguardando conferência".
 - Na base local todo pagamento marcado entra no Financeiro. Em produção a tela
   não muda; muda **de onde** vem o registro (pendente 5). Não assumir que a API
@@ -585,23 +589,23 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   [dinheiro em conta](https://www.mercadopago.com.br/developers/pt/docs/reports/account-money/introduction).
 
 ### Início e sino
-- Início: resumo do dia (recebimentos, vendas, saídas) com **valores ocultos por
+- `R-INICIO-01` Início: resumo do dia (recebimentos, vendas, saídas) com **valores ocultos por
   padrão** (tela virada para o cliente); histórico de fichas com filtro por data e
   pagamento. Estoque baixo e contas vencidas ficam nas seções delas e no sino.
-- O Início se concentra no dia atual, com informação essencial para o balcão.
+- `R-INICIO-02` O Início se concentra no dia atual, com informação essencial para o balcão.
   O cartão Recebimentos do dia mostra só o título e o valor, sem comparação com
   ontem, percentual de variação ou frase sobre o movimento anterior (decisão do Victor).
-- O filtro de data do histórico permite consultar qualquer dia passado e hoje,
+- `R-INICIO-03` O filtro de data do histórico permite consultar qualquer dia passado e hoje,
   inclusive meses e anos anteriores, sem limite mínimo. Datas futuras ficam
   bloqueadas no calendário, nas setas e na digitação; o filtro afeta só as fichas.
-- Os filtros de pagamento são Todos, Pix, Cartão, Dinheiro e Notinha. Não há
+- `R-INICIO-04` Os filtros de pagamento são Todos, Pix, Cartão, Dinheiro e Notinha. Não há
   filtro exclusivo para Misto (decisão do Victor): uma venda mista aparece em
   Todos e em cada meio usado no pagamento. O detalhe da ficha conserva a divisão
   dos valores; nas notinhas, mostra a entrada e os recebimentos registrados.
 - Revisão com o Victor: manter uma única janela do Electron em desenvolvimento
   (`npm run dev`), aproveitando a atualização automática da interface. Reutilizar
   essa janela nas alterações do front, sem abrir outra instância a cada conferência.
-- Sino: notinha em atraso, notinha que vence em até 3 dias, produto zerado,
+- `R-INICIO-05` Sino: notinha em atraso, notinha que vence em até 3 dias, produto zerado,
   estoque baixo, cadastro rápido a completar, rascunho de nota; do mais grave ao
   menos grave. Lido volta a ser novo se o texto mudar.
 
@@ -619,26 +623,26 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
 Detalhe de como a interface está montada: `AGENTS.md`, "Interface: como está
 montada". O que é decisão (e o porquê):
 
-- **CSS por componente** (escolha do Victor): `.css` ao lado do `.tsx`, classes
+- `R-UI-01` **CSS por componente** (escolha do Victor): `.css` ao lado do `.tsx`, classes
   `bloco__parte--variante`; Tailwind só para preflight e tokens. Por quê: achar e
   mudar um estilo num lugar só.
-- **Tokens só em `src/estilos/tokens/`.** Situação na família pastel: ok,
+- `R-UI-02` **Tokens só em `src/estilos/tokens/`.** Situação na família pastel: ok,
   atencao, critico, neutro. Vermelho forte só para saída de dinheiro e erro.
-- **Ícones do acervo** (`Icons.pdf`), nunca Lucide/Material; fonte Inter local;
+- `R-UI-03` **Ícones do acervo** (`Icons.pdf`), nunca Lucide/Material; fonte Inter local;
   nenhum link externo.
-- **Calendário do app em toda data** (`SeletorData`; em formulário, `CampoData`).
+- `R-UI-04` **Calendário do app em toda data** (`SeletorData`; em formulário, `CampoData`).
   Nenhum `type="date"` do Windows.
-- **Movimento mínimo:** GSAP só em microinterações úteis (160 ms; barra lateral
+- `R-UI-05` **Movimento mínimo:** GSAP só em microinterações úteis (160 ms; barra lateral
   280 ms), respeitando `prefers-reduced-motion`. Ao animar a barra lateral,
   ícones e logo ficam ancorados à esquerda (centralizar pela largura instantânea
   fazia tudo saltar).
-- **Só o essencial:** campo e função que fazem sentido para a papelaria; nada de
+- `R-UI-06` **Só o essencial:** campo e função que fazem sentido para a papelaria; nada de
   enfeite. Um texto por informação.
-- Rotas em modo hash (`#/clientes`): funciona em `file://` no Electron; o
+- `R-UI-07` Rotas em modo hash (`#/clientes`): funciona em `file://` no Electron; o
   usuário não vê endereço.
-- A barra de menu padrão do Electron (File/Edit/View/Window) fica como está, por
+- `R-UI-08` A barra de menu padrão do Electron (File/Edit/View/Window) fica como está, por
   decisão do Victor.
-- **Monitor da loja: 1280x720 (`2026-10-23`, provável, não confirmado).** Toda
+- `R-UI-09` **Monitor da loja: 1280x720 (`2026-10-23`, provável, não confirmado).** Toda
   tela tem que funcionar ali, descontando barra de tarefas e menu do Electron
   (~650 px de altura útil). Tabela paginada mostra no mínimo 8 linhas e a página
   rola; nunca encolher até caber. Conferir 1280x720 e 1920x1080 a cada mudança
@@ -647,6 +651,21 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-10-27` — Suíte de testes: regras e bugs numerados, cobertura conferida
+Regra tem número (`R-ÁREA-NN`, nas "Regras de produto" e "de interface"), bug
+tem número (`docs/bugs.md`), e o teste cita o número no nome. Um teste
+(`testes/cobertura.test.ts`) quebra a suíte se um número ficar sem teste e sem
+pendência declarada (`docs/testes.md`, com o motivo). Bug corrigido entra com
+teste que falhava antes da correção. Testes em todo push (Ubuntu); teste de
+tela (Playwright) fica para a Fase 3 da 1.0.
+
+**Por quê:** a cobertura dependia de lembrar. A checagem de `2026-10-21` achou
+17 defeitos e só um ganhou teste; A1 e M1 foram corrigidos sem nenhum. Com o
+número, "esta regra tem teste?" vira pergunta que o código responde.
+Descartado: rodar só na versão (a regressão aparecia dias depois, no Windows
+do GitHub) e teste de tela agora (quebraria a cada mudança de leiaute antes de
+as telas assentarem).
 
 ### `2026-10-07` — Comprovante não fiscal na térmica (alvo da 1.0)
 A loja **não emite nota em toda venda**. Então, por padrão, **toda venda

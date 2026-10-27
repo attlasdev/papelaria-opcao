@@ -52,8 +52,11 @@ describe('semente', () => {
       const coluna = tabela === 'cobranca' ? 'criada_em' : 'registrado_em'
       expect((cedo.prepare(`select max(${coluna}) m from ${tabela}`).get() as { m: string }).m <= limite).toBe(true)
     }
-    expect(cedo.prepare(`select count(*) n from pagamento where meio = 'cartao' and maquininha is null`).get()).toEqual({ n: 0 })
     cedo.close()
+  })
+
+  it('[B-003] pagamento no cartão sempre passa por uma maquininha', () => {
+    expect(contar(`select id from pagamento where meio = 'cartao' and maquininha is null`)).toBe(0)
   })
 })
 

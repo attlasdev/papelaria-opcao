@@ -108,7 +108,7 @@ describe('concluirFicha', () => {
     expect(movimentosFinanceiro(depois).some((l) => l.ficha === id && l.valor === 4980)).toBe(true)
   })
 
-  it('bloqueia a venda sem saldo e não lança ficha, pagamento nem movimento', () => {
+  it('[R-VENDA-07] bloqueia a venda sem saldo e não lança ficha, pagamento nem movimento', () => {
     const borracha = obterBase().produtos.find((p) => p.codigo === 'EST-0027')!
     expect(borracha.saldo).toBe(0)
     const antes = obterBase()
@@ -121,7 +121,7 @@ describe('concluirFicha', () => {
     expect(obterBase()).toBe(antes)
   })
 
-  it('registra pagamento misto em linhas separadas, somando exatamente o total', () => {
+  it('[R-VENDA-09] registra pagamento misto em linhas separadas, somando exatamente o total', () => {
     const produto = obterBase().produtos.find((item) => item.codigo === 'EST-0022')!
     expect(abrirTurnoCaixa(1000)).toBe(true)
     const turno = obterBase().turnosCaixa![0]
@@ -144,7 +144,7 @@ describe('concluirFicha', () => {
 })
 
 describe('receberNotinhas', () => {
-  it('quita as notinhas, põe o cliente em dia e lança no Financeiro', () => {
+  it('[R-CLIENTE-06] quita as notinhas, põe o cliente em dia e lança no Financeiro', () => {
     const abertas = notinhasDoCliente(obterBase(), 'CLI-0117', HOJE).filter((n) => n.emAberto > 0)
     const total = abertas.reduce((t, n) => t + n.emAberto, 0)
     receberNotinhas(abertas.map((n) => n.ficha.id), { data: HOJE, horario: '15:00', meio: 'dinheiro', valor: total })
@@ -153,7 +153,7 @@ describe('receberNotinhas', () => {
     expect(recebidos.reduce((t, l) => t + l.valor, 0)).toBe(total)
   })
 
-  it('divide o recebimento parcial por meio e abate primeiro a notinha mais antiga', () => {
+  it('[R-NOTINHA-03] divide o recebimento parcial por meio e abate primeiro a notinha mais antiga', () => {
     const abertas = notinhasDoCliente(obterBase(), 'CLI-0117', HOJE)
       .filter((n) => n.emAberto > 0)
       .sort((a, b) => `${a.ficha.data} ${a.ficha.horario}`.localeCompare(`${b.ficha.data} ${b.ficha.horario}`))
@@ -184,7 +184,7 @@ describe('receberNotinhas', () => {
     expect(notinhasDoCliente(obterBase(), 'CLI-0117', HOJE).find((n) => n.ficha.id === ficha.id)?.emAberto).toBe(dinheiro)
   })
 
-  it('quita várias notinhas com três meios sem duplicar valores', () => {
+  it('[R-CLIENTE-06] quita várias notinhas com três meios sem duplicar valores', () => {
     const abertas = notinhasDoCliente(obterBase(), 'CLI-0117', HOJE).filter((n) => n.emAberto > 0)
     const total = abertas.reduce((soma, n) => soma + n.emAberto, 0)
     const recebidos = receberNotinhas(abertas.map((n) => n.ficha.id), {
@@ -198,7 +198,7 @@ describe('receberNotinhas', () => {
     expect(movimentos.filter((linha) => linha.meio === 'cartao').reduce((soma, linha) => soma + linha.valor, 0)).toBe(total - 300)
   })
 
-  it('recusa recebimentos inválidos sem gravar parte do pagamento', () => {
+  it('[R-CLIENTE-06] recusa recebimentos inválidos sem gravar parte do pagamento', () => {
     const aberta = notinhasDoCliente(obterBase(), 'CLI-0117', HOJE).find((n) => n.emAberto > 0)!
     const antes = obterBase()
     for (const parcelas of [
@@ -216,13 +216,13 @@ describe('receberNotinhas', () => {
 })
 
 describe('cadastrarCliente', () => {
-  it('cria com o próximo código e aparece na base', () => {
+  it('[R-CLIENTE-02] cria com o próximo código e aparece na base', () => {
     const id = cadastrarCliente({ nome: 'Teste', documento: 'Sem documento', telefone: 'Sem telefone', endereco: '' })
     expect(id).toBe('CLI-0128')
     expect(obterBase().clientes.some((c) => c.id === id)).toBe(true)
   })
 
-  it('recusa documento já cadastrado mesmo quando a pontuação muda', () => {
+  it('[R-CLIENTE-04] recusa documento já cadastrado mesmo quando a pontuação muda', () => {
     const cadastro = { nome: 'Cliente A', documento: '123.456.789-00', telefone: '', endereco: '' }
     const id = cadastrarCliente(cadastro)
     expect(id).toBeTruthy()
@@ -232,7 +232,7 @@ describe('cadastrarCliente', () => {
 })
 
 describe('entrada de mercadoria', () => {
-  it('guarda data física, fornecedor, referência e custo da compra no movimento', () => {
+  it('[R-ESTOQUE-04] guarda data física, fornecedor, referência e custo da compra no movimento', () => {
     const produto = obterBase().produtos.find((item) => item.codigo === 'EST-0022')!
     const entrada = { recebidaEm: '2026-09-24', fornecedor: 'Distribuidora', referencia: 'NF 123', observacoes: 'Volume conferido', custoUnitario: 735 }
     expect(alterarSaldo(produto.codigo, produto.saldo + 2, 'Recebimento de mercadorias', 'Entrada', entrada)).toBe(true)
@@ -244,7 +244,7 @@ describe('entrada de mercadoria', () => {
 })
 
 describe('conferência do dinheiro', () => {
-  it('preserva os caixas fechados e identifica cada abertura mesmo no mesmo instante', () => {
+  it('[R-CAIXA-08] preserva os caixas fechados e identifica cada abertura mesmo no mesmo instante', () => {
     vi.useFakeTimers()
     try {
       vi.setSystemTime(new Date('2026-09-25T15:00:00Z'))
@@ -276,7 +276,7 @@ describe('conferência do dinheiro', () => {
     } finally { vi.useRealTimers() }
   })
 
-  it('recusa retirada sem destino, em outro meio ou com valor inválido', () => {
+  it('[R-CAIXA-06] recusa retirada sem destino, em outro meio ou com valor inválido', () => {
     const antes = obterBase()
     const retirada = { data: HOJE, horario: '15:00', descricao: 'Cofre', origem: 'Retirada do caixa', categoria: 'Retirada de caixa', meio: 'dinheiro' as const, valor: -1000 }
     for (const mudanca of [{ descricao: '' }, { meio: 'pix' as const }, { valor: 1000 }, { valor: 0 }, { valor: -0.5 }]) {
@@ -285,7 +285,7 @@ describe('conferência do dinheiro', () => {
     }
   })
 
-  it('conta somente movimentos em espécie do turno e exige justificativa na diferença', () => {
+  it('[R-CAIXA-02] conta somente movimentos em espécie do turno e exige justificativa na diferença', () => {
     expect(abrirTurnoCaixa(5000)).toBe(true)
     expect(abrirTurnoCaixa(1000)).toBe(false)
     const turno = obterBase().turnosCaixa![0]
@@ -305,7 +305,7 @@ describe('conferência do dinheiro', () => {
 })
 
 describe('avisos lidos', () => {
-  it('marca como lido e volta a ser novo quando o aviso muda', () => {
+  it('[R-INICIO-05] marca como lido e volta a ser novo quando o aviso muda', () => {
     const avisos = notificacoes(obterBase(), HOJE)
     marcarAvisosLidos(avisos)
     expect(notificacoes(obterBase(), HOJE).every((a) => avisoLido(obterBase(), a))).toBe(true)
@@ -319,20 +319,20 @@ describe('avisos lidos', () => {
 describe('editar, excluir e desativar produto', () => {
   const novo = { codigoBarras: '789999003', descricao: 'Clipe nº 2', categoria: 'Escritório', grupo: 'escritorio' as const, unidade: 'cx' as const, preco: 450, saldo: 7, minimo: 2 }
 
-  it('edita o cadastro sem mexer no saldo', () => {
+  it('[R-ESTOQUE-01] edita o cadastro sem mexer no saldo', () => {
     const codigo = cadastrarProduto(novo)
     const { saldo: _saldo, ...cadastro } = novo
     expect(editarProduto(codigo, { ...cadastro, descricao: 'Clipe nº 2/0', preco: 500 })).toBe(true)
     expect(obterBase().produtos.find((p) => p.codigo === codigo)).toMatchObject({ descricao: 'Clipe nº 2/0', preco: 500, saldo: 7 })
   })
 
-  it('apaga produto sem histórico', () => {
+  it('[R-ESTOQUE-02] apaga produto sem histórico', () => {
     const codigo = cadastrarProduto(novo)
     expect(excluirProduto(codigo)).toBe(true)
     expect(obterBase().produtos.some((p) => p.codigo === codigo)).toBe(false)
   })
 
-  it('não apaga produto com histórico; desativa e tira das contas', () => {
+  it('[R-ESTOQUE-02] não apaga produto com histórico; desativa e tira das contas', () => {
     const antes = resumoEstoque(obterBase()).produtos
     expect(excluirProduto('EST-0021')).toBe(false)
     definirProdutoAtivo('EST-0021', false)
@@ -344,7 +344,7 @@ describe('editar, excluir e desativar produto', () => {
 })
 
 describe('saldo inicial do cadastro', () => {
-  it('vira a primeira entrada do histórico, sem impedir excluir cadastro por engano', () => {
+  it('[R-ESTOQUE-01] vira a primeira entrada do histórico, sem impedir excluir cadastro por engano', () => {
     const codigo = cadastrarProduto({ descricao: 'Grampo 26/6', categoria: 'Escritório', grupo: 'escritorio', unidade: 'cx', preco: 800, saldo: 5, minimo: 1 })
     expect(obterBase().movimentosEstoque.filter((m) => m.produto === codigo)).toMatchObject([{ tipo: 'Entrada', antes: 0, depois: 5 }])
     expect(excluirProduto(codigo)).toBe(true)
@@ -359,7 +359,7 @@ describe('cancelar ficha', () => {
     pagamentos: [{ data: HOJE, horario: '14:00', meio: 'pix', valor: 5600 }],
   })!
 
-  it('devolve o estoque, estorna o pago e tira das compras do cliente', () => {
+  it('[R-CORRECAO-02] devolve o estoque, estorna o pago e tira das compras do cliente', () => {
     const saldoAntes = obterBase().produtos.find((p) => p.codigo === 'EST-0021')!.saldo
     const id = venda()
     const comprasAntes = resumoDoCliente(obterBase(), 'CLI-0107', HOJE).totalComprado
@@ -373,13 +373,13 @@ describe('cancelar ficha', () => {
     expect(resumoDoCliente(obterBase(), 'CLI-0107', HOJE).totalComprado).toBe(comprasAntes - 5600)
   })
 
-  it('notinha cancelada sai da cobrança', () => {
+  it('[R-CORRECAO-02] notinha cancelada sai da cobrança', () => {
     const aberta = notinhasDoCliente(obterBase(), 'CLI-0106', HOJE).find((n) => n.emAberto > 0)!
     expect(cancelarFicha(aberta.ficha.id, 'Lançada no cliente errado')).toBe(true)
     expect(resumoDoCliente(obterBase(), 'CLI-0106', HOJE).abertas.some((n) => n.ficha.id === aberta.ficha.id)).toBe(false)
   })
 
-  it('não deixa vender mais que o disponível, mesmo com saldo positivo', () => {
+  it('[R-VENDA-07] não deixa vender mais que o disponível, mesmo com saldo positivo', () => {
     const produto = obterBase().produtos.find((item) => item.codigo === 'EST-0022')!
     const antes = obterBase()
     expect(concluirFicha({
@@ -392,7 +392,7 @@ describe('cancelar ficha', () => {
 })
 
 describe('estornos', () => {
-  it('venda à vista tem "Estornar" (cancela a ficha); notinha e venda cancelada não', () => {
+  it('[R-CORRECAO-02] venda à vista tem "Estornar" (cancela a ficha); notinha e venda cancelada não', () => {
     const linhas = movimentosFinanceiro(obterBase())
     const daVenda = linhas.find((l) => l.ficha && l.categoria === 'Venda' && !obterBase().fichas.find((f) => f.id === l.ficha)?.cancelamento)!
     expect(daVenda.vendaEstornavel).toBe(true)
@@ -404,7 +404,7 @@ describe('estornos', () => {
     expect(depois.some((l) => l.categoria === 'Estorno')).toBe(true)
   })
 
-  it('recebimento estornado volta a dever e sai do caixa no dia do estorno', () => {
+  it('[R-CORRECAO-03] recebimento estornado volta a dever e sai do caixa no dia do estorno', () => {
     const aberta = notinhasDoCliente(obterBase(), 'CLI-0106', HOJE).find((n) => n.emAberto > 0)!
     receberNotinhas([aberta.ficha.id], { data: HOJE, horario: '15:00', meio: 'dinheiro', valor: aberta.emAberto })
     const ficha = obterBase().fichas.find((f) => f.id === aberta.ficha.id)!
@@ -415,7 +415,7 @@ describe('estornos', () => {
     expect(estorno).toMatchObject({ valor: -aberta.emAberto, categoria: 'Estorno' })
   })
 
-  it('lançamento manual é anulado por outro de sinal contrário, uma vez só', () => {
+  it('[R-CORRECAO-04] lançamento manual é anulado por outro de sinal contrário, uma vez só', () => {
     registrarMovimentoCaixa({ data: HOJE, horario: '15:00', descricao: 'Material de limpeza', origem: 'Lançamento manual', categoria: 'Despesa', meio: 'dinheiro', valor: -9000 })
     const original = obterBase().movimentosCaixa[0]
     expect(estornarMovimentoCaixa(original.id, 'Digitei 90 em vez de 9')).toBe(true)
@@ -428,7 +428,7 @@ describe('estornos', () => {
     expect(r).toMatchObject({ entradas: 0, saidas: 0, liquido: 0, quantidadeSaidas: 1 })
   })
 
-  it('reforço de troco e seu estorno mudam só a gaveta, preservando o fechamento', () => {
+  it('[R-CAIXA-06] reforço de troco e seu estorno mudam só a gaveta, preservando o fechamento', () => {
     expect(movimentarDinheiroCaixa('adicionar', 2000, 'Troco do cofre')).toBe(false)
     abrirTurnoCaixa(10000)
     const turno = obterBase().turnosCaixa![0]
@@ -447,7 +447,7 @@ describe('estornos', () => {
     expect(movimentosFisicosCaixa(obterBase()).find((item) => item.id === adicao.id)?.estornado).toBe(true)
   })
 
-  it('ações da gaveta recusam caixa fechado, valores inválidos e motivo vazio', () => {
+  it('[R-CAIXA-06] ações da gaveta recusam caixa fechado, valores inválidos e motivo vazio', () => {
     expect(movimentarDinheiroCaixa('retirar', 1000, 'Cofre')).toBe(false)
     abrirTurnoCaixa(5000)
     const antes = obterBase()
@@ -461,7 +461,7 @@ describe('estornos', () => {
     expect(resumoTurnoCaixa(obterBase(), antes.turnosCaixa![0]).esperado).toBe(4000)
   })
 
-  it('separa retirada física das despesas e recusa retirada por Pix', () => {
+  it('[R-CAIXA-01] separa retirada física das despesas e recusa retirada por Pix', () => {
     const dados = { data: HOJE, horario: '15:00', descricao: 'Cofre', origem: 'Lançamento manual', categoria: 'Retirada de caixa', meio: 'dinheiro' as const, valor: -1000 }
     const quantidade = obterBase().movimentosCaixa.length
     expect(registrarMovimentoCaixa({ ...dados, meio: 'pix' })).toBe(false)
@@ -478,7 +478,7 @@ describe('estornos', () => {
 })
 
 describe('anotação na ficha', () => {
-  it('só acrescenta, com data', () => {
+  it('[R-NOTINHA-02] só acrescenta, com data', () => {
     const id = obterBase().fichas[0].id
     expect(anotarFicha(id, '  ')).toBe(false)
     expect(anotarFicha(id, 'Combinou pagar dia 15')).toBe(true)
@@ -523,7 +523,7 @@ describe('serviços', () => {
   }
   const copia = { nome: 'Cópia P&B', valor: 100 }
 
-  it('ficha só de serviço vale, com perda e observação, e não mexe no estoque', () => {
+  it('[R-SERVICO-01] [R-SERVICO-03] ficha só de serviço vale, com perda e observação, e não mexe no estoque', () => {
     const estoqueAntes = obterBase().movimentosEstoque.length
     const id = venda([{ ...copia, nome: '  2 cópias P&B  ', perdas: { quantidade: 4 }, observacao: 'Saíram 6, 4 manchadas' }])
     expect(id).toBeTruthy()
@@ -533,14 +533,14 @@ describe('serviços', () => {
     expect(perdasServicos(obterBase(), HOJE, HOJE)).toEqual([expect.objectContaining({ ficha: id, servico: '2 cópias P&B', quantidade: 4, observacao: 'Saíram 6, 4 manchadas' })])
   })
 
-  it('serviço sem nome, perda sem quantidade e ficha vazia são recusados', () => {
+  it('[R-SERVICO-01] serviço sem nome, perda sem quantidade e ficha vazia são recusados', () => {
     expect(venda([{ ...copia, nome: '   ' }])).toBeNull()
     expect(venda([{ ...copia, perdas: { quantidade: 0 } }])).toBeNull()
     expect(venda([{ ...copia, perdas: { quantidade: 1.5 } }])).toBeNull()
     expect(venda([])).toBeNull()
   })
 
-  it('histórico: cada serviço com a ficha, marca a ficha com produtos e deixa a cancelada de fora', () => {
+  it('[R-SERVICO-02] histórico: cada serviço com a ficha, marca a ficha com produtos e deixa a cancelada de fora', () => {
     const so = venda([{ ...copia, perdas: { quantidade: 2 } }])!
     const borracha = obterBase().produtos.find((p) => p.codigo === 'EST-0022')!
     const misto = venda([{ nome: 'Encadernação', valor: 800 }], [{ codigo: borracha.codigo, descricao: borracha.descricao, quantidade: 1, preco: borracha.preco }])!
@@ -554,7 +554,7 @@ describe('serviços', () => {
     expect(perdasServicos(obterBase(), HOJE, HOJE).some((p) => p.ficha === cancelada)).toBe(true)
   })
 
-  it('no Financeiro: só serviço é "Serviço"; com produto, "Venda e serviço"', () => {
+  it('[R-SERVICO-04] no Financeiro: só serviço é "Serviço"; com produto, "Venda e serviço"', () => {
     const so = venda([copia])!
     const borracha = obterBase().produtos.find((p) => p.codigo === 'EST-0022')!
     const misto = venda([copia], [{ codigo: borracha.codigo, descricao: borracha.descricao, quantidade: 1, preco: borracha.preco }])!
@@ -584,21 +584,21 @@ describe('serviços', () => {
 describe('boletos', () => {
   const dados = { descricao: '  Papel A4 Chamex ', valor: 32000, numero: ' 21 ', vencimento: '2026-10-01' }
 
-  it('cadastra com a data de cadastro gravada na hora e os textos limpos', () => {
+  it('[R-BOLETO-01] cadastra com a data de cadastro gravada na hora e os textos limpos', () => {
     const id = cadastrarBoleto(dados)!
     const boleto = obterBase().boletos.find((b) => b.id === id)!
     expect(boleto).toMatchObject({ descricao: 'Papel A4 Chamex', numero: '21', valor: 32000, vencimento: '2026-10-01' })
     expect(Date.now() - Date.parse(boleto.cadastradoEm)).toBeLessThan(5000)
   })
 
-  it('recusa sem descrição, sem número, valor zero ou vencimento inválido', () => {
+  it('[R-BOLETO-01] recusa sem descrição, sem número, valor zero ou vencimento inválido', () => {
     expect(cadastrarBoleto({ ...dados, descricao: ' ' })).toBeNull()
     expect(cadastrarBoleto({ ...dados, numero: '' })).toBeNull()
     expect(cadastrarBoleto({ ...dados, valor: 0 })).toBeNull()
     expect(cadastrarBoleto({ ...dados, vencimento: '2026-02-30' })).toBeNull()
   })
 
-  it('editar não mexe na data de cadastro nem no pagamento', () => {
+  it('[R-BOLETO-01] editar não mexe na data de cadastro nem no pagamento', () => {
     const id = cadastrarBoleto(dados)!
     marcarBoletoPago(id, true)
     const antes = obterBase().boletos.find((b) => b.id === id)!
@@ -606,7 +606,7 @@ describe('boletos', () => {
     expect(obterBase().boletos.find((b) => b.id === id)).toEqual({ ...antes, valor: 35000 })
   })
 
-  it('situação pelo vencimento: vencido, vencendo até 5 dias, a vencer e pago', () => {
+  it('[R-BOLETO-05] situação pelo vencimento: vencido, vencendo até 5 dias, a vencer e pago', () => {
     const b = (vencimento: string, pagoEm?: string) => ({ id: 'x', descricao: 'x', valor: 1, numero: '1', vencimento, cadastradoEm: '', ...(pagoEm ? { pagoEm } : {}) })
     expect(situacaoBoleto(b('2026-09-24'), HOJE)).toEqual({ situacao: 'vencido', dias: -1 })
     expect(situacaoBoleto(b('2026-09-25'), HOJE).situacao).toBe('vencendo')
@@ -615,7 +615,7 @@ describe('boletos', () => {
     expect(situacaoBoleto(b('2026-09-01', '2026-09-20'), HOJE).situacao).toBe('pago')
   })
 
-  it('sino: vencidos e os que vencem em breve; pagar tira do aviso', () => {
+  it('[R-BOLETO-05] sino: vencidos e os que vencem em breve; pagar tira do aviso', () => {
     const avisos = () => notificacoes(obterBase(), HOJE).filter((a) => a.tipo.startsWith('boleto'))
     // Semente: 1 vencido (Tilibra) e 2 no prazo do aviso (luz hoje, Faber-Castell em 5 dias).
     expect(avisos().map((a) => [a.id, a.titulo])).toEqual([['boleto-vencido', '1 boleto vencido'], ['boleto-vencendo', '2 boletos vencem em breve']])
@@ -625,7 +625,7 @@ describe('boletos', () => {
     expect(resumoBoletos(obterBase(), HOJE).vencidos.quantidade).toBe(0)
   })
 
-  it('marcar como pago guarda dia e operador; desfazer volta a ficar em aberto', () => {
+  it('[R-BOLETO-03] marcar como pago guarda dia e operador; desfazer volta a ficar em aberto', () => {
     expect(marcarBoletoPago('BOL-0003', true)).toBe(true)
     expect(obterBase().boletos.find((b) => b.id === 'BOL-0003')).toMatchObject({ pagoEm: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), pagoPor: obterBase().operador })
     expect(marcarBoletoPago('BOL-0003', true)).toBe(false)
@@ -634,7 +634,7 @@ describe('boletos', () => {
     expect('pagoEm' in aberto || 'pagoPor' in aberto).toBe(false)
   })
 
-  it('número repetido só é apontado; excluir apaga', () => {
+  it('[R-BOLETO-02] número repetido só é apontado; excluir apaga', () => {
     expect(boletoComMesmoNumero(obterBase(), ' 12 ')?.id).toBe('BOL-0002')
     expect(boletoComMesmoNumero(obterBase(), '12', 'BOL-0002')?.id).toBe('BOL-0004')
     expect(cadastrarBoleto({ ...dados, numero: '12' })).not.toBeNull()

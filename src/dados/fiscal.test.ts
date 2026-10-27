@@ -36,7 +36,7 @@ describe('dados fiscais do produto', () => {
   })
 })
 
-describe('NCM e CEST como anotação', () => {
+describe('[R-ESTOQUE-06] NCM e CEST como anotação', () => {
   it('sem nada anotado e sem fiscal antes, não grava fiscal', () => {
     expect(anotarNcmCest(undefined, ' ', '')).toEqual({ fiscal: undefined, erros: {} })
   })

@@ -9,7 +9,7 @@ function digitar(texto: string, passo: number, inicio = 1000) {
   return tecla('Enter', instante)
 }
 
-describe('detector do leitor', () => {
+describe('[R-VENDA-04] detector do leitor', () => {
   it('reconhece o código que chega depressa e termina em Enter', () => {
     expect(digitar('7891360650233', 5)).toEqual({ tipo: 'leitura', codigo: '7891360650233' })
   })

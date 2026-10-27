@@ -1,0 +1,34 @@
+# A suite de testes em todo push (docs/testes.md): a regressao aparece no dia,
+# nao no dia da versao. Linux, sem o binario do Electron (os testes nao o usam;
+# o npm 11 nao roda o script de instalacao dele de qualquer jeito). O instalador
+# continua nascendo no release-win.yml, que roda os testes de novo no Windows.
+
+name: testes
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Typecheck dos dois tsconfig + build do Vite.
+      - run: npm run build
+
+      - run: npm test

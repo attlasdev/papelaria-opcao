@@ -107,7 +107,8 @@ Regras para mexer na interface:
 - **Tela não guarda dado próprio.** Lê `useEstadoDemonstracao()` e as funções de
   `src/mock/base/derivados.ts`; grava pelas ações de `estado-demonstracao.ts`.
   Fato novo entra em `mock/base/tipos.ts` e na semente; número ou situação
-  calculada vira função em `derivados.ts`, com teste (`npm test`). Assim é na
+  calculada vira função em `derivados.ts`, com teste (`npm test`; regra e bug
+  com número no nome do teste, ver `docs/testes.md`). Assim é na
   0.1; na 1.0 a tela passa a ler e gravar por `window.api`, uma operação por
   gesto (`docs/contrato/inventario.md`).
 
