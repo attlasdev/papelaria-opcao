@@ -62,6 +62,13 @@ function migrar(banco: Banco, caminho: string, lista: readonly Migracao[]) {
   }
 }
 
+export type Serie = 'ficha' | 'cliente' | 'produto' | 'boleto'
+
+/** O próximo número de exibição da série. Chamar dentro da transação que cria o registro. */
+export function proximoNumero(banco: Banco, serie: Serie): number {
+  return (banco.prepare('update sequencia set ultimo = ultimo + 1 where serie = ? returning ultimo').get(serie) as { ultimo: number }).ultimo
+}
+
 /**
  * Roda `fazer` numa transação. `begin immediate` reserva a escrita logo no
  * começo: o que foi lido dentro dela não muda até o `commit`.
