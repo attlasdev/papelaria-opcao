@@ -100,7 +100,8 @@ plataforma — nao adicionar sem discutir.
 
 8. **Migration nao estreia na maquina da loja.** Toda migration do SQLite roda
    antes numa copia com dados no formato antigo (e com as patologias da base
-   local). No Supabase, a dupla checagem da regra global (`project-ref` +
+   local): as fotos por versao em `testes/bancos/` (`npm run banco:foto` ao
+   criar a migration) e, quando houver, a copia real em `testes/bancos/privado/`. No Supabase, a dupla checagem da regra global (`project-ref` +
    discriminador de conteudo) antes de qualquer escrita; o link da CLI fica
    apontando para o teste.
 

@@ -14,6 +14,8 @@
     "dist:win": "npm run build && electron-builder --win",
     "test": "vitest run",
     "test:regras": "vitest run -t \"\\[R-\"",
+    "banco:foto": "node scripts/banco-teste.mjs foto",
+    "banco:semear": "node scripts/banco-teste.mjs semear",
     "test:regressao": "vitest run -t \"\\[([AM][0-9]|B-[0-9])\""
   },
   "license": "UNLICENSED",

@@ -14,6 +14,10 @@ release/
 *.pem
 conexoes.json
 
+# copia de banco real da loja para testar migration (electron/banco/fotos.test.ts):
+# tem dado de cliente, nunca vai para o repositorio.
+testes/bancos/privado/
+
 # sistema / editor
 .DS_Store
 *.log

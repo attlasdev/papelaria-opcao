@@ -62,6 +62,30 @@ function migrar(banco: Banco, caminho: string, lista: readonly Migracao[]) {
   }
 }
 
+/**
+ * O que precisa valer em qualquer banco, de qualquer versão: o arquivo íntegro,
+ * nenhuma chave estrangeira solta e o saldo de cada produto igual à soma dos
+ * movimentos dele. Devolve os problemas achados (vazio = saudável).
+ */
+export function conferirBanco(banco: Banco): string[] {
+  const problemas: string[] = []
+  const integridade = banco.prepare('pragma integrity_check').all() as { integrity_check: string }[]
+  if (integridade.length !== 1 || integridade[0].integrity_check !== 'ok') {
+    problemas.push(...integridade.map((linha) => `integridade: ${linha.integrity_check}`))
+  }
+  for (const solta of banco.prepare('pragma foreign_key_check').all() as { table: string; parent: string }[]) {
+    problemas.push(`chave solta: ${solta.table} → ${solta.parent}`)
+  }
+  const tabelas = new Set((banco.prepare("select name from sqlite_master where type = 'table'").all() as { name: string }[]).map((t) => t.name))
+  if (tabelas.has('produto') && tabelas.has('movimento_estoque')) {
+    const desencontrados = banco.prepare(`
+      select p.id from produto p
+      where p.saldo <> (select coalesce(sum(m.quantidade), 0) from movimento_estoque m where m.produto_id = p.id)`).all() as { id: string }[]
+    problemas.push(...desencontrados.map((p) => `saldo diferente da soma dos movimentos: produto ${p.id}`))
+  }
+  return problemas
+}
+
 export type Serie = 'ficha' | 'cliente' | 'produto' | 'boleto'
 
 /** O próximo número de exibição da série. Chamar dentro da transação que cria o registro. */
