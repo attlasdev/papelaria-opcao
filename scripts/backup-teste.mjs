@@ -66,6 +66,7 @@ const vite = await createServer({
 const pasta = mkdtempSync(path.join(tmpdir(), 'backup-real-'))
 try {
   const { abrirBanco } = await vite.ssrLoadModule('/electron/banco/banco.ts')
+  const { migracoes } = await vite.ssrLoadModule('/electron/banco/migracoes.ts')
   const { semearBanco } = await vite.ssrLoadModule('/electron/banco/semente.ts')
   const { fazerCopia, restaurarCopia, NOME_ATUAL } = await vite.ssrLoadModule('/electron/backup/backup.ts')
   const { destinoSupabase, BUCKET } = await vite.ssrLoadModule('/electron/backup/supabase-destino.ts')
@@ -103,7 +104,7 @@ try {
 
   for (const nome of [NOME_ATUAL, diaria]) {
     const destinoRestauracao = path.join(pasta, `restaurado-${nome.replace(/\W/g, '-')}.sqlite`)
-    await restaurarCopia({ destino, nome, caminhoBanco: destinoRestauracao, versaoApp: 1 })
+    await restaurarCopia({ destino, nome, caminhoBanco: destinoRestauracao, versaoApp: migracoes.length })
     const restaurado = abrirBanco(destinoRestauracao)
     const contagem = contar(restaurado)
     restaurado.close()

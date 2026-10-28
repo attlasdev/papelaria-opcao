@@ -60,7 +60,8 @@ de unicidade · *opcional* aceita vazio (`null`).
 | `id` | texto | PK, UUID |
 | `nome` | texto | único (sem diferenciar maiúscula) |
 | `ativo` | inteiro 0/1 | desativado some do seletor; o histórico continua citando |
-| `pin_hash` | texto | *opcional*; vazio até ligar o PIN (sem migration para ligar) |
+| `pin_hash` | texto | `scrypt$<sal>$<hash>`; obrigatório para quem nasce desde a migration 0002 (`2026-10-28`); quem já existia fica sem PIN até a dona redefinir, e sem PIN não assina |
+| `admin` | inteiro 0/1 | a dona; uma só, nunca desativada (0002) |
 | `criado_em` | texto | instante UTC |
 
 **`preferencia`** — estado da máquina que não é fato: operador atual, rascunho

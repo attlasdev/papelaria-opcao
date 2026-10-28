@@ -7,12 +7,13 @@ import { migracoes } from './migracoes'
 
 const AGORA = '2026-10-27T12:00:00.000Z'
 const HOJE = '2026-10-27'
+const ULTIMA = migracoes.length
 
 let banco: Banco
 
 beforeEach(() => {
   banco = abrirBanco(':memory:')
-  banco.prepare("insert into operador (id, nome, criado_em) values ('op', 'Loja', ?)").run(AGORA)
+  banco.prepare("insert into operador (id, nome, pin_hash, criado_em) values ('op', 'Loja', 'scrypt$sal$hash', ?)").run(AGORA)
 })
 
 afterEach(() => banco.close())
@@ -68,25 +69,25 @@ describe('abrir e migrar', () => {
       expect(primeiro.prepare('pragma journal_mode').get()).toEqual({ journal_mode: 'wal' })
       primeiro.close()
       const segundo = abrirBanco(caminho)
-      expect(versaoDoBanco(segundo)).toBe(1)
+      expect(versaoDoBanco(segundo)).toBe(ULTIMA)
       segundo.close()
-      expect(existsSync(`${caminho}.v1`)).toBe(false)
+      expect(existsSync(`${caminho}.v${ULTIMA}`)).toBe(false)
     })
 
     it('recusa banco de uma versão mais nova que o app', () => {
       const caminho = path.join(pasta, 'loja.sqlite')
       abrirBanco(caminho).close()
-      expect(() => abrirBanco(caminho, [])).toThrow(/versão 1; este app conhece até a 0/)
+      expect(() => abrirBanco(caminho, [])).toThrow(new RegExp(`versão ${ULTIMA}; este app conhece até a 0`))
     })
 
     it('migration que falha volta atrás inteira, e a cópia de antes fica ao lado', () => {
       const caminho = path.join(pasta, 'loja.sqlite')
       abrirBanco(caminho).close()
-      const quebrada = [...migracoes, { versao: 2, nome: 'quebrada', sql: 'create table nova (id text); insert into inexistente values (1);' }]
+      const quebrada = [...migracoes, { versao: ULTIMA + 1, nome: 'quebrada', sql: 'create table nova (id text); insert into inexistente values (1);' }]
       expect(() => abrirBanco(caminho, quebrada)).toThrow(/no such table: inexistente/)
-      expect(existsSync(`${caminho}.v1`)).toBe(true)
+      expect(existsSync(`${caminho}.v${ULTIMA}`)).toBe(true)
       const depois = abrirBanco(caminho)
-      expect(versaoDoBanco(depois)).toBe(1)
+      expect(versaoDoBanco(depois)).toBe(ULTIMA)
       expect(depois.prepare("select count(*) as n from sqlite_master where name = 'nova'").get()).toEqual({ n: 0 })
       depois.close()
     })
@@ -160,6 +161,29 @@ describe('[R-ESTOQUE-01] saldo mantido pelo banco (P4)', () => {
       movimento('b', 'venda', -3, { ficha_id: 'f' })
     })).toThrow()
     expect([saldo('a'), saldo('b')]).toEqual([5, 1])
+  })
+})
+
+describe('operador', () => {
+  const PIN = 'scrypt$sal$hash'
+  const operador = (id: string, nome: string, extra: Record<string, string | number | null> = {}) =>
+    inserir('operador', { id, nome, pin_hash: PIN, criado_em: AGORA, ...extra })
+
+  it('[R-OPERADOR-01] não nasce sem PIN, o PIN não sai, e o nome não repete', () => {
+    expect(() => inserir('operador', { id: 'a', nome: 'Ana', criado_em: AGORA })).toThrow(/operador sem PIN/)
+    expect(() => operador('a', 'Ana', { pin_hash: '1234' })).toThrow(/operador sem PIN/)
+    operador('a', 'Ana')
+    expect(() => banco.prepare("update operador set pin_hash = null where id = 'a'").run()).toThrow(/operador sem PIN/)
+    expect(() => operador('b', 'ANA')).toThrow(/UNIQUE/)
+  })
+
+  it('[R-OPERADOR-03] uma administradora só, e ela não se desativa', () => {
+    operador('dona', 'Helena', { admin: 1 })
+    expect(() => operador('outra', 'Bia', { admin: 1 })).toThrow(/UNIQUE/)
+    expect(() => banco.prepare("update operador set ativo = 0 where id = 'dona'").run()).toThrow(/administradora/)
+    expect(() => banco.prepare("update operador set admin = 0 where id = 'dona'").run()).toThrow(/administradora/)
+    expect(() => operador('nova', 'Bia', { admin: 1, ativo: 0 })).toThrow(/administradora|UNIQUE/)
+    banco.prepare("update operador set nome = 'Helena Prado' where id = 'dona'").run()
   })
 })
 

@@ -16,6 +16,7 @@ import { somarDias } from '../../src/mock/base/datas'
 import { criarSemente } from '../../src/mock/base/semente'
 import type { Ficha, Meio, Pagamento } from '../../src/mock/base/tipos'
 import { proximoNumero, transacao, type Banco } from './banco'
+import { hashDoPin } from './pin'
 
 type Valor = string | number | null
 type Linha = Record<string, Valor>
@@ -28,6 +29,9 @@ export type OpcoesSemente = {
 }
 
 const ABERTURA_CAIXA = 10000
+
+/** Os PINs da semente, para os testes e para conferir à mão. Nunca na loja. */
+export const PINS = { dona: '1234', joao: '2222', marcia: '3333' } as const
 
 /** Instante UTC de um dia e horário de São Paulo (sem horário de verão desde 2019). */
 function instante(dia: string, horario: string) {
@@ -61,8 +65,8 @@ export function semearBanco(banco: Banco, { hoje, minutoAtual = 24 * 60 - 1 }: O
     // A Márcia saiu da loja: desativada no fim, o histórico continua citando.
     const operadores = { joao: novoId(), marcia: novoId() }
     const desde = instante(somarDias(hoje, -400), '09:00')
-    inserir('operador', { id: operadores.joao, nome: base.operador, criado_em: desde })
-    inserir('operador', { id: operadores.marcia, nome: 'Márcia Antunes', criado_em: desde })
+    inserir('operador', { id: operadores.joao, nome: base.operador, pin_hash: hashDoPin(PINS.joao, 'semente-joao'), criado_em: desde })
+    inserir('operador', { id: operadores.marcia, nome: 'Márcia Antunes', pin_hash: hashDoPin(PINS.marcia, 'semente-marcia'), criado_em: desde })
     const operadorDoDia = (dia: string) => (dia < somarDias(hoje, -45) ? operadores.marcia : operadores.joao)
 
     // Clientes ----------------------------------------------------------------
@@ -411,6 +415,8 @@ export function semearBanco(banco: Banco, { hoje, minutoAtual = 24 * 60 - 1 }: O
     inserir('boleto_evento', { id: novoId(), boleto_id: duplicado, tipo: 'excluido', motivo: 'Cadastrado em dobro', operador_id: operadores.joao, registrado_em: instante(dia(5), '11:02') })
 
     banco.prepare('update operador set ativo = 0 where id = ?').run(operadores.marcia)
+    // A dona: administradora, sem fato próprio na semente (só autoriza).
+    inserir('operador', { id: novoId(), nome: 'Helena Prado', admin: 1, pin_hash: hashDoPin(PINS.dona, 'semente-dona'), criado_em: desde })
     inserir('preferencia', { chave: 'operador_atual', valor: JSON.stringify(operadores.joao) })
   })
 }

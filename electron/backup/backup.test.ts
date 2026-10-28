@@ -4,6 +4,7 @@ import path from 'node:path'
 import { gzipSync } from 'node:zlib'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { abrirBanco, versaoDoBanco, type Banco } from '../banco/banco'
+import { migracoes } from '../banco/migracoes'
 import { semearBanco } from '../banco/semente'
 import { COPIAS_LOCAIS, criarAgendador, fazerCopia, NOME_ATUAL, restaurarCopia, type Destino } from './backup'
 
@@ -46,6 +47,7 @@ afterEach(() => {
 })
 
 const contarFichas = (b: Banco) => (b.prepare('select count(*) n from ficha').get() as { n: number }).n
+const ULTIMA = migracoes.length
 const ESTA_TARDE = new Date('2026-10-28T15:00:00-03:00')
 
 describe('cópia', () => {
@@ -62,7 +64,7 @@ describe('cópia', () => {
     const opcoes = { destino: nuvem.destino, pastaLocal: path.join(pasta, 'copias'), agora: ESTA_TARDE }
     await fazerCopia(banco, opcoes)
     const primeiraDiaria = nuvem.arquivos.get('dias/2026-10-28.sqlite.gz')
-    banco.prepare("update operador set nome = 'Joana' where ativo = 1").run()
+    banco.prepare("update operador set nome = 'Joana' where admin = 1").run()
     expect((await fazerCopia(banco, opcoes)).diaria).toBe('ja-existe')
     expect(nuvem.arquivos.get('dias/2026-10-28.sqlite.gz')).toBe(primeiraDiaria)
     expect(nuvem.arquivos.get(NOME_ATUAL)).not.toBe(primeiraDiaria)
@@ -141,7 +143,7 @@ describe('restauração (só pelo suporte)', () => {
 
     const caminho = path.join(pasta, 'loja.sqlite')
     writeFileSync(`${caminho}-wal`, 'sobra de uma sessão anterior')
-    const { guardado } = await restaurarCopia({ destino: nuvem.destino, nome: NOME_ATUAL, caminhoBanco: caminho, versaoApp: 1, agora: ESTA_TARDE })
+    const { guardado } = await restaurarCopia({ destino: nuvem.destino, nome: NOME_ATUAL, caminhoBanco: caminho, versaoApp: ULTIMA, agora: ESTA_TARDE })
 
     expect(guardado && existsSync(guardado) && existsSync(`${guardado}-wal`)).toBe(true)
     expect(existsSync(`${caminho}-wal`)).toBe(false)
@@ -155,9 +157,9 @@ describe('restauração (só pelo suporte)', () => {
     const caminho = path.join(pasta, 'nova', 'loja.sqlite')
     rmSync(path.dirname(caminho), { recursive: true, force: true })
     mkdirSync(path.dirname(caminho))
-    expect(await restaurarCopia({ destino: nuvem.destino, nome: 'dias/2026-10-28.sqlite.gz', caminhoBanco: caminho, versaoApp: 1 })).toEqual({ guardado: null })
+    expect(await restaurarCopia({ destino: nuvem.destino, nome: 'dias/2026-10-28.sqlite.gz', caminhoBanco: caminho, versaoApp: ULTIMA })).toEqual({ guardado: null })
     const restaurado = abrirBanco(caminho)
-    expect(versaoDoBanco(restaurado)).toBe(1)
+    expect(versaoDoBanco(restaurado)).toBe(ULTIMA)
     restaurado.close()
   })
 
@@ -165,12 +167,12 @@ describe('restauração (só pelo suporte)', () => {
     const nuvem = destinoFalso()
     banco.exec('pragma user_version = 9')
     await fazerCopia(banco, { destino: nuvem.destino, pastaLocal: path.join(pasta, 'copias'), agora: ESTA_TARDE })
-    banco.exec('pragma user_version = 1')
+    banco.exec(`pragma user_version = ${ULTIMA}`)
     banco.close()
     const caminho = path.join(pasta, 'loja.sqlite')
-    await expect(restaurarCopia({ destino: nuvem.destino, nome: NOME_ATUAL, caminhoBanco: caminho, versaoApp: 1 })).rejects.toThrow(/versão 9/)
+    await expect(restaurarCopia({ destino: nuvem.destino, nome: NOME_ATUAL, caminhoBanco: caminho, versaoApp: ULTIMA })).rejects.toThrow(/versão 9/)
     banco = abrirBanco(caminho)
-    expect(versaoDoBanco(banco)).toBe(1)
+    expect(versaoDoBanco(banco)).toBe(ULTIMA)
     expect(readdirSync(pasta).filter((n) => n.includes('restaura'))).toEqual([])
   })
 
@@ -179,7 +181,7 @@ describe('restauração (só pelo suporte)', () => {
     nuvem.arquivos.set(NOME_ATUAL, gzipSync(Buffer.from('isto não é um banco')))
     banco.close()
     const caminho = path.join(pasta, 'loja.sqlite')
-    await expect(restaurarCopia({ destino: nuvem.destino, nome: NOME_ATUAL, caminhoBanco: caminho, versaoApp: 1 })).rejects.toThrow()
+    await expect(restaurarCopia({ destino: nuvem.destino, nome: NOME_ATUAL, caminhoBanco: caminho, versaoApp: ULTIMA })).rejects.toThrow()
     banco = abrirBanco(caminho)
     expect(contarFichas(banco)).toBeGreaterThan(0)
   })

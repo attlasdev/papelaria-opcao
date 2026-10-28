@@ -223,10 +223,9 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
 - **Nota fiscal: Emitte manual.** Comprovante não fiscal na térmica em toda
   venda; a nota segue montada à mão na Emitte quando precisar (mantém a decisão
   de `2026-10-07`). Emissor com API fica fora da 1.0.
-- **Operador: seletor sem PIN, preparado para PIN futuro.** Dona e funcionária
-  escolhem o nome; todo registro guarda quem fez. O schema já nasce com o
-  operador como cadastro próprio e espaço para o PIN, para ligá-lo depois sem
-  migration de dados.
+- ~~**Operador: seletor sem PIN, preparado para PIN futuro.**~~ Trocado em
+  `2026-10-28`: PIN de 4 dígitos pedido em cada gesto, sem operador fixo (ver
+  "Decisões de arquitetura" e "Operadores e login").
 - **Licença e bloqueio por inadimplência entram na 1.0, como última etapa**, se
   possível. Não bloqueia o resto do plano.
 - **`2026-10-27`:** a migração das telas é nossa (D2); excluir boleto vira
@@ -575,8 +574,9 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   Conserva contagens, esperado, diferenças, motivos, operadores e estornos;
   "Ver" abre os movimentos em dinheiro e as fichas do caixa escolhido.
   Fechamentos anteriores são preservados.
-- `R-CAIXA-09` Novos movimentos, pagamentos e estornos guardam o operador da base local;
-  isto identifica o operador configurado, sem autenticar quem está na máquina.
+- `R-CAIXA-09` Novos movimentos, pagamentos e estornos guardam quem fez, escolhido com
+  PIN no gesto (`R-OPERADOR-02`). Na 0.1 era o operador fixo da base, sem
+  autenticar quem estava na máquina.
 
 ### Pagamentos (Pix e cartão)
 - `R-PAGAMENTO-01` A funcionária marca Pix ou cartão **depois de conferir** no balcão; não há
@@ -609,6 +609,37 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
 - `R-INICIO-05` Sino: notinha em atraso, notinha que vence em até 3 dias, produto zerado,
   estoque baixo, cadastro rápido a completar, rascunho de nota; do mais grave ao
   menos grave. Lido volta a ser novo se o texto mudar.
+
+### Operadores e login (`2026-10-28`, 1.0)
+- `R-OPERADOR-01` Cada pessoa da loja é um operador, com nome único (sem diferenciar
+  maiúscula e minúscula) e **PIN de 4 dígitos**, só números. Não existe operador
+  sem PIN.
+- `R-OPERADOR-02` **Não há operador fixo.** Todo gesto que grava um fato (concluir venda,
+  receber, abrir e fechar caixa, gaveta, lançamento, entrada de mercadoria,
+  boleto pago) pede quem está fazendo: escolher a pessoa e digitar o PIN. O
+  último a usar fica marcado, e o PIN é pedido do mesmo jeito. Não pedem: os
+  cadastros editáveis (cliente, produto), consultar, montar a ficha.
+- `R-OPERADOR-03` **Uma administradora, a dona.** Cadastrar, renomear, desativar ou
+  reativar uma pessoa e redefinir PIN só com o PIN dela. Ela não pode ser
+  desativada. PIN esquecido: a dona redefine; o dela, só o suporte.
+- `R-OPERADOR-04` **5 PINs errados seguidos** para a mesma pessoa: 30 segundos de espera
+  antes de tentar de novo. Acertar zera a conta.
+- `R-OPERADOR-05` **Primeira abertura:** sem administradora cadastrada, o app pede o
+  cadastro dela (nome e PIN digitado duas vezes) antes de abrir a loja. Esse
+  cadastro só vale enquanto não houver administradora.
+- `R-OPERADOR-06` **Gesto sensível pede também o PIN da dona**, gravado como quem
+  autorizou; se é a própria dona que faz, um PIN basta. Lista provisória, a
+  confirmar com ela (D3): cancelar ficha, estornar recebimento e lançamento,
+  ajustar estoque, marcar e desfazer pagamento de boleto, fechar caixa com
+  diferença.
+- `R-OPERADOR-07` Pessoa desativada some da escolha, não assina nem autoriza, e continua
+  no histórico com o nome.
+- `R-OPERADOR-08` O PIN só existe no back, guardado com hash (scrypt, com sal); nunca
+  volta para a tela nem vai para o log.
+- `R-LOGIN-01` **Login da loja:** um usuário por loja, criado por nós; a loja recebe
+  e-mail e senha e entra uma vez, na primeira abertura. Depois o app abre
+  conectado. O login serve só ao backup: sem sessão, a loja não para; o sino
+  avisa que a cópia na nuvem está parada.
 
 ### Notas fiscais (fora do escopo atual)
 - Nota: Área mínima: Entradas e Saídas simuladas; "Preparar nota" cria rascunho para
@@ -652,6 +683,27 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-10-28` — Operador com PIN em cada gesto, administradora com PIN
+Decisão do Agostinho, no percurso da tela 1 da 1.0. Troca a de `2026-10-23`
+("seletor sem PIN, preparado para PIN futuro"). Regras em "Operadores e
+login" (`R-OPERADOR-*`, `R-LOGIN-01`).
+
+- **PIN de 4 dígitos por pessoa, pedido no fim de cada gesto que grava**, sem
+  operador fixo na máquina. A operação recebe a assinatura (pessoa e PIN) e o
+  back confere dentro da mesma chamada: a tela não tem como dizer "fui eu" sem
+  o PIN.
+- **A dona é a administradora:** o PIN dela cadastra as pessoas e autoriza os
+  gestos sensíveis (D3 vira a lista desses gestos).
+- **Login da loja criado por nós**, usado uma vez na primeira abertura; depois
+  o app abre conectado.
+
+**Por quê:** com duas pessoas no balcão, operador fixo grava a pessoa errada
+sempre que alguém esquece de trocar, e o registro de quem fez perde o valor.
+O custo é um PIN por recebimento, aceito. 4 dígitos são 10 mil combinações:
+a proteção é a espera depois de 5 erros, não o hash.
+Descartado: PIN só nos gestos sensíveis (de volta ao operador fixo no resto);
+só o PIN, sem escolher a pessoa (um palpite errado acerta o PIN de outra).
 
 ### `2026-10-27` — Suíte de testes: regras e bugs numerados, cobertura conferida
 Regra tem número (`R-ÁREA-NN`, nas "Regras de produto" e "de interface"), bug

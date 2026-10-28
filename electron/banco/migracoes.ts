@@ -5,9 +5,11 @@
  * (CLAUDE.md, regra 8).
  */
 import inicial from './migracoes/0001-inicial.sql?raw'
+import operadorPin from './migracoes/0002-operador-pin.sql?raw'
 
 export type Migracao = { versao: number; nome: string; sql: string }
 
 export const migracoes: readonly Migracao[] = [
   { versao: 1, nome: 'inicial', sql: inicial },
+  { versao: 2, nome: 'operador-pin', sql: operadorPin },
 ]
