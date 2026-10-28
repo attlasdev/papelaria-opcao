@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import type { Assinatura, DadosProduto, Produto, Resultado } from '../../../comum/contrato'
+import { conferirProduto } from '../../../comum/regras/produto'
 import { Modal } from '../../componentes/modal/Modal'
 import { Botao } from '../../componentes/botao/Botao'
 import { Campo, Selecao } from '../../componentes/campo/Campo'
 import { CampoMoeda } from '../../componentes/campo/CampoMoeda'
 import { Icone } from '../../componentes/icone/Icone'
+import { JanelaAssinatura } from '../../componentes/assinatura/JanelaAssinatura'
+import { api } from '../../dados/api'
+import { tituloFalha } from '../../falhas'
 import { centavosDeTexto } from '../../formatar'
 import { useLeitorCodigo } from '../../leitor/useLeitorCodigo'
 import { rotas } from '../../rotas-caminhos'
-import type { Produto, Unidade } from '../../mock/base/tipos'
-import { cadastrarProduto, definirProdutoAtivo, editarProduto, excluirProduto, produtoTemHistorico, proximoCodigoProduto, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import type { Produto as ProdutoBase, Unidade } from '../../mock/base/tipos'
 import { Estoque } from '../estoque/Estoque'
 import { unidades } from './constantes'
 import { CampoCategoria } from './CampoCategoria'
@@ -33,20 +37,49 @@ export function CadastrarProduto() {
   )
 }
 
-/** Corrigir um produto já cadastrado; excluir ou desativar sai daqui também. */
+/** Mensagem de falha para a tela: a de validação já é legível; as outras levam o título da causa. */
+const mensagemDe = (r: Exclude<Resultado<unknown>, { ok: true }>) => (r.causa === 'validacao' ? r.erro : `${tituloFalha(r.causa)} ${r.erro}`)
+
+/**
+ * Corrigir um produto já cadastrado; excluir ou desativar sai daqui também. Lido
+ * na abertura: o modal não troca de produto no meio.
+ */
 export function EditarProduto() {
   const navegar = useNavigate()
-  const { codigo } = useParams()
-  const produto = useEstadoDemonstracao().produtos.find((p) => p.codigo === codigo)
+  // Até a Estoque migrar (tela 2.2), a rota leva o código, que no mock é o id.
+  const { codigo = '' } = useParams()
   const fechar = useCallback(() => navegar(rotas.estoque), [navegar])
-  // Guardado na abertura: o modal não troca de produto no meio. Código
-  // inexistente: não há o que abrir.
-  const [alvo] = useState(produto)
-  useEffect(() => { if (!alvo) fechar() }, [alvo, fechar])
+  const [carga, setCarga] = useState<{ fase: 'carregando' } | { fase: 'erro'; mensagem: string } | { fase: 'pronto'; produto: Produto }>({ fase: 'carregando' })
+  const [tentativa, setTentativa] = useState(0)
+  useEffect(() => {
+    let vivo = true
+    void api().obterProduto(codigo).then((r) => {
+      if (vivo) setCarga(r.ok ? { fase: 'pronto', produto: r.dado } : { fase: 'erro', mensagem: mensagemDe(r) })
+    })
+    return () => { vivo = false }
+  }, [codigo, tentativa])
   return (
     <>
       <Estoque />
-      {alvo && <ModalProduto editar={alvo} aoFechar={fechar} aoSalvar={fechar} />}
+      {carga.fase === 'pronto'
+        ? <ModalProduto editar={carga.produto} aoFechar={fechar} aoSalvar={fechar} />
+        : (
+          <Modal
+            estreito
+            titulo="Editar produto"
+            aoFechar={fechar}
+            rodape={carga.fase === 'erro' && (
+              <>
+                <Botao variante="fantasma" onClick={fechar}>Fechar</Botao>
+                <Botao variante="primario" onClick={() => { setCarga({ fase: 'carregando' }); setTentativa((n) => n + 1) }}>Tentar de novo</Botao>
+              </>
+            )}
+          >
+            <p className={carga.fase === 'erro' ? 'cadastrar-produto__lembrete cadastrar-produto__lembrete--erro' : 'cadastrar-produto__lembrete'} role={carga.fase === 'erro' ? 'alert' : 'status'}>
+              {carga.fase === 'erro' ? carga.mensagem : 'Carregando o produto…'}
+            </p>
+          </Modal>
+        )}
     </>
   )
 }
@@ -65,8 +98,8 @@ export type ProdutoDaEntrada = {
   rascunho?: RascunhoProduto
 }
 
-/** Cadastro preparado na entrada. Só vira produto no "Confirmar entrada". */
-export type RascunhoProduto = Omit<Produto, 'codigo'>
+/** Cadastro preparado na entrada. Só vira produto no "Confirmar entrada" (tela 2.4 ainda na base). */
+export type RascunhoProduto = Omit<ProdutoBase, 'codigo'>
 
 /** `quantos`: a pergunta com o gênero certo ("Quantos pacotes", "Quantas caixas"). */
 const nomes: Record<Unidade, { um: string; varios: string; quantos: string }> = {
@@ -77,8 +110,8 @@ const nomes: Record<Unidade, { um: string; varios: string; quantos: string }> = 
 
 type PropsModal = {
   aoFechar: () => void
-  /** Aberto pelo Estoque ou pela ficha: grava e devolve o produto. */
-  aoSalvar?: (codigo: string, produto: RascunhoProduto) => void
+  /** Aberto pelo Estoque ou pela ficha: grava e devolve o código do produto. */
+  aoSalvar?: (codigo: string) => void
   /**
    * Aberto pela entrada: nada é gravado. Volta o cadastro preparado e o que entra
    * no estoque, já na unidade de venda (null mantém a quantidade da linha).
@@ -108,6 +141,17 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
   const campoCodigoBarras = useRef<HTMLInputElement>(null)
   const [erroSalvar, setErroSalvar] = useState('')
   const [erros, setErros] = useState<Partial<Record<CampoCadastro, string>>>({})
+  const [enviando, setEnviando] = useState(false)
+  /** Pedido de assinatura em aberto: a quantidade inicial é um fato (`R-ESTOQUE-07`). */
+  const [assinar, setAssinar] = useState<((quem: Assinatura) => Promise<Resultado<Produto>>) | null>(null)
+  /** Gravado: a janela mostra o produto com o código que o banco deu (`R-ESTOQUE-08`). */
+  const [salvo, setSalvo] = useState<Produto | null>(null)
+  const [categoriasExistentes, setCategoriasExistentes] = useState<string[]>([])
+  useEffect(() => {
+    let vivo = true
+    void api().listarCategorias().then((r) => { if (vivo && r.ok) setCategoriasExistentes(r.dado) })
+    return () => { vivo = false }
+  }, [])
 
   function limparErro(campo: CampoCadastro) {
     setErros((atual) => ({ ...atual, [campo]: undefined }))
@@ -177,53 +221,52 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
     const linha = chegou === 'un' ? nChegou : 0
     if (chegou === 'un' && linha && n > 0 && linha % n === 0) setPorEmbalagem(String(linha / n))
   }
-  const base = useEstadoDemonstracao()
-  const { produtos } = base
-  const proximoCodigo = proximoCodigoProduto(base)
-  const categoriasExistentes = [...new Set(produtos.map((p) => p.categoria))].sort((a, b) => a.localeCompare(b, 'pt-BR'))
-
-  const duplicado = semCodigo ? undefined : produtos.find((p) => codigoBarras && p.codigo !== existente?.codigo && p.codigoBarras === codigoBarras.trim())
+  // O código digitado ou bipado já existe? Consulta o back depois de uma pausa na digitação (`R-ESTOQUE-05`).
+  const [achado, setAchado] = useState<Produto | null>(null)
+  const procurado = semCodigo ? '' : codigoBarras.trim()
+  useEffect(() => {
+    if (!procurado) { setAchado(null); return }
+    let vivo = true
+    const espera = setTimeout(() => {
+      void api().buscarProdutoPorCodigoBarras(procurado).then((r) => { if (vivo && r.ok) setAchado(r.dado) })
+    }, 250)
+    return () => { vivo = false; clearTimeout(espera) }
+  }, [procurado])
+  const duplicado = achado && achado.codigoBarras === procurado && achado.id !== existente?.id ? achado : undefined
   const produtoConsultado = !daEntrada && duplicado?.codigoBarras === codigoConsultado ? duplicado : undefined
+  /** Só leitura: o produto bipado que já existe, ou o que acabou de ser gravado. */
+  const consultado = salvo ?? produtoConsultado
 
-  function salvar(evento: FormEvent<HTMLFormElement>) {
+  async function salvar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
+    if (enviando) return
     const formulario = evento.currentTarget
     const dados = new FormData(formulario)
-    const nome = String(dados.get('nome') ?? '').trim()
-    const digitada = String(dados.get('categoria') ?? '').trim()
-    // Mesmo nome com outra caixa ou sem acento é a mesma categoria: não duplica o filtro do Estoque.
-    const categoria = categoriasExistentes.find((c) => c.localeCompare(digitada, 'pt-BR', { sensitivity: 'base' }) === 0) ?? digitada
-    const unidade = String(dados.get('unidade') ?? '').slice(0, String(dados.get('unidade') ?? '').indexOf(' ')) as Unidade
-    const preco = centavosDeTexto(String(dados.get('preco') ?? ''))
-    const textoSaldo = String(dados.get('saldo') ?? '').trim()
-    const saldo = editar ? editar.saldo : Number(textoSaldo)
-    const textoCusto = String(dados.get('custo') ?? '').trim()
-    const custo = textoCusto ? centavosDeTexto(textoCusto) : undefined
-    const opcional = (campo: string) => String(dados.get(campo) ?? '').trim() || undefined
-    const minimo = Number(dados.get('minimo'))
+    const texto = (campo: string) => String(dados.get(campo) ?? '')
+    const unidade = texto('unidade').slice(0, texto('unidade').indexOf(' ')) as Unidade
+    const textoSaldo = texto('saldo').trim()
+    const saldo = Number(textoSaldo)
+    const textoCusto = texto('custo').trim()
     const final = quantidadeFinal()
-    const falhas: Partial<Record<CampoCadastro, string>> = {}
-    if (duplicado) falhas.codigoBarras = `Este código já está cadastrado em ${duplicado.codigo}.`
-    if (!nome) falhas.nome = 'Informe o nome do produto.'
-    if (!categoria) falhas.categoria = 'Escolha ou crie uma categoria.'
-    if (!['un', 'pct', 'cx'].includes(unidade)) falhas.unidade = 'Escolha a unidade de venda.'
-    if (!Number.isSafeInteger(preco) || preco <= 0) falhas.preco = 'Informe um preço de venda maior que zero.'
-    if (custo !== undefined && (!Number.isSafeInteger(custo) || custo < 0)) falhas.custo = 'Confira o custo informado.'
-    if (!daEntrada && (!Number.isInteger(saldo) || saldo < 0)) falhas.saldo = 'Informe uma quantidade válida.'
-    if (!Number.isInteger(minimo) || minimo < 0) falhas.minimo = 'Informe um estoque mínimo válido.'
-    if (typeof final === 'string') falhas.embalagem = final
-    // Fora da tela (ver o import comentado no topo). Editar não apaga o que já havia.
-    // const fiscal = limparFiscalProduto({
-    //   tributacao: String(dados.get('tributacao') ?? ''), origem: String(dados.get('origem') ?? ''),
-    //   cfopEstadual: String(dados.get('cfopEstadual') ?? ''), cfopInterestadual: String(dados.get('cfopInterestadual') ?? ''),
-    //   ncm: String(dados.get('ncm') ?? ''), cest: String(dados.get('cest') ?? ''),
-    // })
-    // if (fiscal) Object.assign(falhas, conferirFiscalProduto(fiscal))
-    // Só NCM e CEST voltaram, como anotação para a Emitte (`2026-10-23`).
-    const anotado = anotarNcmCest((daEntrada?.rascunho ?? existente)?.fiscal, String(dados.get('ncm') ?? ''), String(dados.get('cest') ?? ''))
-    Object.assign(falhas, anotado.erros)
-    const fiscal = anotado.fiscal
-    const primeira = (['codigoBarras', 'nome', 'categoria', 'unidade', 'preco', 'custo', 'saldo', 'minimo', 'embalagem', 'ncm', 'cest', 'cfopEstadual', 'cfopInterestadual'] as CampoCadastro[]).find((campo) => falhas[campo])
+    const contrato: DadosProduto = {
+      codigoBarras: semCodigo ? null : codigoBarras, descricao: texto('nome'), categoria: texto('categoria'), unidade,
+      preco: centavosDeTexto(texto('preco')), custo: textoCusto ? centavosDeTexto(textoCusto) : null, minimo: Number(texto('minimo')),
+      localizacao: texto('localizacao'), marca: texto('marca'), caracteristicas: texto('caracteristicas'), descricaoAdicional: texto('descricaoAdicional'),
+      conteudo: daEntrada
+        ? (embalado && (nPacotes > 0 || nDentro > 0) ? { embalagem, pacotes: nPacotes > 0 ? nPacotes : null, unidades: nDentro > 0 ? nDentro : null } : null)
+        : editar?.conteudo ?? null,
+      ncm: texto('ncm'), cest: texto('cest'),
+    }
+    // As mesmas regras do back (`comum/regras/produto.ts`): aponta o campo antes de mandar.
+    const conferido = conferirProduto(contrato)
+    const regra = conferido.erros
+    const falhas: Partial<Record<CampoCadastro, string>> = {
+      codigoBarras: duplicado ? `Este código já está cadastrado em ${duplicado.codigo}.` : undefined,
+      nome: regra.descricao, categoria: regra.categoria, unidade: regra.unidade, preco: regra.preco, custo: regra.custo,
+      saldo: !daEntrada && !editar && (!textoSaldo || !Number.isInteger(saldo) || saldo < 0) ? 'Informe uma quantidade válida.' : undefined,
+      minimo: regra.minimo, embalagem: typeof final === 'string' ? final : regra.conteudo, ncm: regra.ncm, cest: regra.cest,
+    }
+    const primeira = (['codigoBarras', 'nome', 'categoria', 'unidade', 'preco', 'custo', 'saldo', 'minimo', 'embalagem', 'ncm', 'cest'] as CampoCadastro[]).find((campo) => falhas[campo])
     if (primeira) {
       setErros(falhas)
       setErroSalvar(falhas[primeira]!)
@@ -236,65 +279,79 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
       })
       return
     }
-    const grupo = categoria.includes('Caderno') ? 'cadernos' as const : categoria.includes('Escrita') ? 'escrita' as const : categoria.includes('Papéis') ? 'papeis' as const : categoria.includes('Escritório') ? 'escritorio' as const : 'artes' as const
-    const dadosProduto: RascunhoProduto = { codigoBarras: semCodigo ? undefined : codigoBarras.trim() || undefined, descricao: nome, categoria, grupo, unidade, preco, saldo: daEntrada ? 0 : saldo, minimo,
-      custo, localizacao: opcional('localizacao'), marca: opcional('marca'), caracteristicas: opcional('caracteristicas'), descricaoAdicional: opcional('descricaoAdicional'), fiscal,
-      conteudo: daEntrada && embalado && (nPacotes > 0 || nDentro > 0)
-        ? { embalagem, pacotes: nPacotes > 0 ? nPacotes : undefined, unidades: nDentro > 0 ? nDentro : undefined }
-        : undefined }
-    // Pela entrada, só prepara: o produto nasce junto com o estoque, ao confirmar a entrada.
+    // Pela entrada, só prepara: o produto nasce junto com o estoque, ao confirmar a entrada (tela 2.4).
     if (daEntrada) {
-      aoPreparar?.(dadosProduto, typeof final === 'string' ? null : final)
+      const d = conferido.dados
+      const categoria = categoriasExistentes.find((c) => c.localeCompare(d.categoria, 'pt-BR', { sensitivity: 'base' }) === 0) ?? d.categoria
+      const sem = <T,>(v: T | null) => v ?? undefined
+      aoPreparar?.({
+        codigoBarras: sem(d.codigoBarras), descricao: d.descricao, categoria, grupo: grupoDa(categoria), unidade: d.unidade, preco: d.preco,
+        saldo: 0, minimo: d.minimo, custo: sem(d.custo), localizacao: sem(d.localizacao), marca: sem(d.marca),
+        caracteristicas: sem(d.caracteristicas), descricaoAdicional: sem(d.descricaoAdicional),
+        fiscal: anotarNcmCest(daEntrada.rascunho?.fiscal, d.ncm ?? '', d.cest ?? '').fiscal,
+        conteudo: d.conteudo ? { embalagem: d.conteudo.embalagem, pacotes: sem(d.conteudo.pacotes), unidades: sem(d.conteudo.unidades) } : undefined,
+      }, typeof final === 'string' ? null : final)
       return
     }
-    if (editar) {
-      const { saldo: _saldo, ...cadastro } = dadosProduto
-      if (editarProduto(editar.codigo, cadastro)) aoSalvar?.(editar.codigo, dadosProduto)
+    if (!editar && saldo > 0) {
+      // A quantidade inicial vira um movimento com autor: a janela pede quem está fazendo.
+      setAssinar(() => (quem: Assinatura) => api().cadastrarProduto(contrato, saldo, quem))
       return
     }
-    aoSalvar?.(cadastrarProduto(dadosProduto), dadosProduto)
+    setEnviando(true)
+    const r = editar ? await api().editarProduto(editar.id, contrato) : await api().cadastrarProduto(contrato, 0, null)
+    setEnviando(false)
+    if (!r.ok) return setErroSalvar(mensagemDe(r))
+    if (editar) aoSalvar?.(r.dado.codigo)
+    else setSalvo(r.dado)
   }
 
-  const r = daEntrada?.rascunho ?? existente
-  // const fiscalInicial = produtoConsultado?.fiscal ?? r?.fiscal ?? FISCAL_PRODUTO_PADRAO
-  const inicial = existente
-    ? { nome: existente.descricao, preco: existente.preco, custo: existente.custo ?? null, localizacao: existente.localizacao ?? '', minimo: editar ? String(editar.minimo) : '' }
-    : produtoConsultado
-    ? { nome: produtoConsultado.descricao, preco: produtoConsultado.preco, custo: produtoConsultado.custo ?? null, localizacao: produtoConsultado.localizacao ?? '', minimo: String(produtoConsultado.minimo) }
+  // const fiscalInicial = consultado?.fiscal ?? r?.fiscal ?? FISCAL_PRODUTO_PADRAO
+  const rascunho = daEntrada?.rascunho
+  const doProduto = consultado ?? existente
+  const inicial = doProduto
+    ? { nome: doProduto.descricao, preco: doProduto.preco, custo: doProduto.custo, localizacao: doProduto.localizacao ?? '', minimo: String(doProduto.minimo),
+        categoria: doProduto.categoria, marca: doProduto.marca ?? undefined, caracteristicas: doProduto.caracteristicas ?? undefined,
+        descricaoAdicional: doProduto.descricaoAdicional ?? undefined, ncm: doProduto.ncm ?? undefined, cest: doProduto.cest ?? undefined }
     : daEntrada
-    ? { nome: r?.descricao ?? daEntrada.nome, preco: r?.preco ?? null, custo: r?.custo ?? null, localizacao: r?.localizacao ?? '', minimo: r ? String(r.minimo) : '' }
+    ? { nome: rascunho?.descricao ?? daEntrada.nome, preco: rascunho?.preco ?? null, custo: rascunho?.custo ?? null, localizacao: rascunho?.localizacao ?? '',
+        minimo: rascunho ? String(rascunho.minimo) : '', categoria: rascunho?.categoria, marca: rascunho?.marca, caracteristicas: rascunho?.caracteristicas,
+        descricaoAdicional: rascunho?.descricaoAdicional, ncm: rascunho?.fiscal?.ncm, cest: rascunho?.fiscal?.cest }
     : { nome: '', preco: null, custo: null, localizacao: '', minimo: '' }
 
   return (
       <Modal
-        titulo={produtoConsultado ? 'Produto já cadastrado' : editar ? 'Editar produto' : 'Cadastrar produto'}
-        subtitulo={produtoConsultado
+        titulo={salvo ? 'Produto cadastrado' : produtoConsultado ? 'Produto já cadastrado' : editar ? 'Editar produto' : 'Cadastrar produto'}
+        subtitulo={salvo
+          ? `Gravado como ${salvo.codigo}.`
+          : produtoConsultado
           ? 'Código reconhecido. Os dados abaixo são do produto existente.'
           : editar ? 'O saldo muda só por entrada ou ajuste.'
           : daEntrada ? 'A quantidade vem da entrada.' : undefined}
-        aoFechar={fechar}
+        aoFechar={salvo ? () => aoSalvar?.(salvo.codigo) : fechar}
         rodape={
-          produtoConsultado ? <Botao variante="primario" onClick={fechar}>Fechar</Botao> : (
+          salvo ? <Botao variante="primario" onClick={() => aoSalvar?.(salvo.codigo)}>Fechar</Botao>
+          : produtoConsultado ? <Botao variante="primario" onClick={fechar}>Fechar</Botao> : (
             <>
-              {editar && <AcaoRemover produto={editar} aoConcluir={fechar} />}
+              {editar && <AcaoRemover produto={editar} aoConcluir={fechar} aoFalhar={setErroSalvar} />}
               <span className={erroSalvar ? 'cadastrar-produto__lembrete cadastrar-produto__lembrete--erro' : 'cadastrar-produto__lembrete'} role={erroSalvar ? 'alert' : undefined}>
                 {erroSalvar}
               </span>
               <Botao variante="fantasma" onClick={fechar}>
                 Cancelar
               </Botao>
-              <Botao variante="primario" icone="check" type="submit" form="cadastrar-produto-formulario">
-                {editar ? 'Salvar alterações' : 'Salvar produto'}
+              <Botao variante="primario" icone="check" type="submit" form="cadastrar-produto-formulario" disabled={enviando}>
+                {enviando ? 'Salvando…' : editar ? 'Salvar alterações' : 'Salvar produto'}
               </Botao>
             </>
           )
         }
       >
-        <form key={produtoConsultado?.codigo ?? 'novo'} id="cadastrar-produto-formulario" onSubmit={salvar} noValidate>
+        <form key={consultado?.codigo ?? 'novo'} id="cadastrar-produto-formulario" onSubmit={salvar} noValidate>
         <section className="cadastrar-produto__grupo">
           <h3 className="cadastrar-produto__titulo">Dados principais</h3>
           <div className="cadastrar-produto__grade">
-            <Campo rotulo="Código interno" value={produtoConsultado?.codigo ?? existente?.codigo ?? proximoCodigo} readOnly />
+            <Campo rotulo="Código interno" value={consultado?.codigo ?? existente?.codigo ?? 'Gerado ao salvar'} readOnly />
             <div className="cadastrar-produto__barras">
               {daEntrada ? (
                 <Campo
@@ -352,17 +409,17 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
                 Produto sem código de barras
               </label>
             </div>
-            <Campo rotulo="Nome do produto" name="nome" required defaultValue={inicial.nome} readOnly={Boolean(produtoConsultado)} autoFocus={Boolean(daEntrada)} className="cadastrar-produto__largo" erro={Boolean(erros.nome)} ajuda={erros.nome} onChange={() => limparErro('nome')} />
-            {produtoConsultado
-              ? <Campo rotulo="Categoria" value={produtoConsultado.categoria} readOnly />
-              : <CampoCategoria name="categoria" existentes={categoriasExistentes} inicial={r?.categoria} erro={erros.categoria} aoMudar={() => limparErro('categoria')} />}
+            <Campo rotulo="Nome do produto" name="nome" required defaultValue={inicial.nome} readOnly={Boolean(consultado)} autoFocus={Boolean(daEntrada)} className="cadastrar-produto__largo" erro={Boolean(erros.nome)} ajuda={erros.nome} onChange={() => limparErro('nome')} />
+            {consultado
+              ? <Campo rotulo="Categoria" value={consultado.categoria} readOnly />
+              : <CampoCategoria name="categoria" existentes={categoriasExistentes} inicial={inicial.categoria} erro={erros.categoria} aoMudar={() => limparErro('categoria')} />}
             <Selecao
               rotulo="Unidade de venda"
               name="unidade"
               opcoes={unidades}
               valorInicial={unidades.find((u) => u.startsWith(`${unidadeVenda} `))}
-              valor={produtoConsultado ? unidades.find((u) => u.startsWith(`${produtoConsultado.unidade} `)) : undefined}
-              disabled={Boolean(produtoConsultado)}
+              valor={consultado ? unidades.find((u) => u.startsWith(`${consultado.unidade} `)) : undefined}
+              disabled={Boolean(consultado)}
               erro={Boolean(erros.unidade)}
               aoMudar={(valor) => { setUnidadeVenda(valor.slice(0, valor.indexOf(' ')) as Unidade); limparErro('unidade') }}
               ajuda={erros.unidade ?? 'O estoque é contado nela.'}
@@ -461,16 +518,16 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
         <section className="cadastrar-produto__grupo">
           <h3 className="cadastrar-produto__titulo">Preço e estoque</h3>
           <div className="cadastrar-produto__grade cadastrar-produto__grade--tres">
-            <CampoMoeda rotulo="Preço de venda (R$)" name="preco" required valorInicialCentavos={inicial.preco} readOnly={Boolean(produtoConsultado)} erro={Boolean(erros.preco)} ajuda={erros.preco} aoMudar={() => limparErro('preco')} />
-            <CampoMoeda rotulo="Custo (R$)" name="custo" opcional valorInicialCentavos={inicial.custo} readOnly={Boolean(produtoConsultado)} erro={Boolean(erros.custo)} ajuda={erros.custo} aoMudar={() => limparErro('custo')} />
-            <Campo rotulo="Localização" name="localizacao" opcional defaultValue={inicial.localizacao} readOnly={Boolean(produtoConsultado)} />
+            <CampoMoeda rotulo="Preço de venda (R$)" name="preco" required valorInicialCentavos={inicial.preco} readOnly={Boolean(consultado)} erro={Boolean(erros.preco)} ajuda={erros.preco} aoMudar={() => limparErro('preco')} />
+            <CampoMoeda rotulo="Custo (R$)" name="custo" opcional valorInicialCentavos={inicial.custo} readOnly={Boolean(consultado)} erro={Boolean(erros.custo)} ajuda={erros.custo} aoMudar={() => limparErro('custo')} />
+            <Campo rotulo="Localização" name="localizacao" opcional defaultValue={inicial.localizacao} readOnly={Boolean(consultado)} />
             {!daEntrada && !editar && <Campo
               rotulo="Quantidade inicial"
               type="number"
               name="saldo"
               min={0}
-              defaultValue={produtoConsultado?.saldo}
-              readOnly={Boolean(produtoConsultado)}
+              defaultValue={consultado?.saldo}
+              readOnly={Boolean(consultado)}
               erro={Boolean(erros.saldo)}
               ajuda={erros.saldo ?? 'Quantidade contada no balcão.'}
               onChange={() => limparErro('saldo')}
@@ -481,7 +538,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
               name="minimo"
               min={0}
               defaultValue={inicial.minimo}
-              readOnly={Boolean(produtoConsultado)}
+              readOnly={Boolean(consultado)}
               erro={Boolean(erros.minimo)}
               ajuda={erros.minimo ?? 'Abaixo disto, vira estoque baixo.'}
               onChange={() => limparErro('minimo')}
@@ -492,12 +549,12 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
         <section className="cadastrar-produto__grupo">
           <h3 className="cadastrar-produto__titulo">Dados complementares</h3>
           <div className="cadastrar-produto__grade">
-            <Campo rotulo="Marca" name="marca" opcional defaultValue={produtoConsultado?.marca ?? r?.marca} readOnly={Boolean(produtoConsultado)} />
+            <Campo rotulo="Marca" name="marca" opcional defaultValue={inicial.marca} readOnly={Boolean(consultado)} />
             {/* Sem campo "Fornecedor": o produto não o guarda; o fornecedor fica em cada entrada de mercadoria. */}
-            <Campo rotulo="Características" name="caracteristicas" opcional defaultValue={produtoConsultado?.caracteristicas ?? r?.caracteristicas} readOnly={Boolean(produtoConsultado)} placeholder="Cor, tamanho, gramatura..." />
-            <Campo rotulo="Descrição adicional" name="descricaoAdicional" opcional defaultValue={produtoConsultado?.descricaoAdicional ?? r?.descricaoAdicional} readOnly={Boolean(produtoConsultado)} />
-            <Campo rotulo="NCM" name="ncm" opcional inputMode="numeric" defaultValue={produtoConsultado?.fiscal?.ncm ?? r?.fiscal?.ncm} readOnly={Boolean(produtoConsultado)} placeholder="8 números" erro={Boolean(erros.ncm)} ajuda={erros.ncm ?? 'Anotação para o cadastro na Emitte.'} onChange={() => limparErro('ncm')} />
-            <Campo rotulo="CEST" name="cest" opcional inputMode="numeric" defaultValue={produtoConsultado?.fiscal?.cest ?? r?.fiscal?.cest} readOnly={Boolean(produtoConsultado)} placeholder="7 números" erro={Boolean(erros.cest)} ajuda={erros.cest ?? 'Anotação para o cadastro na Emitte.'} onChange={() => limparErro('cest')} />
+            <Campo rotulo="Características" name="caracteristicas" opcional defaultValue={inicial.caracteristicas} readOnly={Boolean(consultado)} placeholder="Cor, tamanho, gramatura..." />
+            <Campo rotulo="Descrição adicional" name="descricaoAdicional" opcional defaultValue={inicial.descricaoAdicional} readOnly={Boolean(consultado)} />
+            <Campo rotulo="NCM" name="ncm" opcional inputMode="numeric" defaultValue={inicial.ncm} readOnly={Boolean(consultado)} placeholder="8 números" erro={Boolean(erros.ncm)} ajuda={erros.ncm ?? 'Anotação para o cadastro na Emitte.'} onChange={() => limparErro('ncm')} />
+            <Campo rotulo="CEST" name="cest" opcional inputMode="numeric" defaultValue={inicial.cest} readOnly={Boolean(consultado)} placeholder="7 números" erro={Boolean(erros.cest)} ajuda={erros.cest ?? 'Anotação para o cadastro na Emitte.'} onChange={() => limparErro('cest')} />
           </div>
         </section>
 
@@ -505,12 +562,12 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
         <section className="cadastrar-produto__grupo">
           <h3 className="cadastrar-produto__titulo">Dados fiscais <span className="cadastrar-produto__nota">· para a nota; os valores vêm do contador</span></h3>
           <div className="cadastrar-produto__grade">
-            <Selecao rotulo="Tributação" name="tributacao" opcoes={TRIBUTACOES} valorInicial={fiscalInicial.tributacao} disabled={Boolean(produtoConsultado)} />
-            <Selecao rotulo="Origem" name="origem" opcoes={ORIGENS} valorInicial={fiscalInicial.origem} disabled={Boolean(produtoConsultado)} />
-            <Campo rotulo="NCM" name="ncm" opcional inputMode="numeric" defaultValue={fiscalInicial.ncm} readOnly={Boolean(produtoConsultado)} placeholder="8 números" erro={Boolean(erros.ncm)} ajuda={erros.ncm} onChange={() => limparErro('ncm')} />
-            <Campo rotulo="CEST" name="cest" opcional inputMode="numeric" defaultValue={fiscalInicial.cest} readOnly={Boolean(produtoConsultado)} placeholder="Só com substituição" erro={Boolean(erros.cest)} ajuda={erros.cest} onChange={() => limparErro('cest')} />
-            <Campo rotulo="CFOP dentro do estado" name="cfopEstadual" inputMode="numeric" defaultValue={fiscalInicial.cfopEstadual} readOnly={Boolean(produtoConsultado)} erro={Boolean(erros.cfopEstadual)} ajuda={erros.cfopEstadual} onChange={() => limparErro('cfopEstadual')} />
-            <Campo rotulo="CFOP para outro estado" name="cfopInterestadual" inputMode="numeric" defaultValue={fiscalInicial.cfopInterestadual} readOnly={Boolean(produtoConsultado)} erro={Boolean(erros.cfopInterestadual)} ajuda={erros.cfopInterestadual} onChange={() => limparErro('cfopInterestadual')} />
+            <Selecao rotulo="Tributação" name="tributacao" opcoes={TRIBUTACOES} valorInicial={fiscalInicial.tributacao} disabled={Boolean(consultado)} />
+            <Selecao rotulo="Origem" name="origem" opcoes={ORIGENS} valorInicial={fiscalInicial.origem} disabled={Boolean(consultado)} />
+            <Campo rotulo="NCM" name="ncm" opcional inputMode="numeric" defaultValue={fiscalInicial.ncm} readOnly={Boolean(consultado)} placeholder="8 números" erro={Boolean(erros.ncm)} ajuda={erros.ncm} onChange={() => limparErro('ncm')} />
+            <Campo rotulo="CEST" name="cest" opcional inputMode="numeric" defaultValue={fiscalInicial.cest} readOnly={Boolean(consultado)} placeholder="Só com substituição" erro={Boolean(erros.cest)} ajuda={erros.cest} onChange={() => limparErro('cest')} />
+            <Campo rotulo="CFOP dentro do estado" name="cfopEstadual" inputMode="numeric" defaultValue={fiscalInicial.cfopEstadual} readOnly={Boolean(consultado)} erro={Boolean(erros.cfopEstadual)} ajuda={erros.cfopEstadual} onChange={() => limparErro('cfopEstadual')} />
+            <Campo rotulo="CFOP para outro estado" name="cfopInterestadual" inputMode="numeric" defaultValue={fiscalInicial.cfopInterestadual} readOnly={Boolean(consultado)} erro={Boolean(erros.cfopInterestadual)} ajuda={erros.cfopInterestadual} onChange={() => limparErro('cfopInterestadual')} />
           </div>
           {!semCodigo && codigoBarras.trim() && !gtinValido(codigoBarras.trim()) && (
             <p className="cadastrar-produto__lembrete">Este código de barras não é um GTIN válido: na nota ele vai como “SEM GTIN”.</p>
@@ -518,41 +575,78 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
         </section>}
         */}
         </form>
+        {assinar && (
+          <JanelaAssinatura
+            gesto="Cadastrar produto com quantidade inicial"
+            rotuloConfirmar="Salvar produto"
+            fazer={assinar}
+            aoConcluir={(produto) => { setAssinar(null); setSalvo(produto) }}
+            aoFechar={() => setAssinar(null)}
+          />
+        )}
       </Modal>
   )
 }
 
+/** O grupo da 0.1, para o rascunho da entrada (ninguém lê; o documento do piloto ainda o tem). */
+const grupoDa = (categoria: string): RascunhoProduto['grupo'] =>
+  categoria.includes('Caderno') ? 'cadernos' : categoria.includes('Escrita') ? 'escrita' : categoria.includes('Papéis') ? 'papeis' : categoria.includes('Escritório') ? 'escritorio' : 'artes'
+
 /**
  * Sem histórico, apaga de vez (cadastro feito por engano). Com histórico,
  * desativa: some da venda, mas fichas e movimentações continuam citando.
- * Pede um segundo clique antes de agir.
+ * Pede um segundo clique antes de agir; excluir o que tem saldo pede também
+ * quem está fazendo (`R-ESTOQUE-07`).
  */
-function AcaoRemover({ produto, aoConcluir }: { produto: Produto; aoConcluir: () => void }) {
-  const base = useEstadoDemonstracao()
+function AcaoRemover({ produto, aoConcluir, aoFalhar }: { produto: Produto; aoConcluir: () => void; aoFalhar: (mensagem: string) => void }) {
   const [confirmando, setConfirmando] = useState(false)
-  const podeExcluir = !produtoTemHistorico(base, produto.codigo)
-  if (produto.inativo) {
+  const [enviando, setEnviando] = useState(false)
+  const [assinando, setAssinando] = useState(false)
+  const podeExcluir = !produto.temHistorico
+
+  async function fazer(pedido: () => Promise<Resultado<unknown>>) {
+    setEnviando(true)
+    const r = await pedido()
+    setEnviando(false)
+    setConfirmando(false)
+    if (r.ok) aoConcluir()
+    else aoFalhar(mensagemDe(r))
+  }
+
+  if (!produto.ativo) {
     return (
-      <Botao variante="fantasma" className="cadastrar-produto__remover" onClick={() => { definirProdutoAtivo(produto.codigo, true); aoConcluir() }}>
+      <Botao variante="fantasma" className="cadastrar-produto__remover" disabled={enviando} onClick={() => fazer(() => api().ativarProduto(produto.id, true))}>
         Reativar produto
       </Botao>
     )
   }
   const rotulo = podeExcluir ? 'Excluir produto' : 'Desativar produto'
   return (
-    <Botao
-      variante="fantasma"
-      className={confirmando ? 'cadastrar-produto__remover cadastrar-produto__remover--confirmar' : 'cadastrar-produto__remover'}
-      title={podeExcluir ? 'Sem vendas nem movimentações: pode ser apagado.' : 'Já tem histórico: sai da venda, mas o registro fica.'}
-      onBlur={() => setConfirmando(false)}
-      onClick={() => {
-        if (!confirmando) return setConfirmando(true)
-        if (podeExcluir) excluirProduto(produto.codigo)
-        else definirProdutoAtivo(produto.codigo, false)
-        aoConcluir()
-      }}
-    >
-      {confirmando ? `Confirmar: ${rotulo.toLowerCase()}` : rotulo}
-    </Botao>
+    <>
+      <Botao
+        variante="fantasma"
+        className={confirmando ? 'cadastrar-produto__remover cadastrar-produto__remover--confirmar' : 'cadastrar-produto__remover'}
+        title={podeExcluir ? 'Sem vendas nem movimentações: pode ser apagado.' : 'Já tem histórico: sai da venda, mas o registro fica.'}
+        disabled={enviando}
+        onBlur={() => setConfirmando(false)}
+        onClick={() => {
+          if (!confirmando) return setConfirmando(true)
+          if (!podeExcluir) return fazer(() => api().ativarProduto(produto.id, false))
+          if (produto.saldo > 0) return setAssinando(true)
+          return fazer(() => api().excluirProduto(produto.id, null))
+        }}
+      >
+        {confirmando ? `Confirmar: ${rotulo.toLowerCase()}` : rotulo}
+      </Botao>
+      {assinando && (
+        <JanelaAssinatura
+          gesto={`Excluir ${produto.descricao} (leva junto o saldo inicial de ${produto.saldo} ${produto.unidade})`}
+          rotuloConfirmar="Excluir"
+          fazer={(quem) => api().excluirProduto(produto.id, quem)}
+          aoConcluir={() => { setAssinando(false); aoConcluir() }}
+          aoFechar={() => { setAssinando(false); setConfirmando(false) }}
+        />
+      )}
+    </>
   )
 }
