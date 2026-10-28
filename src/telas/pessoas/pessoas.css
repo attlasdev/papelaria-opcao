@@ -1,0 +1,61 @@
+.pessoas__lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.pessoas__item {
+  display: grid;
+  /* Colunas fixas: os ícones ficam alinhados de uma linha para a outra. */
+  grid-template-columns: minmax(0, 1fr) 128px 172px;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-height: 56px;
+  padding: var(--espaco-2) 0;
+  border-bottom: 1px solid var(--color-borda);
+}
+
+.pessoas__item:last-child { border-bottom: none; }
+
+.pessoas__nome {
+  font-size: var(--text-destaque);
+  font-weight: var(--font-weight-medio);
+  color: var(--color-tinta);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pessoas__item--inativa .pessoas__nome { color: var(--color-texto-apagado); }
+
+.pessoas__selos,
+.pessoas__acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.pessoas__selos { justify-content: flex-end; }
+
+.pessoas__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+  text-align: left;
+}
+
+.pessoas__texto {
+  color: var(--color-texto-suave);
+  font-size: var(--text-corpo);
+}
+
+.pessoas__erro {
+  color: var(--color-critico-texto);
+  font-size: var(--text-corpo);
+  line-height: var(--text-corpo--line-height);
+}
+
+.pessoas__feito {
+  margin-right: auto;
+  color: var(--color-texto-suave);
+  font-size: var(--text-rotulo);
+}

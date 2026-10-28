@@ -1,0 +1,19 @@
+.janela-assinatura {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.janela-assinatura .filtros { flex-wrap: wrap; }
+
+.janela-assinatura__texto {
+  font-size: var(--text-destaque);
+  font-weight: var(--font-weight-medio);
+  color: var(--color-tinta);
+}
+
+.janela-assinatura__erro {
+  color: var(--color-critico-texto);
+  font-size: var(--text-corpo);
+  line-height: var(--text-corpo--line-height);
+}

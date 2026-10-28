@@ -19,6 +19,15 @@
   text-align: center;
 }
 
+.entrar__cartao--largo { width: min(100%, 420px); }
+
+.entrar__titulo {
+  font-size: var(--text-secao);
+  line-height: var(--text-secao--line-height);
+  font-weight: var(--font-weight-forte);
+  color: var(--color-tinta);
+}
+
 .entrar__logo {
   width: 120px;
   margin: 0 auto var(--espaco-2);

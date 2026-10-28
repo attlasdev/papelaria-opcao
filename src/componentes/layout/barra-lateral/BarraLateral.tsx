@@ -2,15 +2,11 @@ import { useState, type Ref } from 'react'
 import { NavLink, useNavigate } from 'react-router'
 import logo from '../../../../recursos/marca/logo-original.svg'
 import { Icone, type NomeIcone } from '../../icone/Icone'
-import { Botao } from '../../botao/Botao'
-import { Modal } from '../../modal/Modal'
-import { restaurarDemonstracao, useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
 import { useSincronia, type SituacaoGravacao } from '../../../dados/sincronia'
 import { rotas } from '../../../rotas-caminhos'
 import { funcoes } from '../../../funcoes'
+import { Pessoas } from '../../../telas/pessoas/Pessoas'
 import './barra-lateral.css'
-
-const podeRestaurar = funcoes.restaurarExemplo
 
 const secoes: { rotulo: string; icone: NomeIcone; caminho: string; exato?: boolean }[] = [
   { rotulo: 'Início', icone: 'inicio', caminho: rotas.inicio, exato: true },
@@ -56,17 +52,10 @@ function IndicadorGravacao({ recolhida }: { recolhida: boolean }) {
   )
 }
 
-/** A mesma barra em todas as telas: marca, seções, criar ficha, operador. */
+/** A mesma barra em todas as telas: marca, seções, criar ficha, pessoas da loja. */
 export function BarraLateral({ recolhida, ref }: Props) {
   const navegar = useNavigate()
-  const { operador } = useEstadoDemonstracao()
-  const [restaurando, setRestaurando] = useState(false)
-
-  function restaurar() {
-    restaurarDemonstracao()
-    setRestaurando(false)
-    navegar(rotas.inicio)
-  }
+  const [pessoas, setPessoas] = useState(false)
 
   return (
     <aside ref={ref} className={recolhida ? 'barra-lateral barra-lateral--compacta' : 'barra-lateral'} aria-label="Menu principal">
@@ -100,39 +89,21 @@ export function BarraLateral({ recolhida, ref }: Props) {
           <Icone nome="carrinho" tamanho={18} />
           <span>Criar ficha</span>
         </button>
-        {/* Restaurar a amostra: desligado em src/funcoes.ts (apagaria os dados do banco ligado). */}
+        {/* Sem operador fixo (`R-OPERADOR-02`): quem faz é escolhido com PIN em cada gesto. */}
         <button
           type="button"
           className="barra-lateral__operador"
-          aria-label={podeRestaurar ? `Operador: ${operador}. Restaurar dados de exemplo` : `Operador: ${operador}`}
-          title={recolhida ? `Operador: ${operador}` : podeRestaurar ? 'Restaurar dados de exemplo' : undefined}
-          onClick={podeRestaurar ? () => setRestaurando(true) : undefined}
+          aria-label="Pessoas da loja"
+          title={recolhida ? 'Pessoas da loja' : undefined}
+          onClick={() => setPessoas(true)}
         >
           <Icone nome="pessoa-circulo" tamanho={24} />
-          <span>Operador: {operador}</span>
+          <span>Pessoas</span>
         </button>
         <IndicadorGravacao recolhida={recolhida} />
       </div>
 
-      {podeRestaurar && restaurando && (
-        <Modal
-          estreito
-          titulo="Restaurar dados de exemplo"
-          subtitulo="Ferramenta de desenvolvimento."
-          aoFechar={() => setRestaurando(false)}
-          rodape={
-            <>
-              <Botao variante="fantasma" onClick={() => setRestaurando(false)}>Cancelar</Botao>
-              <Botao variante="primario" icone="historico" onClick={restaurar}>Restaurar</Botao>
-            </>
-          }
-        >
-          <p>
-            Apaga as vendas, clientes, recebimentos e ajustes e volta à amostra de 90 dias até hoje.
-            Só existe em desenvolvimento: a troca também vai para o banco ligado a este app.
-          </p>
-        </Modal>
-      )}
+      {pessoas && <Pessoas aoFechar={() => setPessoas(false)} />}
     </aside>
   )
 }

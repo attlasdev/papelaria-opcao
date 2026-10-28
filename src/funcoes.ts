@@ -19,12 +19,6 @@ export const funcoes = {
   exportarEmitte: import.meta.env.DEV,
   exportarClientesEmitte: import.meta.env.DEV,
   /**
-   * "Restaurar dados de exemplo" (clique no operador). Desligado também em
-   * desenvolvimento: com o app ligado a um banco, a amostra de 90 dias ia
-   * para o banco por cima dos dados (aconteceu no projeto de teste).
-   */
-  restaurarExemplo: false,
-  /**
    * Bloco "Para nota fiscal" do cadastro de cliente (tipo de contribuinte, tipo
    * de cliente, inscrição estadual). Oculto no piloto (`2026-10-19`); oculto, o
    * cadastro mantém o que o cliente já tinha nesses campos.
