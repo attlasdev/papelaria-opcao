@@ -42,8 +42,13 @@ tabela `cobranca` registrada antes; só aprovada vira pagamento, uma vez
 ### A5 · Limites do documento único da 0.1 · estrutural
 Medidos na checagem. Saem com o SQLite da 1.0.
 
-### A6 · Peças de produção ausentes · estrutural
-Log, instância única, quedas, CSP. Fundação da 1.0, item 8.
+### A6 · Peças de produção ausentes
+Log, instância única, quedas, CSP. **Feito na fundação da 1.0 (`2026-10-28`):**
+log em arquivo com rotação e sem credencial (`electron/log.ts`, com teste),
+instância única, queda da tela com aviso e "Recarregar", erro solto do processo
+principal no log. Instância única e queda só se conferem com o app aberto (sem
+teste automático). **Falta:** CSP e ferramentas de desenvolvedor fora do
+instalador (Fase 4).
 
 ### M1 · Cadastro de produto: "Fornecedor" descartava o que se digitava
 O produto não guarda fornecedor. **Corrigido** na v0.1.8: o campo saiu.

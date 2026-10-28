@@ -92,7 +92,6 @@ Os motivos se repetem em quatro tipos:
 | A2 | 0.1 / estrutural | — |
 | A3 | aberto | com a correção, antes da fase 3 do comprovante |
 | A5 | 0.1 / estrutural | — |
-| A6 | contrato | fundação, item 8 (instância única, log, quedas) |
 | M1 | tela | Fase 3 (o campo saiu) |
 | M2 | aberto | com a correção (teste de tela) |
 | M3 | 0.1 / estrutural | — |

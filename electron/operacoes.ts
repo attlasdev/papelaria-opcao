@@ -7,6 +7,7 @@ import { criarMaquininhaDemonstracao } from '../comum/maquininha-demonstracao'
 import { ConexaoAusente } from './conexao'
 import { bytesComprovante } from './escpos'
 import { enviarCru, lerConfigComprovante } from './impressora'
+import { log } from './log'
 import { interpretar, supabase } from './supabase'
 
 /**
@@ -23,7 +24,7 @@ import { interpretar, supabase } from './supabase'
 /** Erro do banco vira Falha legivel; o texto cru fica so no log. */
 function falhou(nome: string, erro: unknown, status?: number): Falha {
   if (erro instanceof ConexaoAusente) return falha('configuracao', erro.message)
-  console.error(`[${nome}]`, erro)
+  log.erro(nome, erro)
   const { causa, mensagem } = interpretar(erro, status)
   return falha(causa, mensagem)
 }

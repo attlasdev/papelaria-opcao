@@ -86,6 +86,10 @@ repositório é privado: baixar exige estar logado no GitHub com acesso a ele.
 
 Testar antes na máquina Windows de vocês, com o projeto **dev**.
 
+**Log do aplicativo** (a partir da 1.0): `%APPDATA%\papelaria-opcao\logs\app.log`,
+com até três arquivos antigos ao lado (`app.1.log`…). É o primeiro lugar a olhar
+quando a loja relata um erro; não tem chave nem senha.
+
 **Atualizar** para uma versão nova: rodar o instalador novo por cima. A pasta
 de dados (`conexao.json`, sessão, cópia local) não é tocada.
 

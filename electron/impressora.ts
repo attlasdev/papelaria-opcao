@@ -4,6 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { falha, ok, type Resultado } from '../comum/contrato'
 import { interpretarConfigComprovante, type ConfigComprovante } from './comprovante-arquivo'
+import { log } from './log'
 
 /**
  * Envio CRU para a impressora termica: os bytes ESC/POS ja prontos vao sem
@@ -60,7 +61,7 @@ export async function enviarCru(impressora: string, titulo: string, bytes: Uint8
 
   const estado = await lpstat(impressora)
   if (estado.codigo !== 0) {
-    console.error('[impressora] lpstat:', estado.saida)
+    log.erro('impressora', 'lpstat:', estado.saida)
     return falha('impressora', `A impressora "${impressora}" não está instalada neste computador. Chame o suporte.`)
   }
   if (/\bdisabled\b/.test(estado.saida)) {
@@ -69,7 +70,7 @@ export async function enviarCru(impressora: string, titulo: string, bytes: Uint8
 
   const envio = await lp(impressora, titulo, bytes)
   if (envio.codigo !== 0) {
-    console.error('[impressora] lp:', envio.saida)
+    log.erro('impressora', 'lp:', envio.saida)
     return falha('impressora', 'A impressora não aceitou o comprovante. Confira se está ligada e tente de novo.')
   }
   return ok(null)
