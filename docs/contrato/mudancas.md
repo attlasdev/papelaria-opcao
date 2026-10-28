@@ -33,6 +33,24 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-28` — Operadores com PIN (1.0, tela 1)
+
+- **Contrato:** tipos `Operador`, `Operadores` e `Assinatura`; operações
+  `listarOperadores`, `cadastrarAdministradora`, `cadastrarOperador`,
+  `renomearOperador`, `ativarOperador` e `redefinirPin`. As da pessoa recebem a
+  assinatura da dona (`{ operadorId, pin }`) e o back confere na mesma chamada.
+- **Como chamar na Fase 2:** pelas telas migradas, `api()` de
+  `src/dados/api.ts`, não `window.api`: até a Fase 3 elas respondem pela base da
+  demonstração.
+- **Na tela:** sai o "Operador: ..." fixo da barra lateral; entra a janela
+  "Quem está fazendo?" (pessoa e PIN), o cadastro das pessoas com o PIN da dona
+  e, na primeira abertura, o cadastro da administradora. Regras em
+  `Memoria.md`, "Operadores e login".
+- **Barra lateral:** o botão do operador vira "Pessoas" e abre o cadastro. O
+  "Restaurar dados de exemplo" (já desligado em `funcoes.ts`) saiu junto.
+- **Componentes novos:** `JanelaAssinatura` e `CampoPin`, em
+  `src/componentes/assinatura/`; todo gesto que grava usa a janela no fim.
+
 ### `2026-10-23` — Tela nova: Boletos
 
 - **Menu:** item "Boletos" abaixo de Serviços (ícone `documento`), rota

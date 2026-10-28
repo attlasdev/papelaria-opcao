@@ -9,6 +9,7 @@ import {
   type Meio,
   type MovimentoCaixa,
   type MovimentoEstoque,
+  type OperadorBase,
   type Produto,
 } from './tipos'
 
@@ -20,6 +21,16 @@ import {
 
 const DIAS = 90
 const OPERADOR = 'João Silva'
+
+/**
+ * As pessoas da amostra, as mesmas da semente do banco da 1.0: a dona (PIN
+ * 1234), o João (2222) e a Márcia, desativada (3333).
+ */
+const OPERADORES_EXEMPLO: OperadorBase[] = [
+  { id: 'op-dona', nome: 'Helena Prado', ativo: true, admin: true, pinHash: 'sha256$semente-dona$d34c1b34c2761a1210c2cf721ad4e544c84b961d6308a6d6c834408b9554b9a9' },
+  { id: 'op-joao', nome: OPERADOR, ativo: true, admin: false, pinHash: 'sha256$semente-joao$516327c7665c1fe3d0ce5cdf9cd7aeb7b2a5d28dadf692f1fa2869be2dfe4728' },
+  { id: 'op-marcia', nome: 'Márcia Antunes', ativo: false, admin: false, pinHash: 'sha256$semente-marcia$58050af1a6b0575bca5b3f7a9c17e70e8b38fffc0ef1034af24f26f51c1bda28' },
+]
 
 function sorteador(semente: number) {
   let a = semente >>> 0
@@ -102,6 +113,8 @@ export function criarBaseVazia(hoje: string, operador = 'Loja'): Base {
     versao: VERSAO_BASE,
     criadaEm: hoje,
     operador,
+    operadores: [],
+    ultimoOperadorId: null,
     clientes: [],
     produtos: [],
     fichas: [],
@@ -226,6 +239,8 @@ export function criarSemente(hoje: string, minutoAtual = 24 * 60): Base {
     versao: VERSAO_BASE,
     criadaEm: hoje,
     operador: OPERADOR,
+    operadores: OPERADORES_EXEMPLO,
+    ultimoOperadorId: OPERADORES_EXEMPLO[1].id,
     clientes,
     produtos,
     fichas: comId,

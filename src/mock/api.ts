@@ -1,11 +1,12 @@
 import { falha, ok, type Contrato, type DocumentoBase } from '../../comum/contrato'
 import { montarPainel } from './painel'
-import { simular } from './simular'
+import { simular, simularAssincrono } from './simular'
 import { criarSemente } from './base/semente'
 import { comFechamentosExemplo } from './base/cenario-caixa'
 import { hojeISO, minutoDoDia } from './base/datas'
 import { criarMaquininhaDemonstracao } from '../../comum/maquininha-demonstracao'
 import { conferirComprovante, linhasComprovante, textoComprovante, type Loja } from '../../comum/comprovante'
+import { operadoresDaBase as operadores } from './operacoes/operadores'
 
 /** Mesmos dados inventados de `recursos/comprovante.exemplo.json`. */
 const LOJA_EXEMPLO: Loja = {
@@ -91,6 +92,13 @@ const mock: Contrato = {
     console.info(`[comprovante]\n${textoComprovante(linhasComprovante(conferido, LOJA_EXEMPLO))}`)
     return ok(null)
   }),
+  // As do mock de verdade, só com o atraso e a falha forçada por cima.
+  listarOperadores: () => simularAssincrono(() => operadores.listarOperadores()),
+  cadastrarAdministradora: (nome, pin) => simularAssincrono(() => operadores.cadastrarAdministradora(nome, pin)),
+  cadastrarOperador: (nome, pin, dona) => simularAssincrono(() => operadores.cadastrarOperador(nome, pin, dona)),
+  renomearOperador: (id, nome, dona) => simularAssincrono(() => operadores.renomearOperador(id, nome, dona)),
+  ativarOperador: (id, ativo, dona) => simularAssincrono(() => operadores.ativarOperador(id, ativo, dona)),
+  redefinirPin: (id, pin, dona) => simularAssincrono(() => operadores.redefinirPin(id, pin, dona)),
 }
 
 window.api = mock

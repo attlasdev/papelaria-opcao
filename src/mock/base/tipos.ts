@@ -246,10 +246,21 @@ export type Boleto = {
   pagoPor?: string // operador que marcou
 }
 
+/**
+ * Pessoa da loja na base da demonstração (1.0, tela 1). O PIN fica só como
+ * hash (`sha256$<sal>$<hash>`): é a demonstração, o hash de verdade (scrypt)
+ * é o do banco da 1.0.
+ */
+export type OperadorBase = { id: string; nome: string; ativo: boolean; admin: boolean; pinHash: string | null }
+
 export type Base = {
   versao: number
   criadaEm: string
+  /** 0.1: o nome gravado nos fatos das telas ainda não migradas para o operador com PIN. */
   operador: string
+  operadores: OperadorBase[]
+  /** Quem fez o último gesto assinado. */
+  ultimoOperadorId: string | null
   clientes: Cliente[]
   produtos: Produto[]
   fichas: Ficha[]

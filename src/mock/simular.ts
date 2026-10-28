@@ -59,3 +59,13 @@ export async function simular<T>(produzir: () => Resultado<T>): Promise<Resultad
 }
 
 export const controles = { CAUSAS, causaForcada, atrasoMs, params }
+
+/** O mesmo, para resposta que já é uma promessa. */
+export async function simularAssincrono<T>(produzir: () => Promise<Resultado<T>>): Promise<Resultado<T>> {
+  await espera(atrasoMs())
+
+  const causa = causaForcada()
+  if (causa) return falha(causa, `Falha simulada pelo mock (${causa}).`)
+
+  return produzir()
+}

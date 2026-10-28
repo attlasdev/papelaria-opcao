@@ -4,6 +4,8 @@ import path from 'node:path'
 import { conferirComprovante, linhasComprovante } from '../comum/comprovante'
 import { falha, ok, type Contrato, type Falha } from '../comum/contrato'
 import { criarMaquininhaDemonstracao } from '../comum/maquininha-demonstracao'
+import { abrirBanco, type Banco } from './banco/banco'
+import { operadoresSqlite } from './banco/operadores'
 import { ConexaoAusente } from './conexao'
 import { bytesComprovante } from './escpos'
 import { enviarCru, lerConfigComprovante } from './impressora'
@@ -51,7 +53,17 @@ const idValido = (id: unknown) => (typeof id === 'string' && id.length <= 80 ? i
 /** O dado entra pela IPC sem garantia de tipo: confere antes de usar. */
 const texto = (valor: unknown) => (typeof valor === 'string' ? valor.trim() : '')
 
+/**
+ * O banco da 1.0 (`userData/loja.sqlite`), aberto na primeira operação que o
+ * usa. Até a Fase 3 a tela não chama estas operações aqui (ver
+ * `src/dados/api.ts`): elas respondem pela base da demonstração.
+ */
+let banco: Banco | null = null
+const bancoDaLoja = () => (banco ??= abrirBanco(path.join(app.getPath('userData'), 'loja.sqlite')))
+
 export const operacoes: Contrato = {
+  ...operadoresSqlite(bancoDaLoja),
+
   async sessaoAtual() {
     try {
       const { data, error } = await supabase().auth.getSession()

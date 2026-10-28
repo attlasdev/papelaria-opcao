@@ -46,6 +46,11 @@ export function substituirBase(nova: Base) {
   ouvintes.forEach((ouvinte) => ouvinte())
 }
 
+/** Operadores (1.0, tela 1): quem chama é `src/mock/operacoes/operadores.ts`, que confere as regras. */
+export function gravarOperadores(operadores: Base['operadores']) {
+  mudar({ ...base, operadores })
+}
+
 export function observarMudancas(observador: () => void) {
   aoMudar.add(observador)
   return () => { aoMudar.delete(observador) }

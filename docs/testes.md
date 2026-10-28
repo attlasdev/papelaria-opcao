@@ -41,6 +41,7 @@ Agostinho em `2026-10-27`.
 | `src/dados/`, `src/leitor/` | integrações e formatos: Emitte, comprovante, fiscal, sincronia, leitor |
 | `electron/banco/` | banco da 1.0: o que o schema garante, migrations, semente e as fotos por versão (`fotos.test.ts`: cada migration roda sobre dados no formato antigo) |
 | `testes/` | a cobertura e as regras de interface que dá para conferir lendo o código |
+| `testes/regras/` | as regras puras de `comum/regras/`, que os dois lados do contrato usam |
 | `testes/contrato/` | os testes de contrato da 1.0: cada cenário roda no mock e no SQLite (`testarContrato`), um arquivo por área |
 
 ## Pendentes
@@ -77,11 +78,13 @@ Os motivos se repetem em quatro tipos:
 | R-FINANCEIRO-03 | contrato | tela 7.2 |
 | R-CAIXA-03 | contrato | tela 7.1 (esperado calculado pelo back) |
 | R-CAIXA-05 | contrato | tela 7.1 |
-| R-CAIXA-09 | contrato | tela 1 (operador por id) |
+| R-CAIXA-09 | contrato | tela 7.1 (assinatura nos gestos do caixa) |
 | R-PAGAMENTO-01 | tela | Fase 3 |
 | R-INICIO-02 | tela | Fase 3 |
 | R-INICIO-03 | tela | Fase 3 |
 | R-INICIO-04 | contrato | tela 8.1 |
+| R-OPERADOR-06 | contrato | na tela de cada gesto sensível, depois de D3 |
+| R-LOGIN-01 | contrato | Fase 3 (abertura da 1.0 e aviso do backup no sino) |
 | R-UI-01 | revisão | — |
 | R-UI-02 | revisão | — |
 | R-UI-05 | revisão | — |

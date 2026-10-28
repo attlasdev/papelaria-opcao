@@ -152,6 +152,36 @@ export type DadosComprovante = {
 }
 
 /**
+ * Uma pessoa da loja (Memoria.md, "Operadores e login", `R-OPERADOR-*`). O PIN
+ * nunca vem: so o back o confere.
+ */
+export type Operador = {
+  id: string
+  nome: string
+  /** Desativada: some da escolha, nao assina; o historico continua citando. */
+  ativo: boolean
+  /** A dona. Uma so, sempre ativa. */
+  admin: boolean
+  /** Sem PIN (cadastrada antes do PIN existir): nao assina ate a dona definir um. */
+  temPin: boolean
+}
+
+export type Operadores = {
+  /** Todas, ativas e desativadas; a administradora primeiro, depois por nome. */
+  pessoas: Operador[]
+  /** Quem fez o ultimo gesto nesta maquina, para vir marcado. `null` se ninguem. */
+  ultimoId: string | null
+}
+
+/**
+ * Quem esta fazendo: a pessoa e o PIN de 4 digitos dela. Vai DENTRO da operacao
+ * do gesto, e o back confere na mesma chamada: a tela nao tem como dizer "fui
+ * eu" sem o PIN. PIN errado e `validacao` (a janela continua aberta para tentar
+ * de novo); depois de 5 erros seguidos, `validacao` com a espera na mensagem.
+ */
+export type Assinatura = { operadorId: string; pin: string }
+
+/**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
  * O vocabulario sai das telas e da loja, nao do banco. Quem escreve e o back
@@ -218,6 +248,26 @@ export type Contrato = {
    * quando a conta nao fecha. A venda ja gravada nunca depende disto.
    */
   imprimirComprovante(dados: DadosComprovante): Promise<Resultado<null>>
+
+  // Operadores (1.0, tela 1) -------------------------------------------------
+  // Toda assinatura falha com: `nao-encontrado` (pessoa nao existe), `permissao`
+  // (o gesto e so da dona e assinou outra pessoa), `validacao` (desativada, sem
+  // PIN, PIN errado ou na espera; a mensagem diz qual).
+
+  listarOperadores(): Promise<Resultado<Operadores>>
+  /**
+   * Primeira abertura (`R-OPERADOR-05`): cadastra a dona como administradora.
+   * So vale enquanto nao houver administradora: depois, `conflito`. Nome
+   * repetido ou PIN fora do formato, `validacao`.
+   */
+  cadastrarAdministradora(nome: string, pin: string): Promise<Resultado<Operador>>
+  /** Pessoa nova, com o PIN dela, assinado pela dona (`R-OPERADOR-03`). */
+  cadastrarOperador(nome: string, pin: string, dona: Assinatura): Promise<Resultado<Operador>>
+  renomearOperador(id: string, nome: string, dona: Assinatura): Promise<Resultado<Operador>>
+  /** Desativar ou reativar. A administradora nao se desativa: `validacao`. */
+  ativarOperador(id: string, ativo: boolean, dona: Assinatura): Promise<Resultado<Operador>>
+  /** PIN esquecido: a dona define outro, tambem o dela. */
+  redefinirPin(id: string, pin: string, dona: Assinatura): Promise<Resultado<Operador>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

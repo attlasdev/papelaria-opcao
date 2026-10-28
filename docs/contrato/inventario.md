@@ -186,7 +186,7 @@ Para o back:
 2. **"Hoje" vem do relógio da máquina.** A tela usa `hojeISO()` para decidir o que
    está vencido e para datar o que grava. Com banco, quem grava a data é o back;
    a tela só manda a data quando o usuário a escolheu.
-3. **Operador** é um nome fixo na base. Depende da pergunta do login.
+3. **Operador** era um nome fixo na base. Desde `2026-10-28`: pessoa com PIN, escolhida em cada gesto (`R-OPERADOR-*`); contrato da tela 1 em `comum/contrato.ts`.
 4. **Ids gerados na tela** (`CLI-`, `EST-`, número da ficha, id de movimento a
    partir da hora). Passam a nascer no processo principal: um id interno único
    (UUID) em todo registro, e o número para exibir (`#1131`, `CLI-0104`,
