@@ -1,3 +1,4 @@
+import { MOTIVO_SALDO_INICIAL } from '../../../comum/regras/produto'
 import { dataCurta, reais } from '../../formatar'
 import { funcoes } from '../../funcoes'
 import { rotas } from '../../rotas-caminhos'
@@ -421,7 +422,7 @@ export function produtosAtivos(base: Base) {
 }
 
 /** Motivo da entrada que o próprio cadastro gera; sozinha, não é histórico. */
-export const MOTIVO_SALDO_INICIAL = 'Saldo inicial do cadastro'
+export { MOTIVO_SALDO_INICIAL }
 
 /** Já vendido, movimentado ou numa ficha em andamento: apagar quebraria esse registro. */
 export function produtoTemHistorico(base: Base, codigo: string) {

@@ -62,17 +62,17 @@ banco.
 | Tela | Lê | Grava |
 | --- | --- | --- |
 | `estoque/Estoque` | produtos, resumo do estoque, situação do saldo | `definirProdutoAtivo` |
-| `cadastrar-produto/CadastrarProduto` | produto, se tem histórico, **próximo código** | `cadastrarProduto`, `completarProduto`, `editarProduto`, `excluirProduto`, `definirProdutoAtivo` |
+| `cadastrar-produto/CadastrarProduto` | produto (com `temHistorico`), categorias, bipe | `cadastrarProduto`, `editarProduto`, `excluirProduto`, `ativarProduto` — **no contrato desde `2026-10-28` (tela 2.1)** |
 | `ajustar-estoque/AjustarEstoque` | produtos ativos e completos | `alterarSaldo` (ajuste) |
 | `entrada-rapida/EntradaRapida` | produto | `alterarSaldo` (entrada) |
 | `registrar-entrada/RegistrarEntrada` | produtos | `cadastrarProduto` + `alterarSaldo`, **um par por item, em laço** |
 | `movimentacoes-estoque/MovimentacoesEstoque` | todos os movimentos de estoque | — |
 
-Operações propostas: `listarProdutos(filtro)`, `obterProduto(codigo)`,
-`buscarProdutoPorCodigoBarras`, `cadastrarProduto`, `completarProduto`,
-`editarProduto`, `excluirProduto`, `ativarProduto`/`desativarProduto`,
-`ajustarEstoque(codigo, contagem, motivo)`, `registrarEntrada(entrega)`,
-`listarMovimentosEstoque(filtro, pagina)`.
+Já no contrato (tela 2.1): `obterProduto`, `buscarProdutoPorCodigoBarras`,
+`listarCategorias`, `cadastrarProduto`, `editarProduto`, `excluirProduto`,
+`ativarProduto`. O cadastro rápido saiu (`completarProduto` não existe mais).
+Faltam: `listarProdutos(filtro)`, `ajustarEstoque(codigo, contagem, motivo)`,
+`registrarEntrada(entrega)`, `listarMovimentosEstoque(filtro, pagina)`.
 
 Para o back:
 - **`registrarEntrada` precisa ser UMA operação para a entrega inteira.** Hoje a
@@ -81,8 +81,8 @@ Para o back:
 - **Entrada manda quantidade a somar, não o saldo final.** Hoje a tela calcula
   `saldo + quantidade` e manda o resultado; com duas máquinas, uma venda no meio
   some. Ajuste continua mandando a contagem (é o que ele é).
-- Código do produto (`EST-0031`) passa a nascer no banco. A tela de cadastro
-  mostra o próximo código antes de salvar — ver `mudancas.md`.
+- Código do produto (`EST-0031`) nasce no banco ao salvar (`R-ESTOQUE-08`);
+  a tela não mostra mais a previsão — ver `mudancas.md`.
 
 ### Ficha e Notinha
 

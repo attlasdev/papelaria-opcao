@@ -5,7 +5,7 @@
  *
  * Recebe o banco por função: no app ele só abre na primeira chamada.
  */
-import { falha, ok, type Contrato, type Operador, type Resultado } from '../../comum/contrato'
+import { falha, ok, type Assinatura, type Contrato, type Operador, type Resultado } from '../../comum/contrato'
 import { conferirAssinatura, conferirNome, conferirPinNovo, criarTentativas, MENSAGENS, textoLimpo, type Tentativas } from '../../comum/regras/operador'
 import { transacao, type Banco } from './banco'
 import { hashDoPin, pinConfere } from './pin'
@@ -28,15 +28,37 @@ function traduzir<T>(fazer: () => Resultado<T>): Resultado<T> {
   }
 }
 
-export function operadoresSqlite(banco: () => Banco, tentativas: Tentativas = criarTentativas()): OperacoesOperador {
-  const buscar = (id: string) =>
-    (banco().prepare('select id, nome, ativo, admin, pin_hash from operador where id = ?').get(id) as Linha | undefined) ?? null
+const buscarNo = (banco: Banco, id: string) =>
+  (banco.prepare('select id, nome, ativo, admin, pin_hash from operador where id = ?').get(id) as Linha | undefined) ?? null
 
-  const assinadoPelaDona = (dona: Parameters<OperacoesOperador['cadastrarOperador']>[2]) =>
-    conferirAssinatura(dona, (id) => {
-      const l = buscar(id)
+/**
+ * Confere uma assinatura no banco (`R-OPERADOR-02`). Todas as operações do app
+ * usam a mesma `tentativas`: os 5 erros contam juntos (`R-OPERADOR-04`).
+ * Devolve o id de quem assinou, ou a falha.
+ */
+export function criarConferencia(banco: () => Banco, tentativas: Tentativas) {
+  return async (assinatura: Assinatura | null | undefined, opcoes: { soAdmin?: boolean } = {}) => {
+    const problema = await conferirAssinatura(assinatura ?? undefined, (id) => {
+      const l = buscarNo(banco(), id)
       return l && { ativo: l.ativo === 1, admin: l.admin === 1, temPin: l.pin_hash !== null, confere: (pin: string) => pinConfere(pin, l.pin_hash) }
-    }, tentativas, { soAdmin: true })
+    }, tentativas, opcoes)
+    return problema ?? { id: assinatura!.operadorId }
+  }
+}
+
+/** Quem assinou o último gesto vem marcado no próximo (`R-OPERADOR-02`). */
+export function gravarUltimoOperador(banco: Banco, id: string) {
+  banco.prepare("insert into preferencia (chave, valor) values ('operador_atual', ?) on conflict (chave) do update set valor = excluded.valor")
+    .run(JSON.stringify(id))
+}
+
+export function operadoresSqlite(banco: () => Banco, tentativas: Tentativas = criarTentativas()): OperacoesOperador {
+  const buscar = (id: string) => buscarNo(banco(), id)
+  const conferir = criarConferencia(banco, tentativas)
+  const assinadoPelaDona = async (dona: Assinatura) => {
+    const quem = await conferir(dona, { soAdmin: true })
+    return 'ok' in quem ? quem : null
+  }
 
   /** Depois da assinatura: a pessoa alvo existe, e a mudança volta como ela ficou. */
   const mudar = (id: unknown, sql: string, ...valores: (string | number)[]): Resultado<Operador> => traduzir(() => {

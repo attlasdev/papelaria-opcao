@@ -181,6 +181,45 @@ export type Operadores = {
  */
 export type Assinatura = { operadorId: string; pin: string }
 
+/** Como o produto e vendido, e portanto contado no estoque. */
+export type UnidadeProduto = 'un' | 'pct' | 'cx'
+
+/**
+ * Como costuma vir do fornecedor, so informativo. `pacotes`: por caixa;
+ * `unidades`: por pacote se houver pacotes, senao por embalagem.
+ */
+export type ConteudoProduto = { embalagem: 'cx' | 'pct'; pacotes: number | null; unidades: number | null }
+
+/** O que a tela manda ao cadastrar ou editar. Dinheiro em centavos; vazio e `null`. */
+export type DadosProduto = {
+  codigoBarras: string | null
+  descricao: string
+  /** Texto livre; mesma categoria com outra caixa ou sem acento vira a ja existente. */
+  categoria: string
+  unidade: UnidadeProduto
+  preco: number
+  custo: number | null
+  minimo: number
+  localizacao: string | null
+  marca: string | null
+  caracteristicas: string | null
+  descricaoAdicional: string | null
+  conteudo: ConteudoProduto | null
+  /** Anotacao para a Emitte (`R-ESTOQUE-06`): 8 e 7 numeros, pontos aceitos. */
+  ncm: string | null
+  cest: string | null
+}
+
+export type Produto = DadosProduto & {
+  id: string
+  /** O codigo de exibicao, ex. "EST-0031". Nasce no banco ao salvar (`R-ESTOQUE-08`). */
+  codigo: string
+  saldo: number
+  ativo: boolean
+  /** Tem venda ou movimento alem do saldo inicial: nao se exclui, desativa (`R-ESTOQUE-02`). */
+  temHistorico: boolean
+}
+
 /**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
@@ -268,6 +307,37 @@ export type Contrato = {
   ativarOperador(id: string, ativo: boolean, dona: Assinatura): Promise<Resultado<Operador>>
   /** PIN esquecido: a dona define outro, tambem o dela. */
   redefinirPin(id: string, pin: string, dona: Assinatura): Promise<Resultado<Operador>>
+
+  // Produto (1.0, tela 2.1) --------------------------------------------------
+  // Dado fora do formato, `validacao` com a mensagem do primeiro campo errado;
+  // id que nao existe, `nao-encontrado`. A assinatura falha como a dos operadores.
+
+  obterProduto(id: string): Promise<Resultado<Produto>>
+  /** O bipe no cadastro (`R-ESTOQUE-05`): `null` se o codigo nao esta cadastrado. */
+  buscarProdutoPorCodigoBarras(codigoBarras: string): Promise<Resultado<Produto | null>>
+  /** As categorias ja usadas, em ordem alfabetica. */
+  listarCategorias(): Promise<Resultado<string[]>>
+  /**
+   * Cadastra o produto e o numero dele. `saldoInicial` maior que 0 vira o
+   * movimento "Saldo inicial do cadastro" e exige `quem` (`R-ESTOQUE-07`); com 0,
+   * `quem` e ignorado. Uma operacao so: produto e movimento valem juntos.
+   * Codigo de barras ja cadastrado, `validacao`.
+   */
+  cadastrarProduto(dados: DadosProduto, saldoInicial: number, quem: Assinatura | null): Promise<Resultado<Produto>>
+  /**
+   * Corrige o cadastro; saldo, situacao e a marca da Emitte nao mudam aqui
+   * (`R-ESTOQUE-01`). Duas maquinas editando o mesmo produto: vale a ultima
+   * (e cadastro, sem `conflito`).
+   */
+  editarProduto(id: string, dados: DadosProduto): Promise<Resultado<Produto>>
+  /**
+   * Apaga cadastro feito por engano (`R-ESTOQUE-02`); irreversivel, a tela pede
+   * o segundo clique. Com historico, `validacao`: o caminho e desativar. Com
+   * saldo (o do cadastro), exige `quem` (`R-ESTOQUE-07`).
+   */
+  excluirProduto(id: string, quem: Assinatura | null): Promise<Resultado<null>>
+  /** Desativar ou reativar (`R-ESTOQUE-02`). Sem assinatura: e cadastro. */
+  ativarProduto(id: string, ativo: boolean): Promise<Resultado<Produto>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

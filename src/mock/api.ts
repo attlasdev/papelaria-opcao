@@ -7,6 +7,8 @@ import { hojeISO, minutoDoDia } from './base/datas'
 import { criarMaquininhaDemonstracao } from '../../comum/maquininha-demonstracao'
 import { conferirComprovante, linhasComprovante, textoComprovante, type Loja } from '../../comum/comprovante'
 import { operadoresDaBase as operadores } from './operacoes/operadores'
+import { produtosDaBase as produtos } from './operacoes/produtos'
+import { marcarMockInstalado } from './instalado'
 
 /** Mesmos dados inventados de `recursos/comprovante.exemplo.json`. */
 const LOJA_EXEMPLO: Loja = {
@@ -99,7 +101,15 @@ const mock: Contrato = {
   renomearOperador: (id, nome, dona) => simularAssincrono(() => operadores.renomearOperador(id, nome, dona)),
   ativarOperador: (id, ativo, dona) => simularAssincrono(() => operadores.ativarOperador(id, ativo, dona)),
   redefinirPin: (id, pin, dona) => simularAssincrono(() => operadores.redefinirPin(id, pin, dona)),
+  obterProduto: (id) => simularAssincrono(() => produtos.obterProduto(id)),
+  buscarProdutoPorCodigoBarras: (codigoBarras) => simularAssincrono(() => produtos.buscarProdutoPorCodigoBarras(codigoBarras)),
+  listarCategorias: () => simularAssincrono(() => produtos.listarCategorias()),
+  cadastrarProduto: (dados, saldoInicial, quem) => simularAssincrono(() => produtos.cadastrarProduto(dados, saldoInicial, quem)),
+  editarProduto: (id, dados) => simularAssincrono(() => produtos.editarProduto(id, dados)),
+  excluirProduto: (id, quem) => simularAssincrono(() => produtos.excluirProduto(id, quem)),
+  ativarProduto: (id, ativo) => simularAssincrono(() => produtos.ativarProduto(id, ativo)),
 }
 
 window.api = mock
+marcarMockInstalado()
 montarPainel()

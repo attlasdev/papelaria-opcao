@@ -20,8 +20,6 @@ componentes, CSS por componente).
 - **Número da ficha na nova ficha.** Hoje o subtítulo mostra `Ficha #1131` antes de
   concluir. Com duas máquinas, o número só é garantido quando a venda é gravada.
   A tela deixa de mostrar o número durante a venda e ele aparece ao concluir.
-- **Código do produto no cadastro.** Mesmo caso: o próximo `EST-` deixa de aparecer
-  antes de salvar e é mostrado depois de gravar.
 - **Comprovante não fiscal na térmica (`2026-10-07`).** A operação já existe:
   `imprimirComprovante(dados)`, com `DadosComprovante` em `comum/contrato.ts`
   (centavos; a tela manda o que foi vendido, o cabeçalho da loja vem da
@@ -32,6 +30,24 @@ componentes, CSS por componente).
   `segundaVia: true`); a venda nunca espera nem depende da impressão.
 
 ## Feitas
+
+### `2026-10-28` — Cadastro de produto (1.0, tela 2.1)
+
+- **Contrato:** tipos `Produto`, `DadosProduto`, `ConteudoProduto` e
+  `UnidadeProduto`; operações `obterProduto`, `buscarProdutoPorCodigoBarras`,
+  `listarCategorias`, `cadastrarProduto`, `editarProduto`, `excluirProduto` e
+  `ativarProduto`. O produto tem `id` e `codigo` (`EST-0031`, só exibição).
+  Vazio é `null`, dinheiro em centavos.
+- **Código do produto:** deixa de aparecer antes de salvar (`R-ESTOQUE-08`);
+  nasce no banco e a tela mostra depois de gravar.
+- **Quantidade inicial pede quem está fazendo** (`R-ESTOQUE-07`): com
+  quantidade maior que 0, salvar abre a `JanelaAssinatura`. Excluir produto que
+  tem saldo também. Editar, desativar e reativar não pedem.
+- **Sai o cadastro rápido** (já oculto): rota de completar, filtro e card "A
+  completar", aviso do sino e a prop `naFicha` do `ModalProduto`. O cadastro
+  completo aberto pela ficha continua.
+- **Mensagens de erro do produto** vêm de `comum/regras/produto.ts`
+  (`conferirProduto`), as mesmas do back: a tela aponta o campo antes de mandar.
 
 ### `2026-10-28` — Operadores com PIN (1.0, tela 1)
 

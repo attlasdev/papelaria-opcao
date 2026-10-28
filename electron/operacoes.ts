@@ -4,8 +4,10 @@ import path from 'node:path'
 import { conferirComprovante, linhasComprovante } from '../comum/comprovante'
 import { falha, ok, type Contrato, type Falha } from '../comum/contrato'
 import { criarMaquininhaDemonstracao } from '../comum/maquininha-demonstracao'
+import { criarTentativas } from '../comum/regras/operador'
 import { abrirBanco, type Banco } from './banco/banco'
 import { operadoresSqlite } from './banco/operadores'
+import { produtosSqlite } from './banco/produtos'
 import { ConexaoAusente } from './conexao'
 import { bytesComprovante } from './escpos'
 import { enviarCru, lerConfigComprovante } from './impressora'
@@ -60,9 +62,12 @@ const texto = (valor: unknown) => (typeof valor === 'string' ? valor.trim() : ''
  */
 let banco: Banco | null = null
 const bancoDaLoja = () => (banco ??= abrirBanco(path.join(app.getPath('userData'), 'loja.sqlite')))
+/** Uma conta de PINs errados para o app inteiro (`R-OPERADOR-04`). */
+const tentativas = criarTentativas()
 
 export const operacoes: Contrato = {
-  ...operadoresSqlite(bancoDaLoja),
+  ...operadoresSqlite(bancoDaLoja, tentativas),
+  ...produtosSqlite(bancoDaLoja, tentativas),
 
   async sessaoAtual() {
     try {

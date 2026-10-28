@@ -32,6 +32,13 @@ const api: Contrato = {
   renomearOperador: (id, nome, dona) => ipcRenderer.invoke('renomearOperador', id, nome, dona),
   ativarOperador: (id, ativo, dona) => ipcRenderer.invoke('ativarOperador', id, ativo, dona),
   redefinirPin: (id, pin, dona) => ipcRenderer.invoke('redefinirPin', id, pin, dona),
+  obterProduto: (id) => ipcRenderer.invoke('obterProduto', id),
+  buscarProdutoPorCodigoBarras: (codigoBarras) => ipcRenderer.invoke('buscarProdutoPorCodigoBarras', codigoBarras),
+  listarCategorias: () => ipcRenderer.invoke('listarCategorias'),
+  cadastrarProduto: (dados, saldoInicial, quem) => ipcRenderer.invoke('cadastrarProduto', dados, saldoInicial, quem),
+  editarProduto: (id, dados) => ipcRenderer.invoke('editarProduto', id, dados),
+  excluirProduto: (id, quem) => ipcRenderer.invoke('excluirProduto', id, quem),
+  ativarProduto: (id, ativo) => ipcRenderer.invoke('ativarProduto', id, ativo),
 }
 
 contextBridge.exposeInMainWorld('api', api)

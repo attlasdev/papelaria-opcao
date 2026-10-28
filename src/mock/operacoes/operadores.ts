@@ -6,8 +6,8 @@
  *
  * As regras são as de `comum/regras/operador.ts`, as mesmas do SQLite.
  */
-import { falha, ok, type Contrato, type Operador, type Resultado } from '../../../comum/contrato'
-import { conferirAssinatura, conferirNome, conferirPinNovo, criarTentativas, MENSAGENS, textoLimpo } from '../../../comum/regras/operador'
+import { falha, ok, type Assinatura, type Contrato, type Operador, type Resultado } from '../../../comum/contrato'
+import { conferirAssinatura, conferirNome, conferirPinNovo, criarTentativas, MENSAGENS, textoLimpo, type Tentativas } from '../../../comum/regras/operador'
 import type { OperadorBase } from '../base/tipos'
 import { gravarOperadores, obterBase } from '../estado-demonstracao'
 
@@ -40,14 +40,29 @@ const ordem = (a: OperadorBase, b: OperadorBase) => {
   return Number(b.admin) - Number(a.admin) || (x < y ? -1 : x > y ? 1 : 0)
 }
 
-export function criarOperadoresDaBase(tentativas = criarTentativas()): OperacoesOperador {
-  const buscar = (id: string) => obterBase().operadores.find((o) => o.id === id) ?? null
+const buscar = (id: string) => obterBase().operadores.find((o) => o.id === id) ?? null
 
-  const assinadoPelaDona = (dona: Parameters<OperacoesOperador['cadastrarOperador']>[2]) =>
-    conferirAssinatura(dona, (id) => {
+/**
+ * Confere uma assinatura na base (`R-OPERADOR-02`). Os gestos de todas as
+ * telas usam a mesma `tentativas`: os 5 erros contam juntos (`R-OPERADOR-04`).
+ * Devolve a pessoa que assinou, ou a falha.
+ */
+export function criarConferencia(tentativas: Tentativas) {
+  return async (assinatura: Assinatura | null | undefined, opcoes: { soAdmin?: boolean } = {}) => {
+    const problema = await conferirAssinatura(assinatura ?? undefined, (id) => {
       const o = buscar(id)
       return o && { ativo: o.ativo, admin: o.admin, temPin: o.pinHash !== null, confere: (pin: string) => pinConfere(pin, o.pinHash) }
-    }, tentativas, { soAdmin: true })
+    }, tentativas, opcoes)
+    return problema ?? buscar(assinatura!.operadorId)!
+  }
+}
+
+export function criarOperadoresDaBase(tentativas = criarTentativas()): OperacoesOperador {
+  const conferir = criarConferencia(tentativas)
+  const assinadoPelaDona = async (dona: Assinatura) => {
+    const quem = await conferir(dona, { soAdmin: true })
+    return 'ok' in quem ? quem : null
+  }
 
   function mudar(id: unknown, mudanca: Partial<OperadorBase>): Resultado<Operador> {
     const alvo = typeof id === 'string' ? buscar(id) : null
@@ -107,5 +122,6 @@ export function criarOperadoresDaBase(tentativas = criarTentativas()): Operacoes
   }
 }
 
-/** A instância do app: uma só, para a espera depois de 5 erros valer entre as janelas. */
-export const operadoresDaBase = criarOperadoresDaBase()
+/** As do app: uma conta de erros só, para a espera valer entre as janelas e os gestos. */
+export const tentativasDaBase = criarTentativas()
+export const operadoresDaBase = criarOperadoresDaBase(tentativasDaBase)

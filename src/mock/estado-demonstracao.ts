@@ -51,6 +51,11 @@ export function gravarOperadores(operadores: Base['operadores']) {
   mudar({ ...base, operadores })
 }
 
+/** Quem assinou o último gesto vem marcado no próximo (`R-OPERADOR-02`). */
+export function gravarUltimoOperador(id: string) {
+  if (base.ultimoOperadorId !== id) mudar({ ...base, ultimoOperadorId: id })
+}
+
 export function observarMudancas(observador: () => void) {
   aoMudar.add(observador)
   return () => { aoMudar.delete(observador) }
@@ -102,11 +107,12 @@ export function editarCliente(id: string, dados: DadosCliente) {
   return true
 }
 
-export function cadastrarProduto(dados: Omit<Produto, 'codigo'>) {
+/** `operador`: quem assinou a quantidade inicial (`R-ESTOQUE-07`); sem ele, o da base (0.1). */
+export function cadastrarProduto(dados: Omit<Produto, 'codigo'>, operador = base.operador) {
   const codigo = proximoCodigoProduto(base)
   const produto = { ...dados, codigo }
   // Quantidade contada no cadastro vira a primeira entrada: o histórico explica o saldo.
-  const inicial = produto.saldo > 0 ? [movimentoEstoque({ ...produto, saldo: 0 }, produto.saldo, 'Entrada', MOTIVO_SALDO_INICIAL)] : []
+  const inicial = produto.saldo > 0 ? [{ ...movimentoEstoque({ ...produto, saldo: 0 }, produto.saldo, 'Entrada', MOTIVO_SALDO_INICIAL), operador }] : []
   mudar({ ...base, produtos: [...base.produtos, produto], movimentosEstoque: [...inicial, ...base.movimentosEstoque] })
   return codigo
 }
