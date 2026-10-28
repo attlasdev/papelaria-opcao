@@ -11,7 +11,6 @@ import { useLinhasPorPagina } from '../../componentes/paginacao/useLinhasPorPagi
 import { Icone } from '../../componentes/icone/Icone'
 import { reais } from '../../formatar'
 import { definirProdutoAtivo, normalizar, resumoEstoque, situacaoSaldo, useEstadoDemonstracao, type SituacaoSaldo } from '../../mock/estado-demonstracao'
-import { funcoes } from '../../funcoes'
 import { rotas } from '../../rotas-caminhos'
 import { ExportarProdutosEmitte } from './ExportarEmitte'
 import './estoque.css'
@@ -50,10 +49,9 @@ export function Estoque() {
   const lista = produtos.filter((p) => {
     // Desativados só aparecem na aba deles, para poder reativar.
     if ((filtro === 'desativados') !== Boolean(p.inativo)) return false
-    if (filtro === 'baixo' && (p.cadastroRapido || situacaoSaldo(p) === 'normal')) return false
-    if (filtro === 'completar' && !p.cadastroRapido) return false
+    if (filtro === 'baixo' && situacaoSaldo(p) === 'normal') return false
     if (filtro === 'sem-codigo' && p.codigoBarras) return false
-    if (!['todos', 'baixo', 'completar', 'sem-codigo', 'desativados'].includes(filtro) && p.categoria !== filtro) return false
+    if (!['todos', 'baixo', 'sem-codigo', 'desativados'].includes(filtro) && p.categoria !== filtro) return false
     return !termo || normalizar(`${p.codigo} ${p.codigoBarras ?? ''} ${p.descricao} ${p.categoria}`).includes(termo)
   })
   const totalPaginas = Math.max(1, Math.ceil(lista.length / linhasPorPagina))
@@ -98,15 +96,6 @@ export function Estoque() {
           nota="Abaixo do mínimo"
         />
         <CartaoResumo rotulo="Sem código de barras" icone="codigo-barras" valor={`${resumo.semCodigo} ${resumo.semCodigo === 1 ? 'item' : 'itens'}`} nota="Fracionados e avulsos" />
-        {funcoes.cadastroRapido && (
-          <CartaoResumo
-            rotulo="Cadastro a completar"
-            icone="pacote"
-            tom={resumo.aCompletar ? 'atencao' : 'neutro'}
-            valor={`${resumo.aCompletar} ${resumo.aCompletar === 1 ? 'item' : 'itens'}`}
-            nota="Feitos às pressas na venda"
-          />
-        )}
       </div>
 
       <div className="estoque__filtros">
@@ -117,7 +106,6 @@ export function Estoque() {
           opcoes={[
             { valor: 'todos', rotulo: 'Todos', contagem: resumo.produtos },
             { valor: 'baixo', rotulo: 'Estoque baixo', contagem: resumo.baixo },
-            ...(funcoes.cadastroRapido ? [{ valor: 'completar', rotulo: 'A completar', contagem: resumo.aCompletar }] : []),
             { valor: 'sem-codigo', rotulo: 'Sem código de barras', contagem: resumo.semCodigo },
             ...(resumo.desativados ? [{ valor: 'desativados', rotulo: 'Desativados', contagem: resumo.desativados }] : []),
           ]}
@@ -159,9 +147,8 @@ export function Estoque() {
           <tbody>
             {produtosDaPagina.map((produto) => {
               const situacao = situacaoSaldo(produto)
-              const rapido = produto.cadastroRapido
               return (
-                <tr key={produto.codigo} className={produto.inativo ? 'estoque__inativo' : rapido ? 'linha--atencao' : linha[situacao]}>
+                <tr key={produto.codigo} className={produto.inativo ? 'estoque__inativo' : linha[situacao]}>
                   <td>
                     <span className="celula-principal codigo">{produto.codigo}</span>
                     {produto.codigoBarras ? (
@@ -174,9 +161,6 @@ export function Estoque() {
                     <span className="estoque__descricao" title={produto.descricao}>
                       {produto.descricao}
                     </span>
-                    {rapido && (
-                      <span className="celula-secundaria estoque__rapido">Cadastro rápido · falta completar e contar</span>
-                    )}
                   </td>
                   <td>
                     <Etiqueta>{produto.categoria}</Etiqueta>
@@ -185,26 +169,20 @@ export function Estoque() {
                   <td>
                     <div className="estoque__saldo">
                       <span className="estoque__quantidade">
-                        <span className={rapido ? 'estoque__qtd' : `estoque__qtd estoque__qtd--${situacao}`}>
+                        <span className={`estoque__qtd estoque__qtd--${situacao}`}>
                           {produto.saldo} {produto.unidade}
                         </span>
                         <span className="estoque__minimo">
                           Mínimo: {produto.minimo} {produto.unidade}
                         </span>
                       </span>
-                      {rapido
-                        ? <SeloCompacto tom="atencao">Sem contagem</SeloCompacto>
-                        : <SeloCompacto tom={selo[situacao].tom}>{selo[situacao].rotulo}</SeloCompacto>}
+                      <SeloCompacto tom={selo[situacao].tom}>{selo[situacao].rotulo}</SeloCompacto>
                     </div>
                   </td>
                   <td className="celula--acoes">
                     {produto.inativo ? (
                       <Botao tamanho="pequeno" className="estoque__entrada" onClick={() => definirProdutoAtivo(produto.codigo, true)}>
                         Reativar
-                      </Botao>
-                    ) : rapido ? (
-                      <Botao tamanho="pequeno" variante="primario" className="estoque__entrada" onClick={() => navegar(rotas.completarProduto(produto.codigo))}>
-                        Completar
                       </Botao>
                     ) : (
                     <Botao
@@ -216,14 +194,14 @@ export function Estoque() {
                       + Entrada
                     </Botao>
                     )}
-                    {!rapido && <BotaoIcone icone="editar" rotulo={`Editar ${produto.descricao}`} onClick={() => navegar(rotas.editarProduto(produto.codigo))} />}
-                    {!rapido && !produto.inativo && <BotaoIcone icone="ajustes" rotulo={`Ajustar contagem de ${produto.descricao}`} onClick={() => navegar(rotas.ajustarEstoque(produto.codigo))} />}
+                    <BotaoIcone icone="editar" rotulo={`Editar ${produto.descricao}`} onClick={() => navegar(rotas.editarProduto(produto.codigo))} />
+                    {!produto.inativo && <BotaoIcone icone="ajustes" rotulo={`Ajustar contagem de ${produto.descricao}`} onClick={() => navegar(rotas.ajustarEstoque(produto.codigo))} />}
                     <BotaoIcone icone="historico" rotulo={`Histórico de ${produto.descricao}`} onClick={() => navegar(rotas.movimentacoesEstoque(produto.codigo))} />
                   </td>
                 </tr>
               )
             })}
-            {lista.length === 0 && <tr><td colSpan={6} className="estoque__vazio">{filtro === 'completar' && !termo ? 'Nenhum cadastro rápido pendente. Tudo completo.' : 'Nenhum produto corresponde à busca ou ao filtro selecionado.'}</td></tr>}
+            {lista.length === 0 && <tr><td colSpan={6} className="estoque__vazio">Nenhum produto corresponde à busca ou ao filtro selecionado.</td></tr>}
           </tbody>
         </Tabela>
         <Paginacao

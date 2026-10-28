@@ -9,7 +9,7 @@ import { centavosDeTexto } from '../../formatar'
 import { useLeitorCodigo } from '../../leitor/useLeitorCodigo'
 import { rotas } from '../../rotas-caminhos'
 import type { Produto, Unidade } from '../../mock/base/tipos'
-import { cadastrarProduto, completarProduto, definirProdutoAtivo, editarProduto, excluirProduto, produtoTemHistorico, proximoCodigoProduto, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { cadastrarProduto, definirProdutoAtivo, editarProduto, excluirProduto, produtoTemHistorico, proximoCodigoProduto, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { Estoque } from '../estoque/Estoque'
 import { unidades } from './constantes'
 import { CampoCategoria } from './CampoCategoria'
@@ -33,29 +33,20 @@ export function CadastrarProduto() {
   )
 }
 
-/** Completar um cadastro rápido, também sobre o Estoque, já filtrado nos pendentes. */
-export function CompletarProduto() {
-  return <SobreProduto modo="completar" />
-}
-
 /** Corrigir um produto já cadastrado; excluir ou desativar sai daqui também. */
 export function EditarProduto() {
-  return <SobreProduto modo="editar" />
-}
-
-function SobreProduto({ modo }: { modo: 'completar' | 'editar' }) {
   const navegar = useNavigate()
   const { codigo } = useParams()
   const produto = useEstadoDemonstracao().produtos.find((p) => p.codigo === codigo)
-  const fechar = useCallback(() => navegar(modo === 'completar' ? rotas.estoqueACompletar : rotas.estoque), [navegar, modo])
-  // Guardado na abertura: o modal não troca de produto no meio. Já completo ou
-  // código inexistente: não há o que abrir.
-  const [alvo] = useState(modo === 'editar' || produto?.cadastroRapido ? produto : undefined)
+  const fechar = useCallback(() => navegar(rotas.estoque), [navegar])
+  // Guardado na abertura: o modal não troca de produto no meio. Código
+  // inexistente: não há o que abrir.
+  const [alvo] = useState(produto)
   useEffect(() => { if (!alvo) fechar() }, [alvo, fechar])
   return (
     <>
       <Estoque />
-      {alvo && <ModalProduto completar={modo === 'completar' ? alvo : undefined} editar={modo === 'editar' ? alvo : undefined} aoFechar={fechar} aoSalvar={fechar} />}
+      {alvo && <ModalProduto editar={alvo} aoFechar={fechar} aoSalvar={fechar} />}
     </>
   )
 }
@@ -87,8 +78,7 @@ const nomes: Record<Unidade, { um: string; varios: string; quantos: string }> = 
 type PropsModal = {
   aoFechar: () => void
   /** Aberto pelo Estoque ou pela ficha: grava e devolve o produto. */
-  /** `quantidade`: só pela ficha, quantas unidades vão para a venda. */
-  aoSalvar?: (codigo: string, produto: RascunhoProduto, quantidade?: number) => void
+  aoSalvar?: (codigo: string, produto: RascunhoProduto) => void
   /**
    * Aberto pela entrada: nada é gravado. Volta o cadastro preparado e o que entra
    * no estoque, já na unidade de venda (null mantém a quantidade da linha).
@@ -100,19 +90,15 @@ type PropsModal = {
    * quantidade da entrada; com os dois, a mercadoria entraria em dobro.
    */
   daEntrada?: ProdutoDaEntrada
-  /** Aberto sobre uma venda: cadastro essencial e estoque inicial zero. */
-  naFicha?: boolean
-  /** Cadastro rápido feito numa venda: abre preenchido, pede o resto e a contagem. */
-  completar?: Produto
   /** Produto já cadastrado: corrige dados, sem mexer no saldo. */
   editar?: Produto
   codigoInicial?: string
 }
 
-type CampoCadastro = 'codigoBarras' | 'nome' | 'categoria' | 'unidade' | 'preco' | 'quantidadeVendida' | 'custo' | 'saldo' | 'minimo' | 'embalagem' | 'ncm' | 'cest' | 'cfopEstadual' | 'cfopInterestadual'
+type CampoCadastro = 'codigoBarras' | 'nome' | 'categoria' | 'unidade' | 'preco' | 'custo' | 'saldo' | 'minimo' | 'embalagem' | 'ncm' | 'cest' | 'cfopEstadual' | 'cfopInterestadual'
 
-export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada, naFicha = false, completar, editar, codigoInicial = '' }: PropsModal) {
-  const existente = completar ?? editar
+export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada, editar, codigoInicial = '' }: PropsModal) {
+  const existente = editar
   const [semCodigo, setSemCodigo] = useState(Boolean(existente && !existente.codigoBarras))
   const [codigoBarras, setCodigoBarras] = useState(daEntrada?.codigoBarras ?? existente?.codigoBarras ?? codigoInicial)
   const [codigoConsultado, setCodigoConsultado] = useState('')
@@ -210,12 +196,11 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
     const unidade = String(dados.get('unidade') ?? '').slice(0, String(dados.get('unidade') ?? '').indexOf(' ')) as Unidade
     const preco = centavosDeTexto(String(dados.get('preco') ?? ''))
     const textoSaldo = String(dados.get('saldo') ?? '').trim()
-    const saldo = naFicha ? 0 : editar ? editar.saldo : Number(textoSaldo)
+    const saldo = editar ? editar.saldo : Number(textoSaldo)
     const textoCusto = String(dados.get('custo') ?? '').trim()
     const custo = textoCusto ? centavosDeTexto(textoCusto) : undefined
     const opcional = (campo: string) => String(dados.get(campo) ?? '').trim() || undefined
-    const minimo = naFicha ? 0 : Number(dados.get('minimo'))
-    const vendida = Number(dados.get('quantidadeVendida'))
+    const minimo = Number(dados.get('minimo'))
     const final = quantidadeFinal()
     const falhas: Partial<Record<CampoCadastro, string>> = {}
     if (duplicado) falhas.codigoBarras = `Este código já está cadastrado em ${duplicado.codigo}.`
@@ -224,13 +209,11 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
     if (!['un', 'pct', 'cx'].includes(unidade)) falhas.unidade = 'Escolha a unidade de venda.'
     if (!Number.isSafeInteger(preco) || preco <= 0) falhas.preco = 'Informe um preço de venda maior que zero.'
     if (custo !== undefined && (!Number.isSafeInteger(custo) || custo < 0)) falhas.custo = 'Confira o custo informado.'
-    if (completar && !textoSaldo) falhas.saldo = 'Conte a prateleira e informe a quantidade.'
-    else if (!daEntrada && (!Number.isInteger(saldo) || saldo < 0)) falhas.saldo = 'Informe uma quantidade válida.'
+    if (!daEntrada && (!Number.isInteger(saldo) || saldo < 0)) falhas.saldo = 'Informe uma quantidade válida.'
     if (!Number.isInteger(minimo) || minimo < 0) falhas.minimo = 'Informe um estoque mínimo válido.'
-    if (naFicha && (!Number.isInteger(vendida) || vendida < 1)) falhas.quantidadeVendida = 'Informe quantas unidades vão para a ficha.'
     if (typeof final === 'string') falhas.embalagem = final
     // Fora da tela (ver o import comentado no topo). Editar não apaga o que já havia.
-    // const fiscal = naFicha ? undefined : limparFiscalProduto({
+    // const fiscal = limparFiscalProduto({
     //   tributacao: String(dados.get('tributacao') ?? ''), origem: String(dados.get('origem') ?? ''),
     //   cfopEstadual: String(dados.get('cfopEstadual') ?? ''), cfopInterestadual: String(dados.get('cfopInterestadual') ?? ''),
     //   ncm: String(dados.get('ncm') ?? ''), cest: String(dados.get('cest') ?? ''),
@@ -240,7 +223,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
     const anotado = anotarNcmCest((daEntrada?.rascunho ?? existente)?.fiscal, String(dados.get('ncm') ?? ''), String(dados.get('cest') ?? ''))
     Object.assign(falhas, anotado.erros)
     const fiscal = anotado.fiscal
-    const primeira = (['codigoBarras', 'nome', 'categoria', 'unidade', 'preco', 'quantidadeVendida', 'custo', 'saldo', 'minimo', 'embalagem', 'ncm', 'cest', 'cfopEstadual', 'cfopInterestadual'] as CampoCadastro[]).find((campo) => falhas[campo])
+    const primeira = (['codigoBarras', 'nome', 'categoria', 'unidade', 'preco', 'custo', 'saldo', 'minimo', 'embalagem', 'ncm', 'cest', 'cfopEstadual', 'cfopInterestadual'] as CampoCadastro[]).find((campo) => falhas[campo])
     if (primeira) {
       setErros(falhas)
       setErroSalvar(falhas[primeira]!)
@@ -269,13 +252,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
       if (editarProduto(editar.codigo, cadastro)) aoSalvar?.(editar.codigo, dadosProduto)
       return
     }
-    if (completar) {
-      const { saldo: contagem, ...cadastro } = dadosProduto
-      if (completarProduto(completar.codigo, cadastro, contagem)) aoSalvar?.(completar.codigo, dadosProduto)
-      return
-    }
-    // Pela ficha, o produto nasce marcado: o Estoque cobra o resto do cadastro e a contagem.
-    aoSalvar?.(cadastrarProduto(naFicha ? { ...dadosProduto, cadastroRapido: true } : dadosProduto), dadosProduto, naFicha ? vendida : undefined)
+    aoSalvar?.(cadastrarProduto(dadosProduto), dadosProduto)
   }
 
   const r = daEntrada?.rascunho ?? existente
@@ -290,13 +267,10 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
 
   return (
       <Modal
-        estreito={naFicha}
-        titulo={produtoConsultado ? 'Produto já cadastrado' : completar ? 'Completar cadastro' : editar ? 'Editar produto' : naFicha ? 'Cadastro rápido' : 'Cadastrar produto'}
+        titulo={produtoConsultado ? 'Produto já cadastrado' : editar ? 'Editar produto' : 'Cadastrar produto'}
         subtitulo={produtoConsultado
           ? 'Código reconhecido. Os dados abaixo são do produto existente.'
           : editar ? 'O saldo muda só por entrada ou ajuste.'
-          : completar ? 'Feito na venda. Complete os dados e conte a prateleira.'
-          : naFicha ? 'Só o essencial para vender. O resto fica pendente no Estoque.'
           : daEntrada ? 'A quantidade vem da entrada.' : undefined}
         aoFechar={fechar}
         rodape={
@@ -310,7 +284,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
                 Cancelar
               </Botao>
               <Botao variante="primario" icone="check" type="submit" form="cadastrar-produto-formulario">
-                {naFicha ? 'Cadastrar e adicionar' : completar ? 'Salvar cadastro completo' : editar ? 'Salvar alterações' : 'Salvar produto'}
+                {editar ? 'Salvar alterações' : 'Salvar produto'}
               </Botao>
             </>
           )
@@ -378,7 +352,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
                 Produto sem código de barras
               </label>
             </div>
-            <Campo rotulo="Nome do produto" name="nome" required defaultValue={inicial.nome} readOnly={Boolean(produtoConsultado)} autoFocus={Boolean(daEntrada || naFicha)} className="cadastrar-produto__largo" erro={Boolean(erros.nome)} ajuda={erros.nome} onChange={() => limparErro('nome')} />
+            <Campo rotulo="Nome do produto" name="nome" required defaultValue={inicial.nome} readOnly={Boolean(produtoConsultado)} autoFocus={Boolean(daEntrada)} className="cadastrar-produto__largo" erro={Boolean(erros.nome)} ajuda={erros.nome} onChange={() => limparErro('nome')} />
             {produtoConsultado
               ? <Campo rotulo="Categoria" value={produtoConsultado.categoria} readOnly />
               : <CampoCategoria name="categoria" existentes={categoriasExistentes} inicial={r?.categoria} erro={erros.categoria} aoMudar={() => limparErro('categoria')} />}
@@ -485,33 +459,23 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
         </section>
 
         <section className="cadastrar-produto__grupo">
-          <h3 className="cadastrar-produto__titulo">{naFicha ? 'Venda' : 'Preço e estoque'}</h3>
-          <div className={naFicha ? 'cadastrar-produto__grade' : 'cadastrar-produto__grade cadastrar-produto__grade--tres'}>
+          <h3 className="cadastrar-produto__titulo">Preço e estoque</h3>
+          <div className="cadastrar-produto__grade cadastrar-produto__grade--tres">
             <CampoMoeda rotulo="Preço de venda (R$)" name="preco" required valorInicialCentavos={inicial.preco} readOnly={Boolean(produtoConsultado)} erro={Boolean(erros.preco)} ajuda={erros.preco} aoMudar={() => limparErro('preco')} />
-            {naFicha && <Campo
-              rotulo={`Quantidade na ficha (${unidadeVenda})`}
-              type="number"
-              name="quantidadeVendida"
-              min={1}
-              defaultValue={1}
-              erro={Boolean(erros.quantidadeVendida)}
-              ajuda={erros.quantidadeVendida}
-              onChange={() => limparErro('quantidadeVendida')}
-            />}
-            {!naFicha && <CampoMoeda rotulo="Custo (R$)" name="custo" opcional valorInicialCentavos={inicial.custo} readOnly={Boolean(produtoConsultado)} erro={Boolean(erros.custo)} ajuda={erros.custo} aoMudar={() => limparErro('custo')} />}
-            {!naFicha && <Campo rotulo="Localização" name="localizacao" opcional defaultValue={inicial.localizacao} readOnly={Boolean(produtoConsultado)} />}
-            {!daEntrada && !naFicha && !editar && <Campo
-              rotulo={completar ? 'Quantidade na prateleira' : 'Quantidade inicial'}
+            <CampoMoeda rotulo="Custo (R$)" name="custo" opcional valorInicialCentavos={inicial.custo} readOnly={Boolean(produtoConsultado)} erro={Boolean(erros.custo)} ajuda={erros.custo} aoMudar={() => limparErro('custo')} />
+            <Campo rotulo="Localização" name="localizacao" opcional defaultValue={inicial.localizacao} readOnly={Boolean(produtoConsultado)} />
+            {!daEntrada && !editar && <Campo
+              rotulo="Quantidade inicial"
               type="number"
               name="saldo"
               min={0}
               defaultValue={produtoConsultado?.saldo}
               readOnly={Boolean(produtoConsultado)}
               erro={Boolean(erros.saldo)}
-              ajuda={erros.saldo ?? (completar ? `O sistema mostra ${completar.saldo} ${completar.unidade}, sem contagem. Conte e informe.` : 'Quantidade contada no balcão.')}
+              ajuda={erros.saldo ?? 'Quantidade contada no balcão.'}
               onChange={() => limparErro('saldo')}
             />}
-            {!naFicha && <Campo
+            <Campo
               rotulo="Estoque mínimo"
               type="number"
               name="minimo"
@@ -521,11 +485,11 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
               erro={Boolean(erros.minimo)}
               ajuda={erros.minimo ?? 'Abaixo disto, vira estoque baixo.'}
               onChange={() => limparErro('minimo')}
-            />}
+            />
           </div>
         </section>
 
-        {!naFicha && <section className="cadastrar-produto__grupo">
+        <section className="cadastrar-produto__grupo">
           <h3 className="cadastrar-produto__titulo">Dados complementares</h3>
           <div className="cadastrar-produto__grade">
             <Campo rotulo="Marca" name="marca" opcional defaultValue={produtoConsultado?.marca ?? r?.marca} readOnly={Boolean(produtoConsultado)} />
@@ -535,10 +499,10 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
             <Campo rotulo="NCM" name="ncm" opcional inputMode="numeric" defaultValue={produtoConsultado?.fiscal?.ncm ?? r?.fiscal?.ncm} readOnly={Boolean(produtoConsultado)} placeholder="8 números" erro={Boolean(erros.ncm)} ajuda={erros.ncm ?? 'Anotação para o cadastro na Emitte.'} onChange={() => limparErro('ncm')} />
             <Campo rotulo="CEST" name="cest" opcional inputMode="numeric" defaultValue={produtoConsultado?.fiscal?.cest ?? r?.fiscal?.cest} readOnly={Boolean(produtoConsultado)} placeholder="7 números" erro={Boolean(erros.cest)} ajuda={erros.cest ?? 'Anotação para o cadastro na Emitte.'} onChange={() => limparErro('cest')} />
           </div>
-        </section>}
+        </section>
 
 {/* Dados fiscais: fora da tela (ver o import comentado no topo).
-        {!naFicha && <section className="cadastrar-produto__grupo">
+        <section className="cadastrar-produto__grupo">
           <h3 className="cadastrar-produto__titulo">Dados fiscais <span className="cadastrar-produto__nota">· para a nota; os valores vêm do contador</span></h3>
           <div className="cadastrar-produto__grade">
             <Selecao rotulo="Tributação" name="tributacao" opcoes={TRIBUTACOES} valorInicial={fiscalInicial.tributacao} disabled={Boolean(produtoConsultado)} />

@@ -73,11 +73,6 @@ export type Produto = {
   fiscal?: FiscalProduto
   /** Quando foi para a Emitte (ISO). A Emitte só cria na importação, nunca atualiza: vai uma vez. */
   emitteEnviadoEm?: string
-  /**
-   * Cadastrado às pressas numa venda: só o essencial, saldo sem contagem. Fica
-   * marcado até alguém completar o cadastro e contar a prateleira no Estoque.
-   */
-  cadastroRapido?: true
   /** Fora de linha: some da venda e da lista, mas o histórico continua citando. */
   inativo?: true
 }

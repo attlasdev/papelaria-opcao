@@ -16,7 +16,6 @@ import {
   buscar,
   cadastrarCliente,
   cadastrarProduto,
-  completarProduto,
   definirProdutoAtivo,
   editarProduto,
   perdasServicos,
@@ -45,7 +44,6 @@ import {
   situacaoBoleto,
 } from './estado-demonstracao'
 import { carregarBase, normalizarBase } from './base/persistencia'
-import { funcoes } from '../funcoes'
 
 const HOJE = '2026-09-25'
 beforeEach(() => restaurarDemonstracao(HOJE, 15 * 60))
@@ -65,29 +63,6 @@ describe('cadastrarProduto', () => {
     expect(guardada.produtos.find((produto) => produto.codigo === codigo)?.saldo).toBe(0)
     expect(resumoEstoque(guardada).produtos).toBe(antes + 1)
     expect(buscar(guardada, '789999001').produtos[0].codigo).toBe(codigo)
-  })
-})
-
-describe('cadastro rápido feito na venda', () => {
-  const rapido = { codigoBarras: '789999002', descricao: 'Cola rápida', categoria: 'Escolar', grupo: 'artes' as const, unidade: 'un' as const, preco: 500, saldo: 0, minimo: 0, cadastroRapido: true as const }
-
-  it('fica pendente no estoque e no sino até ser completado', () => {
-    const codigo = cadastrarProduto(rapido)
-    expect(resumoEstoque(obterBase()).aCompletar).toBe(1)
-    // Oculto no piloto (`funcoes.cadastroRapido`): o aviso só existe com ele ligado.
-    expect(notificacoes(obterBase(), HOJE).some((a) => a.id === 'cadastro-rapido')).toBe(funcoes.cadastroRapido)
-    // Saldo sem contagem não é falta: não entra em zerado nem em baixo.
-    expect(notificacoes(obterBase(), HOJE).find((a) => a.id === 'estoque-zerado')?.detalhe).not.toMatch(/Cola rápida/)
-
-    const { saldo: _saldo, cadastroRapido: _marca, ...cadastro } = rapido
-    expect(completarProduto(codigo, { ...cadastro, minimo: 5, custo: 250 }, 12)).toBe(true)
-
-    const produto = obterBase().produtos.find((p) => p.codigo === codigo)!
-    expect(produto).toMatchObject({ saldo: 12, minimo: 5, custo: 250 })
-    expect(produto.cadastroRapido).toBeUndefined()
-    expect(resumoEstoque(obterBase()).aCompletar).toBe(0)
-    expect(notificacoes(obterBase(), HOJE).some((a) => a.id === 'cadastro-rapido')).toBe(false)
-    expect(obterBase().movimentosEstoque[0]).toMatchObject({ tipo: 'Ajuste', produto: codigo, antes: 0, depois: 12 })
   })
 })
 
@@ -502,7 +477,7 @@ describe('marca de enviado à Emitte', () => {
     const marcado = obterBase().produtos.find((p) => p.codigo === a.codigo)!
     expect(marcado.emitteEnviadoEm).toBeTruthy()
     expect(obterBase().produtos.find((p) => p.codigo === b.codigo)!.emitteEnviadoEm).toBeUndefined()
-    const { codigo: _c, saldo: _s, cadastroRapido: _r, inativo: _i, emitteEnviadoEm: _e, ...dados } = marcado
+    const { codigo: _c, saldo: _s, inativo: _i, emitteEnviadoEm: _e, ...dados } = marcado
     expect(editarProduto(a.codigo, { ...dados, preco: dados.preco + 100 })).toBe(true)
     expect(obterBase().produtos.find((p) => p.codigo === a.codigo)!.emitteEnviadoEm).toBe(marcado.emitteEnviadoEm)
   })

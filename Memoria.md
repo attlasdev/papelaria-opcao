@@ -476,13 +476,11 @@ com "Nota:". Item sem um dos dois quebra a suíte.
 - `R-ESTOQUE-02` **Excluir x desativar:** apaga só produto sem histórico (cadastro por engano).
   Com histórico, desativa: some da venda, da entrada, do ajuste, das contas e dos
   avisos; aba "Desativados" para reativar. Bipado, avisa que está desativado.
-- Nota: **Cadastro rápido: OCULTO até a 1.0** (`funcoes.cadastroRapido`, Agostinho,
-  `2026-10-20`). Nenhuma tela o cria desde `2026-10-01`: saiu da nova ficha
-  junto com a regra "sem saldo, sem venda" (o produto nasceria com saldo 0 e a
-  venda travaria). Ocultos: card "Cadastro a completar", filtro "A completar" e
-  aviso no sino. O código fica: pendente até ser completado, "Completar" exige a
-  contagem da prateleira, sem contagem o zero não é falta e não entra no
-  Ajustar. A 1.0 decide se volta (e como convive com o "sem saldo, sem venda").
+- Nota: **Cadastro rápido: sai na 1.0** (`2026-10-28`, Agostinho). Estava oculto
+  desde `2026-10-20` (`funcoes.cadastroRapido`): o produto nasceria com saldo 0
+  e, com "sem saldo, sem venda" no banco, a venda travaria. Saem o "Completar
+  cadastro", o filtro e o card "A completar" e o aviso do sino. Produto novo
+  no balcão é cadastrado pelo Estoque, com a quantidade contada.
 - `R-ESTOQUE-03` "+ Entrada" da linha abre a gaveta Entrada rápida (um produto). Entrega com
   vários itens vai pela página Registrar entrada, com bloco "Bipados" (bipar de
   novo não duplica; produto novo precisa de cadastro antes de ir à tabela).
@@ -498,6 +496,16 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   fora da tela; guardados em `fiscal` com o padrão (Simples, 0, 5102/6102) ou o
   que o produto já tinha. **A exportação para a Emitte manda o anotado** (decisão
   do Agostinho, opção "deixar ir") — ver PENDENTE.
+
+- `R-ESTOQUE-07` **Quantidade inicial pede quem está fazendo** (`2026-10-28`): o
+  cadastro não pede PIN, mas a quantidade inicial grava um fato (o movimento
+  "Saldo inicial do cadastro"). Com quantidade maior que 0, a pessoa e o PIN
+  (`R-OPERADOR-02`); com 0 não há movimento e o cadastro grava direto. Excluir
+  produto que tem esse movimento também pede a pessoa e o PIN (não é gesto da
+  dona). Editar, desativar e reativar não pedem.
+- `R-ESTOQUE-08` **Código do produto nasce no banco ao salvar** (`2026-10-28`): a tela
+  não mostra previsão do próximo código (com duas máquinas, erraria); mostra o
+  código depois de salvar.
 
 ### Financeiro
 **Situação de validação: NÃO VALIDADO pelo Victor.** As regras abaixo descrevem
@@ -683,6 +691,24 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-10-28` — Produto na 1.0: sem cadastro rápido, PIN só com quantidade
+Decisão do Agostinho, no percurso da tela 2.1. Regras `R-ESTOQUE-07` e `08`, e a
+nota do cadastro rápido em "Estoque".
+
+- **Cadastro rápido sai:** não convive com "sem saldo, sem venda" no banco, e o
+  schema da 1.0 já não tem a coluna de pendente.
+- **PIN só quando há fato:** quantidade inicial maior que 0, ou excluir produto
+  que tem o movimento do saldo inicial. O resto do cadastro grava sem PIN.
+- **Código só depois de salvar.**
+
+**Por quê:** o movimento de estoque exige quem fez; sem a assinatura, o saldo
+inicial ficaria sem autor. Descartado: PIN em todo cadastro (cadastro é
+editável, `R-OPERADOR-02`); cadastrar sempre com 0 e dar entrada à parte (dois
+passos para o caso mais comum).
+**Em observação:** o Agostinho acha que o PIN no cadastro pode atrapalhar
+(cadastrar o catálogo em sequência). Fica assim; revemos se virar problema na
+loja. A importação por planilha (tela 2.7) é o caminho para o catálogo inteiro.
 
 ### `2026-10-28` — Operador com PIN em cada gesto, administradora com PIN
 Decisão do Agostinho, no percurso da tela 1 da 1.0. Troca a de `2026-10-23`

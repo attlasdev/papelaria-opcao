@@ -435,10 +435,8 @@ export function resumoEstoque(base: Base) {
   return {
     produtos: ativos.length,
     categorias: new Set(ativos.map((p) => p.categoria)).size,
-    // Cadastro rápido não tem contagem: o zero dele não é falta, é pendência.
-    baixo: ativos.filter((p) => !p.cadastroRapido && situacaoSaldo(p) !== 'normal').length,
+    baixo: ativos.filter((p) => situacaoSaldo(p) !== 'normal').length,
     semCodigo: ativos.filter((p) => !p.codigoBarras).length,
-    aCompletar: ativos.filter((p) => p.cadastroRapido).length,
     desativados: base.produtos.length - ativos.length,
   }
 }
@@ -509,7 +507,7 @@ export function boletoComMesmoNumero(base: Base, numero: string, ignorar?: strin
   return alvo ? base.boletos.find((b) => b.id !== ignorar && b.numero.trim().toLowerCase() === alvo) : undefined
 }
 
-export type TipoNotificacao = 'atraso' | 'vencendo' | 'estoque-zerado' | 'estoque-baixo' | 'cadastro-rapido' | 'rascunho' | 'boleto-vencido' | 'boleto-vencendo'
+export type TipoNotificacao = 'atraso' | 'vencendo' | 'estoque-zerado' | 'estoque-baixo' | 'rascunho' | 'boleto-vencido' | 'boleto-vencendo'
 
 export type Notificacao = {
   id: string
@@ -583,7 +581,7 @@ export function notificacoes(base: Base, hoje: string): Notificacao[] {
   const avisos = [...atrasos, ...vencendo]
 
   const nomes = (lista: Produto[]) => lista.length === 1 ? lista[0].descricao : `${lista[0].descricao} e mais ${lista.length - 1}`
-  const contados = produtosAtivos(base).filter((p) => !p.cadastroRapido)
+  const contados = produtosAtivos(base)
   const zerados = contados.filter((p) => situacaoSaldo(p) === 'zerado')
   const baixos = contados.filter((p) => situacaoSaldo(p) === 'baixo')
   if (zerados.length) {
@@ -596,14 +594,6 @@ export function notificacoes(base: Base, hoje: string): Notificacao[] {
     avisos.push({
       id: 'estoque-baixo', tipo: 'estoque-baixo', tom: 'atencao',
       titulo: plural(baixos.length, 'produto com estoque baixo', 'produtos com estoque baixo'), detalhe: nomes(baixos), destino: rotas.estoque,
-    })
-  }
-  const rapidos = produtosAtivos(base).filter((p) => p.cadastroRapido)
-  if (funcoes.cadastroRapido && rapidos.length) {
-    avisos.push({
-      id: 'cadastro-rapido', tipo: 'cadastro-rapido', tom: 'atencao',
-      titulo: plural(rapidos.length, 'cadastro rápido a completar', 'cadastros rápidos a completar'),
-      detalhe: `${nomes(rapidos)} · feito na venda`, destino: rotas.estoqueACompletar,
     })
   }
   // Com a área de notas oculta, o aviso levaria a uma tela sem caminho (`2026-10-19`).

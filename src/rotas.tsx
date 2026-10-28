@@ -13,7 +13,7 @@ import { Financeiro } from './telas/financeiro/Financeiro'
 import { Caixa } from './telas/caixa/Caixa'
 import { RegistrarMovimento } from './telas/registrar-movimento/RegistrarMovimento'
 import { Estoque } from './telas/estoque/Estoque'
-import { CadastrarProduto, CompletarProduto, EditarProduto } from './telas/cadastrar-produto/CadastrarProduto'
+import { CadastrarProduto, EditarProduto } from './telas/cadastrar-produto/CadastrarProduto'
 import { RegistrarEntrada } from './telas/registrar-entrada/RegistrarEntrada'
 import { EntradaRapida } from './telas/entrada-rapida/EntradaRapida'
 import { AjustarEstoque } from './telas/ajustar-estoque/AjustarEstoque'
@@ -53,7 +53,6 @@ export const roteador = createHashRouter([
         ],
       },
       { path: '/estoque/produto/novo', element: <CadastrarProduto /> },
-      { path: '/estoque/produto/:codigo/completar', element: <CompletarProduto /> },
       { path: '/estoque/produto/:codigo/editar', element: <EditarProduto /> },
       { path: '/estoque/entrada', element: <RegistrarEntrada /> },
       { path: '/servicos', element: <Servicos /> },

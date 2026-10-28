@@ -111,26 +111,8 @@ export function cadastrarProduto(dados: Omit<Produto, 'codigo'>) {
   return codigo
 }
 
-/**
- * Fecha um cadastro rápido: grava o cadastro completo, tira a marca e, se a
- * contagem da prateleira difere do sistema, registra o ajuste junto.
- */
-export function completarProduto(codigo: string, dados: Omit<Produto, 'codigo' | 'saldo' | 'cadastroRapido'>, contagem: number) {
-  const produto = base.produtos.find((p) => p.codigo === codigo)
-  if (!produto || !Number.isInteger(contagem) || contagem < 0) return false
-  // A marca de enviado à Emitte sobrevive: o formulário não a conhece.
-  const completo: Produto = { ...dados, codigo, saldo: contagem, ...(produto.emitteEnviadoEm ? { emitteEnviadoEm: produto.emitteEnviadoEm } : {}) }
-  const ajuste = contagem !== produto.saldo ? [movimentoEstoque(produto, contagem, 'Ajuste', 'Contagem ao completar cadastro rápido')] : []
-  mudar({
-    ...base,
-    produtos: base.produtos.map((p) => (p.codigo === codigo ? completo : p)),
-    movimentosEstoque: [...ajuste, ...base.movimentosEstoque],
-  })
-  return true
-}
-
 /** Corrige o cadastro. Saldo não muda aqui: só por entrada ou ajuste, para o histórico bater. */
-export function editarProduto(codigo: string, dados: Omit<Produto, 'codigo' | 'saldo' | 'cadastroRapido' | 'inativo'>) {
+export function editarProduto(codigo: string, dados: Omit<Produto, 'codigo' | 'saldo' | 'inativo'>) {
   const produto = base.produtos.find((p) => p.codigo === codigo)
   if (!produto) return false
   const editado: Produto = {

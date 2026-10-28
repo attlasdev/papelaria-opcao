@@ -225,7 +225,7 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
       )}
       {!erro && erroFalta && <p className="itens-ficha__erro" role="alert">{erroFalta}</p>}
       {erroEstoque && <p className="itens-ficha__erro" role="alert">
-        Estoque insuficiente para {erroEstoque.descricao}: {erroEstoque.disponivel} disponível, {erroEstoque.solicitado} na ficha. Confira a prateleira e <Link to={todos.find((produto) => produto.codigo === erroEstoque.codigo)?.cadastroRapido ? rotas.completarProduto(erroEstoque.codigo) : rotas.ajustarEstoque(erroEstoque.codigo)}>{todos.find((produto) => produto.codigo === erroEstoque.codigo)?.cadastroRapido ? 'complete o cadastro com a contagem' : 'ajuste o estoque'}</Link> antes de concluir.
+        Estoque insuficiente para {erroEstoque.descricao}: {erroEstoque.disponivel} disponível, {erroEstoque.solicitado} na ficha. Confira a prateleira e <Link to={rotas.ajustarEstoque(erroEstoque.codigo)}>ajuste o estoque</Link> antes de concluir.
       </p>}
 
       <div className="itens-ficha__topo">

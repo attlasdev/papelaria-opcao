@@ -141,11 +141,5 @@
   width: 88px;
 }
 
-/* Cadastro feito na venda: a linha avisa até alguém completar e contar. */
-.estoque__rapido {
-  color: var(--color-atencao-texto);
-  font-weight: var(--font-weight-medio);
-}
-
 /* Desativado: fora da venda, só consulta e reativação. */
 .estoque__inativo td { color: var(--color-texto-suave); }

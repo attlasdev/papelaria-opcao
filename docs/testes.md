@@ -74,6 +74,8 @@ Os motivos se repetem em quatro tipos:
 | R-BOLETO-06 | contrato | tela 6.1 (filtros e busca; excluir vira evento, D7) |
 | R-ESTOQUE-03 | contrato | tela 2.3 e 2.4 |
 | R-ESTOQUE-05 | contrato | tela 2.1 |
+| R-ESTOQUE-07 | contrato | tela 2.1 (em andamento) |
+| R-ESTOQUE-08 | contrato | tela 2.1 (em andamento) |
 | R-FINANCEIRO-01 | tela | Fase 3 |
 | R-FINANCEIRO-03 | contrato | tela 7.2 |
 | R-CAIXA-03 | contrato | tela 7.1 (esperado calculado pelo back) |
