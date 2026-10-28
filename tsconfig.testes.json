@@ -1,0 +1,9 @@
+{
+  // Os testes de `testes/` atravessam a fronteira de proposito: os de contrato
+  // rodam o mock (src/, com tipos do Vite) e o banco (electron/, com Node).
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "vite/client"]
+  },
+  "include": ["testes", "src/vite-env.d.ts", "electron/banco/sql.d.ts"]
+}

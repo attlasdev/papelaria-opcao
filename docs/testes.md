@@ -41,6 +41,7 @@ Agostinho em `2026-10-27`.
 | `src/dados/`, `src/leitor/` | integrações e formatos: Emitte, comprovante, fiscal, sincronia, leitor |
 | `electron/banco/` | banco da 1.0: o que o schema garante, migrations, semente e as fotos por versão (`fotos.test.ts`: cada migration roda sobre dados no formato antigo) |
 | `testes/` | a cobertura e as regras de interface que dá para conferir lendo o código |
+| `testes/contrato/` | os testes de contrato da 1.0: cada cenário roda no mock e no SQLite (`testarContrato`), um arquivo por área |
 
 ## Pendentes
 
