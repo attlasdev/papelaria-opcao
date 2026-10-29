@@ -112,7 +112,7 @@ testarContrato('entrada de mercadoria', { mock, sqlite }, (abrir) => {
     expect(dado(await api.listarOperadores()).ultimoId).toBe(joao.operadorId)
   })
 
-  it('[R-ESTOQUE-02] produto desativado não recebe entrada; e se um item não serve, nada entra', async () => {
+  it('[R-ESTOQUE-02] [A1] produto desativado não recebe entrada; e se um item não serve, nada entra', async () => {
     const api = abrir('vazia')
     const { joao, caderno, cola } = await loja(api)
     const r = await api.registrarEntrada(entrega([
@@ -124,7 +124,7 @@ testarContrato('entrada de mercadoria', { mock, sqlite }, (abrir) => {
     expect(api.entradas(caderno.id)).toEqual([])
   })
 
-  it('recusa a entrega fora do formato, sem gravar nada', async () => {
+  it('[A1] recusa a entrega fora do formato (quantidade fracionada inclusive), sem gravar nada', async () => {
     const api = abrir('vazia')
     const { joao, caderno, regua } = await loja(api)
     const item = { produtoId: caderno.id, quantidade: 2, custoUnitario: null }

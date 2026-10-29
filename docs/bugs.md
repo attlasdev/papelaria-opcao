@@ -22,8 +22,11 @@ Cada entrada: o que quebrou, a causa, a situação e onde está o teste.
 ### A1 · Entrada de mercadorias descartava item em silêncio
 Quantidade fracionada na Registrar entrada fazia a gravação daquele item falhar
 sem aviso. **Corrigido** na v0.1.8 (só inteiro; item recusado fica na tela com
-aviso). Correção na tela, sem teste automático; na 1.0, a entrega inteira vira
-uma operação (tela 2.4).
+aviso), sem teste automático. **Na 1.0, corrigido de vez** (`2026-10-29`, tela
+2.4): a entrega inteira é uma operação, `registrarEntrada`, numa transação; o
+back recusa quantidade que não é inteira e, se um item não serve, nada entra.
+Teste: `testes/contrato/entradas.contrato.test.ts` (`[A1]`, mock e SQLite),
+conferido falhando com a checagem do item desligada.
 
 ### A2 · Reset da base de produção travaria as gravações
 Apagar a linha de `base_loja` reinicia a revisão e colide com

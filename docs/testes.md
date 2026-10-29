@@ -90,7 +90,6 @@ Os motivos se repetem em quatro tipos:
 | R-UI-06 | revisão | — |
 | R-UI-08 | revisão | — |
 | R-UI-09 | tela | Fase 3 (1280x720 e 1920x1080) |
-| A1 | tela | tela 2.4 (entrega numa operação) e Fase 3 |
 | A2 | 0.1 / estrutural | — |
 | A3 | aberto | com a correção, antes da fase 3 do comprovante |
 | A5 | 0.1 / estrutural | — |
