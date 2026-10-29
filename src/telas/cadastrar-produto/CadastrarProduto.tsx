@@ -46,7 +46,7 @@ const mensagemDe = (r: Exclude<Resultado<unknown>, { ok: true }>) => (r.causa ==
  */
 export function EditarProduto() {
   const navegar = useNavigate()
-  // Até a Estoque migrar (tela 2.2), a rota leva o código, que no mock é o id.
+  // A rota leva o id do produto (no mock, o id é o próprio código).
   const { codigo = '' } = useParams()
   const fechar = useCallback(() => navegar(rotas.estoque), [navegar])
   const [carga, setCarga] = useState<{ fase: 'carregando' } | { fase: 'erro'; mensagem: string } | { fase: 'pronto'; produto: Produto }>({ fase: 'carregando' })

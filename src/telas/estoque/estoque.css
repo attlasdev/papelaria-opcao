@@ -65,6 +65,19 @@
   color: var(--color-texto-suave);
 }
 
+/* Falha ao ler a lista ou ao reativar: a lista anterior continua, a mensagem fica acima. */
+.estoque__falha {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-4);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-critico-fundo);
+  color: var(--color-critico-texto);
+  font-size: var(--text-corpo);
+}
+
 /* Colunas fixas do tamanho do conteúdo; a descrição fica com o resto.
    Saldo sobra à direita do selo: empurra categoria, preço e saldo para a esquerda
    e deixa o selo isolado dos botões de ação. */
