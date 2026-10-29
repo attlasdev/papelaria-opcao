@@ -11,13 +11,10 @@ export const funcoes = {
    * continuam existindo, só não há caminho até elas.
    */
   notasFiscais: false,
-  /**
-   * Exportar produtos e clientes para a Emitte (planilhas). Ligado só em
-   * desenvolvimento enquanto o fluxo "vai uma vez, marca ao confirmar" é testado;
-   * no instalador, desligado até o Agostinho liberar.
-   */
-  exportarEmitte: import.meta.env.DEV,
-  exportarClientesEmitte: import.meta.env.DEV,
+  // Exportar produtos e clientes para a Emitte (planilhas): desligado de vez em
+  // 2026-10-29, com os botões comentados (a Emitte duplica o que já existe).
+  // exportarEmitte: import.meta.env.DEV,
+  // exportarClientesEmitte: import.meta.env.DEV,
   /**
    * Bloco "Para nota fiscal" do cadastro de cliente (tipo de contribuinte, tipo
    * de cliente, inscrição estadual). Oculto no piloto (`2026-10-19`); oculto, o

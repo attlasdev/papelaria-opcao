@@ -31,6 +31,13 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-29` — Exportação para a Emitte desligada
+
+- **Estoque e Clientes:** saem os botões "Exportar produtos/clientes para a
+  Emitte". Os componentes (`ExportarEmitte.tsx`, `ExportarClientesEmitte.tsx`)
+  e as chaves de `funcoes.ts` ficam comentados, não apagados. Motivo em
+  `Memoria.md`, `2026-10-29`: a Emitte duplica o produto que já existe.
+
 ### `2026-10-28` — Cadastro de produto (1.0, tela 2.1)
 
 - **Contrato:** tipos `Produto`, `DadosProduto`, `ConteudoProduto` e

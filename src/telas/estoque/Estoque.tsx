@@ -12,7 +12,8 @@ import { Icone } from '../../componentes/icone/Icone'
 import { reais } from '../../formatar'
 import { definirProdutoAtivo, normalizar, resumoEstoque, situacaoSaldo, useEstadoDemonstracao, type SituacaoSaldo } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
-import { ExportarProdutosEmitte } from './ExportarEmitte'
+// Exportação para a Emitte desligada em 2026-10-29 (ver ExportarEmitte.tsx).
+// import { ExportarProdutosEmitte } from './ExportarEmitte'
 import './estoque.css'
 
 type Filtro = string
@@ -82,7 +83,7 @@ export function Estoque() {
           <Botao icone="entrada-estoque" onClick={() => navegar(rotas.registrarEntrada)}>
             Registrar entrada
           </Botao>
-          <ExportarProdutosEmitte />
+          {/* <ExportarProdutosEmitte /> */}
         </>
       }
     >

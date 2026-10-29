@@ -197,11 +197,12 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
   com `checkout` numa das pastas: a outra conversa perde o chão. **Piloto e 1.0
   em conversas separadas desde `2026-10-23`;** recurso novo no piloto entra com
   linha no inventário e no plano (plano, "Processo enquanto o piloto evolui").
-- [ ] **Antes de ligar a exportação de produtos para a Emitte:** testar na
+- [x] ~~**Antes de ligar a exportação de produtos para a Emitte:** testar na
   importação um produto com NCM e CEST anotados (`2026-10-23`). A planilha leva
   o CEST junto com CSOSN 102 (Simples), combinação nunca testada; conferir se a
   Emitte aceita, ignora ou recusa. O texto do diálogo ("complete o NCM de cada
-  produto novo") também precisa mudar para "o NCM que faltar".
+  produto novo") também precisa mudar para "o NCM que faltar".~~ Descartado em
+  `2026-10-29`: a exportação foi desligada.
 - [ ] **Boletos: confirmação do operador ao marcar como pago** (`2026-10-23`,
   pedido do Agostinho). Desenhada **para a 1.0**, junto com o seletor de
   operador: plano da 1.0, "Confirmação do operador" (`2026-10-24`). No piloto
@@ -289,8 +290,9 @@ período pela API junto com a planilha; decidir se a maquininha imprime a via
 do cliente (`print_on_terminal`). No teste o `reference_id` é fictício
 (`1234567890`, consulta dá 404): só se prova com maquininha real.
 
-*Emitte (para a 1.0):* testar o fluxo de exportação "vai uma vez" na conta de
-teste e liberar os botões (`src/funcoes.ts`); SINTEGRA com o contador.
+*Emitte (para a 1.0):* ~~testar o fluxo de exportação "vai uma vez" na conta de
+teste e liberar os botões~~ (exportação desligada em `2026-10-29`); SINTEGRA com
+o contador.
 
 *Contador:* mandar uma planilha de exemplo do "Exportar período" do Financeiro
 e perguntar o que falta ou sobra (colunas, plano de contas, um arquivo por mês?).
@@ -494,8 +496,8 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   sem procurar a nota. Só o formato é conferido (8 e 7 números; pontos aceitos);
   CEST sem substituição tributária é aceito. Tributação, origem e CFOP continuam
   fora da tela; guardados em `fiscal` com o padrão (Simples, 0, 5102/6102) ou o
-  que o produto já tinha. **A exportação para a Emitte manda o anotado** (decisão
-  do Agostinho, opção "deixar ir") — ver PENDENTE.
+  que o produto já tinha. A dona cadastra na Emitte à mão: a exportação foi
+  desligada em `2026-10-29` (ver a decisão do dia).
 
 - `R-ESTOQUE-07` **Quantidade inicial pede quem está fazendo** (`2026-10-28`): o
   cadastro não pede PIN, mas a quantidade inicial grava um fato (o movimento
@@ -691,6 +693,18 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-10-29` — Exportação para a Emitte desligada
+Decisão do Agostinho, com a loja de acordo, no percurso da tela 2.2. Os botões
+"Exportar produtos" (Estoque) e "Exportar clientes" (Clientes) e as chaves em
+`src/funcoes.ts` ficam **comentados**, não apagados; o gerador das planilhas
+(`src/dados/emitte.ts`), a marca "Já importei" e a coluna `emitte_enviado_em`
+continuam, com os testes, para voltar funcionando se um dia mudar.
+
+**Por quê:** ao importar um produto que já existe, a Emitte cria outro, com id
+diferente, e duplica. Não achamos como evitar (o "vai uma vez" só protegia de
+reenviar pelo app, não do que já estava lá). A dona cadastra na Emitte à mão;
+NCM e CEST seguem no app como anotação (`R-ESTOQUE-06`).
 
 ### `2026-10-28` — Produto na 1.0: sem cadastro rápido, PIN só com quantidade
 Decisão do Agostinho, no percurso da tela 2.1. Regras `R-ESTOQUE-07` e `08`, e a
