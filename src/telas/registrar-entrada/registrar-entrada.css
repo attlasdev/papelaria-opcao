@@ -203,15 +203,6 @@
   white-space: nowrap;
 }
 
-.registrar-entrada__recusa {
-  margin-top: var(--espaco-4);
-  padding: var(--espaco-3) var(--espaco-4);
-  border-radius: var(--radius-medio);
-  background: var(--color-critico-fundo);
-  color: var(--color-critico-texto);
-  font-size: var(--text-rotulo);
-}
-
 .registrar-entrada__acoes {
   display: flex;
   justify-content: flex-end;

@@ -7,8 +7,11 @@ import { Campo, CampoData } from '../../componentes/campo/Campo'
 import { Tabela } from '../../componentes/tabela/Tabela'
 import { SeloCompacto } from '../../componentes/selo/Selo'
 import { Icone } from '../../componentes/icone/Icone'
+import type { Assinatura, Entrega, Produto } from '../../../comum/contrato'
+import { diaValido, hojeEmSaoPaulo } from '../../../comum/regras/entrada'
+import { JanelaAssinatura } from '../../componentes/assinatura/JanelaAssinatura'
+import { api } from '../../dados/api'
 import { centavosDigitados, moedaDigitada, reais } from '../../formatar'
-import { alterarSaldo, cadastrarProduto, dataCalendarioValida, hojeISO, normalizar, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { useLeitorCodigo } from '../../leitor/useLeitorCodigo'
 import { PainelLeitor, type UltimaLeitura } from '../../leitor/PainelLeitor'
 import { rotas } from '../../rotas-caminhos'
@@ -17,13 +20,12 @@ import { BlocoBipados, falta, paraQuantidade, unidadeBase, type Bipado } from '.
 import { ModalProduto, type ProdutoDaEntrada, type RascunhoProduto } from '../cadastrar-produto/CadastrarProduto'
 import './registrar-entrada.css'
 
-/** Produto da base virando item de entrada. */
-function itemDoCatalogo(codigoOuBarras: string, produtos: ReturnType<typeof useEstadoDemonstracao>['produtos']): ItemEntrada | null {
-  const produto = produtos.find((p) => p.codigo === codigoOuBarras || p.codigoBarras === codigoOuBarras)
-  if (!produto) return null
+/** Produto do catálogo virando item de entrada. */
+function itemDoCatalogo(produto: Produto): ItemEntrada {
   return {
     codigo: produto.codigo,
-    codigoBarras: produto.codigoBarras,
+    produtoId: produto.id,
+    codigoBarras: produto.codigoBarras ?? undefined,
     descricao: produto.descricao,
     detalhe: produto.categoria,
     unidade: produto.unidade,
@@ -33,24 +35,35 @@ function itemDoCatalogo(codigoOuBarras: string, produtos: ReturnType<typeof useE
   }
 }
 
+/** Aviso para o produto desativado, bipado ou buscado: nunca vira produto novo. */
+const avisoDesativado = (descricao: string) => `“${descricao}” está desativado. Reative no Estoque para dar entrada.`
+
 export function RegistrarEntrada() {
   const navegar = useNavigate()
-  const { produtos } = useEstadoDemonstracao()
-  // Aberta pela linha de um produto no Estoque: a lista começa com ele.
+  // Os produtos que o back já devolveu (busca e bipe), pelo id: o bipado lançado vira item com eles.
+  const [conhecidos, setConhecidos] = useState<Record<string, Produto>>({})
+  const conhecer = useCallback((p: Produto) => setConhecidos((atual) => ({ ...atual, [p.id]: p })), [])
+  // Aberta pela linha de um produto no Estoque (Entrada rápida → "Entrada completa"): a lista começa com ele.
   const origem = (useLocation().state as { produto?: string } | null)?.produto
   // Pelo botão do topo a carga começa vazia: só entra o que for bipado ou buscado.
-  const [itens, setItens] = useState<ItemEntrada[]>(() => {
-    const doProduto = origem ? itemDoCatalogo(origem, produtos) : null
-    return doProduto ? [doProduto] : []
-  })
+  const [itens, setItens] = useState<ItemEntrada[]>([])
+  useEffect(() => {
+    if (!origem) return
+    let vivo = true
+    void api().obterProduto(origem).then((r) => {
+      if (vivo && r.ok && r.dado.ativo) setItens((atual) => (atual.length ? atual : [itemDoCatalogo(r.dado)]))
+    })
+    return () => { vivo = false }
+  }, [origem])
   const [bipados, setBipados] = useState<Bipado[]>([])
-  const [dataRecebimento, setDataRecebimento] = useState(hojeISO())
+  const [dataRecebimento, setDataRecebimento] = useState(hojeEmSaoPaulo())
   const [fornecedor, setFornecedor] = useState('')
   const [referencia, setReferencia] = useState('')
   const [observacoes, setObservacoes] = useState('')
   const [erroData, setErroData] = useState(false)
   const [tentouConfirmar, setTentouConfirmar] = useState(false)
-  const [recusados, setRecusados] = useState<string[]>([])
+  /** A entrega pronta, esperando quem está fazendo (`R-OPERADOR-02`). */
+  const [assinando, setAssinando] = useState<Entrega | null>(null)
   // Leitor ligado: o painel com o laser toma o lugar da busca. Liga pelo botão ou
   // sozinho no primeiro bipe, para ela sempre ver que a leitura chegou.
   const [lendo, setLendo] = useState(false)
@@ -63,18 +76,29 @@ export function RegistrarEntrada() {
   const [erroBipe, setErroBipe] = useState<string | null>(null)
   const [sugestoesAbertas, setSugestoesAbertas] = useState(false)
   const [indiceAtivo, setIndiceAtivo] = useState(-1)
-  const termo = normalizar(bipe.trim())
-  // Desativado não recebe entrada; bipado ou digitado, avisa (nunca vira produto novo).
-  const desativado = (codigo: string) => produtos.find((p) => p.inativo && (p.codigo === codigo || p.codigoBarras === codigo))
-  const avisoDesativado = (descricao: string) => `“${descricao}” está desativado. Reative no Estoque para dar entrada.`
-  const sugestoes = termo ? produtos
-    .filter((produto) => !produto.inativo)
-    .filter((produto) => termo.split(/\s+/).every((palavra) => normalizar(`${produto.codigo} ${produto.codigoBarras ?? ''} ${produto.descricao}`).includes(palavra)))
-    .sort((a, b) => {
-      const prioridade = (produto: typeof a) => produto.codigo === bipe.trim() || produto.codigoBarras === bipe.trim() ? 0 : normalizar(produto.descricao).startsWith(termo) ? 1 : 2
-      return prioridade(a) - prioridade(b)
-    })
-    .slice(0, 6) : []
+  // As sugestões vêm do back (o catálogo passa de mil itens), depois de uma pausa na digitação.
+  const [sugestoes, setSugestoes] = useState<Produto[]>([])
+  useEffect(() => {
+    const termo = bipe.trim()
+    if (!termo) { setSugestoes([]); return }
+    let vivo = true
+    const espera = setTimeout(() => {
+      void api().listarProdutos('todos', termo, 1, 6).then((r) => { if (vivo && r.ok) setSugestoes(r.dado.produtos) })
+    }, 200)
+    return () => { vivo = false; clearTimeout(espera) }
+  }, [bipe])
+
+  /**
+   * O produto com este código de barras ou código interno, ativo ou não (o
+   * desativado avisa, nunca vira produto novo). `null`: não está cadastrado.
+   */
+  async function procurar(codigo: string): Promise<Produto | null> {
+    const porBarras = await api().buscarProdutoPorCodigoBarras(codigo)
+    if (porBarras.ok && porBarras.dado) return porBarras.dado
+    const [ativos, fora] = await Promise.all([api().listarProdutos('todos', codigo, 1, 6), api().listarProdutos('desativados', codigo, 1, 6)])
+    const exato = (r: typeof ativos) => (r.ok ? r.dado.produtos.find((p) => p.codigo.toLowerCase() === codigo.toLowerCase()) : undefined)
+    return exato(ativos) ?? exato(fora) ?? null
+  }
 
   function mudarQuantidade(codigo: string, quantidade: number) {
     // Só inteiro, como na Entrada rápida: o estoque recusa saldo fracionado.
@@ -85,12 +109,12 @@ export function RegistrarEntrada() {
     setItens((atual) => atual.map((item) => item.codigo === codigo ? { ...item, custo: custo ?? undefined } : item))
   }
 
-  function incluirProduto(codigo: string) {
-    const novo = itemDoCatalogo(codigo, produtos)
-    if (!novo) return
+  function incluirProduto(produto: Produto) {
+    conhecer(produto)
+    const codigo = produto.codigo
     setItens((atual) => atual.some((item) => item.codigo === codigo)
       ? atual.map((item) => item.codigo === codigo ? { ...item, quantidade: item.quantidade + 1 } : item)
-      : [...atual, novo])
+      : [...atual, itemDoCatalogo(produto)])
     setErroBipe(null)
     setBipe('')
     setIndiceAtivo(-1)
@@ -98,7 +122,7 @@ export function RegistrarEntrada() {
     requestAnimationFrame(() => campoProduto.current?.focus())
   }
 
-  function adicionar(evento: FormEvent) {
+  async function adicionar(evento: FormEvent) {
     evento.preventDefault()
     const consulta = bipe.trim()
     if (!consulta) {
@@ -106,11 +130,10 @@ export function RegistrarEntrada() {
       campoProduto.current?.focus()
       return
     }
-    const fora = desativado(consulta)
-    if (fora) { setErroBipe(avisoDesativado(fora.descricao)); return }
-    const exato = produtos.find((produto) => !produto.inativo && (produto.codigo === consulta || produto.codigoBarras === consulta))
-    if (exato) { incluirProduto(exato.codigo); return }
-    if (sugestoes.length === 1) { incluirProduto(sugestoes[0].codigo); return }
+    const exato = await procurar(consulta)
+    if (exato && !exato.ativo) { setErroBipe(avisoDesativado(exato.descricao)); return }
+    if (exato) { incluirProduto(exato); return }
+    if (sugestoes.length === 1) { incluirProduto(sugestoes[0]); return }
     setSugestoesAbertas(sugestoes.length > 0)
     setErroBipe(sugestoes.length ? 'Escolha um produto da lista para adicionar.' : `Produto “${consulta}” não encontrado no catálogo.`)
   }
@@ -124,30 +147,33 @@ export function RegistrarEntrada() {
     }
     if (evento.key === 'Enter' && sugestoesAbertas && indiceAtivo >= 0 && sugestoes[indiceAtivo]) {
       evento.preventDefault()
-      incluirProduto(sugestoes[indiceAtivo].codigo)
+      incluirProduto(sugestoes[indiceAtivo])
     }
   }
 
   // O leitor vale para a tela toda: o código vem para o bloco de bipados com o
   // cursor onde estiver. Bipar de novo não duplica, só traz a linha para o topo.
-  useLeitorCodigo((codigo) => {
+  useLeitorCodigo((codigo) => { void lido(codigo) })
+
+  async function lido(codigo: string) {
     setTentouConfirmar(false)
-    const fora = desativado(codigo)
-    if (fora) {
+    const achado = await procurar(codigo)
+    if (achado && !achado.ativo) {
       // Para a leitura: o aviso fica no lugar da busca, onde ela vê.
       pararLeitura()
       setBipe('')
       setSugestoesAbertas(false)
-      setErroBipe(avisoDesativado(fora.descricao))
+      setErroBipe(avisoDesativado(achado.descricao))
       return
     }
-    const produto = produtos.find((p) => p.codigoBarras === codigo || p.codigo === codigo)
+    const produto = achado ?? undefined
+    if (produto) conhecer(produto)
     const chave = produto?.codigoBarras ?? codigo
     setBipados((atual) => {
       const existente = atual.find((b) => b.codigoBarras === chave)
       const linha: Bipado = existente
         ? { ...existente, vezes: existente.vezes + 1 }
-        : { codigoBarras: chave, produto: produto?.codigo, descricao: produto?.descricao, unidade: produto?.unidade, quantidade: '', unidadeEntrada: produto?.unidade ?? 'un', nome: '', vezes: 1 }
+        : { codigoBarras: chave, produto: produto?.id, descricao: produto?.descricao, unidade: produto?.unidade, quantidade: '', unidadeEntrada: produto?.unidade ?? 'un', nome: '', vezes: 1 }
       return [linha, ...atual.filter((b) => b.codigoBarras !== chave)]
     })
     setBipe('')
@@ -156,7 +182,7 @@ export function RegistrarEntrada() {
     setLendo(true)
     setUltima((antes) => ({ titulo: produto?.descricao ?? 'Produto novo', codigo: chave, novo: !produto, vez: (antes?.vez ?? 0) + 1 }))
     setFocar((atual) => ({ codigo: chave, vez: (atual?.vez ?? 0) + 1 }))
-  })
+  }
 
   useEffect(() => {
     if (!focar) return
@@ -169,14 +195,15 @@ export function RegistrarEntrada() {
     const prontos = bipados.filter((b) => !falta(b))
     setItens((atual) => prontos.reduce((lista, bipado) => {
       const quantidade = paraQuantidade(bipado.quantidade) ?? 1
-      const codigo = bipado.produto ?? `novo:${bipado.codigoBarras}`
+      const cadastrado = bipado.produto ? conhecidos[bipado.produto] : undefined
+      const codigo = cadastrado?.codigo ?? `novo:${bipado.codigoBarras}`
       if (lista.some((item) => item.codigo === codigo)) {
         return lista.map((item) => item.codigo === codigo ? { ...item, quantidade: item.quantidade + quantidade } : item)
       }
-      const item: ItemEntrada | null = bipado.produto
-        ? itemDoCatalogo(bipado.produto, produtos)
+      const item: ItemEntrada | null = cadastrado
+        ? itemDoCatalogo(cadastrado)
         : bipado.rascunho
-          ? { codigo, codigoBarras: bipado.codigoBarras, descricao: bipado.rascunho.descricao, detalhe: bipado.rascunho.categoria, unidade: bipado.rascunho.unidade, saldoAtual: 0, quantidade, custo: bipado.rascunho.custo, novo: bipado.rascunho }
+          ? { codigo, codigoBarras: bipado.codigoBarras, descricao: bipado.rascunho.descricao, detalhe: bipado.rascunho.categoria, unidade: bipado.rascunho.unidade, saldoAtual: 0, quantidade, custo: bipado.rascunho.custo ?? undefined, novo: bipado.rascunho }
           : null
       return item ? [...lista, { ...item, quantidade }] : lista
     }, atual))
@@ -206,7 +233,7 @@ export function RegistrarEntrada() {
       ? { ...b, rascunho, nome: rascunho.descricao, unidade: rascunho.unidade, unidadeEntrada: rascunho.unidade, quantidade: quantidade === null ? b.quantidade : String(quantidade) }
       : b))
     setItens((atual) => atual.map((item) => item.novo && item.codigoBarras === codigoBarras
-      ? { ...item, novo: rascunho, descricao: rascunho.descricao, detalhe: rascunho.categoria, unidade: rascunho.unidade, custo: rascunho.custo, quantidade: quantidade ?? item.quantidade }
+      ? { ...item, novo: rascunho, descricao: rascunho.descricao, detalhe: rascunho.categoria, unidade: rascunho.unidade, custo: rascunho.custo ?? undefined, quantidade: quantidade ?? item.quantidade }
       : item))
   }
 
@@ -222,33 +249,21 @@ export function RegistrarEntrada() {
       return
     }
     if (itens.length === 0) return
-    if (!dataCalendarioValida(dataRecebimento) || dataRecebimento > hojeISO()) {
+    if (!diaValido(dataRecebimento) || dataRecebimento > hojeEmSaoPaulo()) {
       setErroData(true)
       return
     }
-    const cabecalho = {
+    // A entrega inteira numa chamada: ou entra tudo, ou nada (A1). Cada item manda quanto somar.
+    setAssinando({
       recebidaEm: dataRecebimento,
-      fornecedor: fornecedor.trim() || undefined,
-      referencia: referencia.trim() || undefined,
-      observacoes: observacoes.trim() || undefined,
-    }
-    // A base recusa sem dizer o motivo; quem não entrou fica na tela, nunca some em silêncio.
-    const naoEntraram: ItemEntrada[] = []
-    itens.forEach((item) => {
-      const entrada = { ...cabecalho, custoUnitario: item.custo }
-      if (item.novo) {
-        const codigo = cadastrarProduto({ ...item.novo, custo: item.custo, saldo: 0 })
-        if (!alterarSaldo(codigo, item.quantidade, 'Recebimento de mercadorias', 'Entrada', entrada)) naoEntraram.push(item)
-        return
-      }
-      if (!alterarSaldo(item.codigo, (produtos.find((produto) => produto.codigo === item.codigo)?.saldo ?? item.saldoAtual) + item.quantidade, 'Recebimento de mercadorias', 'Entrada', entrada)) naoEntraram.push(item)
+      fornecedor: fornecedor.trim() || null,
+      referencia: referencia.trim() || null,
+      observacoes: observacoes.trim() || null,
+      itens: itens.map((item) => {
+        const comum = { quantidade: item.quantidade, custoUnitario: item.custo ?? null }
+        return item.novo ? { novo: item.novo, ...comum } : { produtoId: item.produtoId!, ...comum }
+      }),
     })
-    if (naoEntraram.length > 0) {
-      setItens(naoEntraram.filter((item) => !item.novo))
-      setRecusados(naoEntraram.map((item) => item.descricao))
-      return
-    }
-    navegar(rotas.movimentacoesEstoque())
   }
 
   const totalUnidades = itens.reduce((soma, i) => soma + i.quantidade, 0)
@@ -276,7 +291,7 @@ export function RegistrarEntrada() {
     >
       <Painel className="registrar-entrada__dados">
         <div className="registrar-entrada__campos">
-          <CampoData rotulo="Data do recebimento" valor={dataRecebimento} max={hojeISO()} aoMudar={(valor) => { setDataRecebimento(valor); setErroData(false) }} erro={erroData} ajuda={erroData ? 'Informe uma data válida até hoje.' : undefined} />
+          <CampoData rotulo="Data do recebimento" valor={dataRecebimento} max={hojeEmSaoPaulo()} aoMudar={(valor) => { setDataRecebimento(valor); setErroData(false) }} erro={erroData} ajuda={erroData ? 'Informe uma data válida até hoje.' : undefined} />
           <Campo rotulo="Fornecedor" opcional icone="caminhao" placeholder="Ex.: Distribuidora Tilibra & Papéis SP" value={fornecedor} onChange={(evento) => setFornecedor(evento.target.value)} />
           <Campo rotulo="Referência da compra" opcional icone="recibo" placeholder="Ex.: NF-e 45.892 (pedido 1.203)" value={referencia} onChange={(evento) => setReferencia(evento.target.value)} />
           <Campo rotulo="Observações" opcional placeholder="Ex.: Entrega da manhã, 3 volumes" value={observacoes} onChange={(evento) => setObservacoes(evento.target.value)} />
@@ -314,14 +329,14 @@ export function RegistrarEntrada() {
               <div id="registrar-entrada-sugestoes" className="registrar-entrada__sugestoes" role="listbox" aria-label="Produtos encontrados">
                 {sugestoes.length ? sugestoes.map((produto, indice) => (
                   <button
-                    key={produto.codigo}
+                    key={produto.id}
                     id={`registrar-entrada-sugestao-${indice}`}
                     type="button"
                     role="option"
                     aria-selected={indice === indiceAtivo}
                     className={indice === indiceAtivo ? 'registrar-entrada__sugestao registrar-entrada__sugestao--ativa' : 'registrar-entrada__sugestao'}
                     onMouseEnter={() => setIndiceAtivo(indice)}
-                    onClick={() => incluirProduto(produto.codigo)}
+                    onClick={() => incluirProduto(produto)}
                   >
                     <strong>{produto.codigo} · {produto.descricao}</strong>
                     <span>{produto.codigoBarras ?? 'Sem código de barras'} · saldo {produto.saldo} {produto.unidade}</span>
@@ -456,11 +471,6 @@ export function RegistrarEntrada() {
         </dl>
       </div>
 
-      {recusados.length > 0 && (
-        <p className="registrar-entrada__recusa" role="alert">
-          Não entrou no estoque: {recusados.join(', ')}. Os outros itens foram registrados. Confira a quantidade e confirme de novo.
-        </p>
-      )}
       <div className="registrar-entrada__acoes">
         <Botao variante="fantasma" onClick={() => navegar(rotas.estoque)}>
           Cancelar
@@ -470,6 +480,15 @@ export function RegistrarEntrada() {
         </Botao>
       </div>
       {completando && <ModalProduto daEntrada={completando} aoFechar={() => setCompletando(null)} aoPreparar={cadastroPreparado} />}
+      {assinando && (
+        <JanelaAssinatura
+          gesto={`Entrada de ${itens.length} ${itens.length === 1 ? 'produto' : 'produtos'}`}
+          rotuloConfirmar="Confirmar entrada"
+          fazer={(quem: Assinatura) => api().registrarEntrada(assinando, quem)}
+          aoConcluir={() => navegar(rotas.movimentacoesEstoque())}
+          aoFechar={() => setAssinando(null)}
+        />
+      )}
     </Tela>
   )
 }

@@ -13,15 +13,15 @@ import { tituloFalha } from '../../falhas'
 import { centavosDeTexto } from '../../formatar'
 import { useLeitorCodigo } from '../../leitor/useLeitorCodigo'
 import { rotas } from '../../rotas-caminhos'
-import type { Produto as ProdutoBase, Unidade } from '../../mock/base/tipos'
+import type { Unidade } from '../../mock/base/tipos'
 import { Estoque } from '../estoque/Estoque'
 import { unidades } from './constantes'
 import { CampoCategoria } from './CampoCategoria'
 // Dados fiscais fora da tela desde 2026-10-06 (decisão do Agostinho): a dona os
 // preenche na própria Emitte, que é quem os exige. O código fica comentado abaixo
 // para voltar se a decisão mudar. Ver Memoria.md. Exceção (`2026-10-23`): NCM e
-// CEST voltaram em "Dados complementares", só como anotação.
-import { anotarNcmCest } from '../../dados/fiscal'
+// CEST voltaram em "Dados complementares", só como anotação (conferida em
+// `comum/regras/produto.ts`).
 // import { conferirFiscalProduto, FISCAL_PRODUTO_PADRAO, gtinValido, limparFiscalProduto, ORIGENS, TRIBUTACOES } from '../../dados/fiscal'
 import './cadastrar-produto.css'
 
@@ -98,8 +98,8 @@ export type ProdutoDaEntrada = {
   rascunho?: RascunhoProduto
 }
 
-/** Cadastro preparado na entrada. Só vira produto no "Confirmar entrada" (tela 2.4 ainda na base). */
-export type RascunhoProduto = Omit<ProdutoBase, 'codigo'>
+/** Cadastro preparado na entrada. Só vira produto no "Confirmar entrada", junto com ela (tela 2.4). */
+export type RascunhoProduto = DadosProduto
 
 /** `quantos`: a pergunta com o gênero certo ("Quantos pacotes", "Quantas caixas"). */
 const nomes: Record<Unidade, { um: string; varios: string; quantos: string }> = {
@@ -281,16 +281,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
     }
     // Pela entrada, só prepara: o produto nasce junto com o estoque, ao confirmar a entrada (tela 2.4).
     if (daEntrada) {
-      const d = conferido.dados
-      const categoria = categoriasExistentes.find((c) => c.localeCompare(d.categoria, 'pt-BR', { sensitivity: 'base' }) === 0) ?? d.categoria
-      const sem = <T,>(v: T | null) => v ?? undefined
-      aoPreparar?.({
-        codigoBarras: sem(d.codigoBarras), descricao: d.descricao, categoria, grupo: grupoDa(categoria), unidade: d.unidade, preco: d.preco,
-        saldo: 0, minimo: d.minimo, custo: sem(d.custo), localizacao: sem(d.localizacao), marca: sem(d.marca),
-        caracteristicas: sem(d.caracteristicas), descricaoAdicional: sem(d.descricaoAdicional),
-        fiscal: anotarNcmCest(daEntrada.rascunho?.fiscal, d.ncm ?? '', d.cest ?? '').fiscal,
-        conteudo: d.conteudo ? { embalagem: d.conteudo.embalagem, pacotes: sem(d.conteudo.pacotes), unidades: sem(d.conteudo.unidades) } : undefined,
-      }, typeof final === 'string' ? null : final)
+      aoPreparar?.(conferido.dados, typeof final === 'string' ? null : final)
       return
     }
     if (!editar && saldo > 0) {
@@ -315,8 +306,9 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
         descricaoAdicional: doProduto.descricaoAdicional ?? undefined, ncm: doProduto.ncm ?? undefined, cest: doProduto.cest ?? undefined }
     : daEntrada
     ? { nome: rascunho?.descricao ?? daEntrada.nome, preco: rascunho?.preco ?? null, custo: rascunho?.custo ?? null, localizacao: rascunho?.localizacao ?? '',
-        minimo: rascunho ? String(rascunho.minimo) : '', categoria: rascunho?.categoria, marca: rascunho?.marca, caracteristicas: rascunho?.caracteristicas,
-        descricaoAdicional: rascunho?.descricaoAdicional, ncm: rascunho?.fiscal?.ncm, cest: rascunho?.fiscal?.cest }
+        minimo: rascunho ? String(rascunho.minimo) : '', categoria: rascunho?.categoria, marca: rascunho?.marca ?? undefined,
+        caracteristicas: rascunho?.caracteristicas ?? undefined, descricaoAdicional: rascunho?.descricaoAdicional ?? undefined,
+        ncm: rascunho?.ncm ?? undefined, cest: rascunho?.cest ?? undefined }
     : { nome: '', preco: null, custo: null, localizacao: '', minimo: '' }
 
   return (
@@ -587,10 +579,6 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
       </Modal>
   )
 }
-
-/** O grupo da 0.1, para o rascunho da entrada (ninguém lê; o documento do piloto ainda o tem). */
-const grupoDa = (categoria: string): RascunhoProduto['grupo'] =>
-  categoria.includes('Caderno') ? 'cadernos' : categoria.includes('Escrita') ? 'escrita' : categoria.includes('Papéis') ? 'papeis' : categoria.includes('Escritório') ? 'escritorio' : 'artes'
 
 /**
  * Sem histórico, apaga de vez (cadastro feito por engano). Com histórico,
