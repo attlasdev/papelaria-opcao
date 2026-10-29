@@ -8,6 +8,7 @@ import { criarMaquininhaDemonstracao } from '../../comum/maquininha-demonstracao
 import { conferirComprovante, linhasComprovante, textoComprovante, type Loja } from '../../comum/comprovante'
 import { operadoresDaBase as operadores } from './operacoes/operadores'
 import { produtosDaBase as produtos } from './operacoes/produtos'
+import { entradasDaBase as entradas } from './operacoes/entradas'
 import { marcarMockInstalado } from './instalado'
 
 /** Mesmos dados inventados de `recursos/comprovante.exemplo.json`. */
@@ -109,6 +110,7 @@ const mock: Contrato = {
   editarProduto: (id, dados) => simularAssincrono(() => produtos.editarProduto(id, dados)),
   excluirProduto: (id, quem) => simularAssincrono(() => produtos.excluirProduto(id, quem)),
   ativarProduto: (id, ativo) => simularAssincrono(() => produtos.ativarProduto(id, ativo)),
+  registrarEntrada: (entrega, quem) => simularAssincrono(() => entradas.registrarEntrada(entrega, quem)),
 }
 
 window.api = mock

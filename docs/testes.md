@@ -72,7 +72,7 @@ Os motivos se repetem em quatro tipos:
 | R-CLIENTE-08 | tela | Fase 3 |
 | R-BOLETO-04 | contrato | tela 6.1 |
 | R-BOLETO-06 | contrato | tela 6.1 (filtros e busca; excluir vira evento, D7) |
-| R-ESTOQUE-03 | contrato | tela 2.3 e 2.4 |
+| R-ESTOQUE-03 | tela | tela 2.4 (bloco "Bipados") e Fase 3 (a gaveta da linha) |
 | R-FINANCEIRO-01 | tela | Fase 3 |
 | R-FINANCEIRO-03 | contrato | tela 7.2 |
 | R-CAIXA-03 | contrato | tela 7.1 (esperado calculado pelo back) |

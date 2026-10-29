@@ -508,6 +508,13 @@ com "Nota:". Item sem um dos dois quebra a suíte.
 - `R-ESTOQUE-08` **Código do produto nasce no banco ao salvar** (`2026-10-28`): a tela
   não mostra previsão do próximo código (com duas máquinas, erraria); mostra o
   código depois de salvar.
+- `R-ESTOQUE-09` **O custo da entrega fica na entrega** (`2026-10-29`): o custo por unidade
+  informado na entrada vai para o movimento, como histórico da compra; o custo
+  do cadastro é o de referência e não muda com a entrada (uma promoção de
+  atacado não mexe nele).
+- Nota: Entrada rápida confirmada volta ao Estoque, com o saldo novo na linha
+  (`2026-10-29`): quem repõe faz vários produtos em sequência. O histórico fica
+  no ícone da linha.
 
 ### Financeiro
 **Situação de validação: NÃO VALIDADO pelo Victor.** As regras abaixo descrevem
@@ -693,6 +700,19 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-10-29` — Entrada de mercadoria: uma operação por entrega
+Decisão do Agostinho, no percurso da tela 2.3. A Entrada rápida e a Registrar
+entrada (2.4) gravam pela mesma operação, `registrarEntrada`: cabeçalho (data
+de recebimento, fornecedor, referência, observações) e um movimento por item,
+numa transação, com quem está fazendo (`R-OPERADOR-02`). Cada item manda a
+**quantidade a somar**, nunca o saldo final. Regra nova `R-ESTOQUE-09`.
+
+**Por quê:** a tela antiga calculava `saldo + quantidade` e gravava o resultado
+(com duas máquinas, uma venda no meio sumiria) e gravava item a item (falhar
+no terceiro deixava os dois primeiros). Descartado: uma operação para a rápida
+e outra para a completa (o contrato mudaria de forma na 2.4); voltar para o
+histórico depois de confirmar (atrapalha a reposição em sequência).
 
 ### `2026-10-29` — Exportação para a Emitte desligada
 Decisão do Agostinho, com a loja de acordo, no percurso da tela 2.2. Os botões

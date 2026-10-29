@@ -64,7 +64,7 @@ banco.
 | `estoque/Estoque` | página de produtos, resumo dos cartões, categorias — **`listarProdutos`, no contrato desde `2026-10-29` (tela 2.2)** | `ativarProduto` (reativar) |
 | `cadastrar-produto/CadastrarProduto` | produto (com `temHistorico`), categorias, bipe | `cadastrarProduto`, `editarProduto`, `excluirProduto`, `ativarProduto` — **no contrato desde `2026-10-28` (tela 2.1)** |
 | `ajustar-estoque/AjustarEstoque` | produtos ativos e completos | `alterarSaldo` (ajuste) |
-| `entrada-rapida/EntradaRapida` | produto | `alterarSaldo` (entrada) |
+| `entrada-rapida/EntradaRapida` | produto (`obterProduto`) | `registrarEntrada` com um item — **no contrato desde `2026-10-29` (tela 2.3)** |
 | `registrar-entrada/RegistrarEntrada` | produtos | `cadastrarProduto` + `alterarSaldo`, **um par por item, em laço** |
 | `movimentacoes-estoque/MovimentacoesEstoque` | todos os movimentos de estoque | — |
 
@@ -72,8 +72,8 @@ Já no contrato (tela 2.1): `obterProduto`, `buscarProdutoPorCodigoBarras`,
 `listarCategorias`, `cadastrarProduto`, `editarProduto`, `excluirProduto`,
 `ativarProduto`. O cadastro rápido saiu (`completarProduto` não existe mais).
 Na tela 2.2: `listarProdutos(filtro, busca, pagina, porPagina)`.
-Faltam: `ajustarEstoque(codigo, contagem, motivo)`,
-`registrarEntrada(entrega)`, `listarMovimentosEstoque(filtro, pagina)`.
+Na tela 2.3: `registrarEntrada(entrega, quem)`.
+Faltam: `ajustarEstoque(codigo, contagem, motivo)`, `listarMovimentosEstoque(filtro, pagina)`.
 
 Para o back:
 - **`registrarEntrada` precisa ser UMA operação para a entrega inteira.** Hoje a

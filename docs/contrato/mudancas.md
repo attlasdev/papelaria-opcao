@@ -31,6 +31,15 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-29` — Entrada de mercadoria (1.0, tela 2.3)
+
+- **Contrato:** `registrarEntrada(entrega, quem)`, com `Entrega` (dia de
+  recebimento, fornecedor, referência, observações, itens) e `ItemEntrada`
+  (produto, **quantidade a somar**, custo). Uma operação para a entrega inteira:
+  a Entrada rápida manda um item; a Registrar entrada (2.4) vai mandar todos.
+- **Na tela:** confirmar a Entrada rápida abre "Quem está fazendo?" e, depois,
+  volta para o Estoque (antes abria as Movimentações do produto).
+
 ### `2026-10-29` — Lista do Estoque (1.0, tela 2.2)
 
 - **Contrato:** `listarProdutos(filtro, busca, pagina, porPagina)` devolve a

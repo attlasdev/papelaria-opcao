@@ -8,6 +8,7 @@ import { criarTentativas } from '../comum/regras/operador'
 import { abrirBanco, type Banco } from './banco/banco'
 import { operadoresSqlite } from './banco/operadores'
 import { produtosSqlite } from './banco/produtos'
+import { entradasSqlite } from './banco/entradas'
 import { ConexaoAusente } from './conexao'
 import { bytesComprovante } from './escpos'
 import { enviarCru, lerConfigComprovante } from './impressora'
@@ -68,6 +69,7 @@ const tentativas = criarTentativas()
 export const operacoes: Contrato = {
   ...operadoresSqlite(bancoDaLoja, tentativas),
   ...produtosSqlite(bancoDaLoja, tentativas),
+  ...entradasSqlite(bancoDaLoja, tentativas),
 
   async sessaoAtual() {
     try {

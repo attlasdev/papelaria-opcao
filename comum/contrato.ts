@@ -220,6 +220,25 @@ export type Produto = DadosProduto & {
   temHistorico: boolean
 }
 
+/** Um produto da entrega: a quantidade a SOMAR (nunca o saldo final) e o custo desta compra. */
+export type ItemEntrada = { produtoId: string; quantidade: number; custoUnitario: number | null }
+
+/**
+ * Uma entrega de mercadoria (`R-ESTOQUE-04`). `recebidaEm` e o dia fisico do
+ * recebimento ('AAAA-MM-DD', no maximo hoje); o instante do lancamento e o back
+ * que poe.
+ */
+export type Entrega = {
+  recebidaEm: string
+  fornecedor: string | null
+  referencia: string | null
+  observacoes: string | null
+  itens: ItemEntrada[]
+}
+
+/** Os produtos da entrega como ficaram, com o saldo novo. */
+export type EntradaRegistrada = { id: string; produtos: Produto[] }
+
 /**
  * O recorte da lista do Estoque. Os quatro primeiros e a categoria sao
  * exclusivos, como as abas da tela; so `desativados` mostra desativado.
@@ -365,6 +384,19 @@ export type Contrato = {
   excluirProduto(id: string, quem: Assinatura | null): Promise<Resultado<null>>
   /** Desativar ou reativar (`R-ESTOQUE-02`). Sem assinatura: e cadastro. */
   ativarProduto(id: string, ativo: boolean): Promise<Resultado<Produto>>
+
+  // Entrada de mercadoria (1.0, telas 2.3 e 2.4) ------------------------------
+
+  /**
+   * Registra a entrega inteira numa transacao: o cabecalho e um movimento por
+   * item. Uma operacao so para a Entrada rapida (um item) e a Registrar entrada
+   * (varios): se um item nao serve, nada e gravado. Pede `quem` (`R-OPERADOR-02`).
+   * `validacao`: sem item, produto repetido, quantidade que nao e inteiro maior
+   * que zero, custo negativo, dia invalido ou depois de hoje, produto desativado.
+   * Produto que nao existe, `nao-encontrado`. O custo fica no movimento; o do
+   * cadastro nao muda (`R-ESTOQUE-09`).
+   */
+  registrarEntrada(entrega: Entrega, quem: Assinatura): Promise<Resultado<EntradaRegistrada>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

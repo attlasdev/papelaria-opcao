@@ -155,6 +155,29 @@ function movimentoEstoque(produto: Produto, depois: number, tipo: MovimentoEstoq
   return { id: `${data}-${produto.codigo}-${tipo}`, data, produto: produto.codigo, descricao: produto.descricao, tipo, antes: produto.saldo, depois, motivo, operador: base.operador, ...(entrada ? { entrada } : {}) }
 }
 
+/**
+ * Uma entrega inteira de uma vez (1.0, `registrarEntrada`; quem confere é
+ * `src/mock/operacoes/entradas.ts`): soma cada quantidade ao saldo de agora,
+ * nunca grava um saldo final vindo da tela.
+ */
+export function gravarEntrada(
+  itens: { codigo: string; quantidade: number; custoUnitario?: number }[],
+  entrada: Omit<NonNullable<MovimentoEstoque['entrada']>, 'custoUnitario'>,
+  motivo: string,
+  operador: string,
+) {
+  let produtos = base.produtos
+  const movimentos: MovimentoEstoque[] = []
+  for (const item of itens) {
+    const produto = produtos.find((p) => p.codigo === item.codigo)!
+    const depois = produto.saldo + item.quantidade
+    const custo = item.custoUnitario === undefined ? {} : { custoUnitario: item.custoUnitario }
+    movimentos.unshift({ ...movimentoEstoque(produto, depois, 'Entrada', motivo, { ...entrada, ...custo }), operador })
+    produtos = produtos.map((p) => (p.codigo === item.codigo ? { ...p, saldo: depois } : p))
+  }
+  mudar({ ...base, produtos, movimentosEstoque: [...movimentos, ...base.movimentosEstoque] })
+}
+
 export function alterarSaldo(codigo: string, depois: number, motivo: string, tipo: 'Entrada' | 'Ajuste', entrada?: MovimentoEstoque['entrada']) {
   const produto = base.produtos.find((p) => p.codigo === codigo)
   if (!produto || !Number.isInteger(depois) || depois < 0) return false
