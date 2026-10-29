@@ -221,6 +221,26 @@ export type Produto = DadosProduto & {
 }
 
 /**
+ * O recorte da lista do Estoque. Os quatro primeiros e a categoria sao
+ * exclusivos, como as abas da tela; so `desativados` mostra desativado.
+ */
+export type FiltroProdutos = 'todos' | 'baixo' | 'sem-codigo' | 'desativados' | { categoria: string }
+
+/** Os cartoes do Estoque, sempre sobre os produtos ativos (menos `desativados`). */
+export type ResumoEstoque = { produtos: number; categorias: number; baixo: number; semCodigo: number; desativados: number }
+
+export type PaginaProdutos = {
+  produtos: Produto[]
+  /** Quantos produtos o filtro e a busca acham, somando todas as paginas. */
+  total: number
+  /** A pagina devolvida: a pedida, ou a ultima se a pedida passou do fim. */
+  pagina: number
+  resumo: ResumoEstoque
+  /** As categorias dos produtos ativos, para as abas, em ordem alfabetica. */
+  categorias: string[]
+}
+
+/**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
  * O vocabulario sai das telas e da loja, nao do banco. Quem escreve e o back
@@ -312,6 +332,13 @@ export type Contrato = {
   // Dado fora do formato, `validacao` com a mensagem do primeiro campo errado;
   // id que nao existe, `nao-encontrado`. A assinatura falha como a dos operadores.
 
+  /**
+   * A lista do Estoque (tela 2.2), paginada no back: o catalogo passa de mil
+   * itens. `busca` ignora acento e maiuscula e procura no codigo, no codigo de
+   * barras, no nome e na categoria; a tela espera a pessoa parar de digitar.
+   * Em ordem de codigo. `porPagina` de 1 a 100, senao `validacao`.
+   */
+  listarProdutos(filtro: FiltroProdutos, busca: string, pagina: number, porPagina: number): Promise<Resultado<PaginaProdutos>>
   obterProduto(id: string): Promise<Resultado<Produto>>
   /** O bipe no cadastro (`R-ESTOQUE-05`): `null` se o codigo nao esta cadastrado. */
   buscarProdutoPorCodigoBarras(codigoBarras: string): Promise<Resultado<Produto | null>>

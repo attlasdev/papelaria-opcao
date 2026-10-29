@@ -1,4 +1,4 @@
-import { MOTIVO_SALDO_INICIAL } from '../../../comum/regras/produto'
+import { MOTIVO_SALDO_INICIAL, situacaoSaldo as situacaoDoSaldo } from '../../../comum/regras/produto'
 import { dataCurta, reais } from '../../formatar'
 import { funcoes } from '../../funcoes'
 import { rotas } from '../../rotas-caminhos'
@@ -411,9 +411,9 @@ export function resumoDoDia(base: Base, dia: string, agora?: string) {
 
 export type SituacaoSaldo = 'normal' | 'baixo' | 'zerado'
 
+/** A regra é a de `comum/regras/produto.ts`, a mesma do back. */
 export function situacaoSaldo(produto: Produto): SituacaoSaldo {
-  if (produto.saldo === 0) return 'zerado'
-  return produto.saldo < produto.minimo ? 'baixo' : 'normal'
+  return situacaoDoSaldo(produto.saldo, produto.minimo)
 }
 
 /** Produtos à venda: os desativados ficam só no histórico. */

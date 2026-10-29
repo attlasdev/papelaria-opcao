@@ -4,16 +4,17 @@
  * que é do banco: o número que nasce na sequência e o saldo inicial como
  * movimento (o saldo do produto quem mantém são os gatilhos, P4).
  */
-import { falha, ok, type Assinatura, type Contrato, type DadosProduto, type Produto, type Resultado } from '../../comum/contrato'
+import { falha, ok, type Assinatura, type Contrato, type DadosProduto, type PaginaProdutos, type Produto, type Resultado } from '../../comum/contrato'
 import { criarTentativas, type Tentativas } from '../../comum/regras/operador'
 import {
-  categoriaCanonica, codigoProduto, MENSAGENS_PRODUTO, MOTIVO_SALDO_INICIAL, ordenarCategorias, produtoValido, saldoInicialValido,
+  categoriaCanonica, codigoProduto, conferirPedidoDeLista, MENSAGENS_PRODUTO, MOTIVO_SALDO_INICIAL, ordenarCategorias, paginaQueExiste,
+  paraBusca, produtoValido, saldoInicialValido,
 } from '../../comum/regras/produto'
 import { proximoNumero, transacao, type Banco } from './banco'
 import { criarConferencia, gravarUltimoOperador } from './operadores'
 
 type OperacoesProduto = Pick<Contrato,
-  'obterProduto' | 'buscarProdutoPorCodigoBarras' | 'listarCategorias' | 'cadastrarProduto' | 'editarProduto' | 'excluirProduto' | 'ativarProduto'>
+  'listarProdutos' | 'obterProduto' | 'buscarProdutoPorCodigoBarras' | 'listarCategorias' | 'cadastrarProduto' | 'editarProduto' | 'excluirProduto' | 'ativarProduto'>
 
 type Linha = {
   id: string; numero: number; codigo_barras: string | null; descricao: string; categoria: string; unidade: Produto['unidade']
@@ -51,6 +52,12 @@ const valores = (d: DadosProduto) => [d.codigoBarras, d.descricao, d.categoria, 
   d.marca, d.caracteristicas, d.descricaoAdicional, d.conteudo?.embalagem ?? null, d.conteudo?.pacotes ?? null,
   d.conteudo?.unidades ?? null, d.ncm, d.cest]
 
+/** Zerado ou abaixo do mínimo: a mesma conta de `situacaoSaldo`, em SQL. */
+const FORA_DO_NORMAL = '(p.saldo = 0 or p.saldo < p.minimo)'
+
+/** O texto em que a busca procura, o mesmo do mock: código, código de barras, nome e categoria. */
+const TEXTO_DA_BUSCA = "sem_acento('EST-' || printf('%04d', p.numero) || ' ' || coalesce(p.codigo_barras, '') || ' ' || p.descricao || ' ' || p.categoria)"
+
 export function produtosSqlite(banco: () => Banco, tentativas: Tentativas = criarTentativas()): OperacoesProduto {
   const conferir = criarConferencia(banco, tentativas)
   const buscar = (id: unknown) =>
@@ -79,6 +86,37 @@ export function produtosSqlite(banco: () => Banco, tentativas: Tentativas = cria
   }
 
   return {
+    async listarProdutos(filtro, busca, pagina, porPagina) {
+      const problema = conferirPedidoDeLista(filtro, busca, pagina, porPagina)
+      if (problema) return problema
+      // Desativado só aparece na aba dele (`R-ESTOQUE-02`).
+      const condicoes = [filtro === 'desativados' ? 'p.ativo = 0' : 'p.ativo = 1']
+      const valores: (string | number)[] = []
+      if (filtro === 'baixo') condicoes.push(FORA_DO_NORMAL)
+      if (filtro === 'sem-codigo') condicoes.push('p.codigo_barras is null')
+      if (typeof filtro === 'object') { condicoes.push('p.categoria = ?'); valores.push(filtro.categoria) }
+      const termo = paraBusca(busca.trim())
+      if (termo) { condicoes.push(`instr(${TEXTO_DA_BUSCA}, ?) > 0`); valores.push(termo) }
+      const onde = `where ${condicoes.join(' and ')}`
+
+      const { total } = banco().prepare(`select count(*) as total from produto p ${onde}`).get(...valores) as { total: number }
+      const atual = paginaQueExiste(pagina, total, porPagina)
+      const linhas = banco().prepare(`${SELECT} ${onde} order by p.numero limit ? offset ?`)
+        .all(...valores, porPagina, (atual - 1) * porPagina) as Linha[]
+      const resumo = banco().prepare(`
+        select count(*) filter (where p.ativo = 1) as produtos,
+               count(distinct p.categoria) filter (where p.ativo = 1) as categorias,
+               count(*) filter (where p.ativo = 1 and ${FORA_DO_NORMAL}) as baixo,
+               count(*) filter (where p.ativo = 1 and p.codigo_barras is null) as semCodigo,
+               count(*) filter (where p.ativo = 0) as desativados
+        from produto p`).get() as PaginaProdutos['resumo']
+      const categorias = banco().prepare('select distinct categoria from produto where ativo = 1').all() as { categoria: string }[]
+      return ok({
+        produtos: linhas.map(paraProduto), total, pagina: atual, resumo: { ...resumo },
+        categorias: ordenarCategorias(categorias.map((c) => c.categoria)),
+      })
+    },
+
     async obterProduto(id) {
       return devolver(String(id))
     },

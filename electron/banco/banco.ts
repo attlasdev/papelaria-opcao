@@ -7,6 +7,7 @@
  */
 import { existsSync } from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
+import { paraBusca } from '../../comum/regras/produto'
 import { migracoes, type Migracao } from './migracoes'
 
 export type Banco = DatabaseSync
@@ -22,6 +23,8 @@ export function abrirBanco(caminho: string, lista: readonly Migracao[] = migraco
     banco.exec('pragma journal_mode = wal')
     banco.exec('pragma foreign_keys = on')
     banco.exec('pragma busy_timeout = 5000')
+    // A busca das listas ignora acento e maiúscula, igual à tela (o `lower` do SQLite só conhece A-Z).
+    banco.function('sem_acento', { deterministic: true }, (texto) => (texto === null ? null : paraBusca(String(texto))))
     migrar(banco, caminho, lista)
     return banco
   } catch (erro) {

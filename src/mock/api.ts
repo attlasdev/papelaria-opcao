@@ -101,6 +101,7 @@ const mock: Contrato = {
   renomearOperador: (id, nome, dona) => simularAssincrono(() => operadores.renomearOperador(id, nome, dona)),
   ativarOperador: (id, ativo, dona) => simularAssincrono(() => operadores.ativarOperador(id, ativo, dona)),
   redefinirPin: (id, pin, dona) => simularAssincrono(() => operadores.redefinirPin(id, pin, dona)),
+  listarProdutos: (filtro, busca, pagina, porPagina) => simularAssincrono(() => produtos.listarProdutos(filtro, busca, pagina, porPagina)),
   obterProduto: (id) => simularAssincrono(() => produtos.obterProduto(id)),
   buscarProdutoPorCodigoBarras: (codigoBarras) => simularAssincrono(() => produtos.buscarProdutoPorCodigoBarras(codigoBarras)),
   listarCategorias: () => simularAssincrono(() => produtos.listarCategorias()),

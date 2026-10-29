@@ -7,7 +7,9 @@
  */
 import { falha, ok, type Assinatura, type Contrato, type DadosProduto, type Produto as ProdutoContrato, type Resultado } from '../../../comum/contrato'
 import { criarTentativas } from '../../../comum/regras/operador'
-import { categoriaCanonica, MENSAGENS_PRODUTO, ordenarCategorias, produtoValido, saldoInicialValido } from '../../../comum/regras/produto'
+import {
+  categoriaCanonica, conferirPedidoDeLista, MENSAGENS_PRODUTO, ordenarCategorias, paginaQueExiste, paraBusca, produtoValido, saldoInicialValido, situacaoSaldo,
+} from '../../../comum/regras/produto'
 import { anotarNcmCest } from '../../dados/fiscal'
 import type { Base, Grupo, Produto } from '../base/tipos'
 import {
@@ -16,7 +18,7 @@ import {
 import { criarConferencia, tentativasDaBase } from './operadores'
 
 export type OperacoesProduto = Pick<Contrato,
-  'obterProduto' | 'buscarProdutoPorCodigoBarras' | 'listarCategorias' | 'cadastrarProduto' | 'editarProduto' | 'excluirProduto' | 'ativarProduto'>
+  'listarProdutos' | 'obterProduto' | 'buscarProdutoPorCodigoBarras' | 'listarCategorias' | 'cadastrarProduto' | 'editarProduto' | 'excluirProduto' | 'ativarProduto'>
 
 /** Na base, o código de exibição é o id. */
 function paraProduto(base: Base, p: Produto): ProdutoContrato {
@@ -75,6 +77,40 @@ export function criarProdutosDaBase(tentativas = criarTentativas()): OperacoesPr
   }
 
   return {
+    async listarProdutos(filtro, busca, pagina, porPagina) {
+      const problema = conferirPedidoDeLista(filtro, busca, pagina, porPagina)
+      if (problema) return problema
+      const base = obterBase()
+      const ativos = base.produtos.filter((p) => !p.inativo)
+      const foraDoNormal = (p: Produto) => situacaoSaldo(p.saldo, p.minimo) !== 'normal'
+      const termo = paraBusca(busca.trim())
+      const achados = base.produtos
+        .filter((p) => {
+          // Desativado só aparece na aba dele (`R-ESTOQUE-02`).
+          if ((filtro === 'desativados') !== Boolean(p.inativo)) return false
+          if (filtro === 'baixo') return foraDoNormal(p)
+          if (filtro === 'sem-codigo') return !p.codigoBarras
+          if (typeof filtro === 'object') return p.categoria === filtro.categoria
+          return true
+        })
+        .filter((p) => !termo || paraBusca(`${p.codigo} ${p.codigoBarras ?? ''} ${p.descricao} ${p.categoria}`).includes(termo))
+        .sort((a, b) => Number(a.codigo.slice(4)) - Number(b.codigo.slice(4)))
+      const atual = paginaQueExiste(pagina, achados.length, porPagina)
+      return ok({
+        produtos: achados.slice((atual - 1) * porPagina, atual * porPagina).map((p) => paraProduto(base, p)),
+        total: achados.length,
+        pagina: atual,
+        resumo: {
+          produtos: ativos.length,
+          categorias: new Set(ativos.map((p) => p.categoria)).size,
+          baixo: ativos.filter(foraDoNormal).length,
+          semCodigo: ativos.filter((p) => !p.codigoBarras).length,
+          desativados: base.produtos.length - ativos.length,
+        },
+        categorias: ordenarCategorias(ativos.map((p) => p.categoria)),
+      })
+    },
+
     async obterProduto(id) {
       return devolver(String(id))
     },

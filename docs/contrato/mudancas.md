@@ -31,6 +31,14 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-29` — Lista do Estoque (1.0, tela 2.2)
+
+- **Contrato:** `listarProdutos(filtro, busca, pagina, porPagina)` devolve a
+  página, o total, os números dos cartões e as categorias das abas
+  (`FiltroProdutos`, `ResumoEstoque`, `PaginaProdutos`). Quem filtra, busca
+  (sem acento) e pagina é o back; a tela espera a pessoa parar de digitar.
+- **"Baixo" e "zerado"** vêm de `situacaoSaldo` em `comum/regras/produto.ts`.
+
 ### `2026-10-29` — Exportação para a Emitte desligada
 
 - **Estoque e Clientes:** saem os botões "Exportar produtos/clientes para a

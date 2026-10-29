@@ -1,6 +1,8 @@
 /** As regras puras do cadastro de produto (`comum/regras/produto.ts`). */
 import { describe, expect, it } from 'vitest'
-import { categoriaCanonica, codigoProduto, conferirProduto, MENSAGENS_PRODUTO, ordenarCategorias, textoDoCadastro } from '../../comum/regras/produto'
+import {
+  categoriaCanonica, codigoProduto, conferirProduto, MENSAGENS_PRODUTO, ordenarCategorias, paginaQueExiste, paraBusca, situacaoSaldo, textoDoCadastro,
+} from '../../comum/regras/produto'
 
 describe('cadastro de produto', () => {
   it('[R-ESTOQUE-08] o código de exibição vem do número do banco', () => {
@@ -28,5 +30,14 @@ describe('cadastro de produto', () => {
     expect(categoriaCanonica('papeis', ['Escrita', 'Papéis'])).toBe('Papéis')
     expect(categoriaCanonica('Mochilas', ['Escrita'])).toBe('Mochilas')
     expect(ordenarCategorias(['Papéis', 'Escrita', 'Agendas', 'Escrita'])).toEqual(['Agendas', 'Escrita', 'Papéis'])
+  })
+
+  it('saldo: zerado vem antes de baixo; no mínimo é normal', () => {
+    expect([situacaoSaldo(0, 0), situacaoSaldo(0, 5), situacaoSaldo(4, 5), situacaoSaldo(5, 5)]).toEqual(['zerado', 'zerado', 'baixo', 'normal'])
+  })
+
+  it('busca: sem acento e sem maiúscula; página além do fim vira a última', () => {
+    expect(paraBusca('Papéis AÇÃO')).toBe('papeis acao')
+    expect([paginaQueExiste(9, 10, 3), paginaQueExiste(2, 0, 3), paginaQueExiste(2, 6, 3)]).toEqual([4, 1, 2])
   })
 })

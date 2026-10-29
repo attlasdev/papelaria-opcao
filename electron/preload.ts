@@ -32,6 +32,7 @@ const api: Contrato = {
   renomearOperador: (id, nome, dona) => ipcRenderer.invoke('renomearOperador', id, nome, dona),
   ativarOperador: (id, ativo, dona) => ipcRenderer.invoke('ativarOperador', id, ativo, dona),
   redefinirPin: (id, pin, dona) => ipcRenderer.invoke('redefinirPin', id, pin, dona),
+  listarProdutos: (filtro, busca, pagina, porPagina) => ipcRenderer.invoke('listarProdutos', filtro, busca, pagina, porPagina),
   obterProduto: (id) => ipcRenderer.invoke('obterProduto', id),
   buscarProdutoPorCodigoBarras: (codigoBarras) => ipcRenderer.invoke('buscarProdutoPorCodigoBarras', codigoBarras),
   listarCategorias: () => ipcRenderer.invoke('listarCategorias'),

@@ -117,3 +117,30 @@ export function categoriaCanonica(digitada: string, existentes: readonly string[
 
 export const ordenarCategorias = (categorias: Iterable<string>) =>
   [...new Set(categorias)].sort((a, b) => a.localeCompare(b, 'pt-BR'))
+
+export type SituacaoSaldo = 'normal' | 'baixo' | 'zerado'
+
+/** Zerado, abaixo do mínimo ou normal: o selo da linha e o filtro "Estoque baixo". */
+export function situacaoSaldo(saldo: number, minimo: number): SituacaoSaldo {
+  if (saldo === 0) return 'zerado'
+  return saldo < minimo ? 'baixo' : 'normal'
+}
+
+/** A busca da lista: sem acento nem maiúscula, dos dois lados da comparação. */
+export const paraBusca = (texto: string) =>
+  texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
+
+export const POR_PAGINA_MAXIMO = 100
+
+/** O pedido de página que chegou pela IPC: o filtro conhecido e números inteiros. */
+export function conferirPedidoDeLista(filtro: unknown, busca: unknown, pagina: unknown, porPagina: unknown): Falha | null {
+  const conhecido = filtro === 'todos' || filtro === 'baixo' || filtro === 'sem-codigo' || filtro === 'desativados'
+    || (typeof filtro === 'object' && filtro !== null && typeof (filtro as { categoria?: unknown }).categoria === 'string')
+  if (!conhecido || typeof busca !== 'string') return falha('validacao', 'Pedido inválido.')
+  if (!inteiro(pagina, 1) || !inteiro(porPagina, 1) || (porPagina as number) > POR_PAGINA_MAXIMO) return falha('validacao', 'Pedido de página inválido.')
+  return null
+}
+
+/** A página que existe: a pedida, ou a última se o filtro encolheu a lista. */
+export const paginaQueExiste = (pagina: number, total: number, porPagina: number) =>
+  Math.min(pagina, Math.max(1, Math.ceil(total / porPagina)))

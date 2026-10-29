@@ -61,7 +61,7 @@ banco.
 
 | Tela | Lê | Grava |
 | --- | --- | --- |
-| `estoque/Estoque` | produtos, resumo do estoque, situação do saldo | `definirProdutoAtivo` |
+| `estoque/Estoque` | página de produtos, resumo dos cartões, categorias — **`listarProdutos`, no contrato desde `2026-10-29` (tela 2.2)** | `ativarProduto` (reativar) |
 | `cadastrar-produto/CadastrarProduto` | produto (com `temHistorico`), categorias, bipe | `cadastrarProduto`, `editarProduto`, `excluirProduto`, `ativarProduto` — **no contrato desde `2026-10-28` (tela 2.1)** |
 | `ajustar-estoque/AjustarEstoque` | produtos ativos e completos | `alterarSaldo` (ajuste) |
 | `entrada-rapida/EntradaRapida` | produto | `alterarSaldo` (entrada) |
@@ -71,7 +71,8 @@ banco.
 Já no contrato (tela 2.1): `obterProduto`, `buscarProdutoPorCodigoBarras`,
 `listarCategorias`, `cadastrarProduto`, `editarProduto`, `excluirProduto`,
 `ativarProduto`. O cadastro rápido saiu (`completarProduto` não existe mais).
-Faltam: `listarProdutos(filtro)`, `ajustarEstoque(codigo, contagem, motivo)`,
+Na tela 2.2: `listarProdutos(filtro, busca, pagina, porPagina)`.
+Faltam: `ajustarEstoque(codigo, contagem, motivo)`,
 `registrarEntrada(entrega)`, `listarMovimentosEstoque(filtro, pagina)`.
 
 Para o back:
