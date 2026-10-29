@@ -8,10 +8,10 @@
 import { falha, ok, type Contrato } from '../../../comum/contrato'
 import { conferirEntrega, MENSAGENS_ENTRADA, MOTIVO_ENTRADA } from '../../../comum/regras/entrada'
 import { criarTentativas } from '../../../comum/regras/operador'
-import { MENSAGENS_PRODUTO } from '../../../comum/regras/produto'
-import { gravarEntrada, gravarUltimoOperador, obterBase } from '../estado-demonstracao'
+import { categoriaCanonica, MENSAGENS_PRODUTO } from '../../../comum/regras/produto'
+import { cadastrarProduto, gravarEntrada, gravarUltimoOperador, obterBase } from '../estado-demonstracao'
 import { criarConferencia, tentativasDaBase } from './operadores'
-import { criarProdutosDaBase } from './produtos'
+import { criarProdutosDaBase, paraBase } from './produtos'
 
 export type OperacoesEntrada = Pick<Contrato, 'registrarEntrada'>
 
@@ -24,6 +24,11 @@ export function criarEntradasDaBase(tentativas = criarTentativas()): OperacoesEn
       if ('ok' in entrega) return entrega
       // Tudo conferido antes de gravar: se um item não serve, nada entra.
       for (const item of entrega.itens) {
+        if ('novo' in item) {
+          const outro = item.novo.codigoBarras && obterBase().produtos.find((x) => x.codigoBarras === item.novo.codigoBarras)
+          if (outro) return falha('validacao', MENSAGENS_PRODUTO.codigoRepetido(outro.codigo))
+          continue
+        }
         const p = obterBase().produtos.find((x) => x.codigo === item.produtoId)
         if (!p) return falha('nao-encontrado', MENSAGENS_PRODUTO.naoEncontrado)
         if (p.inativo) return falha('validacao', MENSAGENS_ENTRADA.desativado(p.descricao))
@@ -31,8 +36,15 @@ export function criarEntradasDaBase(tentativas = criarTentativas()): OperacoesEn
       if (!quem) return falha('validacao', MENSAGENS_PRODUTO.semAssinatura)
       const pessoa = await conferir(quem)
       if ('ok' in pessoa) return pessoa
+      // O produto novo nasce com saldo 0 e o custo desta compra (`R-ESTOQUE-09`); a entrada é que dá o saldo.
+      const codigos = entrega.itens.map((i) => {
+        if (!('novo' in i)) return i.produtoId
+        const categoria = categoriaCanonica(i.novo.categoria, obterBase().produtos.map((p) => p.categoria))
+        const cadastro = paraBase({ ...i.novo, categoria, custo: i.custoUnitario ?? i.novo.custo })
+        return cadastrarProduto({ ...cadastro, saldo: 0 })
+      })
       gravarEntrada(
-        entrega.itens.map((i) => ({ codigo: i.produtoId, quantidade: i.quantidade, ...(i.custoUnitario === null ? {} : { custoUnitario: i.custoUnitario }) })),
+        entrega.itens.map((i, n) => ({ codigo: codigos[n], quantidade: i.quantidade, ...(i.custoUnitario === null ? {} : { custoUnitario: i.custoUnitario }) })),
         {
           recebidaEm: entrega.recebidaEm,
           ...(entrega.fornecedor && { fornecedor: entrega.fornecedor }),
@@ -43,7 +55,7 @@ export function criarEntradasDaBase(tentativas = criarTentativas()): OperacoesEn
         pessoa.nome,
       )
       gravarUltimoOperador(pessoa.id)
-      const lidos = await Promise.all(entrega.itens.map((i) => produtos.obterProduto(i.produtoId)))
+      const lidos = await Promise.all(codigos.map((codigo) => produtos.obterProduto(codigo)))
       const dados = lidos.flatMap((r) => (r.ok ? [r.dado] : []))
       // Na base, a entrega não tem id próprio: o instante do primeiro movimento a identifica.
       return ok({ id: obterBase().movimentosEstoque[0].id, produtos: dados })

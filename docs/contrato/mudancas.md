@@ -31,6 +31,15 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-29` — Registrar entrada (1.0, tela 2.4)
+
+- **Contrato:** `ItemEntrada` ganha a forma `{ novo: DadosProduto, quantidade,
+  custoUnitario }`, para o produto que chega sem cadastro: o back cria o
+  produto e dá a entrada na mesma transação. A forma com `produtoId` não muda.
+- **Na tela:** confirmar pede "Quem está fazendo?" uma vez e grava a entrega
+  inteira numa chamada; sai a lista de "não entraram" (ou entra tudo, ou nada).
+  O "Completar cadastro" prepara um `DadosProduto`.
+
 ### `2026-10-29` — Entrada de mercadoria (1.0, tela 2.3)
 
 - **Contrato:** `registrarEntrada(entrega, quem)`, com `Entrega` (dia de

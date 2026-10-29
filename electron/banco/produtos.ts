@@ -4,7 +4,7 @@
  * que é do banco: o número que nasce na sequência e o saldo inicial como
  * movimento (o saldo do produto quem mantém são os gatilhos, P4).
  */
-import { falha, ok, type Assinatura, type Contrato, type DadosProduto, type PaginaProdutos, type Produto, type Resultado } from '../../comum/contrato'
+import { falha, ok, type Assinatura, type Contrato, type DadosProduto, type Falha, type PaginaProdutos, type Produto, type Resultado } from '../../comum/contrato'
 import { criarTentativas, type Tentativas } from '../../comum/regras/operador'
 import {
   categoriaCanonica, codigoProduto, conferirPedidoDeLista, MENSAGENS_PRODUTO, MOTIVO_SALDO_INICIAL, ordenarCategorias, paginaQueExiste,
@@ -58,6 +58,28 @@ const FORA_DO_NORMAL = '(p.saldo = 0 or p.saldo < p.minimo)'
 /** O texto em que a busca procura, o mesmo do mock: código, código de barras, nome e categoria. */
 const TEXTO_DA_BUSCA = "sem_acento('EST-' || printf('%04d', p.numero) || ' ' || coalesce(p.codigo_barras, '') || ' ' || p.descricao || ' ' || p.categoria)"
 
+/**
+ * O cadastro limpo pronto para gravar: o código de barras livre no catálogo e a
+ * categoria já existente, se for a mesma com outra caixa ou acento. Chamar
+ * dentro da transação que grava.
+ */
+export function prepararCadastro(banco: Banco, dados: DadosProduto, menos?: string): DadosProduto | Falha {
+  const outro = dados.codigoBarras
+    ? banco.prepare('select numero from produto where codigo_barras = ? and id is not ?').get(dados.codigoBarras, menos ?? null) as { numero: number } | undefined
+    : undefined
+  if (outro) return falha('validacao', MENSAGENS_PRODUTO.codigoRepetido(codigoProduto(outro.numero)))
+  const existentes = (banco.prepare('select distinct categoria from produto').all() as { categoria: string }[]).map((c) => c.categoria)
+  return { ...dados, categoria: categoriaCanonica(dados.categoria, existentes) }
+}
+
+/** Grava o produto com saldo 0 e o número da sequência (`R-ESTOQUE-08`); devolve o id. */
+export function inserirProduto(banco: Banco, dados: DadosProduto, agora: string) {
+  const id = crypto.randomUUID()
+  banco.prepare(`insert into produto (id, numero, criado_em, ${COLUNAS.join(', ')}) values (?, ?, ?, ${COLUNAS.map(() => '?').join(', ')})`)
+    .run(id, proximoNumero(banco, 'produto'), agora, ...valores(dados))
+  return id
+}
+
 export function produtosSqlite(banco: () => Banco, tentativas: Tentativas = criarTentativas()): OperacoesProduto {
   const conferir = criarConferencia(banco, tentativas)
   const buscar = (id: unknown) =>
@@ -70,13 +92,7 @@ export function produtosSqlite(banco: () => Banco, tentativas: Tentativas = cria
   /** O dado limpo, com a categoria já existente e o código de barras livre. Dentro da transação. */
   function preparar(bruto: unknown, menos?: string): DadosProduto | Resultado<never> {
     const dados = produtoValido(bruto)
-    if ('ok' in dados) return dados
-    const outro = dados.codigoBarras
-      ? banco().prepare('select numero from produto where codigo_barras = ? and id is not ?').get(dados.codigoBarras, menos ?? null) as { numero: number } | undefined
-      : undefined
-    if (outro) return falha('validacao', MENSAGENS_PRODUTO.codigoRepetido(codigoProduto(outro.numero)))
-    const existentes = (banco().prepare('select distinct categoria from produto').all() as { categoria: string }[]).map((c) => c.categoria)
-    return { ...dados, categoria: categoriaCanonica(dados.categoria, existentes) }
+    return 'ok' in dados ? dados : prepararCadastro(banco(), dados, menos)
   }
 
   /** `R-ESTOQUE-07`: o fato pede quem está fazendo. */
@@ -145,10 +161,8 @@ export function produtosSqlite(banco: () => Banco, tentativas: Tentativas = cria
       return transacao(banco(), () => {
         const dados = preparar(bruto)
         if ('ok' in dados) return dados
-        const id = crypto.randomUUID()
         const agora = new Date().toISOString()
-        banco().prepare(`insert into produto (id, numero, criado_em, ${COLUNAS.join(', ')}) values (?, ?, ?, ${COLUNAS.map(() => '?').join(', ')})`)
-          .run(id, proximoNumero(banco(), 'produto'), agora, ...valores(dados))
+        const id = inserirProduto(banco(), dados, agora)
         if (operadorId) {
           banco().prepare(`insert into movimento_estoque (id, produto_id, tipo, quantidade, saldo_antes, saldo_depois, motivo, operador_id, registrado_em)
             values (?, ?, 'entrada', ?, 0, ?, ?, ?, ?)`).run(crypto.randomUUID(), id, saldoInicial, saldoInicial, MOTIVO_SALDO_INICIAL, operadorId, agora)

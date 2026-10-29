@@ -65,7 +65,7 @@ banco.
 | `cadastrar-produto/CadastrarProduto` | produto (com `temHistorico`), categorias, bipe | `cadastrarProduto`, `editarProduto`, `excluirProduto`, `ativarProduto` — **no contrato desde `2026-10-28` (tela 2.1)** |
 | `ajustar-estoque/AjustarEstoque` | produtos ativos e completos | `alterarSaldo` (ajuste) |
 | `entrada-rapida/EntradaRapida` | produto (`obterProduto`) | `registrarEntrada` com um item — **no contrato desde `2026-10-29` (tela 2.3)** |
-| `registrar-entrada/RegistrarEntrada` | produtos | `cadastrarProduto` + `alterarSaldo`, **um par por item, em laço** |
+| `registrar-entrada/RegistrarEntrada` | busca (`listarProdutos`) e bipe (`buscarProdutoPorCodigoBarras`) | `registrarEntrada` com todos os itens, novos inclusive — **no contrato desde `2026-10-29` (tela 2.4)**; antes era um par cadastrar + alterar saldo por item, em laço |
 | `movimentacoes-estoque/MovimentacoesEstoque` | todos os movimentos de estoque | — |
 
 Já no contrato (tela 2.1): `obterProduto`, `buscarProdutoPorCodigoBarras`,

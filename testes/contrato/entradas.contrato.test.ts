@@ -145,4 +145,43 @@ testarContrato('entrada de mercadoria', { mock, sqlite }, (abrir) => {
     expect(await api.registrarEntrada(entrega([{ ...item, produtoId: regua.id }, { ...item, produtoId: 'nao-existe' }]), joao)).toMatchObject({ ok: false, causa: 'nao-encontrado' })
     expect([await saldo(api, caderno.id), await saldo(api, regua.id)]).toEqual([10, 0])
   })
+
+  it('[R-ESTOQUE-09] produto novo nasce na entrega, com o número do banco e o custo desta compra', async () => {
+    const api = abrir('vazia')
+    const { joao, caderno } = await loja(api)
+    const novo = { ...BASE, descricao: 'Grampeador', categoria: ' escolar ', codigoBarras: '7890001', custo: null }
+    const r = dado(await api.registrarEntrada(entrega([
+      { produtoId: caderno.id, quantidade: 2, custoUnitario: null },
+      { novo, quantidade: 6, custoUnitario: 1890 },
+    ], { recebidaEm: '2026-10-20' }), joao))
+    expect(r.produtos.map((p) => [p.descricao, p.saldo])).toEqual([['Caderno', 12], ['Grampeador', 6]])
+    const grampeador = r.produtos[1]
+    expect(grampeador).toMatchObject({ codigo: 'EST-0004', categoria: 'Escolar', custo: 1890, temHistorico: true, ativo: true })
+    expect(api.entradas(grampeador.id)).toEqual([
+      { quantidade: 6, recebidaEm: '2026-10-20', fornecedor: null, referencia: null, custoUnitario: 1890, operador: 'João' },
+    ])
+    // Sem custo informado, fica o do cadastro preparado.
+    const outro = dado(await api.registrarEntrada(entrega([{ novo: { ...novo, codigoBarras: null, descricao: 'Clipes', custo: 90 }, quantidade: 1, custoUnitario: null }]), joao))
+    expect(outro.produtos[0].custo).toBe(90)
+  })
+
+  it('[R-ESTOQUE-05] código de barras do produto novo já cadastrado, ou repetido na entrega: nada é criado', async () => {
+    const api = abrir('vazia')
+    const { joao, caderno } = await loja(api)
+    dado(await api.editarProduto(caderno.id, { ...BASE, descricao: 'Caderno', codigoBarras: '7891' }))
+    const novo = { ...BASE, descricao: 'Grampeador', codigoBarras: '7891' }
+    expect(await api.registrarEntrada(entrega([{ novo, quantidade: 1, custoUnitario: null }]), joao))
+      .toEqual({ ok: false, causa: 'validacao', erro: MENSAGENS_PRODUTO.codigoRepetido('EST-0001') })
+    expect(await api.registrarEntrada(entrega([
+      { novo: { ...novo, codigoBarras: '555' }, quantidade: 1, custoUnitario: null },
+      { novo: { ...novo, codigoBarras: '555', descricao: 'Outro' }, quantidade: 1, custoUnitario: null },
+    ]), joao)).toEqual({ ok: false, causa: 'validacao', erro: MENSAGENS_ENTRADA.barrasRepetido('555') })
+    // Cadastro novo fora do formato também recusa tudo, com a entrega mista.
+    expect(await api.registrarEntrada(entrega([
+      { produtoId: caderno.id, quantidade: 1, custoUnitario: null },
+      { novo: { ...novo, codigoBarras: null, preco: 0 }, quantidade: 1, custoUnitario: null },
+    ]), joao)).toEqual({ ok: false, causa: 'validacao', erro: MENSAGENS_PRODUTO.preco })
+    expect(dado(await api.listarProdutos('todos', '', 1, 20)).total).toBe(2)
+    expect(await saldo(api, caderno.id)).toBe(10)
+  })
 })

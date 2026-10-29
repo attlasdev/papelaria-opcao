@@ -38,7 +38,7 @@ const grupoDa = (categoria: string): Grupo =>
   categoria.includes('Caderno') ? 'cadernos' : categoria.includes('Escrita') ? 'escrita' : categoria.includes('Papéis') ? 'papeis' : categoria.includes('Escritório') ? 'escritorio' : 'artes'
 
 /** Do contrato para a base. `anterior`: o fiscal que a tela não mostra fica (`R-ESTOQUE-06`). */
-function paraBase(d: DadosProduto, anterior?: Produto): Omit<Produto, 'codigo' | 'saldo' | 'inativo'> {
+export function paraBase(d: DadosProduto, anterior?: Produto): Omit<Produto, 'codigo' | 'saldo' | 'inativo'> {
   const opcional = <T,>(v: T | null) => v ?? undefined
   return {
     codigoBarras: opcional(d.codigoBarras), descricao: d.descricao, categoria: d.categoria, grupo: grupoDa(d.categoria),

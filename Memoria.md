@@ -511,7 +511,13 @@ com "Nota:". Item sem um dos dois quebra a suíte.
 - `R-ESTOQUE-09` **O custo da entrega fica na entrega** (`2026-10-29`): o custo por unidade
   informado na entrada vai para o movimento, como histórico da compra; o custo
   do cadastro é o de referência e não muda com a entrada (uma promoção de
-  atacado não mexe nele).
+  atacado não mexe nele). Exceção: o produto que **nasce na entrega** recebe o
+  custo desta compra como custo do cadastro, porque ainda não tinha nenhum.
+- Nota: Produto com código desconhecido na Registrar entrada nasce **dentro da
+  entrega** (`2026-10-29`): o cadastro fica preparado na linha e o produto só é
+  criado ao confirmar, na mesma transação da entrada. Cancelou, não sobra
+  produto. Depois de confirmar, abrem as Movimentações (conferência da entrega
+  inteira; a Entrada rápida volta ao Estoque).
 - Nota: Entrada rápida confirmada volta ao Estoque, com o saldo novo na linha
   (`2026-10-29`): quem repõe faz vários produtos em sequência. O histórico fica
   no ícone da linha.
@@ -700,6 +706,18 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-10-29` — Registrar entrada: produto novo nasce na entrega
+Decisão do Agostinho, no percurso da tela 2.4. O item de `registrarEntrada`
+pode ser um produto existente ou um cadastro novo; o back cria o produto e dá a
+entrada na mesma transação. Código de barras repetido (no catálogo ou na
+própria entrega) recusa tudo. O custo do produto novo vem da compra
+(`R-ESTOQUE-09`).
+
+**Por quê:** é o que a tela já fazia (o cadastro preparado só vira produto no
+"Confirmar"), agora sem gravar pela metade (A1). Descartado: cadastrar com saldo
+0 no "Completar cadastro" e a entrega só com existentes (sobraria produto se a
+entrega fosse abandonada).
 
 ### `2026-10-29` — Entrada de mercadoria: uma operação por entrega
 Decisão do Agostinho, no percurso da tela 2.3. A Entrada rápida e a Registrar

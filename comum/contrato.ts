@@ -220,8 +220,14 @@ export type Produto = DadosProduto & {
   temHistorico: boolean
 }
 
-/** Um produto da entrega: a quantidade a SOMAR (nunca o saldo final) e o custo desta compra. */
-export type ItemEntrada = { produtoId: string; quantidade: number; custoUnitario: number | null }
+/**
+ * Um produto da entrega: a quantidade a SOMAR (nunca o saldo final) e o custo
+ * desta compra. Ou um produto que ja existe (`produtoId`), ou um cadastro novo
+ * (`novo`), criado na mesma transacao da entrada: cancelou, nao sobra produto.
+ */
+export type ItemEntrada =
+  | { produtoId: string; quantidade: number; custoUnitario: number | null }
+  | { novo: DadosProduto; quantidade: number; custoUnitario: number | null }
 
 /**
  * Uma entrega de mercadoria (`R-ESTOQUE-04`). `recebidaEm` e o dia fisico do
@@ -392,9 +398,11 @@ export type Contrato = {
    * item. Uma operacao so para a Entrada rapida (um item) e a Registrar entrada
    * (varios): se um item nao serve, nada e gravado. Pede `quem` (`R-OPERADOR-02`).
    * `validacao`: sem item, produto repetido, quantidade que nao e inteiro maior
-   * que zero, custo negativo, dia invalido ou depois de hoje, produto desativado.
-   * Produto que nao existe, `nao-encontrado`. O custo fica no movimento; o do
-   * cadastro nao muda (`R-ESTOQUE-09`).
+   * que zero, custo negativo, dia invalido ou depois de hoje, produto desativado,
+   * cadastro novo fora do formato ou com codigo de barras ja cadastrado (ou
+   * repetido na propria entrega). Produto que nao existe, `nao-encontrado`. O
+   * custo fica no movimento; o do cadastro nao muda, menos no produto que nasce
+   * na entrega, que recebe o custo desta compra (`R-ESTOQUE-09`).
    */
   registrarEntrada(entrega: Entrega, quem: Assinatura): Promise<Resultado<EntradaRegistrada>>
 }
