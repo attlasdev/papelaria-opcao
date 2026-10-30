@@ -38,8 +38,9 @@ componentes, CSS por componente).
   e voltam só com os números; endereço em partes, estado pela sigla. Código
   `CLI-0104` nasce no banco.
 - **Na tela:** "Cidade / UF" vira dois campos, **"Cidade"** e **"Estado"** (lista
-  com o nome completo); cliente novo já vem com Simonésia / Minas Gerais. CPF e
-  CNPJ inválidos e telefone sem DDD são recusados, com a mensagem no campo.
+  com o nome completo), vazios no cliente novo. CPF/CNPJ e telefone com máscara
+  enquanto se digita. CPF e CNPJ inválidos e telefone sem DDD são recusados, com
+  a mensagem no campo.
 
 ### `2026-10-30` — Movimentações do estoque (1.0, tela 2.6)
 

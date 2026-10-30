@@ -435,8 +435,9 @@ com "Nota:". Item sem um dos dois quebra a suíte.
 - `R-CLIENTE-10` **Telefone com DDD** (`2026-10-30`): 10 ou 11 dígitos (fixo ou celular),
   pontuação livre; continua opcional. Sem DDD não serve para o WhatsApp.
 - Nota: Endereço com **"Cidade" e "Estado"** separados; o estado pelo nome completo,
-  numa lista, e o banco guarda a sigla. Cliente novo já vem com **Simonésia /
-  Minas Gerais** (`2026-10-30`, Agostinho).
+  numa lista, e o banco guarda a sigla. Os dois começam **vazios** no cliente
+  novo (`2026-10-30`, Agostinho; o padrão Simonésia / Minas Gerais foi tirado ao
+  validar a tela). CPF/CNPJ e telefone com **máscara** enquanto se digita.
 
 ### Boletos (`2026-10-23`)
 - `R-BOLETO-01` Pedido da dona: **só anotar** os boletos da loja e ser avisada perto do
@@ -741,8 +742,9 @@ montada". O que é decisão (e o porquê):
 Decisão do Agostinho, no percurso da tela 3.1. O back confere o CPF/CNPJ pelos
 dígitos verificadores (`R-CLIENTE-09`) e o telefone com DDD (`R-CLIENTE-10`);
 documento repetido é restrição do banco, pelos dígitos. O endereço passa a ter
-"Cidade" e "Estado" (nome completo na tela, sigla no banco), com Simonésia /
-Minas Gerais por padrão no cliente novo.
+"Cidade" e "Estado" (nome completo na tela, sigla no banco). Ao validar, o
+Agostinho tirou o padrão Simonésia / Minas Gerais (os campos começam vazios) e
+pediu máscara no CPF/CNPJ e no telefone.
 
 **Por quê:** o documento é o que acha o cliente e impede o cadastro em dobro; um
 número que passa sem conferência cria um cliente duplicado. A cidade junto com

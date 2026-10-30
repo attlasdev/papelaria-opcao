@@ -16,10 +16,6 @@ export const ESTADOS = [
   ['SE', 'Sergipe'], ['TO', 'Tocantins'],
 ] as const
 
-/** Cliente novo já vem daqui (`2026-10-30`, Agostinho). */
-export const CIDADE_PADRAO = 'Simonésia'
-export const UF_PADRAO = 'MG'
-
 export const MENSAGENS_CLIENTE = {
   nome: 'Informe o nome do cliente.',
   documento: 'CPF ou CNPJ inválido: confira os números.',
@@ -62,6 +58,30 @@ export function formatarDocumento(d: string) {
     : d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
 }
 export const formatarTelefone = (t: string) => t.replace(/(\d{2})(\d{4,5})(\d{4})/, '($1) $2-$3')
+
+/**
+ * A máscara enquanto a pessoa digita: só os números, e a pontuação vai
+ * entrando. Até 11 números é CPF (000.000.000-00); de 12 a 14, CNPJ
+ * (00.000.000/0000-00). O que passa de 14 é cortado.
+ */
+export function mascaraDocumento(texto: string) {
+  const d = texto.replace(/\D/g, '').slice(0, 14)
+  const partes = d.length <= 11
+    ? [d.slice(0, 3), d.slice(3, 6), d.slice(6, 9), d.slice(9, 11)]
+    : [d.slice(0, 2), d.slice(2, 5), d.slice(5, 8), d.slice(8, 12), d.slice(12, 14)]
+  const juntas = d.length <= 11 ? ['', '.', '.', '-'] : ['', '.', '.', '/', '-']
+  return partes.map((p, i) => (p ? juntas[i] + p : '')).join('')
+}
+
+/** Telefone com DDD enquanto digita: (00) 0000-0000, ou (00) 00000-0000 com 11 números. */
+export function mascaraTelefone(texto: string) {
+  const d = texto.replace(/\D/g, '').slice(0, 11)
+  if (d.length <= 2) return d ? `(${d}` : ''
+  const corte = d.length === 11 ? 7 : 6
+  const meio = d.slice(2, corte)
+  const fim = d.slice(corte)
+  return `(${d.slice(0, 2)}) ${meio}${fim ? `-${fim}` : ''}`
+}
 
 /** "CLI-0104": o número que o banco deu, como a loja lê. */
 export const codigoCliente = (numero: number) => `CLI-${String(numero).padStart(4, '0')}`

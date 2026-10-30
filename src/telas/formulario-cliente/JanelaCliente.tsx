@@ -1,6 +1,6 @@
 import { useEffect, useId, useState, type FormEvent } from 'react'
 import type { Cliente, DadosCliente } from '../../../comum/contrato'
-import { CIDADE_PADRAO, conferirCliente, ESTADOS, formatarDocumento, formatarTelefone, MENSAGENS_CLIENTE, UF_PADRAO, type CampoCliente } from '../../../comum/regras/cliente'
+import { conferirCliente, ESTADOS, formatarDocumento, formatarTelefone, mascaraDocumento, mascaraTelefone, MENSAGENS_CLIENTE, type CampoCliente } from '../../../comum/regras/cliente'
 import { Botao } from '../../componentes/botao/Botao'
 import { Campo, Selecao } from '../../componentes/campo/Campo'
 import { api } from '../../dados/api'
@@ -31,8 +31,8 @@ type Carga = { fase: 'carregando' } | { fase: 'erro'; mensagem: string } | { fas
 /**
  * O formulário de cliente, um só para cadastrar e editar, em Clientes e na nova
  * ficha (`R-CLIENTE-04`). Só o nome é obrigatório; documento e telefone são
- * conferidos (`R-CLIENTE-09`, `10`) e o repetido é o back que barra. Cliente
- * novo já vem com Simonésia / Minas Gerais.
+ * conferidos (`R-CLIENTE-09`, `10`), com máscara enquanto se digita, e o
+ * repetido é o back que barra.
  */
 export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo, textoSalvar, aoSalvar, aoFechar }: Props) {
   const [carga, setCarga] = useState<Carga>(clienteId ? { fase: 'carregando' } : { fase: 'pronto', cliente: null })
@@ -75,6 +75,9 @@ function Formulario({ atual, nomeInicial, variante, subtitulo, textoSalvar, aoSa
   const [erroSalvar, setErroSalvar] = useState('')
   const [enviando, setEnviando] = useState(false)
   const fiscal = atual?.fiscal ?? { tipoContribuinte: null, tipoCliente: null, inscricaoEstadual: null }
+  // Com máscara: a pontuação entra enquanto ela digita (o back guarda só os números).
+  const [documento, setDocumento] = useState(atual?.documento ? formatarDocumento(atual.documento) : '')
+  const [telefone, setTelefone] = useState(atual?.telefone ? formatarTelefone(atual.telefone) : '')
 
   function limparErro(campo: CampoCliente) {
     setErros((antes) => ({ ...antes, [campo]: undefined }))
@@ -160,22 +163,23 @@ function Formulario({ atual, nomeInicial, variante, subtitulo, textoSalvar, aoSa
               name="documento"
               opcional
               inputMode="numeric"
-              defaultValue={atual?.documento ? formatarDocumento(atual.documento) : ''}
+              value={documento}
               placeholder="000.000.000-00"
               erro={Boolean(erros.documento)}
               ajuda={erros.documento}
-              onChange={() => limparErro('documento')}
+              onChange={(e) => { setDocumento(mascaraDocumento(e.target.value)); limparErro('documento') }}
             />
             <Campo
               rotulo="Celular / WhatsApp"
               name="telefone"
               type="tel"
               opcional
-              defaultValue={atual?.telefone ? formatarTelefone(atual.telefone) : ''}
+              inputMode="numeric"
+              value={telefone}
               placeholder="(33) 90000-0000"
               erro={Boolean(erros.telefone)}
               ajuda={erros.telefone ?? 'Com DDD.'}
-              onChange={() => limparErro('telefone')}
+              onChange={(e) => { setTelefone(mascaraTelefone(e.target.value)); limparErro('telefone') }}
             />
           </div>
         </fieldset>
@@ -189,12 +193,12 @@ function Formulario({ atual, nomeInicial, variante, subtitulo, textoSalvar, aoSa
             <Campo rotulo="Número" name="numero" defaultValue={atual?.numero ?? ''} placeholder="142" />
             <Campo rotulo="Bairro" name="bairro" defaultValue={atual?.bairro ?? ''} placeholder="Ex.: Centro" />
             <Campo rotulo="Complemento" name="complemento" defaultValue={atual?.complemento ?? ''} placeholder="Ex.: Sala 3" />
-            <Campo rotulo="Cidade" name="cidade" defaultValue={atual ? atual.cidade ?? '' : CIDADE_PADRAO} placeholder="Ex.: Simonésia" />
+            <Campo rotulo="Cidade" name="cidade" defaultValue={atual?.cidade ?? ''} placeholder="Ex.: Simonésia" />
             <Selecao
               rotulo="Estado"
               name="uf"
               opcoes={OPCOES_ESTADO}
-              valorInicial={atual ? atual.uf ?? '' : UF_PADRAO}
+              valorInicial={atual?.uf ?? ''}
               erro={Boolean(erros.uf)}
               ajuda={erros.uf}
               aoMudar={() => limparErro('uf')}
