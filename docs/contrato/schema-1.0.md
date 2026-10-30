@@ -161,6 +161,16 @@ O "saldo inicial do cadastro" vira uma entrada sem `entrada_id`, com o motivo
 de hoje. Produto **sem histórico** (só esse movimento) ainda pode ser excluído
 de verdade, com o movimento junto: é cadastro por engano (regra da 0.1).
 
+**`conferencia_ajuste`** (fato; migration 0003, `2026-10-30`) — o visto da dona
+num ajuste (`R-ESTOQUE-11`). Ajuste sem linha aqui está "aguardando
+conferência"; o da própria dona nasce com a linha.
+
+| Coluna | Tipo | Notas |
+| --- | --- | --- |
+| `movimento_id` | texto | PK; FK `movimento_estoque`; gatilho recusa o que não é ajuste |
+| `operador_id` | texto | FK `operador`; gatilho recusa quem não é a administradora |
+| `registrado_em` | texto | instante UTC |
+
 ### Clientes
 
 **`cliente`** (cadastro)

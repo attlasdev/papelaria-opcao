@@ -299,3 +299,29 @@ describe('cliente', () => {
     expect(() => cliente('c5', 5, '123.456.789-01')).toThrow(/CHECK constraint failed/)
   })
 })
+
+describe('[R-ESTOQUE-11] conferência do ajuste (0003)', () => {
+  beforeEach(() => {
+    banco.prepare("insert into operador (id, nome, admin, pin_hash, criado_em) values ('dona', 'Helena', 1, 'scrypt$sal$hash', ?)").run(AGORA)
+    produto('p', 1)
+    movimento('p', 'entrada', 5)
+    movimento('p', 'ajuste', -1, { motivo: 'Quebrado' })
+  })
+  const idDo = (tipo: string) => (banco.prepare('select id from movimento_estoque where tipo = ?').get(tipo) as { id: string }).id
+  const conferir = (movimentoId: string, operadorId: string) =>
+    banco.prepare('insert into conferencia_ajuste (movimento_id, operador_id, registrado_em) values (?, ?, ?)').run(movimentoId, operadorId, AGORA)
+
+  it('só a dona confere, só ajuste, e uma vez', () => {
+    expect(() => conferir(idDo('ajuste'), 'op')).toThrow(/so a administradora confere/)
+    expect(() => conferir(idDo('entrada'), 'dona')).toThrow(/so ajuste se confere/)
+    conferir(idDo('ajuste'), 'dona')
+    expect(() => conferir(idDo('ajuste'), 'dona')).toThrow(/UNIQUE constraint failed/)
+  })
+
+  it('a conferência é fato: não se altera nem se apaga', () => {
+    conferir(idDo('ajuste'), 'dona')
+    expect(() => banco.prepare("update conferencia_ajuste set operador_id = 'op'").run()).toThrow(/fato nao se altera/)
+    expect(() => banco.prepare('delete from conferencia_ajuste').run()).toThrow(/fato nao se apaga/)
+  })
+})
+

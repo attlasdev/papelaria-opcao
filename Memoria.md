@@ -528,6 +528,13 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   máquina enquanto ela contava a prateleira), o back recusa com o saldo de
   agora e ela confere de novo. Sem isso, a contagem gravaria por cima e a venda
   sumiria da conta. Confirmado, volta ao Estoque, como a Entrada rápida.
+- `R-ESTOQUE-11` **Ajuste com conferência depois** (`2026-10-30`): qualquer pessoa ajusta só
+  com o próprio PIN, e o ajuste grava na hora. O de funcionário fica
+  "aguardando conferência" até a dona conferir com o PIN dela (um por um, ou
+  todos os que ela está vendo de uma vez); o da própria dona já nasce
+  conferido. Conferir é só o visto: discordou, faz outro ajuste
+  (`R-CORRECAO-05`). A marca, o "Conferir" e o aviso no sino ficam nas
+  Movimentações (tela 2.6).
 - Nota: Entrada rápida confirmada volta ao Estoque, com o saldo novo na linha
   (`2026-10-29`): quem repõe faz vários produtos em sequência. O histórico fica
   no ícone da linha.
@@ -664,8 +671,11 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   autorizou; se é a própria dona que faz, um PIN basta. Lista provisória, a
   confirmar com ela (D3): cancelar ficha, estornar recebimento e lançamento,
   ajustar estoque, marcar e desfazer pagamento de boleto, fechar caixa com
-  diferença. **Ligados:** ajustar estoque (`2026-10-30`, tela 2.5, decisão do
-  Agostinho enquanto a dona não confirma; desligar é uma linha no back).
+  diferença. **Dois jeitos** (`2026-10-30`): com o PIN da dona **na hora**, ou
+  com **conferência depois** (quem faz assina sozinho, o registro fica
+  "aguardando conferência" e a dona dá o visto com o PIN dela). A dona escolhe
+  o jeito de cada gesto (D3). **Ligados:** ajustar estoque, com conferência
+  depois (`R-ESTOQUE-11`).
 - `R-OPERADOR-07` Pessoa desativada some da escolha, não assina nem autoriza, e continua
   no histórico com o nome.
 - `R-OPERADOR-08` O PIN só existe no back, guardado com hash (scrypt, com sal); nunca
@@ -718,7 +728,16 @@ montada". O que é decisão (e o porquê):
 
 ## Decisões de arquitetura
 
-### `2026-10-30` — Ajuste de estoque com o PIN da dona
+### `2026-10-30` — Ajuste com conferência depois, não com o PIN da dona na hora
+Decisão do Agostinho ao validar a tela 2.5, **trocando a de cima do mesmo dia**.
+Com o PIN da dona na hora, o funcionário ficava parado na tela esperando por
+ela, e o ajuste costuma ser feito justamente quando ela não está. Agora quem faz
+assina sozinho e o ajuste grava; a dona confere depois (`R-ESTOQUE-11`). A
+conferência é um registro à parte (`conferencia_ajuste`, migration 0003): o
+movimento é fato e não se edita. O passo "PIN da administradora" da janela e a
+regra `autorizar` ficam prontos para os gestos que a dona quiser na hora.
+
+### `2026-10-30` — Ajuste de estoque com o PIN da dona (substituída no mesmo dia)
 Decisão do Agostinho, no percurso da tela 2.5. O ajuste é o primeiro gesto
 sensível ligado (`R-OPERADOR-06`): quem faz assina, e a dona autoriza com o PIN
 dela (`autorizado_por`); se é ela que ajusta, um PIN basta. A dona ainda
