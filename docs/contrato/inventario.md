@@ -66,7 +66,7 @@ banco.
 | `ajustar-estoque/AjustarEstoque` | produto e busca (`obterProduto`, `listarProdutos`) | `ajustarEstoque`, conferido depois pela dona (`conferirAjustes`, na tela 2.6) — **no contrato desde `2026-10-30` (tela 2.5)** |
 | `entrada-rapida/EntradaRapida` | produto (`obterProduto`) | `registrarEntrada` com um item — **no contrato desde `2026-10-29` (tela 2.3)** |
 | `registrar-entrada/RegistrarEntrada` | busca (`listarProdutos`) e bipe (`buscarProdutoPorCodigoBarras`) | `registrarEntrada` com todos os itens, novos inclusive — **no contrato desde `2026-10-29` (tela 2.4)**; antes era um par cadastrar + alterar saldo por item, em laço |
-| `movimentacoes-estoque/MovimentacoesEstoque` | todos os movimentos de estoque | — |
+| `movimentacoes-estoque/MovimentacoesEstoque` | `listarMovimentosEstoque`, paginado | `conferirAjustes` — **no contrato desde `2026-10-30` (tela 2.6)** |
 
 Já no contrato (tela 2.1): `obterProduto`, `buscarProdutoPorCodigoBarras`,
 `listarCategorias`, `cadastrarProduto`, `editarProduto`, `excluirProduto`,
@@ -74,7 +74,7 @@ Já no contrato (tela 2.1): `obterProduto`, `buscarProdutoPorCodigoBarras`,
 Na tela 2.2: `listarProdutos(filtro, busca, pagina, porPagina)`.
 Na tela 2.3: `registrarEntrada(entrega, quem)`.
 Na tela 2.5: `ajustarEstoque(ajuste, quem)` e `conferirAjustes(movimentoIds, dona)`.
-Faltam: `listarMovimentosEstoque(filtro, pagina)`.
+Na tela 2.6: `listarMovimentosEstoque(filtro, pagina, porPagina)`. O Estoque está todo no contrato.
 
 Para o back:
 - **`registrarEntrada` precisa ser UMA operação para a entrega inteira.** Hoje a

@@ -248,6 +248,45 @@ export type Entrega = {
  */
 export type Ajuste = { produtoId: string; contagem: number; saldoVisto: number; motivo: string }
 
+export type TipoMovimento = 'entrada' | 'ajuste' | 'venda' | 'cancelamento'
+
+/** Uma linha do historico do estoque (tela 2.6). Ninguem edita: e fato. */
+export type MovimentoEstoque = {
+  id: string
+  /** Instante do lancamento, ISO 8601 UTC. */
+  registradoEm: string
+  tipo: TipoMovimento
+  produto: { id: string; codigo: string; descricao: string }
+  saldoAntes: number
+  saldoDepois: number
+  /**
+   * O porque escrito: o motivo do ajuste, "Saldo inicial do cadastro",
+   * "Recebimento de mercadorias", o motivo do cancelamento. Venda nao tem.
+   */
+  motivo: string | null
+  /** Nome de quem fez. */
+  operador: string
+  /** Entrada de uma entrega (`R-ESTOQUE-04`); o saldo inicial do cadastro nao tem. */
+  entrada: { recebidaEm: string; fornecedor: string | null; referencia: string | null; observacoes: string | null; custoUnitario: number | null } | null
+  /** Venda e cancelamento: a ficha, para abrir. */
+  ficha: { id: string; numero: string } | null
+  /** So ajuste de funcionario sem o visto da dona (`R-ESTOQUE-11`). */
+  aguardandoConferencia: boolean
+  /** O visto da dona no ajuste: quem e quando (ISO). */
+  conferencia: { por: string; em: string } | null
+}
+
+/** O recorte do historico. `aguardando` mostra so os ajustes sem o visto da dona. */
+export type FiltroMovimentos = { produtoId: string | null; tipo: 'todas' | 'entrada' | 'ajuste' | 'venda'; aguardando: boolean }
+
+export type PaginaMovimentos = {
+  movimentos: MovimentoEstoque[]
+  /** Quantos o filtro acha, somando todas as paginas. */
+  total: number
+  /** Ajustes aguardando a dona no mesmo produto (ou em todos), qualquer que seja o tipo filtrado. */
+  aguardando: number
+}
+
 /** Os produtos da entrega como ficaram, com o saldo novo. */
 export type EntradaRegistrada = { id: string; produtos: Produto[] }
 
@@ -429,6 +468,13 @@ export type Contrato = {
    * ajuste, `nao-encontrado`; lista vazia ou com mais de 500, `validacao`.
    */
   conferirAjustes(movimentoIds: string[], dona: Assinatura): Promise<Resultado<{ conferidos: number }>>
+
+  /**
+   * O historico do estoque (1.0, tela 2.6), do mais novo ao mais velho,
+   * paginado no back: sao milhares de movimentos. `pagina` a partir de 1;
+   * `porPagina` de 1 a 100, senao `validacao`. Cancelamento entra em "todas".
+   */
+  listarMovimentosEstoque(filtro: FiltroMovimentos, pagina: number, porPagina: number): Promise<Resultado<PaginaMovimentos>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

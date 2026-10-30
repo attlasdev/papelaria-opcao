@@ -31,6 +31,16 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-30` — Movimentações do estoque (1.0, tela 2.6)
+
+- **Contrato:** `listarMovimentosEstoque(filtro, pagina, porPagina)`, com
+  `MovimentoEstoque` (tipo em minúsculas; produto; antes/depois; motivo;
+  quem fez; a entrega, a ficha e a conferência como campos, não mais dentro do
+  texto do motivo) e `FiltroMovimentos` (produto, tipo, só os aguardando).
+- **Na tela:** "Mostrar mais" no lugar do corte dos 150 mais recentes; marca
+  "Aguardando conferência" com "Conferir" no ajuste; filtro "Aguardando
+  conferência" com "Conferir os N mostrados"; aviso no sino.
+
 ### `2026-10-30` — Ajustar estoque (1.0, tela 2.5)
 
 - **Contrato:** `ajustarEstoque(ajuste, quem)`, com `Ajuste` (produto,
