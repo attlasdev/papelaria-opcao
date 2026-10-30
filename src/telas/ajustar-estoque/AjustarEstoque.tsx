@@ -30,6 +30,8 @@ export function AjustarEstoque() {
   const [sugestoesAbertas, setSugestoesAbertas] = useState(false)
   const [indiceAtivo, setIndiceAtivo] = useState(0)
   const [assinando, setAssinando] = useState(false)
+  // Com o produto escolhido, a busca dá lugar ao cartão dele; "Trocar" volta à busca.
+  const [trocando, setTrocando] = useState(false)
   const idSugestoes = useId()
   const campoBusca = useRef<HTMLInputElement>(null)
 
@@ -60,6 +62,7 @@ export function AjustarEstoque() {
   function selecionar(escolhido: Produto) {
     setProduto(escolhido)
     setContagem(String(escolhido.saldo))
+    setTrocando(false)
     setBusca('')
     setSugestoesAbertas(false)
     setIndiceAtivo(0)
@@ -67,10 +70,12 @@ export function AjustarEstoque() {
   }
 
   function tecladoBusca(evento: KeyboardEvent<HTMLInputElement>) {
-    if (evento.key === 'Escape' && sugestoesAbertas) {
+    if (evento.key === 'Escape' && (sugestoesAbertas || trocando)) {
       evento.preventDefault()
       evento.stopPropagation()
       setSugestoesAbertas(false)
+      // Desistiu de trocar: volta ao produto que estava.
+      if (!sugestoesAbertas && produto) { setBusca(''); setTrocando(false) }
     } else if (evento.key === 'ArrowDown' || evento.key === 'ArrowUp') {
       evento.preventDefault()
       setSugestoesAbertas(true)
@@ -132,12 +137,24 @@ export function AjustarEstoque() {
         <div className="ajustar-estoque__campos">
           <div className="campo ajustar-estoque__produto">
             <label className="campo__rotulo" htmlFor={`${idSugestoes}-busca`}>Produto</label>
+            {produto && !trocando ? (
+              <div className="ajustar-estoque__escolhido">
+                <span className="ajustar-estoque__escolhido-texto">
+                  <strong title={produto.descricao}>{produto.descricao}</strong>
+                  <span className="codigo">{produto.codigo}{produto.codigoBarras ? ` · ${produto.codigoBarras}` : ''}</span>
+                </span>
+                <Botao tamanho="pequeno" variante="fantasma" onClick={() => setTrocando(true)}>
+                  Trocar
+                </Botao>
+              </div>
+            ) : (
             <div className="ajustar-estoque__busca-caixa">
             <span className={erros.produto ? 'campo__caixa campo__caixa--erro' : 'campo__caixa'}>
               <Icone nome="busca" tamanho={18} />
               <input
                 ref={campoBusca}
                 id={`${idSugestoes}-busca`}
+                autoFocus={trocando}
                 type="search"
                 autoComplete="off"
                 placeholder="Nome, código ou código de barras..."
@@ -145,7 +162,7 @@ export function AjustarEstoque() {
                 onChange={(evento) => { setBusca(evento.target.value); setIndiceAtivo(0); setSugestoesAbertas(true); setErros((atual) => ({ ...atual, produto: undefined })) }}
                 aria-invalid={Boolean(erros.produto)}
                 onFocus={() => setSugestoesAbertas(true)}
-                onBlur={() => setSugestoesAbertas(false)}
+                onBlur={() => { setSugestoesAbertas(false); if (!busca.trim()) setTrocando(false) }}
                 onKeyDown={tecladoBusca}
                 role="combobox"
                 aria-autocomplete="list"
@@ -175,9 +192,12 @@ export function AjustarEstoque() {
               </div>
             )}
             </div>
-            <span className={erros.produto ? 'ajustar-estoque__selecionado ajustar-estoque__selecionado--erro' : 'ajustar-estoque__selecionado'} title={produto?.descricao} role={erros.produto ? 'alert' : undefined}>
-              {erros.produto ?? (produto ? `Selecionado: ${produto.codigo} · ${produto.descricao}` : 'Selecione um produto para ajustar.')}
-            </span>
+            )}
+            {(erros.produto || !produto) && (
+              <span className={erros.produto ? 'ajustar-estoque__selecionado ajustar-estoque__selecionado--erro' : 'ajustar-estoque__selecionado'} role={erros.produto ? 'alert' : undefined}>
+                {erros.produto ?? 'Selecione um produto para ajustar.'}
+              </span>
+            )}
           </div>
           <div className="ajustar-estoque__saldo">
             <span>Saldo atual</span>
