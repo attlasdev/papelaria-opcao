@@ -13,10 +13,10 @@ import { rotas } from '../../rotas-caminhos'
 import './ajustar-estoque.css'
 
 /**
- * Corrige a contagem de um produto (1.0, tela 2.5). Gesto sensível
- * (`R-OPERADOR-06`): quem faz assina e a dona autoriza. Manda o saldo que a
- * tela mostrou; se mudou no meio, o back recusa e a gaveta mostra o de agora
- * (`R-ESTOQUE-10`). Confirmado, volta ao Estoque.
+ * Corrige a contagem de um produto (1.0, tela 2.5). Quem faz assina sozinho; o
+ * ajuste de funcionário fica aguardando a conferência da dona (`R-ESTOQUE-11`).
+ * Manda o saldo que a tela mostrou; se mudou no meio, o back recusa e a gaveta
+ * mostra o de agora (`R-ESTOQUE-10`). Confirmado, volta ao Estoque.
  */
 export function AjustarEstoque() {
   const [parametros] = useSearchParams()
@@ -103,9 +103,9 @@ export function AjustarEstoque() {
     setAssinando(true)
   }
 
-  async function ajustar(quem: Assinatura, dona: Assinatura | null) {
+  async function ajustar(quem: Assinatura) {
     const alvo = produto!
-    const r = await api().ajustarEstoque({ produtoId: alvo.id, contagem: Number(contagem), saldoVisto: alvo.saldo, motivo }, quem, dona)
+    const r = await api().ajustarEstoque({ produtoId: alvo.id, contagem: Number(contagem), saldoVisto: alvo.saldo, motivo }, quem)
     if (!r.ok && r.causa === 'conflito') {
       // O saldo mudou enquanto ela contava: fecha a janela, mostra o de agora e pede para conferir.
       setAssinando(false)
@@ -186,13 +186,12 @@ export function AjustarEstoque() {
           <Campo rotulo="Nova contagem" name="contagem" type="number" min={0} step={1} required value={contagem} onChange={(e) => { setContagem(e.target.value); setErros((atual) => ({ ...atual, contagem: undefined })) }} erro={Boolean(erros.contagem)} ajuda={erros.contagem} />
           <Campo rotulo="Motivo do ajuste" name="motivo" required value={motivo} onChange={(e) => { setMotivo(e.target.value); setErros((atual) => ({ ...atual, motivo: undefined })) }} placeholder="Ex.: contagem física do balcão" className="ajustar-estoque__motivo" erro={Boolean(erros.motivo)} ajuda={erros.motivo} />
         </div>
-        <p className="ajustar-estoque__nota">A diferença fica registrada em Movimentações, como ajuste, com quem fez e quem autorizou.</p>
+        <p className="ajustar-estoque__nota">A diferença fica registrada em Movimentações, como ajuste. Feito por funcionário, fica aguardando a conferência da administradora.</p>
       </form>
     </Modal>
     {/* Fora da gaveta: dentro dela, o CSS da lateral esticaria a janela. */}
     {assinando && produto && (
       <JanelaAssinatura
-        sensivel
         gesto={`Ajuste de ${produto.descricao}: ${produto.saldo} → ${contagem} ${produto.unidade}`}
         rotuloConfirmar="Confirmar ajuste"
         fazer={ajustar}
