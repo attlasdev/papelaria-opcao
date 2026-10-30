@@ -28,7 +28,8 @@ function paraMovimento(m: MovimentoEstoque, produtos: Produto[]): Movimento {
     saldoAntes: m.antes,
     saldoDepois: m.depois,
     motivo,
-    operador: m.operador ?? '—',
+    // A semente da 0.1 tem venda sem quem fez; a tela omite.
+    operador: m.operador ?? '',
     entrada: e ? { recebidaEm: e.recebidaEm, fornecedor: e.fornecedor ?? null, referencia: e.referencia ?? null, observacoes: e.observacoes ?? null, custoUnitario: e.custoUnitario ?? null } : null,
     ficha: ficha ? { id: ficha, numero: numeroFicha(ficha) } : null,
     aguardandoConferencia: tipo === 'ajuste' && !m.conferidoPor,

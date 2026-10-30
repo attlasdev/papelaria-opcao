@@ -264,7 +264,7 @@ export type MovimentoEstoque = {
    * "Recebimento de mercadorias", o motivo do cancelamento. Venda nao tem.
    */
   motivo: string | null
-  /** Nome de quem fez. */
+  /** Nome de quem fez. Vazio só em dado antigo da 0.1 (a semente tem venda sem quem fez). */
   operador: string
   /** Entrada de uma entrega (`R-ESTOQUE-04`); o saldo inicial do cadastro nao tem. */
   entrada: { recebidaEm: string; fornecedor: string | null; referencia: string | null; observacoes: string | null; custoUnitario: number | null } | null
