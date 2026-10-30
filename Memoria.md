@@ -728,6 +728,16 @@ montada". O que é decisão (e o porquê):
 
 ## Decisões de arquitetura
 
+### `2026-10-30` — Sem importação de produtos por planilha na 1.0
+Decisão do Agostinho, com a loja de acordo. A tela 2.7 saiu do plano: a 0.1 em
+teste só tem dado fictício (nada a levar) e a loja cadastra o catálogo à mão
+pelo Estoque no primeiro dia da 1.0.
+
+**Por quê:** a importação existia para a loja não digitar o catálogo inteiro;
+com a loja aceitando o cadastro manual, ela vira trabalho (formato, prévia,
+erros por linha) sem uso. Volta como pedido novo se, depois da 1.0, aparecer
+uma linha de fornecedor grande de uma vez.
+
 ### `2026-10-30` — Ajuste com conferência depois, não com o PIN da dona na hora
 Decisão do Agostinho ao validar a tela 2.5, **trocando a de cima do mesmo dia**.
 Com o PIN da dona na hora, o funcionário ficava parado na tela esperando por
