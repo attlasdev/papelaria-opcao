@@ -26,6 +26,7 @@ const iconeAviso: Record<TipoNotificacao, NomeIcone> = {
   vencendo: 'relogio',
   'estoque-zerado': 'pacote',
   'estoque-baixo': 'pacote',
+  'ajuste-aguardando': 'ajustes',
   rascunho: 'notas',
   'boleto-vencido': 'documento',
   'boleto-vencendo': 'documento',

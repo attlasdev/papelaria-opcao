@@ -508,7 +508,7 @@ export function boletoComMesmoNumero(base: Base, numero: string, ignorar?: strin
   return alvo ? base.boletos.find((b) => b.id !== ignorar && b.numero.trim().toLowerCase() === alvo) : undefined
 }
 
-export type TipoNotificacao = 'atraso' | 'vencendo' | 'estoque-zerado' | 'estoque-baixo' | 'rascunho' | 'boleto-vencido' | 'boleto-vencendo'
+export type TipoNotificacao = 'atraso' | 'vencendo' | 'estoque-zerado' | 'estoque-baixo' | 'ajuste-aguardando' | 'rascunho' | 'boleto-vencido' | 'boleto-vencendo'
 
 export type Notificacao = {
   id: string
@@ -595,6 +595,15 @@ export function notificacoes(base: Base, hoje: string): Notificacao[] {
     avisos.push({
       id: 'estoque-baixo', tipo: 'estoque-baixo', tom: 'atencao',
       titulo: plural(baixos.length, 'produto com estoque baixo', 'produtos com estoque baixo'), detalhe: nomes(baixos), destino: rotas.estoque,
+    })
+  }
+  // Ajuste de funcionário sem o visto da dona (`R-ESTOQUE-11`); abre as Movimentações já no filtro.
+  const aguardando = base.movimentosEstoque.filter((m) => m.tipo === 'Ajuste' && !m.conferidoPor)
+  if (aguardando.length) {
+    avisos.push({
+      id: 'ajuste-aguardando', tipo: 'ajuste-aguardando', tom: 'atencao',
+      titulo: plural(aguardando.length, 'ajuste aguardando conferência', 'ajustes aguardando conferência'),
+      detalhe: 'A administradora confere em Movimentações', destino: rotas.movimentacoesAguardando,
     })
   }
   // Com a área de notas oculta, o aviso levaria a uma tela sem caminho (`2026-10-19`).

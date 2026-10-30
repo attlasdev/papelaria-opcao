@@ -24,6 +24,8 @@ export const rotas = {
   entradaRapida: (codigo: string) => `/estoque/entrada-rapida?produto=${codigo}`,
   ajustarEstoque: (codigo?: string) => `/estoque/ajustar${codigo ? `?produto=${codigo}` : ''}`,
   movimentacoesEstoque: (codigo?: string) => `/estoque/movimentacoes${codigo ? `?produto=${codigo}` : ''}`,
+  // `aguardando`, não `filtro`: o Estoque atrás da gaveta lê o `filtro` dele.
+  movimentacoesAguardando: '/estoque/movimentacoes?aguardando=1',
   servicos: '/servicos',
   boletos: '/boletos',
   notas: '/notas-fiscais',

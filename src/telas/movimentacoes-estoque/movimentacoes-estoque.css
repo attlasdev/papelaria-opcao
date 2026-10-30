@@ -1,5 +1,5 @@
 .movimentacoes-estoque__controles { display: flex; align-items: center; justify-content: space-between; gap: var(--espaco-3); flex-wrap: wrap; }
-.movimentacoes-estoque__total { margin: var(--espaco-6) 0 var(--espaco-3); font-size: var(--text-rotulo); color: var(--color-texto-suave); }
+.movimentacoes-estoque__total { display: flex; align-items: center; justify-content: space-between; gap: var(--espaco-3); margin: var(--espaco-6) 0 var(--espaco-3); font-size: var(--text-rotulo); color: var(--color-texto-suave); }
 .movimentacoes-estoque__lista { display: grid; gap: var(--espaco-3); }
 .movimentacoes-estoque__item { padding: var(--espaco-4); border: 1px solid var(--color-borda); border-radius: var(--radius-medio); background: var(--color-superficie); }
 .movimentacoes-estoque__item-topo, .movimentacoes-estoque__item-rodape { display: flex; align-items: center; justify-content: space-between; gap: var(--espaco-3); }
@@ -31,3 +31,34 @@
 .movimentacoes-estoque__entrada dt { color: var(--color-texto-suave); }
 .movimentacoes-estoque__entrada dd { overflow-wrap: anywhere; }
 .movimentacoes-estoque__entrada-observacoes { grid-column: 1 / -1; }
+
+/* Visto da dona no ajuste (R-ESTOQUE-11): aguardando, com o botão; ou quem conferiu. */
+.movimentacoes-estoque__conferencia {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-3);
+  padding-top: var(--espaco-3);
+  border-top: 1px solid var(--color-borda);
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
+}
+
+.movimentacoes-estoque__falha {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-3);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-critico-fundo);
+  color: var(--color-critico-texto);
+  font-size: var(--text-rotulo);
+}
+
+.movimentacoes-estoque__mais { justify-self: center; }
+
+
+/* Sozinho na linha, sem coluna para alinhar: o selo acompanha o texto. */
+.movimentacoes-estoque__conferencia .selo-compacto { width: auto; padding: 0 var(--espaco-2); }
