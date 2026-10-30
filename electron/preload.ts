@@ -47,6 +47,8 @@ const api: Contrato = {
   obterCliente: (id) => ipcRenderer.invoke('obterCliente', id),
   cadastrarCliente: (dados) => ipcRenderer.invoke('cadastrarCliente', dados),
   editarCliente: (id, dados) => ipcRenderer.invoke('editarCliente', id, dados),
+  listarClientes: (filtro, busca, pagina, porPagina) => ipcRenderer.invoke('listarClientes', filtro, busca, pagina, porPagina),
+  listarComprasDoCliente: (clienteId, pagina, porPagina) => ipcRenderer.invoke('listarComprasDoCliente', clienteId, pagina, porPagina),
 }
 
 contextBridge.exposeInMainWorld('api', api)

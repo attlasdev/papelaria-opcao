@@ -409,7 +409,10 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   em atraso mesmo se também tiver outra a vencer; não é contado nas duas situações.
 - `R-CLIENTE-02` Lista alfabética com número estável (`CLI-0104`), busca no topo, filtros
   "Notinhas a vencer" e "Notinhas em atraso" (contam clientes). Linha expande
-  com as três compras recentes; "Ver histórico completo" abre o cliente.
+  com as três compras recentes; "Ver histórico completo" abre o cliente. A
+  linha mostra só o nome, sem a descrição embaixo (`2026-10-30`). Notinha que
+  vence hoje ainda está a vencer; cancelada não deve nada; pagamento estornado
+  não conta como pago.
 - `R-CLIENTE-03` A busca de clientes aceita CPF/CNPJ e telefone com ou sem pontuação e nomes
   sem acento. A mesma regra vale no cabeçalho e na identificação da nova ficha.
 - `R-CLIENTE-04` Cadastro e edição num formulário só, em gaveta (ou janela na ficha): só o nome
@@ -737,6 +740,20 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-10-30` — Lista de clientes pelo back, sem a descrição
+Decisão do Agostinho, no percurso da tela 3.2. A lista, a busca, os cartões e
+a situação de cada cliente vêm de `listarClientes`, paginada; as compras da
+linha vêm de `listarComprasDoCliente`, a mesma que o histórico da 3.3 vai usar.
+A conta da notinha (em aberto e situação) fica em `comum/regras/notinha.ts`,
+uma vez para o mock e o SQLite. A linha perde a descrição embaixo do nome
+("Cliente frequente").
+
+**Por quê:** os cartões precisam da situação de todos os clientes, então a
+conta é feita no back sobre a lista inteira (centenas de clientes, não
+milhões) e só a página desce para a tela. A descrição não tinha campo no
+cadastro da 1.0 nem quem a preenchesse. Descartado: "Cliente desde" e a cidade
+no lugar dela (não ajudam a achar o cliente na lista).
 
 ### `2026-10-30` — Cadastro de cliente: documento e telefone conferidos
 Decisão do Agostinho, no percurso da tela 3.1. O back confere o CPF/CNPJ pelos

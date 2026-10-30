@@ -3,8 +3,9 @@
  * `09` e `10`), uma vez só para o mock e o SQLite, e para a tela apontar o
  * campo errado antes de mandar. Funções puras.
  */
-import { falha, type DadosCliente, type Falha } from '../contrato'
-import { textoDoCadastro } from './produto'
+import { falha, type CompraCliente, type DadosCliente, type Falha, type FiltroClientes, type LinhaCliente, type PaginaClientes, type PaginaCompras } from '../contrato'
+import { emAberto, situacaoCliente, situacaoCompra, type FichaDaConta } from './notinha'
+import { paginaQueExiste, paraBusca, POR_PAGINA_MAXIMO, textoDoCadastro } from './produto'
 
 /** Os 27 estados, pela sigla que o banco guarda e o nome que a tela mostra. */
 export const ESTADOS = [
@@ -121,4 +122,91 @@ export function clienteValido(bruto: unknown): DadosCliente | Falha {
   const { dados, erros } = conferirCliente(bruto)
   const primeiro = Object.values(erros)[0]
   return primeiro ? falha('validacao', primeiro) : dados
+}
+
+// Lista de Clientes (tela 3.2) ------------------------------------------------
+
+const FILTROS: FiltroClientes[] = ['todos', 'a-vencer', 'em-atraso']
+const inteiro = (v: unknown) => typeof v === 'number' && Number.isSafeInteger(v) && v >= 1
+
+/** O pedido que chegou pela IPC: filtro conhecido e números inteiros. */
+export function conferirPedidoDeClientes(filtro: unknown, busca: unknown, pagina: unknown, porPagina: unknown): Falha | null {
+  if (!FILTROS.includes(filtro as FiltroClientes) || typeof busca !== 'string') return falha('validacao', 'Pedido inválido.')
+  if (!inteiro(pagina) || !inteiro(porPagina) || (porPagina as number) > POR_PAGINA_MAXIMO) return falha('validacao', 'Pedido de página inválido.')
+  return null
+}
+
+/** Sem acento, minúsculo e com um espaço só (nome colado de outro lugar traz dois, ou o que não quebra). */
+const paraComparar = (texto: string) => paraBusca(texto).replace(/\s+/g, ' ').trim()
+
+type Identificacao = Pick<LinhaCliente, 'codigo' | 'nome' | 'documento' | 'telefone'>
+
+/**
+ * `R-CLIENTE-03`: código e nome sem acento; só com números (e "CPF"/"CNPJ" na
+ * frente), no documento e no telefone, com ou sem a pontuação.
+ */
+export function clienteCorresponde(c: Identificacao, busca: string) {
+  const termo = paraComparar(busca)
+  if (!termo || paraComparar(`${c.codigo} ${c.nome}`).includes(termo)) return true
+  const numero = termo.replace(/^(cpf|cnpj)\s*/, '')
+  if (!/^[\d\s()./+*\-]+$/.test(numero)) return false
+  const digitos = numero.replace(/\D/g, '')
+  return Boolean(digitos) && [c.documento, c.telefone].some((campo) => campo?.includes(digitos))
+}
+
+/** O que cada lado junta do cliente: a identificação, quantas compras e as notinhas (as quitadas podem ficar de fora). */
+export type ClienteDaLista = Pick<LinhaCliente, 'id' | 'codigo' | 'nome' | 'documento' | 'telefone' | 'compras'> & { notinhas: FichaDaConta[] }
+
+/**
+ * A página da lista, com os cartões contando todos os clientes. Os dois lados
+ * montam em memória: os cartões precisam da situação de todos de qualquer jeito,
+ * e a loja tem centenas de clientes, não milhões.
+ */
+export function paginaDeClientes(
+  todos: ClienteDaLista[], filtro: FiltroClientes, busca: string, pagina: number, porPagina: number,
+  vendasSemIdentificacaoHoje: number, hoje: string,
+): PaginaClientes {
+  const linhas: LinhaCliente[] = todos.map(({ notinhas, ...c }) => ({
+    ...c,
+    emAberto: notinhas.reduce((soma, n) => soma + emAberto(n), 0),
+    situacao: situacaoCliente(notinhas.map((n) => situacaoCompra(n, hoje))),
+  }))
+  const contar = (situacao: LinhaCliente['situacao']) => linhas.filter((l) => l.situacao === situacao).length
+  const achados = linhas
+    .filter((l) => (filtro === 'todos' || l.situacao === filtro) && clienteCorresponde(l, busca))
+    .sort((a, b) => paraComparar(a.nome).localeCompare(paraComparar(b.nome), 'pt-BR') || a.codigo.localeCompare(b.codigo))
+  const atual = paginaQueExiste(pagina, achados.length, porPagina)
+  return {
+    clientes: achados.slice((atual - 1) * porPagina, atual * porPagina),
+    total: achados.length,
+    pagina: atual,
+    resumo: { clientes: linhas.length, aVencer: contar('a-vencer'), emAtraso: contar('em-atraso') },
+    vendasSemIdentificacaoHoje,
+  }
+}
+
+/** Uma ficha do cliente como cada lado junta. */
+export type FichaDaCompra = FichaDaConta & Pick<CompraCliente, 'id' | 'numero' | 'registradoEm' | 'rotulo'>
+
+/** O histórico do cliente: da mais nova para a mais velha; a cancelada fica, mas não é compra. */
+export function paginaDeCompras(fichas: FichaDaCompra[], pagina: number, porPagina: number, hoje: string): PaginaCompras {
+  const ordem = [...fichas].sort((a, b) => b.registradoEm.localeCompare(a.registradoEm) || Number(b.numero) - Number(a.numero))
+  const compras = ordem.filter((f) => !f.cancelada)
+  const atual = paginaQueExiste(pagina, ordem.length, porPagina)
+  return {
+    compras: ordem.slice((atual - 1) * porPagina, atual * porPagina).map((f) => ({
+      id: f.id, numero: f.numero, registradoEm: f.registradoEm, total: f.total, forma: f.forma, rotulo: f.rotulo,
+      situacao: situacaoCompra(f, hoje), emAberto: emAberto(f),
+    })),
+    total: ordem.length,
+    pagina: atual,
+    resumo: { compras: compras.length, totalComprado: compras.reduce((soma, f) => soma + f.total, 0) },
+  }
+}
+
+/** O pedido do histórico: id e números inteiros. */
+export function conferirPedidoDeCompras(clienteId: unknown, pagina: unknown, porPagina: unknown): Falha | null {
+  if (typeof clienteId !== 'string' || !clienteId) return falha('nao-encontrado', MENSAGENS_CLIENTE.naoEncontrado)
+  if (!inteiro(pagina) || !inteiro(porPagina) || (porPagina as number) > POR_PAGINA_MAXIMO) return falha('validacao', 'Pedido de página inválido.')
+  return null
 }

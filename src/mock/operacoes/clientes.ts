@@ -1,6 +1,6 @@
 /**
- * O cadastro de cliente sobre a base da demonstração (1.0, tela 3.1;
- * `R-CLIENTE-04`, `09`, `10`). Lado "mock" dos testes de contrato e, até a
+ * O cadastro e a lista de clientes sobre a base da demonstração (1.0, telas
+ * 3.1 e 3.2; `R-CLIENTE-01` a `04`, `09`, `10`). Lado "mock" dos testes de contrato e, até a
  * Fase 3, o que responde no app (`src/dados/api.ts`).
  *
  * A base ainda guarda o cliente como a 0.1 (documento e telefone com máscara,
@@ -8,18 +8,19 @@
  * as telas delas; aqui ele vira os campos do contrato, iguais aos do SQLite.
  */
 import { falha, ok, type Cliente as ClienteContrato, type Contrato, type DadosCliente, type Resultado } from '../../../comum/contrato'
-import { clienteValido, formatarDocumento, formatarTelefone, MENSAGENS_CLIENTE } from '../../../comum/regras/cliente'
+import { clienteValido, conferirPedidoDeClientes, conferirPedidoDeCompras, formatarDocumento, formatarTelefone, MENSAGENS_CLIENTE, paginaDeClientes, paginaDeCompras, type FichaDaCompra } from '../../../comum/regras/cliente'
+import { hojeEmSaoPaulo } from '../../../comum/regras/entrada'
+import { numeroFicha } from '../../../comum/regras/movimentos'
 import { juntarEndereco, separarEndereco } from '../../dados/endereco'
 import { FISCAL_CLIENTE_PADRAO } from '../../dados/fiscal'
-import type { Cliente } from '../base/tipos'
+import type { Cliente, Ficha } from '../base/tipos'
 import { cadastrarCliente, editarCliente, obterBase } from '../estado-demonstracao'
 
-export type OperacoesCliente = Pick<Contrato, 'obterCliente' | 'cadastrarCliente' | 'editarCliente'>
+export type OperacoesCliente = Pick<Contrato, 'obterCliente' | 'cadastrarCliente' | 'editarCliente' | 'listarClientes' | 'listarComprasDoCliente'>
 
 const SEM_DOCUMENTO = 'Sem documento'
 const SEM_TELEFONE = 'Sem telefone'
 const digitos = (texto: string) => texto.replace(/\D/g, '')
-
 
 /** Da base para o contrato; na base o id é o próprio código. */
 function paraCliente(c: Cliente): ClienteContrato {
@@ -42,6 +43,17 @@ function paraCliente(c: Cliente): ClienteContrato {
       tipoCliente: c.fiscal?.tipoCliente ?? null,
       inscricaoEstadual: ou(c.fiscal?.inscricaoEstadual),
     },
+  }
+}
+
+/** A ficha da base como a conta da notinha e o histórico leem; a base guarda o dia e o horário de São Paulo. */
+function paraCompra(f: Ficha): FichaDaCompra {
+  const validos = f.pagamentos.filter((p) => !p.estorno)
+  return {
+    id: f.id, numero: numeroFicha(f.id), registradoEm: new Date(`${f.data}T${f.horario}:00-03:00`).toISOString(),
+    total: f.total, forma: f.forma, vencimento: f.vencimento ?? null, cancelada: Boolean(f.cancelamento),
+    pago: validos.reduce((soma, p) => soma + p.valor, 0),
+    rotulo: f.forma === 'notinha' || f.forma === 'misto' ? null : f.pagamentos[0]?.rotulo ?? null,
   }
 }
 
@@ -99,6 +111,34 @@ export function criarClientesDaBase(): OperacoesCliente {
       if ('ok' in dados) return dados
       editarCliente(atual.id, paraBase(dados))
       return devolver(atual.id)
+    },
+
+    async listarClientes(filtro, busca, pagina, porPagina) {
+      const problema = conferirPedidoDeClientes(filtro, busca, pagina, porPagina)
+      if (problema) return problema
+      const { clientes, fichas } = obterBase()
+      const hoje = hojeEmSaoPaulo()
+      const doCliente = new Map<string, Ficha[]>()
+      for (const f of fichas) if (f.clienteId) doCliente.set(f.clienteId, [...(doCliente.get(f.clienteId) ?? []), f])
+      const todos = clientes.map((c) => {
+        const { id, codigo, nome, documento, telefone } = paraCliente(c)
+        const suas = doCliente.get(c.id) ?? []
+        return {
+          id, codigo, nome, documento, telefone,
+          compras: suas.filter((f) => !f.cancelamento).length,
+          notinhas: suas.filter((f) => f.forma === 'notinha').map(paraCompra),
+        }
+      })
+      const semIdentificacao = fichas.filter((f) => f.clienteId === null && f.data === hoje).length
+      return ok(paginaDeClientes(todos, filtro, busca, pagina, porPagina, semIdentificacao, hoje))
+    },
+
+    async listarComprasDoCliente(clienteId, pagina, porPagina) {
+      const problema = conferirPedidoDeCompras(clienteId, pagina, porPagina)
+      if (problema) return problema
+      if (!buscar(clienteId)) return falha('nao-encontrado', MENSAGENS_CLIENTE.naoEncontrado)
+      const suas = obterBase().fichas.filter((f) => f.clienteId === clienteId).map(paraCompra)
+      return ok(paginaDeCompras(suas, pagina, porPagina, hojeEmSaoPaulo()))
     },
   }
 }

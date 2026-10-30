@@ -31,6 +31,19 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-30` — Lista de clientes (1.0, tela 3.2)
+
+- **Contrato:** `listarClientes(filtro, busca, pagina, porPagina)`, paginada no
+  back, com `LinhaCliente` (código, nome, documento e telefone só com números,
+  compras, em aberto, situação), os cartões em `resumo` e as vendas sem
+  identificação de hoje. Filtro e situação viram `'a-vencer'` e `'em-atraso'`
+  (antes `'pendente'` e `'vencido'`). E `listarComprasDoCliente(id, pagina,
+  porPagina)`, com `CompraCliente` (situação `'paga'`, `'a-vencer'`,
+  `'em-atraso'` ou `'cancelada'`); é a mesma que o histórico da 3.3 vai usar.
+- **Na tela:** sai a descrição embaixo do nome ("Cliente frequente"). A lista
+  mostra carregando e falha; a busca espera a pessoa parar de digitar; as três
+  compras da linha carregam ao abrir.
+
 ### `2026-10-30` — Cadastro de cliente (1.0, tela 3.1)
 
 - **Contrato:** `obterCliente`, `cadastrarCliente`, `editarCliente`, com

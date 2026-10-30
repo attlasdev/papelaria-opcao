@@ -211,6 +211,67 @@ export type Cliente = DadosCliente & {
   codigo: string
 }
 
+/**
+ * Situacao do cliente pelas notinhas em aberto (`R-CLIENTE-01`): quem tem uma
+ * em atraso e "em atraso", mesmo com outra a vencer.
+ */
+export type SituacaoCliente = 'em-dia' | 'a-vencer' | 'em-atraso'
+export type FiltroClientes = 'todos' | 'a-vencer' | 'em-atraso'
+
+/** Uma linha da lista de Clientes (tela 3.2). Dinheiro em centavos. */
+export type LinhaCliente = {
+  id: string
+  codigo: string
+  nome: string
+  documento: string | null
+  telefone: string | null
+  /** Fichas do cliente, sem as canceladas. */
+  compras: number
+  /** Soma do que falta pagar nas notinhas. */
+  emAberto: number
+  situacao: SituacaoCliente
+}
+
+export type PaginaClientes = {
+  clientes: LinhaCliente[]
+  /** Quantos clientes o filtro e a busca acham, somando todas as paginas. */
+  total: number
+  /** A pagina devolvida: a pedida, ou a ultima se a pedida passou do fim. */
+  pagina: number
+  /** Os cartoes e as abas: contam clientes, sem filtro nem busca. */
+  resumo: { clientes: number; aVencer: number; emAtraso: number }
+  /** Fichas sem cliente feitas hoje (dia de Sao Paulo), canceladas inclusive. */
+  vendasSemIdentificacaoHoje: number
+}
+
+export type FormaFicha = 'dinheiro' | 'pix' | 'cartao' | 'misto' | 'notinha'
+/** A vista e sempre `paga`; a notinha, pelo que falta e pelo vencimento. */
+export type SituacaoCompra = 'paga' | 'a-vencer' | 'em-atraso' | 'cancelada'
+
+/** Uma ficha no historico do cliente. Dinheiro em centavos. */
+export type CompraCliente = {
+  id: string
+  /** O numero da ficha como a loja le, ex. "1043". */
+  numero: string
+  /** ISO 8601, UTC. */
+  registradoEm: string
+  total: number
+  forma: FormaFicha
+  /** Pagamento num meio so: como ele foi registrado, ex. "Cartão crédito Visa". */
+  rotulo: string | null
+  situacao: SituacaoCompra
+  emAberto: number
+}
+
+export type PaginaCompras = {
+  compras: CompraCliente[]
+  /** Quantas fichas o cliente tem, canceladas inclusive. */
+  total: number
+  pagina: number
+  /** Sem as canceladas: o que a tela chama de compras. */
+  resumo: { compras: number; totalComprado: number }
+}
+
 /** Como o produto e vendido, e portanto contado no estoque. */
 export type UnidadeProduto = 'un' | 'pct' | 'cx'
 
@@ -438,6 +499,19 @@ export type Contrato = {
   cadastrarCliente(dados: DadosCliente): Promise<Resultado<Cliente>>
   /** Duas maquinas editando o mesmo cliente: vale a ultima (e cadastro). */
   editarCliente(id: string, dados: DadosCliente): Promise<Resultado<Cliente>>
+  /**
+   * A lista de Clientes (tela 3.2), paginada no back, em ordem alfabetica.
+   * `busca` ignora acento e maiuscula e procura no codigo e no nome; so com
+   * numeros (e "CPF"/"CNPJ" na frente), no documento e no telefone, com ou sem
+   * pontuacao (`R-CLIENTE-03`). `porPagina` de 1 a 100, senao `validacao`.
+   */
+  listarClientes(filtro: FiltroClientes, busca: string, pagina: number, porPagina: number): Promise<Resultado<PaginaClientes>>
+  /**
+   * As fichas do cliente, da mais nova para a mais velha: as tres recentes da
+   * lista (3.2) e o historico do detalhe (3.3). Cliente que nao existe,
+   * `nao-encontrado`.
+   */
+  listarComprasDoCliente(clienteId: string, pagina: number, porPagina: number): Promise<Resultado<PaginaCompras>>
 
   // Produto (1.0, tela 2.1) --------------------------------------------------
   // Dado fora do formato, `validacao` com a mensagem do primeiro campo errado;
