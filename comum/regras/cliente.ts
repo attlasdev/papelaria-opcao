@@ -55,6 +55,14 @@ export function documentoValido(digitos: string) {
 /** "MG" → "Minas Gerais"; sigla desconhecida volta como veio. */
 export const nomeDoEstado = (uf: string | null) => ESTADOS.find(([sigla]) => sigla === uf)?.[1] ?? uf ?? ''
 
+/** Os números com a pontuação de sempre: CPF, CNPJ e telefone com DDD. */
+export function formatarDocumento(d: string) {
+  return d.length === 11
+    ? d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+    : d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
+}
+export const formatarTelefone = (t: string) => t.replace(/(\d{2})(\d{4,5})(\d{4})/, '($1) $2-$3')
+
 /** "CLI-0104": o número que o banco deu, como a loja lê. */
 export const codigoCliente = (numero: number) => `CLI-${String(numero).padStart(4, '0')}`
 

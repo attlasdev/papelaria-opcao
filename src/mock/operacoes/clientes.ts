@@ -8,7 +8,7 @@
  * as telas delas; aqui ele vira os campos do contrato, iguais aos do SQLite.
  */
 import { falha, ok, type Cliente as ClienteContrato, type Contrato, type DadosCliente, type Resultado } from '../../../comum/contrato'
-import { clienteValido, MENSAGENS_CLIENTE } from '../../../comum/regras/cliente'
+import { clienteValido, formatarDocumento, formatarTelefone, MENSAGENS_CLIENTE } from '../../../comum/regras/cliente'
 import { juntarEndereco, separarEndereco } from '../../dados/endereco'
 import { FISCAL_CLIENTE_PADRAO } from '../../dados/fiscal'
 import type { Cliente } from '../base/tipos'
@@ -20,12 +20,6 @@ const SEM_DOCUMENTO = 'Sem documento'
 const SEM_TELEFONE = 'Sem telefone'
 const digitos = (texto: string) => texto.replace(/\D/g, '')
 
-function mascararDocumento(d: string) {
-  return d.length === 11
-    ? d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
-    : d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
-}
-const mascararTelefone = (t: string) => t.replace(/(\d{2})(\d{4,5})(\d{4})/, '($1) $2-$3')
 
 /** Da base para o contrato; na base o id é o próprio código. */
 function paraCliente(c: Cliente): ClienteContrato {
@@ -56,8 +50,8 @@ function paraBase(d: DadosCliente) {
   const cidade = d.cidade && d.uf ? `${d.cidade}/${d.uf}` : d.cidade ?? ''
   return {
     nome: d.nome,
-    documento: d.documento ? mascararDocumento(d.documento) : SEM_DOCUMENTO,
-    telefone: d.telefone ? mascararTelefone(d.telefone) : SEM_TELEFONE,
+    documento: d.documento ? formatarDocumento(d.documento) : SEM_DOCUMENTO,
+    telefone: d.telefone ? formatarTelefone(d.telefone) : SEM_TELEFONE,
     endereco: juntarEndereco(d.rua ?? '', d.numero ?? '', d.bairro ?? '', cidade),
     enderecoPartes: { rua: d.rua ?? '', numero: d.numero ?? '', bairro: d.bairro ?? '', cidade: d.cidade ?? '', uf: d.uf ?? '' },
     fiscal: {
