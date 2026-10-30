@@ -1,11 +1,13 @@
-import { useId, useState, type FormEvent } from 'react'
+import { useEffect, useId, useState, type FormEvent } from 'react'
+import type { Cliente, DadosCliente } from '../../../comum/contrato'
+import { CIDADE_PADRAO, conferirCliente, ESTADOS, formatarDocumento, formatarTelefone, MENSAGENS_CLIENTE, UF_PADRAO, type CampoCliente } from '../../../comum/regras/cliente'
 import { Botao } from '../../componentes/botao/Botao'
 import { Campo, Selecao } from '../../componentes/campo/Campo'
-import { conferirCep, FISCAL_CLIENTE_PADRAO, limparFiscalCliente, TIPOS_CLIENTE, TIPOS_CONTRIBUINTE } from '../../dados/fiscal'
+import { api } from '../../dados/api'
+import { FISCAL_CLIENTE_PADRAO, TIPOS_CLIENTE, TIPOS_CONTRIBUINTE } from '../../dados/fiscal'
+import { tituloFalha } from '../../falhas'
 import { funcoes } from '../../funcoes'
 import { Modal } from '../../componentes/modal/Modal'
-import { cadastrarCliente, documentoJaCadastrado, editarCliente, useEstadoDemonstracao, type Cliente } from '../../mock/estado-demonstracao'
-import { juntarEndereco, separarEndereco } from '../../dados/endereco'
 import './janela-cliente.css'
 
 type Props = {
@@ -21,97 +23,118 @@ type Props = {
   aoFechar: () => void
 }
 
-const SEM_DOCUMENTO = 'Sem documento'
-const SEM_TELEFONE = 'Sem telefone'
+/** A lista do campo Estado: nome completo, a sigla vai para o banco. */
+const OPCOES_ESTADO = [{ valor: '', rotulo: 'Não informado' }, ...ESTADOS.map(([sigla, nome]) => ({ valor: sigla, rotulo: nome }))]
+
+type Carga = { fase: 'carregando' } | { fase: 'erro'; mensagem: string } | { fase: 'pronto'; cliente: Cliente | null }
 
 /**
  * O formulário de cliente, um só para cadastrar e editar, em Clientes e na nova
- * ficha. Só o nome é obrigatório; documento repetido é barrado.
+ * ficha (`R-CLIENTE-04`). Só o nome é obrigatório; documento e telefone são
+ * conferidos (`R-CLIENTE-09`, `10`) e o repetido é o back que barra. Cliente
+ * novo já vem com Simonésia / Minas Gerais.
  */
 export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo, textoSalvar, aoSalvar, aoFechar }: Props) {
-  const idFormulario = useId()
-  const { clientes } = useEstadoDemonstracao()
-  const atual = clienteId ? clientes.find((c) => c.id === clienteId) : undefined
-  const endereco = separarEndereco(atual?.endereco ?? '')
-  const fiscal = atual?.fiscal ?? FISCAL_CLIENTE_PADRAO
-  const [erros, setErros] = useState<Partial<Record<'nome' | 'documento' | 'cep', string>>>({})
+  const [carga, setCarga] = useState<Carga>(clienteId ? { fase: 'carregando' } : { fase: 'pronto', cliente: null })
+  const [tentativa, setTentativa] = useState(0)
 
-  function limparErro(campo: 'nome' | 'documento' | 'cep') {
-    setErros((atual) => ({ ...atual, [campo]: undefined }))
+  useEffect(() => {
+    if (!clienteId) return
+    let vivo = true
+    void api().obterCliente(clienteId).then((r) => {
+      if (!vivo) return
+      setCarga(r.ok ? { fase: 'pronto', cliente: r.dado } : { fase: 'erro', mensagem: r.causa === 'nao-encontrado' ? MENSAGENS_CLIENTE.naoEncontrado : `${tituloFalha(r.causa)} ${r.erro}` })
+    })
+    return () => { vivo = false }
+  }, [clienteId, tentativa])
+
+  if (carga.fase !== 'pronto') {
+    return (
+      <Modal
+        variante={variante}
+        estreito={variante === 'central'}
+        titulo="Editar dados do cliente"
+        aoFechar={aoFechar}
+        rodape={<>
+          <Botao variante="fantasma" onClick={aoFechar}>Fechar</Botao>
+          {carga.fase === 'erro' && <Botao variante="primario" onClick={() => { setCarga({ fase: 'carregando' }); setTentativa((n) => n + 1) }}>Tentar de novo</Botao>}
+        </>}
+      >
+        <p className={carga.fase === 'erro' ? 'janela-cliente__aviso' : 'janela-cliente__carregando'} role={carga.fase === 'erro' ? 'alert' : 'status'}>
+          {carga.fase === 'erro' ? carga.mensagem : 'Carregando o cliente…'}
+        </p>
+      </Modal>
+    )
+  }
+  return <Formulario atual={carga.cliente} {...{ nomeInicial, variante, subtitulo, textoSalvar, aoSalvar, aoFechar }} />
+}
+
+function Formulario({ atual, nomeInicial, variante, subtitulo, textoSalvar, aoSalvar, aoFechar }: Omit<Props, 'clienteId'> & { atual: Cliente | null; nomeInicial: string }) {
+  const idFormulario = useId()
+  const [erros, setErros] = useState<Partial<Record<CampoCliente, string>>>({})
+  const [erroSalvar, setErroSalvar] = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const fiscal = atual?.fiscal ?? { tipoContribuinte: null, tipoCliente: null, inscricaoEstadual: null }
+
+  function limparErro(campo: CampoCliente) {
+    setErros((antes) => ({ ...antes, [campo]: undefined }))
+    setErroSalvar('')
   }
 
-  function salvar(evento: FormEvent<HTMLFormElement>) {
+  async function salvar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
+    if (enviando) return
     const formulario = evento.currentTarget
     const dados = new FormData(formulario)
-    const campo = (nome: string) => String(dados.get(nome) ?? '').trim()
-    const nome = campo('nome')
-    const documentoDigitado = campo('documento')
-    const falhas: typeof erros = {}
-    if (!nome) falhas.nome = 'Informe o nome do cliente.'
-    if (documentoJaCadastrado(clientes, documentoDigitado, clienteId)) {
-      falhas.documento = 'Este documento já está cadastrado. Busque o cliente em vez de cadastrar de novo.'
-    }
+    const campo = (nome: string) => String(dados.get(nome) ?? '')
     // Com o bloco "Para nota fiscal" oculto, o que o cliente já tinha nele fica.
     const fiscalVisivel = funcoes.dadosFiscaisCliente
-    const dadosFiscais = limparFiscalCliente({
-      tipoContribuinte: fiscalVisivel ? campo('tipoContribuinte') : fiscal.tipoContribuinte,
-      tipoCliente: fiscalVisivel ? campo('tipoCliente') : fiscal.tipoCliente,
-      inscricaoEstadual: fiscalVisivel ? campo('inscricaoEstadual') : fiscal.inscricaoEstadual ?? '',
-      cep: campo('cep'), complemento: campo('complemento'),
-    })
-    const erroCep = conferirCep(dadosFiscais.cep)
-    if (erroCep) falhas.cep = erroCep
-    const primeiro = (['nome', 'documento', 'cep'] as const).find((chave) => falhas[chave])
+    const cadastro: DadosCliente = {
+      nome: campo('nome'), documento: campo('documento'), telefone: campo('telefone'),
+      rua: campo('rua'), numero: campo('numero'), complemento: campo('complemento'), bairro: campo('bairro'),
+      cidade: campo('cidade'), uf: campo('uf'), cep: campo('cep'),
+      fiscal: fiscalVisivel
+        ? { tipoContribuinte: campo('tipoContribuinte') as DadosCliente['fiscal']['tipoContribuinte'], tipoCliente: campo('tipoCliente') as DadosCliente['fiscal']['tipoCliente'], inscricaoEstadual: campo('inscricaoEstadual') }
+        : fiscal,
+    }
+    // As mesmas regras do back (`comum/regras/cliente.ts`): aponta o campo antes de mandar.
+    const falhas = conferirCliente(cadastro).erros
+    const primeiro = (['nome', 'documento', 'telefone', 'uf', 'cep'] as const).find((chave) => falhas[chave])
     if (primeiro) {
       setErros(falhas)
       requestAnimationFrame(() => {
-        const alvo = formulario.querySelector<HTMLInputElement>(`[name="${primeiro}"]`)
+        const alvo = formulario.querySelector<HTMLElement>(`[name="${primeiro}"]`)
         alvo?.scrollIntoView({ block: 'center' })
         alvo?.focus({ preventScroll: true })
       })
       return
     }
-    const cadastro = {
-      nome,
-      documento: documentoDigitado || SEM_DOCUMENTO,
-      telefone: campo('telefone') || SEM_TELEFONE,
-      endereco: juntarEndereco(campo('rua'), campo('numero'), campo('bairro'), campo('cidade')),
-      fiscal: dadosFiscais,
-    }
-    if (atual) {
-      if (!editarCliente(atual.id, cadastro)) {
-        setErros({ documento: 'Este documento já está cadastrado.' })
-        return
-      }
-      aoSalvar({ ...atual, ...cadastro })
-    } else {
-      const id = cadastrarCliente(cadastro)
-      if (!id) {
-        setErros({ documento: 'Este documento já está cadastrado.' })
-        return
-      }
-      aoSalvar({ ...cadastro, id, descricao: 'Cadastro novo', desde: '' })
-    }
+    setEnviando(true)
+    const r = atual ? await api().editarCliente(atual.id, cadastro) : await api().cadastrarCliente(cadastro)
+    setEnviando(false)
+    if (r.ok) return aoSalvar(r.dado)
+    // Documento repetido aponta o campo dele; o resto vai para o rodapé.
+    if (r.causa === 'validacao' && r.erro.startsWith('Este documento')) setErros({ documento: r.erro })
+    else setErroSalvar(r.causa === 'validacao' ? r.erro : `${tituloFalha(r.causa)} ${r.erro}`)
   }
 
-  const vazioSe = (valor: string | undefined, marcador: string) => (valor && valor !== marcador ? valor : '')
+  const aviso = erroSalvar || Object.values(erros).find(Boolean)
 
   return (
     <Modal
       variante={variante}
       estreito={variante === 'central'}
       titulo={atual ? 'Editar dados do cliente' : 'Cadastrar cliente'}
-      subtitulo={subtitulo ?? (atual ? `${atual.nome} · ${atual.id}` : 'Só o nome é obrigatório.')}
+      subtitulo={subtitulo ?? (atual ? `${atual.nome} · ${atual.codigo}` : 'Só o nome é obrigatório.')}
       aoFechar={aoFechar}
       rodape={
         <>
-          {Object.values(erros).find(Boolean) && <span className="janela-cliente__aviso" role="alert">{Object.values(erros).find(Boolean)}</span>}
+          {aviso && <span className="janela-cliente__aviso" role="alert">{aviso}</span>}
           <Botao variante="fantasma" onClick={aoFechar}>
             Cancelar
           </Botao>
-          <Botao type="submit" form={idFormulario} variante="primario" icone="check">
-            {textoSalvar ?? (atual ? 'Salvar alterações' : 'Salvar cliente')}
+          <Botao type="submit" form={idFormulario} variante="primario" icone="check" disabled={enviando}>
+            {enviando ? 'Salvando…' : textoSalvar ?? (atual ? 'Salvar alterações' : 'Salvar cliente')}
           </Botao>
         </>
       }
@@ -136,13 +159,24 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
               rotulo="CPF ou CNPJ"
               name="documento"
               opcional
-              defaultValue={vazioSe(atual?.documento, SEM_DOCUMENTO)}
+              inputMode="numeric"
+              defaultValue={atual?.documento ? formatarDocumento(atual.documento) : ''}
               placeholder="000.000.000-00"
               erro={Boolean(erros.documento)}
               ajuda={erros.documento}
               onChange={() => limparErro('documento')}
             />
-            <Campo rotulo="Celular / WhatsApp" name="telefone" type="tel" opcional defaultValue={vazioSe(atual?.telefone, SEM_TELEFONE)} placeholder="(11) 90000-0000" />
+            <Campo
+              rotulo="Celular / WhatsApp"
+              name="telefone"
+              type="tel"
+              opcional
+              defaultValue={atual?.telefone ? formatarTelefone(atual.telefone) : ''}
+              placeholder="(33) 90000-0000"
+              erro={Boolean(erros.telefone)}
+              ajuda={erros.telefone ?? 'Com DDD.'}
+              onChange={() => limparErro('telefone')}
+            />
           </div>
         </fieldset>
 
@@ -151,12 +185,21 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
             Endereço <span className="janela-cliente__opcional">(opcional)</span>
           </legend>
           <div className="janela-cliente__campos janela-cliente__campos--endereco">
-            <Campo rotulo="Rua / avenida" name="rua" defaultValue={endereco.rua} placeholder="Ex.: Rua das Flores" />
-            <Campo rotulo="Número" name="numero" defaultValue={endereco.numero} placeholder="142" />
-            <Campo rotulo="Bairro" name="bairro" defaultValue={endereco.bairro} placeholder="Ex.: Centro" />
-            <Campo rotulo="Cidade / UF" name="cidade" defaultValue={endereco.cidade} placeholder="Ex.: São Paulo/SP" />
-            <Campo rotulo="Complemento" name="complemento" defaultValue={fiscal.complemento} placeholder="Ex.: Sala 3" />
-            <Campo rotulo="CEP" name="cep" inputMode="numeric" defaultValue={fiscal.cep} placeholder="00000-000" erro={Boolean(erros.cep)} ajuda={erros.cep} onChange={() => limparErro('cep')} />
+            <Campo rotulo="Rua / avenida" name="rua" defaultValue={atual?.rua ?? ''} placeholder="Ex.: Rua das Flores" />
+            <Campo rotulo="Número" name="numero" defaultValue={atual?.numero ?? ''} placeholder="142" />
+            <Campo rotulo="Bairro" name="bairro" defaultValue={atual?.bairro ?? ''} placeholder="Ex.: Centro" />
+            <Campo rotulo="Complemento" name="complemento" defaultValue={atual?.complemento ?? ''} placeholder="Ex.: Sala 3" />
+            <Campo rotulo="Cidade" name="cidade" defaultValue={atual ? atual.cidade ?? '' : CIDADE_PADRAO} placeholder="Ex.: Simonésia" />
+            <Selecao
+              rotulo="Estado"
+              name="uf"
+              opcoes={OPCOES_ESTADO}
+              valorInicial={atual ? atual.uf ?? '' : UF_PADRAO}
+              erro={Boolean(erros.uf)}
+              ajuda={erros.uf}
+              aoMudar={() => limparErro('uf')}
+            />
+            <Campo rotulo="CEP" name="cep" inputMode="numeric" defaultValue={atual?.cep ?? ''} placeholder="00000-000" erro={Boolean(erros.cep)} ajuda={erros.cep} onChange={() => limparErro('cep')} />
           </div>
         </fieldset>
 
@@ -165,9 +208,9 @@ export function JanelaCliente({ clienteId, nomeInicial = '', variante, subtitulo
             Para nota fiscal <span className="janela-cliente__opcional">(só para nota com dados do cliente, como empresa ou prefeitura)</span>
           </legend>
           <div className="janela-cliente__campos">
-            <Selecao rotulo="Tipo de contribuinte" name="tipoContribuinte" opcoes={TIPOS_CONTRIBUINTE} valorInicial={fiscal.tipoContribuinte} />
-            <Selecao rotulo="Tipo de cliente" name="tipoCliente" opcoes={TIPOS_CLIENTE} valorInicial={fiscal.tipoCliente} />
-            <Campo rotulo="Inscrição estadual" name="inscricaoEstadual" opcional inputMode="numeric" defaultValue={fiscal.inscricaoEstadual} />
+            <Selecao rotulo="Tipo de contribuinte" name="tipoContribuinte" opcoes={TIPOS_CONTRIBUINTE} valorInicial={fiscal.tipoContribuinte ?? FISCAL_CLIENTE_PADRAO.tipoContribuinte} />
+            <Selecao rotulo="Tipo de cliente" name="tipoCliente" opcoes={TIPOS_CLIENTE} valorInicial={fiscal.tipoCliente ?? FISCAL_CLIENTE_PADRAO.tipoCliente} />
+            <Campo rotulo="Inscrição estadual" name="inscricaoEstadual" opcional inputMode="numeric" defaultValue={fiscal.inscricaoEstadual ?? ''} />
           </div>
         </fieldset>}
       </form>

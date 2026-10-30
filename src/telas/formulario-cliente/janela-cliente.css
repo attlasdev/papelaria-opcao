@@ -31,10 +31,10 @@
 }
 
 .janela-cliente__campos--endereco > :nth-child(1) { grid-column: span 3; }
+/* Bairro e complemento meio a meio; depois cidade larga, estado e CEP. */
 .janela-cliente__campos--endereco > :nth-child(3),
-.janela-cliente__campos--endereco > :nth-child(4) { grid-column: span 2; }
-/* Complemento largo e CEP estreito, como rua e número */
-.janela-cliente__campos--endereco > :nth-child(5) { grid-column: span 3; }
+.janela-cliente__campos--endereco > :nth-child(4),
+.janela-cliente__campos--endereco > :nth-child(5) { grid-column: span 2; }
 
 .janela-cliente__largo {
   grid-column: 1 / -1;
@@ -54,3 +54,5 @@
 
   .janela-cliente__campos--endereco > :nth-child(n) { grid-column: auto; }
 }
+
+.janela-cliente__carregando { color: var(--color-texto-suave); }
