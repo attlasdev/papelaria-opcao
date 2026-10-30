@@ -74,6 +74,9 @@ export function RegistrarEntrada() {
   const [bipe, setBipe] = useState('')
   const campoProduto = useRef<HTMLInputElement>(null)
   const [erroBipe, setErroBipe] = useState<string | null>(null)
+  // Código digitado que parece código de barras e não existe: pode virar produto
+  // novo, como se tivesse sido lido (etiqueta que o leitor não pegou).
+  const [codigoNovo, setCodigoNovo] = useState<string | null>(null)
   const [sugestoesAbertas, setSugestoesAbertas] = useState(false)
   const [indiceAtivo, setIndiceAtivo] = useState(-1)
   // As sugestões vêm do back (o catálogo passa de mil itens), depois de uma pausa na digitação.
@@ -136,6 +139,8 @@ export function RegistrarEntrada() {
     if (sugestoes.length === 1) { incluirProduto(sugestoes[0]); return }
     setSugestoesAbertas(sugestoes.length > 0)
     setErroBipe(sugestoes.length ? 'Escolha um produto da lista para adicionar.' : `Produto “${consulta}” não encontrado no catálogo.`)
+    // Só o que parece código de barras (8 a 14 números): nome digitado errado não vira produto.
+    setCodigoNovo(!sugestoes.length && /^\d{8,14}$/.test(consulta) ? consulta : null)
   }
 
   function tecladoBusca(evento: KeyboardEvent<HTMLInputElement>) {
@@ -157,6 +162,7 @@ export function RegistrarEntrada() {
 
   async function lido(codigo: string) {
     setTentouConfirmar(false)
+    setCodigoNovo(null)
     const achado = await procurar(codigo)
     if (achado && !achado.ativo) {
       // Para a leitura: o aviso fica no lugar da busca, onde ela vê.
@@ -309,7 +315,7 @@ export function RegistrarEntrada() {
               <input
                 ref={campoProduto}
                 value={bipe}
-                onChange={(e) => { setBipe(e.target.value); setIndiceAtivo(-1); setSugestoesAbertas(Boolean(e.target.value.trim())); setErroBipe(null) }}
+                onChange={(e) => { setBipe(e.target.value); setIndiceAtivo(-1); setSugestoesAbertas(Boolean(e.target.value.trim())); setErroBipe(null); setCodigoNovo(null) }}
                 onFocus={() => setSugestoesAbertas(Boolean(bipe.trim()))}
                 onKeyDown={tecladoBusca}
                 placeholder="Bipe o código ou busque pelo nome..."
@@ -347,7 +353,12 @@ export function RegistrarEntrada() {
             <Botao icone="codigo-barras" onClick={() => setLendo(true)}>
               Ler códigos
             </Botao>
-            {erroBipe && <span className="registrar-entrada__erro">{erroBipe}</span>}
+            {erroBipe && (
+              <span className="registrar-entrada__erro">
+                {erroBipe}
+                {codigoNovo && <Botao tamanho="pequeno" icone="mais" onClick={() => void lido(codigoNovo)}>Cadastrar como produto novo</Botao>}
+              </span>
+            )}
           </form>
         )}
       >

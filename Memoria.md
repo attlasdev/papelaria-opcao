@@ -518,6 +518,11 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   criado ao confirmar, na mesma transação da entrada. Cancelou, não sobra
   produto. Depois de confirmar, abrem as Movimentações (conferência da entrega
   inteira; a Entrada rápida volta ao Estoque).
+- Nota: Código **digitado** na Registrar entrada que não existe e parece código de
+  barras (8 a 14 números) oferece "Cadastrar como produto novo", que o leva aos
+  bipados como se tivesse sido lido (`2026-10-30`, Agostinho): etiqueta que o
+  leitor não pega não deixa a funcionária sem saída. Nome digitado errado não
+  vira produto.
 - Nota: Entrada rápida confirmada volta ao Estoque, com o saldo novo na linha
   (`2026-10-29`): quem repõe faz vários produtos em sequência. O histórico fica
   no ícone da linha.

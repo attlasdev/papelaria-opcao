@@ -83,6 +83,10 @@
 .registrar-entrada__sem-resultados { padding: var(--espaco-3); }
 
 .registrar-entrada__erro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-3);
   flex-basis: 100%;
   font-size: var(--text-rotulo);
   color: var(--color-saida);
