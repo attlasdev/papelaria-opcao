@@ -11,6 +11,7 @@ import { produtosDaBase as produtos } from './operacoes/produtos'
 import { entradasDaBase as entradas } from './operacoes/entradas'
 import { ajustesDaBase as ajustes } from './operacoes/ajustes'
 import { movimentosDaBase as movimentos } from './operacoes/movimentos'
+import { clientesDaBase as clientes } from './operacoes/clientes'
 import { marcarMockInstalado } from './instalado'
 
 /** Mesmos dados inventados de `recursos/comprovante.exemplo.json`. */
@@ -116,6 +117,9 @@ const mock: Contrato = {
   ajustarEstoque: (ajuste, quem) => simularAssincrono(() => ajustes.ajustarEstoque(ajuste, quem)),
   conferirAjustes: (movimentoIds, dona) => simularAssincrono(() => ajustes.conferirAjustes(movimentoIds, dona)),
   listarMovimentosEstoque: (filtro, pagina, porPagina) => simularAssincrono(() => movimentos.listarMovimentosEstoque(filtro, pagina, porPagina)),
+  obterCliente: (id) => simularAssincrono(() => clientes.obterCliente(id)),
+  cadastrarCliente: (dados) => simularAssincrono(() => clientes.cadastrarCliente(dados)),
+  editarCliente: (id, dados) => simularAssincrono(() => clientes.editarCliente(id, dados)),
 }
 
 window.api = mock

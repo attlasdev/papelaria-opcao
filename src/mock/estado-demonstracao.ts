@@ -92,7 +92,7 @@ export function proximoCodigoProduto(atual: Base) {
   return proximoCodigo(atual.produtos.map((p) => p.codigo), 'EST-')
 }
 
-type DadosCliente = { nome: string; documento: string; telefone: string; endereco: string; fiscal?: Cliente['fiscal'] }
+type DadosCliente = { nome: string; documento: string; telefone: string; endereco: string; enderecoPartes?: Cliente['enderecoPartes']; fiscal?: Cliente['fiscal'] }
 
 export function cadastrarCliente(dados: DadosCliente) {
   if (documentoJaCadastrado(base.clientes, dados.documento)) return null

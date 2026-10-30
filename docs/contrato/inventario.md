@@ -45,7 +45,7 @@ Financeiro/Caixa → Início, sino, busca e notas.
 | `clientes/Clientes` | lista de clientes com resumo (total, notinhas, situação) e as 3 compras recentes | — |
 | `detalhe-cliente/DetalheCliente` | cliente, resumo, histórico de fichas | — |
 | `detalhe-cliente/receber/ReceberNotinhas` | notinhas abertas do cliente | `receberNotinhas` |
-| `formulario-cliente/JanelaCliente` | lista de clientes (só para checar documento repetido) | `cadastrarCliente`, `editarCliente` |
+| `formulario-cliente/JanelaCliente` | o cliente (`obterCliente`); o documento repetido é o back que confere | `cadastrarCliente`, `editarCliente` — **no contrato desde `2026-10-30` (tela 3.1)** |
 | `vendas-sem-identificacao/VendasSemIdentificacao` | fichas sem cliente | — |
 
 Operações propostas: `listarClientes(filtro)`, `obterCliente(id)` (cadastro +

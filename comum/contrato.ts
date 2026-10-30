@@ -181,6 +181,36 @@ export type Operadores = {
  */
 export type Assinatura = { operadorId: string; pin: string }
 
+/**
+ * O cadastro do cliente (tela 3.1). Documento e telefone vao com a pontuacao
+ * que a pessoa digitou e voltam so com os digitos; vazio e `null`. O estado e a
+ * sigla ("MG"); a tela mostra o nome completo.
+ */
+export type DadosCliente = {
+  nome: string
+  documento: string | null
+  telefone: string | null
+  rua: string | null
+  numero: string | null
+  complemento: string | null
+  bairro: string | null
+  cidade: string | null
+  uf: string | null
+  cep: string | null
+  /** Para nota fiscal; oculto na tela, a edicao preserva o que havia. */
+  fiscal: {
+    tipoContribuinte: 'nao-contribuinte' | 'contribuinte' | 'isento' | null
+    tipoCliente: 'consumidor' | 'revenda' | null
+    inscricaoEstadual: string | null
+  }
+}
+
+export type Cliente = DadosCliente & {
+  id: string
+  /** O codigo de exibicao, ex. "CLI-0104". Nasce no banco ao salvar. */
+  codigo: string
+}
+
 /** Como o produto e vendido, e portanto contado no estoque. */
 export type UnidadeProduto = 'un' | 'pct' | 'cx'
 
@@ -397,6 +427,17 @@ export type Contrato = {
   ativarOperador(id: string, ativo: boolean, dona: Assinatura): Promise<Resultado<Operador>>
   /** PIN esquecido: a dona define outro, tambem o dela. */
   redefinirPin(id: string, pin: string, dona: Assinatura): Promise<Resultado<Operador>>
+
+  // Cliente (1.0, tela 3.1) ---------------------------------------------------
+  // Cadastro editavel: sem assinatura (`R-OPERADOR-02`). Dado fora do formato,
+  // `validacao` com a mensagem do primeiro campo errado: nome vazio, CPF/CNPJ
+  // invalido (`R-CLIENTE-09`) ou ja cadastrado (diz em qual cliente), telefone
+  // sem DDD (`R-CLIENTE-10`), CEP sem 8 numeros, estado desconhecido.
+
+  obterCliente(id: string): Promise<Resultado<Cliente>>
+  cadastrarCliente(dados: DadosCliente): Promise<Resultado<Cliente>>
+  /** Duas maquinas editando o mesmo cliente: vale a ultima (e cadastro). */
+  editarCliente(id: string, dados: DadosCliente): Promise<Resultado<Cliente>>
 
   // Produto (1.0, tela 2.1) --------------------------------------------------
   // Dado fora do formato, `validacao` com a mensagem do primeiro campo errado;

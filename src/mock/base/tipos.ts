@@ -14,6 +14,11 @@ export type Cliente = {
   documento: string // mascarado; "Sem documento" quando não informado
   telefone: string
   endereco: string // "Rua, nº - Bairro - Cidade/UF" ou ""
+  /**
+   * O mesmo endereço em partes (1.0, tela 3.1). A frase não diz qual parte
+   * falta ("Manhuaçu/MG" sozinha vira rua); quem lê pela 1.0 usa estas.
+   */
+  enderecoPartes?: { rua: string; numero: string; bairro: string; cidade: string; uf: string }
   descricao: string // "Cliente frequente"
   desde: string // YYYY-MM-DD
   /** Só para nota fiscal de produto (NF-e); venda de balcão não precisa. */

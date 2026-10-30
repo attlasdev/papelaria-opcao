@@ -413,8 +413,9 @@ com "Nota:". Item sem um dos dois quebra a suíte.
 - `R-CLIENTE-03` A busca de clientes aceita CPF/CNPJ e telefone com ou sem pontuação e nomes
   sem acento. A mesma regra vale no cabeçalho e na identificação da nova ficha.
 - `R-CLIENTE-04` Cadastro e edição num formulário só, em gaveta (ou janela na ficha): só o nome
-  é obrigatório; documento repetido é barrado; endereço gravado como
-  "Rua, nº - Bairro - Cidade/UF". Não se cadastra e-mail (decisão do Victor):
+  é obrigatório; documento repetido é barrado (pelos dígitos, no banco).
+  Endereço em partes: rua, número, complemento, bairro, cidade, estado e CEP
+  (na 0.1 era uma frase só, "Rua, nº - Bairro - Cidade/UF"). Não se cadastra e-mail (decisão do Victor):
   o contato é por telefone/WhatsApp, sem esse campo nos formulários ou detalhes.
 - `R-CLIENTE-05` Detalhe do cliente: cartões Total comprado, Notinhas em aberto (clicar recebe)
   e Ticket médio; histórico com filtros e "Receber" por linha.
@@ -428,6 +429,14 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   a divisão dos pagamentos no detalhe da ficha, como no Início.
 - `R-CLIENTE-08` O calendário de vendas sem identificação permite hoje e qualquer dia passado;
   datas futuras são bloqueadas também na digitação e na navegação por teclado.
+- `R-CLIENTE-09` **CPF/CNPJ válido** (`2026-10-30`): 11 ou 14 dígitos com os dígitos
+  verificadores certos; pontuação livre. Um dígito trocado faria o mesmo cliente
+  virar "outro", com as notinhas separadas.
+- `R-CLIENTE-10` **Telefone com DDD** (`2026-10-30`): 10 ou 11 dígitos (fixo ou celular),
+  pontuação livre; continua opcional. Sem DDD não serve para o WhatsApp.
+- Nota: Endereço com **"Cidade" e "Estado"** separados; o estado pelo nome completo,
+  numa lista, e o banco guarda a sigla. Cliente novo já vem com **Simonésia /
+  Minas Gerais** (`2026-10-30`, Agostinho).
 
 ### Boletos (`2026-10-23`)
 - `R-BOLETO-01` Pedido da dona: **só anotar** os boletos da loja e ser avisada perto do
@@ -727,6 +736,18 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-10-30` — Cadastro de cliente: documento e telefone conferidos
+Decisão do Agostinho, no percurso da tela 3.1. O back confere o CPF/CNPJ pelos
+dígitos verificadores (`R-CLIENTE-09`) e o telefone com DDD (`R-CLIENTE-10`);
+documento repetido é restrição do banco, pelos dígitos. O endereço passa a ter
+"Cidade" e "Estado" (nome completo na tela, sigla no banco), com Simonésia /
+Minas Gerais por padrão no cliente novo.
+
+**Por quê:** o documento é o que acha o cliente e impede o cadastro em dobro; um
+número que passa sem conferência cria um cliente duplicado. A cidade junto com
+a UF num campo só obrigaria o back a adivinhar a divisão. Descartado: "UF" no
+rótulo (pedido do Agostinho: "Estado", por extenso).
 
 ### `2026-10-30` — Sem importação de produtos por planilha na 1.0
 Decisão do Agostinho, com a loja de acordo. A tela 2.7 saiu do plano: a 0.1 em

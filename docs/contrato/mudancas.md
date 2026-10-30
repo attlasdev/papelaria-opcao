@@ -31,6 +31,16 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-30` — Cadastro de cliente (1.0, tela 3.1)
+
+- **Contrato:** `obterCliente`, `cadastrarCliente`, `editarCliente`, com
+  `DadosCliente` e `Cliente`. Documento e telefone vão com a pontuação digitada
+  e voltam só com os números; endereço em partes, estado pela sigla. Código
+  `CLI-0104` nasce no banco.
+- **Na tela:** "Cidade / UF" vira dois campos, **"Cidade"** e **"Estado"** (lista
+  com o nome completo); cliente novo já vem com Simonésia / Minas Gerais. CPF e
+  CNPJ inválidos e telefone sem DDD são recusados, com a mensagem no campo.
+
 ### `2026-10-30` — Movimentações do estoque (1.0, tela 2.6)
 
 - **Contrato:** `listarMovimentosEstoque(filtro, pagina, porPagina)`, com
