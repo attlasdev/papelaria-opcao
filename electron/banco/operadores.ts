@@ -34,7 +34,7 @@ const buscarNo = (banco: Banco, id: string) =>
 /**
  * Confere uma assinatura no banco (`R-OPERADOR-02`). Todas as operações do app
  * usam a mesma `tentativas`: os 5 erros contam juntos (`R-OPERADOR-04`).
- * Devolve o id de quem assinou, ou a falha.
+ * Devolve quem assinou (o id e se é a administradora), ou a falha.
  */
 export function criarConferencia(banco: () => Banco, tentativas: Tentativas) {
   return async (assinatura: Assinatura | null | undefined, opcoes: { soAdmin?: boolean } = {}) => {
@@ -42,7 +42,9 @@ export function criarConferencia(banco: () => Banco, tentativas: Tentativas) {
       const l = buscarNo(banco(), id)
       return l && { ativo: l.ativo === 1, admin: l.admin === 1, temPin: l.pin_hash !== null, confere: (pin: string) => pinConfere(pin, l.pin_hash) }
     }, tentativas, opcoes)
-    return problema ?? { id: assinatura!.operadorId }
+    if (problema) return problema
+    const pessoa = buscarNo(banco(), assinatura!.operadorId)!
+    return { id: pessoa.id, admin: pessoa.admin === 1 }
   }
 }
 

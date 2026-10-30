@@ -195,6 +195,8 @@ export type MovimentoEstoque = {
   depois: number
   motivo: string
   operador?: string
+  /** Gesto sensível (`R-OPERADOR-06`): a administradora que autorizou, se não foi ela que fez. */
+  autorizadoPor?: string
   /** Dados da compra recebida, sem alterar a data em que o lançamento foi feito. */
   entrada?: {
     recebidaEm: string // YYYY-MM-DD, data informada pelo operador

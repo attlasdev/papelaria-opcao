@@ -66,7 +66,6 @@ Os motivos se repetem em quatro tipos:
 | R-VENDA-06 | contrato | tela 4.1 (cada bloqueio vira recusa do back) |
 | R-VENDA-08 | tela | tela 2.1 / Fase 3 |
 | R-NOTINHA-04 | tela | Fase 3 |
-| R-CORRECAO-05 | contrato | tela 2.5 (ajuste) |
 | R-FICHA-01 | tela | Fase 3 |
 | R-CLIENTE-07 | contrato | tela 5.3 |
 | R-CLIENTE-08 | tela | Fase 3 |
@@ -82,7 +81,6 @@ Os motivos se repetem em quatro tipos:
 | R-INICIO-02 | tela | Fase 3 |
 | R-INICIO-03 | tela | Fase 3 |
 | R-INICIO-04 | contrato | tela 8.1 |
-| R-OPERADOR-06 | contrato | na tela de cada gesto sensível, depois de D3 |
 | R-LOGIN-01 | contrato | Fase 3 (abertura da 1.0 e aviso do backup no sino) |
 | R-UI-01 | revisão | — |
 | R-UI-02 | revisão | — |

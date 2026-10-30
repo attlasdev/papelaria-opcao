@@ -31,6 +31,16 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-30` — Ajustar estoque (1.0, tela 2.5)
+
+- **Contrato:** `ajustarEstoque(ajuste, quem, dona)`, com `Ajuste` (produto,
+  contagem, **saldo que a tela viu**, motivo). Primeiro gesto sensível: quem faz
+  assina e a dona autoriza; se é a dona, `dona` vai `null`. Falhas da
+  autorização vêm com "Administradora:" na frente; saldo que mudou é `conflito`.
+- **Na tela:** "Quem está fazendo?" ganha o passo "PIN da administradora" nos
+  gestos sensíveis; o ajuste confirmado volta ao Estoque (antes abria as
+  Movimentações).
+
 ### `2026-10-29` — Registrar entrada (1.0, tela 2.4)
 
 - **Contrato:** `ItemEntrada` ganha a forma `{ novo: DadosProduto, quantidade,

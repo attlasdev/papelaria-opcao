@@ -178,6 +178,21 @@ export function gravarEntrada(
   mudar({ ...base, produtos, movimentosEstoque: [...movimentos, ...base.movimentosEstoque] })
 }
 
+/**
+ * Ajuste de contagem (1.0, `ajustarEstoque`; quem confere é
+ * `src/mock/operacoes/ajustes.ts`): o saldo vira a contagem, e o movimento guarda
+ * quem fez e quem autorizou.
+ */
+export function gravarAjuste(codigo: string, contagem: number, motivo: string, operador: string, autorizadoPor?: string) {
+  const produto = base.produtos.find((p) => p.codigo === codigo)!
+  const movimento = { ...movimentoEstoque(produto, contagem, 'Ajuste', motivo), operador, ...(autorizadoPor ? { autorizadoPor } : {}) }
+  mudar({
+    ...base,
+    produtos: base.produtos.map((p) => (p.codigo === codigo ? { ...p, saldo: contagem } : p)),
+    movimentosEstoque: [movimento, ...base.movimentosEstoque],
+  })
+}
+
 export function alterarSaldo(codigo: string, depois: number, motivo: string, tipo: 'Entrada' | 'Ajuste', entrada?: MovimentoEstoque['entrada']) {
   const produto = base.produtos.find((p) => p.codigo === codigo)
   if (!produto || !Number.isInteger(depois) || depois < 0) return false

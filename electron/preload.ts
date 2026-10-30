@@ -41,6 +41,7 @@ const api: Contrato = {
   excluirProduto: (id, quem) => ipcRenderer.invoke('excluirProduto', id, quem),
   ativarProduto: (id, ativo) => ipcRenderer.invoke('ativarProduto', id, ativo),
   registrarEntrada: (entrega, quem) => ipcRenderer.invoke('registrarEntrada', entrega, quem),
+  ajustarEstoque: (ajuste, quem, dona) => ipcRenderer.invoke('ajustarEstoque', ajuste, quem, dona),
 }
 
 contextBridge.exposeInMainWorld('api', api)

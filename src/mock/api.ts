@@ -9,6 +9,7 @@ import { conferirComprovante, linhasComprovante, textoComprovante, type Loja } f
 import { operadoresDaBase as operadores } from './operacoes/operadores'
 import { produtosDaBase as produtos } from './operacoes/produtos'
 import { entradasDaBase as entradas } from './operacoes/entradas'
+import { ajustesDaBase as ajustes } from './operacoes/ajustes'
 import { marcarMockInstalado } from './instalado'
 
 /** Mesmos dados inventados de `recursos/comprovante.exemplo.json`. */
@@ -111,6 +112,7 @@ const mock: Contrato = {
   excluirProduto: (id, quem) => simularAssincrono(() => produtos.excluirProduto(id, quem)),
   ativarProduto: (id, ativo) => simularAssincrono(() => produtos.ativarProduto(id, ativo)),
   registrarEntrada: (entrega, quem) => simularAssincrono(() => entradas.registrarEntrada(entrega, quem)),
+  ajustarEstoque: (ajuste, quem, dona) => simularAssincrono(() => ajustes.ajustarEstoque(ajuste, quem, dona)),
 }
 
 window.api = mock

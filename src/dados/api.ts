@@ -3,6 +3,7 @@ import { mockInstalado } from '../mock/instalado'
 import { operadoresDaBase } from '../mock/operacoes/operadores'
 import { produtosDaBase } from '../mock/operacoes/produtos'
 import { entradasDaBase } from '../mock/operacoes/entradas'
+import { ajustesDaBase } from '../mock/operacoes/ajustes'
 
 /**
  * Por onde as telas migradas para a 1.0 chamam o contrato, durante a Fase 2.
@@ -21,4 +22,4 @@ import { entradasDaBase } from '../mock/operacoes/entradas'
  * Função, não constante: no navegador o mock só preenche `window.api` depois
  * que os módulos das telas já foram carregados.
  */
-export const api = (): Contrato => (mockInstalado() ? window.api : { ...window.api, ...operadoresDaBase, ...produtosDaBase, ...entradasDaBase })
+export const api = (): Contrato => (mockInstalado() ? window.api : { ...window.api, ...operadoresDaBase, ...produtosDaBase, ...entradasDaBase, ...ajustesDaBase })

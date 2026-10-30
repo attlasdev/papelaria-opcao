@@ -20,6 +20,7 @@ export const MENSAGENS = {
   soAdmin: 'Só a administradora pode fazer isto.',
   adminJaExiste: 'A administradora já está cadastrada.',
   adminAtiva: 'A administradora não pode ser desativada.',
+  semDona: 'Este gesto precisa também do PIN da administradora.',
   espera: (segundos: number) => `Muitas tentativas erradas. Espere ${segundos} segundos e tente de novo.`,
 }
 
@@ -92,4 +93,24 @@ export async function conferirAssinatura(
   }
   tentativas.acertou(id)
   return null
+}
+
+/**
+ * Gesto sensível (`R-OPERADOR-06`): quem faz assina, e a dona autoriza com o PIN
+ * dela. Se quem faz é a dona, um PIN basta e `autorizadoPor` fica vazio. As
+ * falhas da autorização dizem que são da administradora, para a tela não
+ * confundir com o PIN de quem faz. `conferir` é a conferência de cada lado.
+ */
+export async function autorizar<P extends { id: string; admin: boolean }>(
+  conferir: (assinatura: Assinatura | null | undefined, opcoes?: { soAdmin?: boolean }) => Promise<P | Falha>,
+  quem: Assinatura | null | undefined,
+  dona: Assinatura | null | undefined,
+): Promise<Falha | { quem: P; autorizadoPor: P | null }> {
+  const pessoa = await conferir(quem)
+  if ('ok' in pessoa) return pessoa
+  if (pessoa.admin) return { quem: pessoa, autorizadoPor: null }
+  if (!dona) return falha('validacao', MENSAGENS.semDona)
+  const autorizou = await conferir(dona, { soAdmin: true })
+  if ('ok' in autorizou) return autorizou.causa === 'permissao' ? autorizou : { ...autorizou, erro: `Administradora: ${autorizou.erro}` }
+  return { quem: pessoa, autorizadoPor: autorizou }
 }

@@ -242,6 +242,12 @@ export type Entrega = {
   itens: ItemEntrada[]
 }
 
+/**
+ * Correcao da contagem de um produto (`R-ESTOQUE-10`): a contagem da prateleira
+ * e o saldo que a tela mostrava ao abrir, para o back saber se mudou no meio.
+ */
+export type Ajuste = { produtoId: string; contagem: number; saldoVisto: number; motivo: string }
+
 /** Os produtos da entrega como ficaram, com o saldo novo. */
 export type EntradaRegistrada = { id: string; produtos: Produto[] }
 
@@ -405,6 +411,17 @@ export type Contrato = {
    * na entrega, que recebe o custo desta compra (`R-ESTOQUE-09`).
    */
   registrarEntrada(entrega: Entrega, quem: Assinatura): Promise<Resultado<EntradaRegistrada>>
+
+  /**
+   * Corrige o saldo para a contagem da prateleira (1.0, tela 2.5): um movimento
+   * de ajuste com a diferenca. Gesto sensivel (`R-OPERADOR-06`): `quem` assina e
+   * `dona` autoriza; se quem assina e a dona, `dona` e `null` e um PIN basta.
+   * `validacao`: motivo vazio, contagem que nao e inteiro a partir de 0 ou igual
+   * ao saldo, produto desativado, falta o PIN da dona. `conflito`: o saldo mudou
+   * desde que a tela abriu (`R-ESTOQUE-10`), com o saldo de agora na mensagem.
+   * `permissao`: assinou como dona quem nao e a administradora.
+   */
+  ajustarEstoque(ajuste: Ajuste, quem: Assinatura, dona: Assinatura | null): Promise<Resultado<Produto>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

@@ -523,6 +523,11 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   bipados como se tivesse sido lido (`2026-10-30`, Agostinho): etiqueta que o
   leitor não pega não deixa a funcionária sem saída. Nome digitado errado não
   vira produto.
+- `R-ESTOQUE-10` **Ajuste confere o saldo que a pessoa viu** (`2026-10-30`): a tela manda a
+  contagem e o saldo que mostrou ao abrir; se mudou no meio (venda na outra
+  máquina enquanto ela contava a prateleira), o back recusa com o saldo de
+  agora e ela confere de novo. Sem isso, a contagem gravaria por cima e a venda
+  sumiria da conta. Confirmado, volta ao Estoque, como a Entrada rápida.
 - Nota: Entrada rápida confirmada volta ao Estoque, com o saldo novo na linha
   (`2026-10-29`): quem repõe faz vários produtos em sequência. O histórico fica
   no ícone da linha.
@@ -659,7 +664,8 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   autorizou; se é a própria dona que faz, um PIN basta. Lista provisória, a
   confirmar com ela (D3): cancelar ficha, estornar recebimento e lançamento,
   ajustar estoque, marcar e desfazer pagamento de boleto, fechar caixa com
-  diferença.
+  diferença. **Ligados:** ajustar estoque (`2026-10-30`, tela 2.5, decisão do
+  Agostinho enquanto a dona não confirma; desligar é uma linha no back).
 - `R-OPERADOR-07` Pessoa desativada some da escolha, não assina nem autoriza, e continua
   no histórico com o nome.
 - `R-OPERADOR-08` O PIN só existe no back, guardado com hash (scrypt, com sal); nunca
@@ -711,6 +717,17 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-10-30` — Ajuste de estoque com o PIN da dona
+Decisão do Agostinho, no percurso da tela 2.5. O ajuste é o primeiro gesto
+sensível ligado (`R-OPERADOR-06`): quem faz assina, e a dona autoriza com o PIN
+dela (`autorizado_por`); se é ela que ajusta, um PIN basta. A dona ainda
+confirma a lista (D3); desligar é uma linha no back. Junto: o ajuste manda o
+saldo que a pessoa viu (`R-ESTOQUE-10`) e volta ao Estoque ao confirmar.
+
+**Por quê:** ajuste é por onde some mercadoria sem venda; a lista de gestos
+sensíveis existe para isso. Descartado: só o PIN de quem faz até a dona
+confirmar (deixaria o gesto mais aberto da tela sem conferência).
 
 ### `2026-10-29` — Registrar entrada: produto novo nasce na entrega
 Decisão do Agostinho, no percurso da tela 2.4. O item de `registrarEntrada`
