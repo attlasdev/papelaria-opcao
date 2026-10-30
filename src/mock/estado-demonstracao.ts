@@ -152,7 +152,8 @@ export function definirProdutoAtivo(codigo: string, ativo: boolean) {
 
 function movimentoEstoque(produto: Produto, depois: number, tipo: MovimentoEstoque['tipo'], motivo: string, entrada?: MovimentoEstoque['entrada']): MovimentoEstoque {
   const data = new Date().toISOString()
-  return { id: `${data}-${produto.codigo}-${tipo}`, data, produto: produto.codigo, descricao: produto.descricao, tipo, antes: produto.saldo, depois, motivo, operador: base.operador, ...(entrada ? { entrada } : {}) }
+  // O sufixo aleatório separa dois movimentos do mesmo produto no mesmo milissegundo (a conferência marca pelo id).
+  return { id: `${data}-${produto.codigo}-${tipo}-${crypto.randomUUID().slice(0, 8)}`, data, produto: produto.codigo, descricao: produto.descricao, tipo, antes: produto.saldo, depois, motivo, operador: base.operador, ...(entrada ? { entrada } : {}) }
 }
 
 /**
@@ -180,16 +181,27 @@ export function gravarEntrada(
 
 /**
  * Ajuste de contagem (1.0, `ajustarEstoque`; quem confere é
- * `src/mock/operacoes/ajustes.ts`): o saldo vira a contagem, e o movimento guarda
- * quem fez e quem autorizou.
+ * `src/mock/operacoes/ajustes.ts`): o saldo vira a contagem. Feito pela dona,
+ * já nasce conferido (`R-ESTOQUE-11`).
  */
-export function gravarAjuste(codigo: string, contagem: number, motivo: string, operador: string, autorizadoPor?: string) {
+export function gravarAjuste(codigo: string, contagem: number, motivo: string, operador: string, conferidoPor?: string) {
   const produto = base.produtos.find((p) => p.codigo === codigo)!
-  const movimento = { ...movimentoEstoque(produto, contagem, 'Ajuste', motivo), operador, ...(autorizadoPor ? { autorizadoPor } : {}) }
+  const feito = movimentoEstoque(produto, contagem, 'Ajuste', motivo)
+  const movimento = { ...feito, operador, ...(conferidoPor ? { conferidoPor, conferidoEm: feito.data } : {}) }
   mudar({
     ...base,
     produtos: base.produtos.map((p) => (p.codigo === codigo ? { ...p, saldo: contagem } : p)),
     movimentosEstoque: [movimento, ...base.movimentosEstoque],
+  })
+}
+
+/** A dona confere ajustes (`R-ESTOQUE-11`): o visto, com o nome dela e o instante. */
+export function gravarConferencia(ids: string[], conferidoPor: string) {
+  const agora = new Date().toISOString()
+  const marcar = new Set(ids)
+  mudar({
+    ...base,
+    movimentosEstoque: base.movimentosEstoque.map((m) => (marcar.has(m.id) ? { ...m, conferidoPor, conferidoEm: agora } : m)),
   })
 }
 

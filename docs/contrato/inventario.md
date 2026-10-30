@@ -63,7 +63,7 @@ banco.
 | --- | --- | --- |
 | `estoque/Estoque` | página de produtos, resumo dos cartões, categorias — **`listarProdutos`, no contrato desde `2026-10-29` (tela 2.2)** | `ativarProduto` (reativar) |
 | `cadastrar-produto/CadastrarProduto` | produto (com `temHistorico`), categorias, bipe | `cadastrarProduto`, `editarProduto`, `excluirProduto`, `ativarProduto` — **no contrato desde `2026-10-28` (tela 2.1)** |
-| `ajustar-estoque/AjustarEstoque` | produto e busca (`obterProduto`, `listarProdutos`) | `ajustarEstoque`, com o PIN da dona — **no contrato desde `2026-10-30` (tela 2.5)** |
+| `ajustar-estoque/AjustarEstoque` | produto e busca (`obterProduto`, `listarProdutos`) | `ajustarEstoque`, conferido depois pela dona (`conferirAjustes`, na tela 2.6) — **no contrato desde `2026-10-30` (tela 2.5)** |
 | `entrada-rapida/EntradaRapida` | produto (`obterProduto`) | `registrarEntrada` com um item — **no contrato desde `2026-10-29` (tela 2.3)** |
 | `registrar-entrada/RegistrarEntrada` | busca (`listarProdutos`) e bipe (`buscarProdutoPorCodigoBarras`) | `registrarEntrada` com todos os itens, novos inclusive — **no contrato desde `2026-10-29` (tela 2.4)**; antes era um par cadastrar + alterar saldo por item, em laço |
 | `movimentacoes-estoque/MovimentacoesEstoque` | todos os movimentos de estoque | — |
@@ -73,7 +73,7 @@ Já no contrato (tela 2.1): `obterProduto`, `buscarProdutoPorCodigoBarras`,
 `ativarProduto`. O cadastro rápido saiu (`completarProduto` não existe mais).
 Na tela 2.2: `listarProdutos(filtro, busca, pagina, porPagina)`.
 Na tela 2.3: `registrarEntrada(entrega, quem)`.
-Na tela 2.5: `ajustarEstoque(ajuste, quem, dona)`.
+Na tela 2.5: `ajustarEstoque(ajuste, quem)` e `conferirAjustes(movimentoIds, dona)`.
 Faltam: `listarMovimentosEstoque(filtro, pagina)`.
 
 Para o back:

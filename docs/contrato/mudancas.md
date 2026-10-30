@@ -33,13 +33,15 @@ componentes, CSS por componente).
 
 ### `2026-10-30` — Ajustar estoque (1.0, tela 2.5)
 
-- **Contrato:** `ajustarEstoque(ajuste, quem, dona)`, com `Ajuste` (produto,
-  contagem, **saldo que a tela viu**, motivo). Primeiro gesto sensível: quem faz
-  assina e a dona autoriza; se é a dona, `dona` vai `null`. Falhas da
-  autorização vêm com "Administradora:" na frente; saldo que mudou é `conflito`.
-- **Na tela:** "Quem está fazendo?" ganha o passo "PIN da administradora" nos
-  gestos sensíveis; o ajuste confirmado volta ao Estoque (antes abria as
-  Movimentações).
+- **Contrato:** `ajustarEstoque(ajuste, quem)`, com `Ajuste` (produto,
+  contagem, **saldo que a tela viu**, motivo); saldo que mudou é `conflito`.
+  E `conferirAjustes(movimentoIds, dona)`: a dona dá o visto, um ou vários com
+  um PIN. Ajuste de funcionário fica "aguardando conferência"; o da dona nasce
+  conferido. A marca e o botão "Conferir" entram nas Movimentações (tela 2.6).
+- **Na tela:** o ajuste confirmado volta ao Estoque (antes abria as
+  Movimentações). `JanelaAssinatura` ganhou `sensivel` (passo "PIN da
+  administradora", para gesto que a dona quiser autorizar na hora); o ajuste
+  não usa, depois da troca do mesmo dia (`Memoria.md`, `2026-10-30`).
 
 ### `2026-10-29` — Registrar entrada (1.0, tela 2.4)
 

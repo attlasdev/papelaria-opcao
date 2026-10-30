@@ -414,14 +414,21 @@ export type Contrato = {
 
   /**
    * Corrige o saldo para a contagem da prateleira (1.0, tela 2.5): um movimento
-   * de ajuste com a diferenca. Gesto sensivel (`R-OPERADOR-06`): `quem` assina e
-   * `dona` autoriza; se quem assina e a dona, `dona` e `null` e um PIN basta.
+   * de ajuste com a diferenca, assinado so por `quem`. Gesto sensivel com
+   * conferencia depois (`R-OPERADOR-06`, `R-ESTOQUE-11`): o de funcionario fica
+   * aguardando a dona; o da propria dona ja nasce conferido.
    * `validacao`: motivo vazio, contagem que nao e inteiro a partir de 0 ou igual
-   * ao saldo, produto desativado, falta o PIN da dona. `conflito`: o saldo mudou
-   * desde que a tela abriu (`R-ESTOQUE-10`), com o saldo de agora na mensagem.
-   * `permissao`: assinou como dona quem nao e a administradora.
+   * ao saldo, produto desativado. `conflito`: o saldo mudou desde que a tela
+   * abriu (`R-ESTOQUE-10`), com o saldo de agora na mensagem.
    */
-  ajustarEstoque(ajuste: Ajuste, quem: Assinatura, dona: Assinatura | null): Promise<Resultado<Produto>>
+  ajustarEstoque(ajuste: Ajuste, quem: Assinatura): Promise<Resultado<Produto>>
+  /**
+   * A dona da o visto nos ajustes (`R-ESTOQUE-11`): um, ou todos os que ela esta
+   * vendo, com um PIN. Ja conferido e ignorado; devolve quantos foram conferidos
+   * agora. `permissao`: quem assinou nao e a administradora. Id que nao e de um
+   * ajuste, `nao-encontrado`; lista vazia ou com mais de 500, `validacao`.
+   */
+  conferirAjustes(movimentoIds: string[], dona: Assinatura): Promise<Resultado<{ conferidos: number }>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

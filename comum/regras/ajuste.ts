@@ -35,3 +35,16 @@ export function conferirSaldo(ajuste: Ajuste, saldoAgora: number): Falha | null 
   if (ajuste.contagem === saldoAgora) return falha('validacao', MENSAGENS_AJUSTE.igual)
   return null
 }
+
+export const CONFERIR_MAXIMO = 500
+
+/** Os ajustes que a dona vai conferir: sem repetir, de 1 a 500. */
+export function conferirIds(bruto: unknown): string[] | Falha {
+  if (!Array.isArray(bruto) || bruto.some((id) => typeof id !== 'string' || !id)) return falha('validacao', 'Pedido inválido.')
+  const ids = [...new Set(bruto as string[])]
+  if (ids.length === 0) return falha('validacao', 'Nenhum ajuste para conferir.')
+  if (ids.length > CONFERIR_MAXIMO) return falha('validacao', `Confira no máximo ${CONFERIR_MAXIMO} ajustes de uma vez.`)
+  return ids
+}
+
+export const MENSAGEM_AJUSTE_NAO_ENCONTRADO = 'Ajuste não encontrado.'

@@ -112,7 +112,8 @@ const mock: Contrato = {
   excluirProduto: (id, quem) => simularAssincrono(() => produtos.excluirProduto(id, quem)),
   ativarProduto: (id, ativo) => simularAssincrono(() => produtos.ativarProduto(id, ativo)),
   registrarEntrada: (entrega, quem) => simularAssincrono(() => entradas.registrarEntrada(entrega, quem)),
-  ajustarEstoque: (ajuste, quem, dona) => simularAssincrono(() => ajustes.ajustarEstoque(ajuste, quem, dona)),
+  ajustarEstoque: (ajuste, quem) => simularAssincrono(() => ajustes.ajustarEstoque(ajuste, quem)),
+  conferirAjustes: (movimentoIds, dona) => simularAssincrono(() => ajustes.conferirAjustes(movimentoIds, dona)),
 }
 
 window.api = mock
