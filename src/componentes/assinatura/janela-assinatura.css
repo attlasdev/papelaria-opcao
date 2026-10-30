@@ -17,3 +17,8 @@
   font-size: var(--text-corpo);
   line-height: var(--text-corpo--line-height);
 }
+
+.janela-assinatura__nota {
+  color: var(--color-texto-suave);
+  font-size: var(--text-rotulo);
+}
