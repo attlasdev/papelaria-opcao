@@ -775,6 +775,10 @@ para não ficar cliente que pagou sem venda, a janela do PIN não fecha depois
 de a cobrança aprovar. A devolução parcial (D5) continua fora por ora (P6):
 só o cancelamento da ficha inteira.
 
+**Depois, no mesmo dia:** a 4.1b fica para depois das outras telas, junto do
+Mercado Pago real; a próxima é a 4.2. O misto passa a dizer o tipo de cartão
+e a maquininha (`R-VENDA-12`), corrigindo a M6.
+
 ### `2026-10-30` — Detalhe do cliente pelo back
 Decisão do Agostinho, no percurso da tela 3.3. Os cartões, as abas e o
 histórico paginado vêm de `listarComprasDoCliente(id, filtro, pagina,
