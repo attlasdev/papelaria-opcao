@@ -491,6 +491,54 @@ export type RascunhoFicha = {
   pixNaMaquininha: boolean
 }
 
+/** Um pagamento da ficha. `dia`: o dia em que o dinheiro conta; `registradoEm`: o lancamento. */
+export type PagamentoDaFicha = {
+  id: string
+  tipo: 'venda' | 'entrada' | 'recebimento'
+  meio: MeioPagamento
+  valor: number
+  rotulo: string | null
+  dia: string
+  registradoEm: string
+  operador: string
+  /** Recebimento de notinha lancado por engano: nao conta como pago. */
+  estorno: { dia: string; motivo: string; operador: string } | null
+}
+
+/** `conferidoPor`: a dona que deu o visto; `null` e "aguardando a dona" (`R-FICHA-02`). */
+export type CancelamentoDaFicha = { dia: string; registradoEm: string; motivo: string; operador: string; conferidoPor: string | null }
+
+export type AnotacaoDaFicha = { registradoEm: string; texto: string; operador: string }
+
+/** A ficha inteira, para o detalhe (tela 4.2). Dinheiro em centavos. */
+export type FichaDetalhe = {
+  id: string
+  numero: string
+  /** `null`: venda sem identificacao. */
+  cliente: { id: string; nome: string } | null
+  registradoEm: string
+  /** Quem vendeu. */
+  operador: string
+  forma: FormaFicha
+  /** Pagamento num meio so: como foi registrado, ex. "Cartão crédito Visa · Mercado Pago". */
+  rotulo: string | null
+  vencimento: string | null
+  situacao: SituacaoCompra
+  /** O que vale como pago (sem os estornados) e o que falta, na notinha. */
+  pago: number
+  emAberto: number
+  quitadaEm: string | null
+  itens: { produtoId: string; codigo: string; descricao: string; quantidade: number; preco: number }[]
+  servicos: ServicoVendido[]
+  subtotal: number
+  desconto: number
+  total: number
+  pagamentos: PagamentoDaFicha[]
+  cancelamento: CancelamentoDaFicha | null
+  /** Da mais velha para a mais nova. */
+  anotacoes: AnotacaoDaFicha[]
+}
+
 /**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
@@ -698,6 +746,22 @@ export type Contrato = {
   obterRascunhoFicha(): Promise<Resultado<RascunhoFicha | null>>
   /** Guarda a venda em andamento; `null` apaga. Fora do formato, `validacao`. */
   salvarRascunhoFicha(rascunho: RascunhoFicha | null): Promise<Resultado<null>>
+
+  // Detalhe da ficha (1.0, tela 4.2) -------------------------------------------
+  // Id que nao e de uma ficha, `nao-encontrado`. A assinatura falha como a dos
+  // operadores. Cada gesto devolve a ficha como ficou.
+  obterFicha(id: string): Promise<Resultado<FichaDetalhe>>
+  /**
+   * Desfaz a venda sem apagar (`R-FICHA-02`): o estoque volta o que a venda
+   * baixou e o pago sai do Financeiro no dia de hoje, numa transacao. Assina
+   * so quem cancela; o da dona ja nasce conferido. Motivo vazio ou ficha ja
+   * cancelada, `validacao`.
+   */
+  cancelarFicha(id: string, motivo: string, quem: Assinatura): Promise<Resultado<FichaDetalhe>>
+  /** O visto da dona no cancelamento. Ficha nao cancelada, `validacao`; ja conferido, nada muda. `permissao`: nao e a dona. */
+  conferirCancelamento(fichaId: string, dona: Assinatura): Promise<Resultado<FichaDetalhe>>
+  /** Lembrete na ficha (`R-FICHA-03`, `R-NOTINHA-02`): so se acrescenta. Texto vazio, `validacao`. */
+  anotarFicha(id: string, texto: string, quem: Assinatura): Promise<Resultado<FichaDetalhe>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

@@ -94,7 +94,7 @@ Para o back:
 | `criar-ficha/CriarFicha` | rascunho (`obterRascunhoFicha`); clientes e produtos pelas operações deles | `concluirFicha(venda, quem)`, `salvarRascunhoFicha`: **no contrato desde `2026-10-31` (tela 4.1a)**; a cobrança integrada (A4) é a 4.1b |
 | `criar-ficha/cliente/ClienteFicha` | clientes + resumo (busca e aviso de quem deve) | — |
 | `criar-ficha/itens/ItensFicha` | produtos (bipe e busca) | — |
-| `detalhe-ficha/*` | ficha, notinha, outras notinhas do cliente | `cancelarFicha`, `estornarPagamento`, `anotarFicha` |
+| `detalhe-ficha/*` | a ficha (`obterFicha`); outras notinhas do cliente (`listarComprasDoCliente`) | `cancelarFicha`, `conferirCancelamento`, `anotarFicha`: **no contrato desde `2026-10-31` (tela 4.2)**; o estorno de recebimento é a tela 5.2 |
 
 Operações propostas: `concluirFicha(dados)` (com a opção "preparar nota" dentro
 dela), `obterFicha(id)`, `cancelarFicha`, `estornarRecebimento`, `anotarFicha`.

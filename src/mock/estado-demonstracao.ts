@@ -360,7 +360,8 @@ function estornoAgora(motivo: string): Estorno {
  * Desfaz uma venda sem apagá-la: a ficha fica marcada como cancelada, os itens
  * voltam ao estoque e o que foi pago sai do caixa hoje (os dias passados não mudam).
  */
-export function cancelarFicha(id: string, motivo: string) {
+/** `operador`: quem cancelou (1.0); `conferidoPor`: a dona, quando é ela que cancela. */
+export function cancelarFicha(id: string, motivo: string, operador?: string, conferidoPor?: string) {
   const ficha = base.fichas.find((f) => f.id === id)
   if (!ficha || ficha.cancelamento || !motivo.trim()) return false
   const movimentos: MovimentoEstoque[] = []
@@ -374,7 +375,9 @@ export function cancelarFicha(id: string, motivo: string) {
   })
   mudar({
     ...base,
-    fichas: base.fichas.map((f) => (f.id === id ? { ...f, cancelamento: estornoAgora(motivo) } : f)),
+    fichas: base.fichas.map((f) => (f.id === id ? {
+      ...f, cancelamento: { ...estornoAgora(motivo), ...(operador ? { operador } : {}), ...(conferidoPor ? { conferidoPor } : {}) },
+    } : f)),
     produtos,
     movimentosEstoque: [...movimentos, ...base.movimentosEstoque],
   })
@@ -414,14 +417,19 @@ export function estornarMovimentoCaixa(id: string, motivo: string) {
   return true
 }
 
-/** Lembrete na ficha. Só se acrescenta: o que foi anotado fica como foi. */
-export function anotarFicha(id: string, texto: string) {
+/** Lembrete na ficha. Só se acrescenta: o que foi anotado fica como foi. `operador`: quem anotou (1.0). */
+export function anotarFicha(id: string, texto: string, operador?: string) {
   if (!texto.trim() || !base.fichas.some((f) => f.id === id)) return false
-  mudar({
-    ...base,
-    fichas: base.fichas.map((f) => (f.id === id ? { ...f, anotacoes: [...(f.anotacoes ?? []), { data: hojeISO(), horario: agoraHorario(), texto: texto.trim() }] } : f)),
-  })
+  const anotacao = { data: hojeISO(), horario: agoraHorario(), texto: texto.trim(), ...(operador ? { operador } : {}) }
+  mudar({ ...base, fichas: base.fichas.map((f) => (f.id === id ? { ...f, anotacoes: [...(f.anotacoes ?? []), anotacao] } : f)) })
   return true
+}
+
+/** O visto da dona no cancelamento (`R-FICHA-02`); o já conferido não muda. */
+export function conferirCancelamento(id: string, dona: string) {
+  const ficha = base.fichas.find((f) => f.id === id)
+  if (!ficha?.cancelamento || ficha.cancelamento.conferidoPor) return
+  mudar({ ...base, fichas: base.fichas.map((f) => (f.id === id ? { ...f, cancelamento: { ...f.cancelamento!, conferidoPor: dona } } : f)) })
 }
 
 export function salvarRascunhoFicha(rascunho: RascunhoFicha | null) {

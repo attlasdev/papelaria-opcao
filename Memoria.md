@@ -414,6 +414,16 @@ com "Nota:". Item sem um dos dois quebra a suíte.
 - `R-FICHA-01` Qualquer "Ver ficha" abre **janela** por cima da tela; fechar devolve filtro,
   página e rolagem. A página `/fichas/:id` fica só para depois de concluir a
   venda. Janela sobre janela: Esc fecha só a de cima.
+- `R-FICHA-02` **Cancelar com conferência depois** (`2026-10-31`): quem cancela escreve o
+  motivo e assina só com o próprio PIN; o cancelamento grava na hora (o
+  estoque volta o que a venda baixou, o pago sai do Financeiro no dia do
+  cancelamento, a ficha fica no histórico como cancelada). O de funcionário
+  fica "aguardando a dona" até ela conferir com o PIN dela, na própria ficha;
+  o da dona já nasce conferido. Conferir é só o visto. Ficha cancelada não se
+  cancela de novo. A lista dos que aguardam e o aviso no sino entram com o
+  Início e o sino (telas 8.1 e 8.2).
+- `R-FICHA-03` **Anotar pede pessoa e PIN** (`2026-10-31`, `R-OPERADOR-02`): a anotação
+  só se acrescenta e mostra quem anotou e quando.
 
 ### Clientes
 - `R-CLIENTE-01` Os cartões de notinhas contam **clientes**, não a quantidade de notinhas:
@@ -706,7 +716,8 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   com **conferência depois** (quem faz assina sozinho, o registro fica
   "aguardando conferência" e a dona dá o visto com o PIN dela). A dona escolhe
   o jeito de cada gesto (D3). **Ligados:** ajustar estoque, com conferência
-  depois (`R-ESTOQUE-11`).
+  depois (`R-ESTOQUE-11`); cancelar ficha, com conferência depois
+  (`R-FICHA-02`, `2026-10-31`).
 - `R-OPERADOR-07` Pessoa desativada some da escolha, não assina nem autoriza, e continua
   no histórico com o nome.
 - `R-OPERADOR-08` O PIN só existe no back, guardado com hash (scrypt, com sal); nunca
@@ -758,6 +769,20 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-10-31` — Detalhe da ficha pelo back, cancelar com conferência depois
+Decisão do Agostinho, no percurso da tela 4.2. A ficha vem de `obterFicha`;
+cancelar, conferir e anotar viram operações com assinatura. Cancelar fica com
+**conferência depois** (`R-FICHA-02`), como o ajuste de estoque: a conferência
+é um registro à parte (`conferencia_cancelamento`, migration 0004), porque o
+cancelamento é fato. Anotar pede pessoa e PIN (`R-FICHA-03`).
+
+**Por quê:** cancelar tira dinheiro do Financeiro (venda em dinheiro cancelada
+pode virar dinheiro que some da gaveta), mas exigir a dona na hora travaria o
+balcão quando ela não está. A conferência depois mantém o balcão andando e
+deixa o rastro para ela. Descartado: o PIN da dona na hora (trava o balcão) e
+só quem cancela (sem visto nenhum). **Limite:** a dona confere dentro da ficha;
+a lista dos cancelamentos aguardando entra com o Início e o sino.
 
 ### `2026-10-31` — Nova ficha pelo back, em duas rodadas
 Decisão do Agostinho, no percurso da tela 4.1. **4.1a:** `concluirFicha(venda,

@@ -31,6 +31,19 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-31` — Detalhe da ficha (1.0, tela 4.2)
+
+- **Contrato:** `obterFicha(id)` devolve a `FichaDetalhe` (cliente, quem
+  vendeu, itens com o código, totais, pagamentos com quem lançou e o estorno,
+  cancelamento com quem cancelou e quem conferiu, anotações com quem anotou).
+  `cancelarFicha(id, motivo, quem)`, `conferirCancelamento(fichaId, dona)` e
+  `anotarFicha(id, texto, quem)` pedem assinatura e devolvem a ficha como
+  ficou (`R-FICHA-02`, `03`).
+- **Na tela:** cancelar pede o motivo e depois quem cancela; o cancelamento de
+  funcionário mostra "aguardando a dona" e o botão "Conferir". Anotar pede
+  pessoa e PIN, e a anotação mostra quem anotou. O "Estornar venda" do
+  Financeiro usa a mesma janela de cancelar.
+
 ### `2026-10-31` — Nova ficha, primeira rodada (1.0, tela 4.1a)
 
 - **Contrato:** `concluirFicha(venda, quem)` devolve `{ id, numero }`. A

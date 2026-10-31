@@ -83,10 +83,11 @@ export type Produto = {
 }
 
 /** Desfazer sem apagar: o registro original fica, marcado com quando e por quê. */
-export type Estorno = { data: string; horario: string; motivo: string; operador?: string; registradoEm?: string; turnoCaixaId?: string }
+/** `conferidoPor`: só no cancelamento de ficha, a dona que deu o visto (1.0, `R-FICHA-02`). */
+export type Estorno = { data: string; horario: string; motivo: string; operador?: string; registradoEm?: string; turnoCaixaId?: string; conferidoPor?: string }
 
 /** Lembrete da dona na ficha (ex.: prazo combinado). Só se acrescenta. */
-export type Anotacao = { data: string; horario: string; texto: string }
+export type Anotacao = { data: string; horario: string; texto: string; operador?: string }
 
 export type ItemVenda = {
   codigo: string
