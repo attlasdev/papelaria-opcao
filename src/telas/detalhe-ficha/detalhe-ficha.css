@@ -252,3 +252,19 @@
   background: var(--color-superficie);
   font-size: var(--text-rotulo);
 }
+
+.detalhe-ficha__cancelada .botao { flex: none; }
+
+.detalhe-ficha__aguardando { color: var(--color-atencao-texto); }
+
+.detalhe-ficha__falha {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-4);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-critico-fundo);
+  color: var(--color-critico-texto);
+  font-size: var(--text-corpo);
+}

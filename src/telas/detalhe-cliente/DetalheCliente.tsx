@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useNavigate, useParams } from 'react-router'
-import type { Cliente, CompraCliente, Falha, FiltroCompras, PaginaCompras, SituacaoCompra } from '../../../comum/contrato'
+import type { Cliente, CompraCliente, Falha, FiltroCompras, PaginaCompras } from '../../../comum/contrato'
 import { formatarDocumento, formatarTelefone } from '../../../comum/regras/cliente'
 import { hojeEmSaoPaulo } from '../../../comum/regras/entrada'
 import { POR_PAGINA_MAXIMO } from '../../../comum/regras/produto'
@@ -9,43 +9,24 @@ import { Botao } from '../../componentes/botao/Botao'
 import { CartaoResumo, Painel } from '../../componentes/painel/Painel'
 import { Filtros } from '../../componentes/filtros/Filtros'
 import { Tabela } from '../../componentes/tabela/Tabela'
-import { SeloSituacao, type Tom } from '../../componentes/selo/Selo'
+import { SeloSituacao } from '../../componentes/selo/Selo'
 import { ComIcone } from '../../componentes/icone/Icone'
 import { Paginacao } from '../../componentes/paginacao/Paginacao'
 import { useLinhasPorPagina } from '../../componentes/paginacao/useLinhasPorPagina'
 import { api } from '../../dados/api'
 import { juntarEndereco } from '../../dados/endereco'
+import { detalheDaSituacao, SELO_COMPRA } from '../../dados/situacao'
 import { tituloFalha } from '../../falhas'
-import { dataCurta, reais } from '../../formatar'
+import { reais } from '../../formatar'
 import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import { ReceberNotinhas } from './receber/ReceberNotinhas'
 import './detalhe-cliente.css'
 import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
 
-const selo: Record<SituacaoCompra, { tom: Tom; titulo: string }> = {
-  paga: { tom: 'ok', titulo: 'Pago' },
-  'a-vencer': { tom: 'atencao', titulo: 'Pendente' },
-  'em-atraso': { tom: 'critico', titulo: 'Vencido' },
-  cancelada: { tom: 'neutro', titulo: 'Cancelada' },
-}
-
 const NOME_FORMA = { dinheiro: 'Dinheiro', pix: 'Pix', cartao: 'Cartão', misto: 'Misto', notinha: 'Notinha' } as const
 
 const mensagem = (r: Falha) => (r.causa === 'validacao' ? r.erro : `${tituloFalha(r.causa)} ${r.erro}`)
-
-/** Dias de `de` até `ate`, os dois `AAAA-MM-DD`. */
-const diasEntre = (de: string, ate: string) => Math.round((Date.parse(`${ate}T00:00:00Z`) - Date.parse(`${de}T00:00:00Z`)) / 86_400_000)
-
-/** A segunda linha do selo: o prazo da notinha, ou o dia em que quitou ou cancelou. */
-function detalheDoSelo(c: CompraCliente, hoje: string) {
-  if (c.situacao === 'cancelada') return c.canceladaEm ? `Em ${dataCurta(c.canceladaEm)}` : undefined
-  if (c.situacao === 'paga') return c.quitadaEm ? `Quitada em ${dataCurta(c.quitadaEm)}` : undefined
-  const dias = diasEntre(hoje, c.vencimento ?? hoje)
-  if (dias === 0) return 'Vence hoje'
-  if (dias > 0) return `Vence em ${dias} ${dias === 1 ? 'dia' : 'dias'}`
-  return `Venceu há ${-dias} ${dias === -1 ? 'dia' : 'dias'}`
-}
 
 const textoItens = (c: CompraCliente) => [...c.itens.map((i) => `${i.descricao} (${i.quantidade}x)`), ...c.servicos].join(', ')
 
@@ -277,7 +258,7 @@ export function DetalheCliente() {
                     )}
                   </td>
                   <td>
-                    <SeloSituacao {...selo[compra.situacao]} detalhe={detalheDoSelo(compra, hoje)} />
+                    <SeloSituacao {...SELO_COMPRA[compra.situacao]} detalhe={detalheDaSituacao(compra, hoje)} />
                   </td>
                   <td className="celula--acoes">
                     <Botao tamanho="pequeno" onClick={() => abrirFicha(compra.id)}>

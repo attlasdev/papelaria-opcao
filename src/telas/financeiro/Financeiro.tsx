@@ -30,7 +30,7 @@ import {
 import { rotas } from '../../rotas-caminhos'
 import './financeiro.css'
 import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
-import { ModalCancelarFicha } from '../detalhe-ficha/ConteudoFicha'
+import { ModalCancelarFichaPorId } from '../detalhe-ficha/ConteudoFicha'
 import { ExportarPeriodo } from './ExportarPeriodo'
 
 /** Os meios, mais "Estornos": só as linhas de estorno (`2026-10-19`). */
@@ -57,7 +57,6 @@ export function Financeiro() {
   const doPeriodo = linhasFinanceiroNoIntervalo(linhas, de, ate)
   const estornos = doPeriodo.filter((m) => m.categoria === CATEGORIA_ESTORNO)
   const lista = meio === 'todos' ? doPeriodo : meio === 'estornos' ? estornos : doPeriodo.filter((m) => m.meio === meio)
-  const fichaEstornando = estornandoVenda ? base.fichas.find((f) => f.id === estornandoVenda) : undefined
   const periodoValido = dataCalendarioValida(de) && dataCalendarioValida(ate) && de <= ate && ate <= hoje
   const totalPaginas = Math.max(1, Math.ceil(lista.length / linhasPorPagina))
   const paginaAtual = Math.min(pagina, totalPaginas)
@@ -253,8 +252,8 @@ export function Financeiro() {
       <p className="financeiro__nota">
         Entradas incluem vendas, notinhas recebidas e lançamentos avulsos em dinheiro, Pix e cartão. O resultado não representa lucro nem saldo bancário.
       </p>
-      {fichaEstornando && (
-        <ModalCancelarFicha ficha={fichaEstornando} titulo={`Estornar a venda da ficha #${fichaEstornando.id}`} textoConfirmar="Estornar venda" aoFechar={() => setEstornandoVenda(null)} />
+      {estornandoVenda && (
+        <ModalCancelarFichaPorId id={estornandoVenda} titulo={`Estornar a venda da ficha #${estornandoVenda}`} textoConfirmar="Estornar venda" aoFechar={() => setEstornandoVenda(null)} />
       )}
       {estornando && (
         <ModalMotivo
