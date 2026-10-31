@@ -373,11 +373,11 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   cadastro mudou desde que o item entrou na ficha, a venda não grava, aparece
   "O preço de X mudou de R$ A para R$ B" e a ficha passa a mostrar o preço
   novo, para a pessoa confirmar com o cliente.
-- `R-VENDA-12` **Misto com cartão diz qual cartão** (`2026-10-31`, M6): com valor no
-  cartão, a ficha pede o tipo (crédito ou débito) e a maquininha, os mesmos
-  campos do cartão sozinho; sem eles, a venda não grava. A parte do cartão
-  fica com o rótulo ("Cartão débito · Sicoob"). O misto não passa pela
-  cobrança integrada: é conferido no balcão (`R-PAGAMENTO-01`).
+- `R-VENDA-12` **Misto é manual e diz qual cartão** (`2026-10-31`, M6): o misto não
+  passa pela cobrança integrada, é conferido no balcão (`R-PAGAMENTO-01`). O
+  cartão do misto é sempre na maquininha Sicoob, e o Pix, na chave da loja.
+  Com valor no cartão, a ficha pede só o tipo (crédito ou débito); sem ele, a
+  venda não grava. A parte do cartão fica com o rótulo ("Cartão débito · Sicoob").
 
 ### Notinha (compra fiada)
 - `R-NOTINHA-01` Rótulo na tela: "Notinha". Situação calculada: pendente, vencida, paga,
@@ -777,7 +777,8 @@ só o cancelamento da ficha inteira.
 
 **Depois, no mesmo dia:** a 4.1b fica para depois das outras telas, junto do
 Mercado Pago real; a próxima é a 4.2. O misto passa a dizer o tipo de cartão
-e a maquininha (`R-VENDA-12`), corrigindo a M6.
+(`R-VENDA-12`), corrigindo a M6; a maquininha do misto é sempre a Sicoob
+(decisão do Agostinho: o misto é manual).
 
 ### `2026-10-30` — Detalhe do cliente pelo back
 Decisão do Agostinho, no percurso da tela 3.3. Os cartões, as abas e o

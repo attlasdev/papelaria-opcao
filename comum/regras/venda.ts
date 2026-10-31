@@ -28,7 +28,7 @@ export const MENSAGENS_VENDA = {
   mistoMeios: 'Escolha pelo menos dois meios com valor maior que zero.',
   mistoTotal: (total: number) => `Distribua exatamente ${reais(total)} entre os meios de pagamento.`,
   mistoDinheiro: 'O dinheiro entregue é menor que a parte paga em espécie.',
-  mistoCartao: 'Informe o tipo de cartão e a maquininha da parte no cartão.',
+  mistoCartao: 'Informe se a parte no cartão é crédito ou débito.',
   notinhaSemCliente: 'A notinha precisa de um cliente identificado.',
   vencimento: 'Informe o vencimento da notinha.',
   vencimentoPassado: 'O vencimento não pode ser antes de hoje.',
@@ -90,11 +90,11 @@ function conferirPagamento(bruto: unknown, comCliente: boolean, hoje: string): P
       // Parcela com zero é meio que a pessoa não usou.
       const usadas = parcelas.filter((x) => (x!.valor as number) > 0).map((x) => ({ meio: x!.meio as MeioPagamento, valor: x!.valor as number }))
       if (usadas.length < 2 || new Set(usadas.map((x) => x.meio)).size !== usadas.length) return falha('validacao', MENSAGENS_VENDA.mistoMeios)
-      // Com valor no cartão, qual cartão e qual maquininha (`R-VENDA-12`); sem, o campo não vale.
+      // Com valor no cartão, crédito ou débito (`R-VENDA-12`); sem, o campo não vale.
       if (!usadas.some((x) => x.meio === 'cartao')) return { forma: 'misto', parcelas: usadas, recebido: p.recebido as number | null, cartao: null }
       const c = objeto(p.cartao)
-      if (!c || !MODALIDADES.includes(c.cartao as ModalidadeCartao) || !MAQUININHAS.includes(c.maquininha as Maquininha)) return falha('validacao', MENSAGENS_VENDA.mistoCartao)
-      return { forma: 'misto', parcelas: usadas, recebido: p.recebido as number | null, cartao: { cartao: c.cartao as ModalidadeCartao, maquininha: c.maquininha as Maquininha } }
+      if (!c || !MODALIDADES.includes(c.cartao as ModalidadeCartao)) return falha('validacao', MENSAGENS_VENDA.mistoCartao)
+      return { forma: 'misto', parcelas: usadas, recebido: p.recebido as number | null, cartao: { cartao: c.cartao as ModalidadeCartao } }
     }
     case 'notinha': {
       if (!comCliente) return falha('validacao', MENSAGENS_VENDA.notinhaSemCliente)
@@ -208,9 +208,10 @@ export function montarVenda(venda: Venda, produtos: Map<string, ProdutoDaVenda>)
       if (pg.parcelas.reduce((t, x) => t + x.valor, 0) !== total) return falha('validacao', MENSAGENS_VENDA.mistoTotal(total))
       const especie = pg.parcelas.find((x) => x.meio === 'dinheiro')?.valor ?? 0
       if (especie > 0 && (pg.recebido === null || pg.recebido < especie)) return falha('validacao', MENSAGENS_VENDA.mistoDinheiro)
+      // O misto é manual: o cartão passa sempre na maquininha Sicoob.
       const noCartao = pg.cartao && {
-        cartao: pg.cartao.cartao, maquininha: pg.cartao.maquininha,
-        rotulo: rotuloPagamento({ meio: 'cartao', cartao: pg.cartao.cartao, maquininha: pg.cartao.maquininha }) ?? null,
+        cartao: pg.cartao.cartao, maquininha: 'sicoob' as const,
+        rotulo: rotuloPagamento({ meio: 'cartao', cartao: pg.cartao.cartao, maquininha: 'sicoob' }) ?? null,
       }
       pagamentos = pg.parcelas.map((x) => linha('venda', x.meio, x.valor,
         x.meio === 'dinheiro' ? emEspecie(x.valor, pg.recebido) : x.meio === 'cartao' && noCartao ? noCartao : {}))

@@ -438,8 +438,11 @@ export type ItemVendido = { produtoId: string; quantidade: number; precoVisto: n
 /** Servico sem cadastro (`R-SERVICO-01`): o nome e o valor sao os da loja. */
 export type ServicoVendido = { nome: string; valor: number; perdas: number | null; observacao: string | null }
 
-/** A parte no cartao do misto (`R-VENDA-12`): obrigatoria quando ha valor no cartao. */
-export type CartaoDoMisto = { cartao: ModalidadeCartao; maquininha: Maquininha }
+/**
+ * A parte no cartao do misto (`R-VENDA-12`): obrigatoria quando ha valor no
+ * cartao. O misto e manual: a maquininha e sempre a Sicoob, gravada pelo back.
+ */
+export type CartaoDoMisto = { cartao: ModalidadeCartao }
 
 /**
  * Como a venda e paga. Dinheiro e misto levam o que a pessoa entregou (o troco

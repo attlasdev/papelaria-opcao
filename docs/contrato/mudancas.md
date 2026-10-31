@@ -40,9 +40,10 @@ componentes, CSS por componente).
   (`R-VENDA-11`); o rótulo do pagamento nasce no back. Pede pessoa e PIN.
   `obterRascunhoFicha` e `salvarRascunhoFicha` guardam a venda em andamento
   (`RascunhoFicha`, produtos por id).
-- **Misto com cartão (`R-VENDA-12`):** o misto leva `cartao` (tipo e
-  maquininha, `CartaoDoMisto`) quando há valor no cartão; sem ele, `validacao`.
-  Na tela, os campos "Tipo de cartão" e "Maquininha" aparecem no misto.
+- **Misto com cartão (`R-VENDA-12`):** o misto leva `cartao` (crédito ou
+  débito, `CartaoDoMisto`) quando há valor no cartão; sem ele, `validacao`. O
+  misto é manual: a maquininha é sempre a Sicoob, gravada pelo back. Na tela,
+  só "Tipo de cartão" aparece no misto.
 - **Na tela:** a ficha aberta não mostra mais o número nem o operador no
   subtítulo (`R-VENDA-10`); concluir abre "Quem está vendendo?". A cobrança
   integrada continua como hoje até a 4.1b.
