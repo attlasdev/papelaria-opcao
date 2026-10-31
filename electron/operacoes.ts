@@ -14,6 +14,7 @@ import { movimentosSqlite } from './banco/movimentos'
 import { clientesSqlite } from './banco/clientes'
 import { vendasSqlite } from './banco/vendas'
 import { fichasSqlite } from './banco/fichas'
+import { recebimentosSqlite } from './banco/recebimentos'
 import { ConexaoAusente } from './conexao'
 import { bytesComprovante } from './escpos'
 import { enviarCru, lerConfigComprovante } from './impressora'
@@ -80,6 +81,7 @@ export const operacoes: Contrato = {
   ...clientesSqlite(bancoDaLoja),
   ...vendasSqlite(bancoDaLoja, tentativas),
   ...fichasSqlite(bancoDaLoja, tentativas),
+  ...recebimentosSqlite(bancoDaLoja, tentativas),
 
   async sessaoAtual() {
     try {

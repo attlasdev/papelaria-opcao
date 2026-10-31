@@ -391,6 +391,13 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   marcar mais caixas, não fundir fichas). Data do pagamento entre a notinha mais
   antiga marcada e hoje.
 - `R-NOTINHA-04` Ficha pendente mostra faixa com as outras notinhas do cliente e "Receber todas".
+- `R-NOTINHA-05` **Recebimento em dinheiro é de hoje** (`2026-10-31`, M7): a data é sempre
+  hoje e o dinheiro entra na gaveta aberta, que é onde a nota está. Pix e
+  cartão aceitam data passada (o extrato diz o dia), entre a notinha mais
+  antiga marcada e hoje. Misto com parte em dinheiro também é de hoje.
+- `R-NOTINHA-06` **Cartão no receber é manual no Sicoob** (`2026-10-31`): sozinho ou no misto,
+  a janela pergunta só crédito ou débito, e o rótulo fica "Cartão débito ·
+  Sicoob". O Pix é manual. A cobrança integrada no receber fica para a 4.1b.
 
 ### Corrigir sem apagar
 - `R-CORRECAO-01` Nada lançado se apaga ou se edita livremente. Três desfazeres, todos com
@@ -454,7 +461,8 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   parcial e com várias notinhas selecionadas. No Misto, duas ou três formas
   somam exatamente o valor a pagar agora; só a parte em dinheiro calcula troco
   e entra na gaveta. O recebimento abate as notinhas da mais antiga para a mais
-  nova, conserva cada meio no histórico/Financeiro e grava tudo junto.
+  nova, conserva cada meio no histórico/Financeiro e grava tudo junto. Pede
+  pessoa e PIN (`R-OPERADOR-02`, `2026-10-31`).
 - `R-CLIENTE-07` Vendas sem identificação: filtros Todos, Dinheiro, Pix e Cartão, sem filtro
   exclusivo para Misto. Vendas mistas aparecem em cada meio usado e conservam
   a divisão dos pagamentos no detalhe da ficha, como no Início.
@@ -769,6 +777,20 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-10-31` — Receber notinhas pelo back; dinheiro só com data de hoje
+Decisão do Agostinho, no percurso da tela 5.1. As notinhas abertas vêm de
+`listarNotinhasAbertas`; `receberNotinhas(recebimento, quem)` grava o
+recebimento e um pagamento por notinha e por meio numa transação, abatendo da
+mais antiga. M7 decidida (`R-NOTINHA-05`): em dinheiro, a data é hoje. Cartão
+manual no Sicoob, com crédito ou débito (`R-NOTINHA-06`).
+
+**Por quê:** dinheiro lançado com data de ontem entrava na gaveta de hoje e
+bagunçava o esperado; com a data presa em hoje, a nota está na gaveta em que
+foi contada. Pix e cartão têm o dia no extrato, então a data passada vale.
+Descartado: dinheiro de data passada fora de qualquer gaveta (a diferença de
+ontem ficaria sem explicação) e o comportamento antigo (gaveta de hoje com
+data de ontem).
 
 ### `2026-10-31` — Detalhe da ficha pelo back, cancelar com conferência depois
 Decisão do Agostinho, no percurso da tela 4.2. A ficha vem de `obterFicha`;

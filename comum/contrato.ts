@@ -539,6 +539,40 @@ export type FichaDetalhe = {
   anotacoes: AnotacaoDaFicha[]
 }
 
+/** Uma notinha que ainda deve (tela 5.1). Dinheiro em centavos. */
+export type NotinhaAberta = {
+  id: string
+  numero: string
+  /** O dia da venda: o recebimento nao pode ser antes dele. */
+  dia: string
+  total: number
+  pago: number
+  emAberto: number
+  vencimento: string
+  situacao: 'a-vencer' | 'em-atraso'
+}
+
+/** As notinhas abertas do cliente, da mais antiga para a mais nova. */
+export type NotinhasAbertas = { cliente: { id: string; nome: string }; notinhas: NotinhaAberta[] }
+
+/**
+ * Um "Receber" (`R-CLIENTE-06`): as notinhas marcadas e o que entrou, por
+ * meio. O valor e a soma das parcelas. `dia`: em dinheiro, sempre hoje
+ * (`R-NOTINHA-05`). `cartao`: credito ou debito, obrigatorio com parcela no
+ * cartao (manual no Sicoob, `R-NOTINHA-06`). `recebido`: o dinheiro que o
+ * cliente entregou, para o troco.
+ */
+export type Recebimento = {
+  notinhas: string[]
+  dia: string
+  parcelas: { meio: MeioPagamento; valor: number }[]
+  cartao: ModalidadeCartao | null
+  recebido: number | null
+}
+
+/** Quanto entrou em cada notinha, da mais antiga para a mais nova. */
+export type RecebimentoFeito = { abatimentos: { fichaId: string; numero: string; valor: number; quitada: boolean }[] }
+
 /**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
@@ -762,6 +796,20 @@ export type Contrato = {
   conferirCancelamento(fichaId: string, dona: Assinatura): Promise<Resultado<FichaDetalhe>>
   /** Lembrete na ficha (`R-FICHA-03`, `R-NOTINHA-02`): so se acrescenta. Texto vazio, `validacao`. */
   anotarFicha(id: string, texto: string, quem: Assinatura): Promise<Resultado<FichaDetalhe>>
+
+  // Receber notinhas (1.0, tela 5.1) -------------------------------------------
+  /** As notinhas do cliente que ainda devem. Cliente que nao existe, `nao-encontrado`. */
+  listarNotinhasAbertas(clienteId: string): Promise<Resultado<NotinhasAbertas>>
+  /**
+   * Recebe uma ou varias notinhas do mesmo cliente numa transacao: um
+   * pagamento por notinha e por meio, abatendo da mais antiga para a mais
+   * nova (`R-CLIENTE-06`). Pede `quem` (`R-OPERADOR-02`). `validacao`:
+   * notinha quitada, cancelada ou de outro cliente, valor acima do em aberto,
+   * meio repetido, cartao sem credito ou debito, dinheiro com data que nao e
+   * hoje (`R-NOTINHA-05`), data antes da venda ou depois de hoje, dinheiro
+   * entregue menor que a parte em dinheiro. `nao-encontrado`: ficha que nao existe.
+   */
+  receberNotinhas(recebimento: Recebimento, quem: Assinatura): Promise<Resultado<RecebimentoFeito>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

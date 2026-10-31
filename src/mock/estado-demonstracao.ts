@@ -4,7 +4,7 @@ import { agoraHorario, dataCalendarioValida, hojeISO, minutoDoDia } from './base
 import { apagarBase, carregarBase, salvarBase } from './base/persistencia'
 import { criarBaseVazia, criarSemente } from './base/semente'
 import { comFechamentosExemplo } from './base/cenario-caixa'
-import type { Base, Boleto, Cliente, Estorno, ServicoVenda, Ficha, Meio, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
+import type { Base, Boleto, Cliente, Estorno, ServicoVenda, Ficha, Maquininha, Meio, ModalidadeCartao, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
 
 export * from './base/derivados'
 export * from './base/datas'
@@ -309,6 +309,32 @@ type RecebimentoNotinhas = { data: string; horario: string } & (
   | { meio: Meio; valor: number }
   | { parcelas: { meio: Meio; valor: number }[] }
 )
+
+/**
+ * Grava um recebimento já repartido pelas regras da 1.0 (`comum/regras/recebimento.ts`):
+ * uma linha por notinha e por meio, numa gravação, com quem recebeu.
+ */
+export function gravarRecebimento(
+  linhas: { fichaId: string; meio: Meio; valor: number; rotulo: string | null; cartao: ModalidadeCartao | null; maquininha: Maquininha | null }[],
+  data: string, horario: string, operador: string,
+) {
+  const registradoEm = new Date().toISOString()
+  const turnoCaixaId = turnoCaixaAberto()
+  mudar({
+    ...base,
+    fichas: base.fichas.map((f) => {
+      const suas = linhas.filter((l) => l.fichaId === f.id)
+      if (!suas.length) return f
+      return {
+        ...f,
+        pagamentos: [...f.pagamentos, ...suas.map((l) => ({
+          data, horario, meio: l.meio, valor: l.valor, operador, registradoEm, turnoCaixaId,
+          ...(l.rotulo ? { rotulo: l.rotulo } : {}), ...(l.cartao ? { cartao: l.cartao } : {}), ...(l.maquininha ? { maquininha: l.maquininha } : {}),
+        }))],
+      }
+    }),
+  })
+}
 
 /** Recebe uma ou várias notinhas, em uma gravação; cada meio conserva seu valor. */
 export function receberNotinhas(ids: string[], pagamento: RecebimentoNotinhas): Abatimento[] {

@@ -31,6 +31,17 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-31` — Receber notinhas (1.0, tela 5.1)
+
+- **Contrato:** `listarNotinhasAbertas(clienteId)` devolve as notinhas que
+  ainda devem, da mais antiga para a mais nova. `receberNotinhas(recebimento,
+  quem)` recebe o `Recebimento` (notinhas, dia, parcelas por meio, tipo do
+  cartão, dinheiro entregue) e devolve o que entrou em cada notinha. Pede
+  pessoa e PIN.
+- **Na janela:** em dinheiro, a data é sempre hoje (`R-NOTINHA-05`); com
+  cartão, pergunta crédito ou débito, e o cartão é manual no Sicoob
+  (`R-NOTINHA-06`). Confirmar abre "Quem está fazendo?".
+
 ### `2026-10-31` — Detalhe da ficha (1.0, tela 4.2)
 
 - **Contrato:** `obterFicha(id)` devolve a `FichaDetalhe` (cliente, quem
