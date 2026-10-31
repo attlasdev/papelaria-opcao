@@ -60,10 +60,7 @@ Os motivos se repetem em quatro tipos:
 | Número | Tipo | Quando ganha teste |
 | --- | --- | --- |
 | R-VENDA-01 | tela | Fase 3 |
-| R-VENDA-02 | contrato | tela 4.1 (busca do cliente na ficha, venda sem identificação) |
 | R-VENDA-03 | contrato | tela 4.1 |
-| R-VENDA-05 | contrato | tela 4.1 (rascunho no banco) |
-| R-VENDA-06 | contrato | tela 4.1 (cada bloqueio vira recusa do back) |
 | R-VENDA-08 | tela | tela 2.1 / Fase 3 |
 | R-NOTINHA-04 | tela | Fase 3 |
 | R-FICHA-01 | tela | Fase 3 |

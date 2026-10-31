@@ -262,7 +262,8 @@ export function fecharTurnoCaixa(id: string, contadoFechamento: number, justific
 }
 
 /** Venda concluída somente se todas as unidades já existirem no estoque. */
-export function concluirFicha(dados: Omit<Ficha, 'id' | 'operador'>) {
+/** `operador`: quem assinou a venda (1.0); sem ele, o operador da base (0.1). */
+export function concluirFicha(dados: Omit<Ficha, 'id' | 'operador'>, operador = base.operador) {
   // Ficha só de serviço vale: uma cópia não tem item de estoque.
   const servicos = dados.servicos ?? []
   if (servicos.some((s) => !servicoVendaValido(s))) return null
@@ -271,7 +272,10 @@ export function concluirFicha(dados: Omit<Ficha, 'id' | 'operador'>) {
   const meios = new Set(dados.pagamentos.map((pagamento) => pagamento.meio))
   const somaPagamentos = dados.pagamentos.reduce((total, pagamento) => total + pagamento.valor, 0)
   if (dados.forma === 'misto' && (meios.size < 2 || meios.size !== dados.pagamentos.length || somaPagamentos !== dados.total || dados.pagamentos.some((pagamento) => pagamento.valor <= 0))) return null
-  if (dados.forma !== 'misto' && dados.forma !== 'notinha' && (dados.pagamentos.length !== 1 || dados.pagamentos[0].meio !== dados.forma || somaPagamentos !== dados.total)) return null
+  // Total zero (serviço de graça, desconto inteiro) não tem pagamento: o banco da 1.0 não aceita pagamento de zero.
+  const avistaFecha = dados.total === 0 ? dados.pagamentos.length <= 1 && somaPagamentos === 0
+    : dados.pagamentos.length === 1 && dados.pagamentos[0].meio === dados.forma && somaPagamentos === dados.total
+  if (dados.forma !== 'misto' && dados.forma !== 'notinha' && !avistaFecha) return null
   if (dados.pagamentos.some((pagamento) => !Number.isSafeInteger(pagamento.valor) || pagamento.valor < 0)) return null
   const id = proximoNumeroFicha(base)
   const movimentos: MovimentoEstoque[] = []
@@ -289,10 +293,10 @@ export function concluirFicha(dados: Omit<Ficha, 'id' | 'operador'>) {
     fichas: [...base.fichas, {
       ...dados,
       id,
-      operador: base.operador,
+      operador,
       itens: dados.itens.map((item) => ({ ...item, baixaEstoque: baixas.get(item.codigo) ?? 0 })),
       ...(servicos.length ? { servicos: servicos.map((s) => ({ ...s, nome: s.nome.trim() })) } : {}),
-      pagamentos: dados.pagamentos.map((pagamento) => ({ ...pagamento, operador: base.operador, registradoEm: new Date().toISOString(), turnoCaixaId: turnoCaixaAberto() })),
+      pagamentos: dados.pagamentos.map((pagamento) => ({ ...pagamento, operador, registradoEm: new Date().toISOString(), turnoCaixaId: turnoCaixaAberto() })),
     }],
     produtos,
     movimentosEstoque: [...movimentos, ...base.movimentosEstoque],

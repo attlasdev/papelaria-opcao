@@ -91,7 +91,7 @@ Para o back:
 
 | Tela | Lê | Grava |
 | --- | --- | --- |
-| `criar-ficha/CriarFicha` | base inteira, rascunho, **próximo número de ficha** | `concluirFicha`, depois `prepararRascunho` (nota); `salvarRascunhoFicha` a cada mudança |
+| `criar-ficha/CriarFicha` | rascunho (`obterRascunhoFicha`); clientes e produtos pelas operações deles | `concluirFicha(venda, quem)`, `salvarRascunhoFicha`: **no contrato desde `2026-10-31` (tela 4.1a)**; a cobrança integrada (A4) é a 4.1b |
 | `criar-ficha/cliente/ClienteFicha` | clientes + resumo (busca e aviso de quem deve) | — |
 | `criar-ficha/itens/ItensFicha` | produtos (bipe e busca) | — |
 | `detalhe-ficha/*` | ficha, notinha, outras notinhas do cliente | `cancelarFicha`, `estornarPagamento`, `anotarFicha` |

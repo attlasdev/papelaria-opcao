@@ -365,6 +365,14 @@ com "Nota:". Item sem um dos dois quebra a suíte.
 - `R-VENDA-09` **Pagamento misto à vista:** distribuir exatamente o total entre pelo menos
   dois meios, cada um com valor positivo. Cada parcela aparece separada no
   Financeiro; o troco é calculado só sobre a parte em dinheiro.
+- `R-VENDA-10` **O número da ficha nasce ao concluir** (`2026-10-31`), na sequência do
+  banco; a tela não mostra uma previsão antes (com duas máquinas, erraria). O
+  subtítulo da ficha aberta mostra só a hora em que abriu.
+- `R-VENDA-11` **O preço é o do cadastro** (`2026-10-31`): a tela manda o produto, a
+  quantidade e o preço que mostrou; o back calcula o total. Se o preço do
+  cadastro mudou desde que o item entrou na ficha, a venda não grava, aparece
+  "O preço de X mudou de R$ A para R$ B" e a ficha passa a mostrar o preço
+  novo, para a pessoa confirmar com o cliente.
 
 ### Notinha (compra fiada)
 - `R-NOTINHA-01` Rótulo na tela: "Notinha". Situação calculada: pendente, vencida, paga,
@@ -745,6 +753,22 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-10-31` — Nova ficha pelo back, em duas rodadas
+Decisão do Agostinho, no percurso da tela 4.1. **4.1a:** `concluirFicha(venda,
+quem)` grava ficha, itens, serviços, pagamentos e a baixa do estoque numa
+transação, com o preço do cadastro (`R-VENDA-11`), o número na sequência
+(`R-VENDA-10`) e pessoa e PIN (`R-OPERADOR-02`); o rascunho vai para o banco
+(`obterRascunhoFicha`, `salvarRascunhoFicha`). **4.1b:** a cobrança na
+maquininha integrada (A4): gravada antes de cobrar, uma venda por cobrança
+aprovada, reconciliação ao abrir.
+
+**Por quê:** a cobrança integrada é a parte mais delicada e ainda não há o
+Mercado Pago real; separada, cada rodada tem a sua validação. Até a 4.1b, a
+venda integrada cobra antes de pedir o PIN (como hoje cobra antes de gravar);
+para não ficar cliente que pagou sem venda, a janela do PIN não fecha depois
+de a cobrança aprovar. A devolução parcial (D5) continua fora por ora (P6):
+só o cancelamento da ficha inteira.
 
 ### `2026-10-30` — Detalhe do cliente pelo back
 Decisão do Agostinho, no percurso da tela 3.3. Os cartões, as abas e o

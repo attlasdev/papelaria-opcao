@@ -31,6 +31,19 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-31` — Nova ficha, primeira rodada (1.0, tela 4.1a)
+
+- **Contrato:** `concluirFicha(venda, quem)` devolve `{ id, numero }`. A
+  `Venda` leva produto, quantidade e o preço que a tela mostrou (`precoVisto`),
+  serviços, desconto e o pagamento (`PagamentoVenda`, um formato por forma). O
+  back cobra o preço do cadastro e recusa com `conflito` se mudou
+  (`R-VENDA-11`); o rótulo do pagamento nasce no back. Pede pessoa e PIN.
+  `obterRascunhoFicha` e `salvarRascunhoFicha` guardam a venda em andamento
+  (`RascunhoFicha`, produtos por id).
+- **Na tela:** a ficha aberta não mostra mais o número nem o operador no
+  subtítulo (`R-VENDA-10`); concluir abre "Quem está vendendo?". A cobrança
+  integrada continua como hoje até a 4.1b.
+
 ### `2026-10-30` — Detalhe do cliente (1.0, tela 3.3)
 
 - **Contrato:** `listarComprasDoCliente` ganha o `filtro` (`'todas'`,

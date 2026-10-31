@@ -426,6 +426,65 @@ export type PaginaProdutos = {
   categorias: string[]
 }
 
+export type MeioPagamento = 'dinheiro' | 'pix' | 'cartao'
+export type Maquininha = 'mercado-pago' | 'sicoob'
+export type ModalidadeCartao = 'credito' | 'debito'
+
+/**
+ * Um produto da venda (tela 4.1). `precoVisto`: o preco que a tela mostrou;
+ * o back cobra o do cadastro e recusa se mudou (`R-VENDA-11`).
+ */
+export type ItemVendido = { produtoId: string; quantidade: number; precoVisto: number }
+/** Servico sem cadastro (`R-SERVICO-01`): o nome e o valor sao os da loja. */
+export type ServicoVendido = { nome: string; valor: number; perdas: number | null; observacao: string | null }
+
+/**
+ * Como a venda e paga. Dinheiro e misto levam o que a pessoa entregou (o troco
+ * sai dele, `R-VENDA-09`); a notinha, o vencimento e a entrada na hora.
+ * `bandeira`: a que a maquininha integrada devolveu (ate a 4.1b, quando o back
+ * passa a le-la da cobranca gravada).
+ */
+export type PagamentoVenda =
+  | { forma: 'dinheiro'; recebido: number }
+  | { forma: 'pix'; maquininha: 'mercado-pago' | null }
+  | { forma: 'cartao'; cartao: ModalidadeCartao; maquininha: Maquininha; bandeira: string | null }
+  | { forma: 'misto'; parcelas: { meio: MeioPagamento; valor: number }[]; recebido: number | null }
+  | { forma: 'notinha'; vencimento: string; entrada: { meio: MeioPagamento; valor: number } | null }
+
+/** A venda do balcao. Sem cliente: venda sem identificacao (`R-VENDA-02`). */
+export type Venda = {
+  clienteId: string | null
+  itens: ItemVendido[]
+  servicos: ServicoVendido[]
+  desconto: number
+  pagamento: PagamentoVenda
+}
+
+/** O numero nasce ao concluir (`R-VENDA-10`), ex. "1131". */
+export type FichaConcluida = { id: string; numero: string }
+
+/**
+ * A venda em andamento (`R-VENDA-05`): o estado da tela, guardado como esta.
+ * Os produtos vao por id; ao retomar, a tela le o cadastro de novo.
+ */
+export type RascunhoFicha = {
+  clienteId: string | null
+  semIdentificacao: boolean
+  itens: { produtoId: string; quantidade: number }[]
+  servicos: ServicoVendido[]
+  desconto: number
+  forma: FormaFicha
+  recebido: number
+  vencimento: string
+  entrada: number
+  meioEntrada: MeioPagamento
+  divisao: Record<MeioPagamento, number>
+  recebidoMisto: number
+  cartao: ModalidadeCartao
+  maquininhaCartao: Maquininha
+  pixNaMaquininha: boolean
+}
+
 /**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
@@ -615,6 +674,24 @@ export type Contrato = {
    * `porPagina` de 1 a 100, senao `validacao`. Cancelamento entra em "todas".
    */
   listarMovimentosEstoque(filtro: FiltroMovimentos, pagina: number, porPagina: number): Promise<Resultado<PaginaMovimentos>>
+
+  // Venda (1.0, tela 4.1) ----------------------------------------------------
+  /**
+   * Conclui a venda: ficha, itens, servicos, pagamentos e a baixa do estoque
+   * numa transacao, com o preco do cadastro e o numero na sequencia
+   * (`R-VENDA-10`, `11`). Pede `quem` (`R-OPERADOR-02`) e limpa o rascunho.
+   * `validacao` com a mensagem do primeiro problema (`R-VENDA-06`, `07`, `09`,
+   * `R-NOTINHA-02`, `03`): sem item nem servico, saldo que nao cobre, produto
+   * desativado, desconto maior que o subtotal, dinheiro que nao cobre, misto
+   * que nao fecha, notinha sem cliente, vencida ou com entrada que cobre o
+   * total. `nao-encontrado`: produto ou cliente que nao existe. `conflito`: o
+   * preco mudou, com o preco novo na mensagem.
+   */
+  concluirFicha(venda: Venda, quem: Assinatura): Promise<Resultado<FichaConcluida>>
+  /** A venda em andamento, uma so (`R-VENDA-05`); `null` se nao ha. */
+  obterRascunhoFicha(): Promise<Resultado<RascunhoFicha | null>>
+  /** Guarda a venda em andamento; `null` apaga. Fora do formato, `validacao`. */
+  salvarRascunhoFicha(rascunho: RascunhoFicha | null): Promise<Resultado<null>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

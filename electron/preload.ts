@@ -49,6 +49,9 @@ const api: Contrato = {
   editarCliente: (id, dados) => ipcRenderer.invoke('editarCliente', id, dados),
   listarClientes: (filtro, busca, pagina, porPagina) => ipcRenderer.invoke('listarClientes', filtro, busca, pagina, porPagina),
   listarComprasDoCliente: (clienteId, filtro, pagina, porPagina) => ipcRenderer.invoke('listarComprasDoCliente', clienteId, filtro, pagina, porPagina),
+  concluirFicha: (venda, quem) => ipcRenderer.invoke('concluirFicha', venda, quem),
+  obterRascunhoFicha: () => ipcRenderer.invoke('obterRascunhoFicha'),
+  salvarRascunhoFicha: (rascunho) => ipcRenderer.invoke('salvarRascunhoFicha', rascunho),
 }
 
 contextBridge.exposeInMainWorld('api', api)
