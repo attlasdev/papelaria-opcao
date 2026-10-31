@@ -1,6 +1,6 @@
 /**
  * O cadastro e a lista de clientes sobre a base da demonstração (1.0, telas
- * 3.1 e 3.2; `R-CLIENTE-01` a `04`, `09`, `10`). Lado "mock" dos testes de contrato e, até a
+ * 3.1 a 3.3; `R-CLIENTE-01` a `05`, `09`, `10`). Lado "mock" dos testes de contrato e, até a
  * Fase 3, o que responde no app (`src/dados/api.ts`).
  *
  * A base ainda guarda o cliente como a 0.1 (documento e telefone com máscara,
@@ -8,7 +8,7 @@
  * as telas delas; aqui ele vira os campos do contrato, iguais aos do SQLite.
  */
 import { falha, ok, type Cliente as ClienteContrato, type Contrato, type DadosCliente, type Resultado } from '../../../comum/contrato'
-import { clienteValido, conferirPedidoDeClientes, conferirPedidoDeCompras, formatarDocumento, formatarTelefone, MENSAGENS_CLIENTE, paginaDeClientes, paginaDeCompras, type FichaDaCompra } from '../../../comum/regras/cliente'
+import { clienteValido, conferirPedidoDeClientes, conferirPedidoDeCompras, formatarDocumento, formatarTelefone, MENSAGENS_CLIENTE, paginaDeClientes, paginaDeCompras, type FichaDaCompra, type FichaDoHistorico } from '../../../comum/regras/cliente'
 import { hojeEmSaoPaulo } from '../../../comum/regras/entrada'
 import { numeroFicha } from '../../../comum/regras/movimentos'
 import { juntarEndereco, separarEndereco } from '../../dados/endereco'
@@ -33,7 +33,8 @@ function paraCliente(c: Cliente): ClienteContrato {
   const { cidade, uf } = e
   const ou = (v: string | undefined) => v?.trim() || null
   return {
-    id: c.id, codigo: c.id, nome: c.nome,
+    // A base guarda só o dia; a semente do SQLite põe 9h desse dia.
+    id: c.id, codigo: c.id, nome: c.nome, criadoEm: new Date(`${c.desde}T09:00:00-03:00`).toISOString(),
     documento: c.documento === SEM_DOCUMENTO ? null : ou(digitos(c.documento)),
     telefone: c.telefone === SEM_TELEFONE ? null : ou(digitos(c.telefone)),
     rua: ou(e.rua), numero: ou(e.numero), complemento: ou(c.fiscal?.complemento), bairro: ou(e.bairro),
@@ -54,6 +55,17 @@ function paraCompra(f: Ficha): FichaDaCompra {
     total: f.total, forma: f.forma, vencimento: f.vencimento ?? null, cancelada: Boolean(f.cancelamento),
     pago: validos.reduce((soma, p) => soma + p.valor, 0),
     rotulo: f.forma === 'notinha' || f.forma === 'misto' ? null : f.pagamentos[0]?.rotulo ?? null,
+  }
+}
+
+function paraHistorico(f: Ficha): FichaDoHistorico {
+  const dias = f.pagamentos.filter((p) => !p.estorno).map((p) => p.data).sort()
+  return {
+    ...paraCompra(f),
+    itens: f.itens.map((i) => ({ descricao: i.descricao, quantidade: i.quantidade })),
+    servicos: (f.servicos ?? []).map((s) => s.nome),
+    canceladaEm: f.cancelamento?.data ?? null,
+    ultimoPagamento: dias.at(-1) ?? null,
   }
 }
 
@@ -133,12 +145,12 @@ export function criarClientesDaBase(): OperacoesCliente {
       return ok(paginaDeClientes(todos, filtro, busca, pagina, porPagina, semIdentificacao, hoje))
     },
 
-    async listarComprasDoCliente(clienteId, pagina, porPagina) {
-      const problema = conferirPedidoDeCompras(clienteId, pagina, porPagina)
+    async listarComprasDoCliente(clienteId, filtro, pagina, porPagina) {
+      const problema = conferirPedidoDeCompras(clienteId, filtro, pagina, porPagina)
       if (problema) return problema
       if (!buscar(clienteId)) return falha('nao-encontrado', MENSAGENS_CLIENTE.naoEncontrado)
-      const suas = obterBase().fichas.filter((f) => f.clienteId === clienteId).map(paraCompra)
-      return ok(paginaDeCompras(suas, pagina, porPagina, hojeEmSaoPaulo()))
+      const suas = obterBase().fichas.filter((f) => f.clienteId === clienteId).map(paraHistorico)
+      return ok(paginaDeCompras(suas, filtro, pagina, porPagina, hojeEmSaoPaulo()))
     },
   }
 }

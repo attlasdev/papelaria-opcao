@@ -1,6 +1,6 @@
 /**
- * O cadastro e a lista de clientes no banco da 1.0 (telas 3.1 e 3.2;
- * `R-CLIENTE-01` a `04`, `09`, `10`). As regras estão em `comum/regras/`
+ * O cadastro, a lista e o histórico de clientes no banco da 1.0 (telas 3.1 a
+ * 3.3; `R-CLIENTE-01` a `05`, `09`, `10`). As regras estão em `comum/regras/`
  * (`cliente.ts`, `notinha.ts`), as mesmas do mock; aqui fica o que é do banco:
  * o número que nasce na sequência, o documento único pelos dígitos (restrição
  * `unique` do schema) e o que já foi pago, sem os pagamentos estornados.
@@ -8,7 +8,7 @@
 import { falha, ok, type Cliente, type Contrato, type DadosCliente, type Falha, type Resultado } from '../../comum/contrato'
 import {
   clienteValido, codigoCliente, conferirPedidoDeClientes, conferirPedidoDeCompras, MENSAGENS_CLIENTE, paginaDeClientes, paginaDeCompras,
-  type ClienteDaLista, type FichaDaCompra,
+  type ClienteDaLista, type FichaDaCompra, type FichaDoHistorico,
 } from '../../comum/regras/cliente'
 import { hojeEmSaoPaulo } from '../../comum/regras/entrada'
 import { numeroFicha } from '../../comum/regras/movimentos'
@@ -17,14 +17,14 @@ import { proximoNumero, transacao, type Banco } from './banco'
 type OperacoesCliente = Pick<Contrato, 'obterCliente' | 'cadastrarCliente' | 'editarCliente' | 'listarClientes' | 'listarComprasDoCliente'>
 
 type Linha = {
-  id: string; numero: number; nome: string; documento: string | null; telefone: string | null
+  id: string; numero: number; criado_em: string; nome: string; documento: string | null; telefone: string | null
   logradouro: string | null; numero_endereco: string | null; complemento: string | null; bairro: string | null
   cidade: string | null; uf: string | null; cep: string | null
   tipo_contribuinte: DadosCliente['fiscal']['tipoContribuinte']; tipo_cliente: DadosCliente['fiscal']['tipoCliente']; inscricao_estadual: string | null
 }
 
 const paraCliente = (l: Linha): Cliente => ({
-  id: l.id, codigo: codigoCliente(l.numero), nome: l.nome, documento: l.documento, telefone: l.telefone,
+  id: l.id, codigo: codigoCliente(l.numero), criadoEm: l.criado_em, nome: l.nome, documento: l.documento, telefone: l.telefone,
   rua: l.logradouro, numero: l.numero_endereco, complemento: l.complemento, bairro: l.bairro, cidade: l.cidade, uf: l.uf, cep: l.cep,
   fiscal: { tipoContribuinte: l.tipo_contribuinte, tipoCliente: l.tipo_cliente, inscricaoEstadual: l.inscricao_estadual },
 })
@@ -125,12 +125,30 @@ export function clientesSqlite(banco: () => Banco): OperacoesCliente {
       return ok(paginaDeClientes(todos, filtro, busca, pagina, porPagina, semIdentificacao, hoje))
     },
 
-    async listarComprasDoCliente(clienteId, pagina, porPagina) {
-      const problema = conferirPedidoDeCompras(clienteId, pagina, porPagina)
+    async listarComprasDoCliente(clienteId, filtro, pagina, porPagina) {
+      const problema = conferirPedidoDeCompras(clienteId, filtro, pagina, porPagina)
       if (problema) return problema
       if (!buscar(clienteId)) return falha('nao-encontrado', MENSAGENS_CLIENTE.naoEncontrado)
-      const fichas = banco().prepare(`${FICHAS} where f.cliente_id = ?`).all(clienteId) as LinhaFicha[]
-      return ok(paginaDeCompras(fichas.map(paraCompra), pagina, porPagina, hojeEmSaoPaulo()))
+      const fichas = banco().prepare(`
+        select l.*,
+               (select c.dia from ficha_cancelamento c where c.ficha_id = l.id) as cancelada_em,
+               (select max(p.dia) from pagamento p where p.ficha_id = l.id
+                and not exists (select 1 from pagamento_estorno e where e.pagamento_id = p.id)) as ultimo_pagamento
+        from (${FICHAS} where f.cliente_id = ?) l`).all(clienteId) as (LinhaFicha & { cancelada_em: string | null; ultimo_pagamento: string | null })[]
+      const itens = banco().prepare(`
+        select i.ficha_id, i.descricao, i.quantidade from ficha_item i join ficha f on f.id = i.ficha_id
+        where f.cliente_id = ? order by i.rowid`).all(clienteId) as { ficha_id: string; descricao: string; quantidade: number }[]
+      const servicos = banco().prepare(`
+        select s.ficha_id, s.nome from ficha_servico s join ficha f on f.id = s.ficha_id
+        where f.cliente_id = ? order by s.rowid`).all(clienteId) as { ficha_id: string; nome: string }[]
+      const historico = fichas.map((l): FichaDoHistorico => ({
+        ...paraCompra(l),
+        itens: itens.filter((i) => i.ficha_id === l.id).map((i) => ({ descricao: i.descricao, quantidade: i.quantidade })),
+        servicos: servicos.filter((x) => x.ficha_id === l.id).map((x) => x.nome),
+        canceladaEm: l.cancelada_em,
+        ultimoPagamento: l.ultimo_pagamento,
+      }))
+      return ok(paginaDeCompras(historico, filtro, pagina, porPagina, hojeEmSaoPaulo()))
     },
   }
 }

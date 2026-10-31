@@ -209,6 +209,8 @@ export type Cliente = DadosCliente & {
   id: string
   /** O codigo de exibicao, ex. "CLI-0104". Nasce no banco ao salvar. */
   codigo: string
+  /** ISO 8601, UTC: o "cliente desde" do detalhe (3.3). */
+  criadoEm: string
 }
 
 /**
@@ -247,6 +249,8 @@ export type PaginaClientes = {
 export type FormaFicha = 'dinheiro' | 'pix' | 'cartao' | 'misto' | 'notinha'
 /** A vista e sempre `paga`; a notinha, pelo que falta e pelo vencimento. */
 export type SituacaoCompra = 'paga' | 'a-vencer' | 'em-atraso' | 'cancelada'
+/** As abas do historico (3.3). A cancelada so aparece em `todas`. */
+export type FiltroCompras = 'todas' | 'paga' | 'a-vencer' | 'em-atraso'
 
 /** Uma ficha no historico do cliente. Dinheiro em centavos. */
 export type CompraCliente = {
@@ -261,15 +265,36 @@ export type CompraCliente = {
   rotulo: string | null
   situacao: SituacaoCompra
   emAberto: number
+  /** So a notinha; `AAAA-MM-DD`. */
+  vencimento: string | null
+  /** Notinha paga: o dia do ultimo pagamento que vale; senao `null`. */
+  quitadaEm: string | null
+  /** O dia do cancelamento; `AAAA-MM-DD`. */
+  canceladaEm: string | null
+  /** Os produtos, na ordem da ficha, com o nome de quando foi vendido. */
+  itens: { descricao: string; quantidade: number }[]
+  /** Os nomes dos servicos da ficha. */
+  servicos: string[]
 }
 
 export type PaginaCompras = {
   compras: CompraCliente[]
-  /** Quantas fichas o cliente tem, canceladas inclusive. */
+  /** Quantas fichas o filtro acha, somando todas as paginas. */
   total: number
   pagina: number
-  /** Sem as canceladas: o que a tela chama de compras. */
-  resumo: { compras: number; totalComprado: number }
+  /** Do cliente inteiro, sem filtro. Compras e ticket medio sem as canceladas. */
+  resumo: {
+    compras: number
+    totalComprado: number
+    /** Arredondado ao centavo; 0 sem compras. */
+    ticketMedio: number
+    /** Soma do que falta pagar nas notinhas, e quantas faltam. */
+    emAberto: number
+    notinhasEmAberto: number
+    situacao: SituacaoCliente
+    /** As abas: `todas` conta as canceladas; `pagas`, nao. */
+    contagem: { todas: number; pagas: number; aVencer: number; emAtraso: number }
+  }
 }
 
 /** Como o produto e vendido, e portanto contado no estoque. */
@@ -508,10 +533,10 @@ export type Contrato = {
   listarClientes(filtro: FiltroClientes, busca: string, pagina: number, porPagina: number): Promise<Resultado<PaginaClientes>>
   /**
    * As fichas do cliente, da mais nova para a mais velha: as tres recentes da
-   * lista (3.2) e o historico do detalhe (3.3). Cliente que nao existe,
-   * `nao-encontrado`.
+   * lista (3.2) e o historico do detalhe (3.3), com os cartoes e as abas.
+   * Cliente que nao existe, `nao-encontrado`.
    */
-  listarComprasDoCliente(clienteId: string, pagina: number, porPagina: number): Promise<Resultado<PaginaCompras>>
+  listarComprasDoCliente(clienteId: string, filtro: FiltroCompras, pagina: number, porPagina: number): Promise<Resultado<PaginaCompras>>
 
   // Produto (1.0, tela 2.1) --------------------------------------------------
   // Dado fora do formato, `validacao` com a mensagem do primeiro campo errado;

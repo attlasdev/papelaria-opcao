@@ -43,13 +43,13 @@ Financeiro/Caixa → Início, sino, busca e notas.
 | Tela | Lê | Grava |
 | --- | --- | --- |
 | `clientes/Clientes` | lista de clientes com resumo (total, notinhas, situação) e as 3 compras recentes — `listarClientes`, `listarComprasDoCliente`: **no contrato desde `2026-10-30` (tela 3.2)** | — |
-| `detalhe-cliente/DetalheCliente` | cliente, resumo, histórico de fichas | — |
+| `detalhe-cliente/DetalheCliente` | cliente (`obterCliente`), cartões, abas e histórico paginado (`listarComprasDoCliente`): **no contrato desde `2026-10-30` (tela 3.3)** | — |
 | `detalhe-cliente/receber/ReceberNotinhas` | notinhas abertas do cliente | `receberNotinhas` |
 | `formulario-cliente/JanelaCliente` | o cliente (`obterCliente`); o documento repetido é o back que confere | `cadastrarCliente`, `editarCliente` — **no contrato desde `2026-10-30` (tela 3.1)** |
 | `vendas-sem-identificacao/VendasSemIdentificacao` | fichas sem cliente | — |
 
 Operações propostas: `listarClientes(filtro, busca, pagina, porPagina)` (feita),
-`obterCliente(id)` (feita, só o cadastro), `listarComprasDoCliente(id, pagina,
+`obterCliente(id)` (feita, só o cadastro), `listarComprasDoCliente(id, filtro, pagina,
 porPagina)` (feita; o histórico da 3.3), `listarNotinhasAbertas(clienteId)`,
 `cadastrarCliente`, `editarCliente`, `receberNotinhas`, `listarVendasSemIdentificacao(periodo, meio)`.
 

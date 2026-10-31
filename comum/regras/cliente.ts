@@ -3,7 +3,7 @@
  * `09` e `10`), uma vez só para o mock e o SQLite, e para a tela apontar o
  * campo errado antes de mandar. Funções puras.
  */
-import { falha, type CompraCliente, type DadosCliente, type Falha, type FiltroClientes, type LinhaCliente, type PaginaClientes, type PaginaCompras } from '../contrato'
+import { falha, type CompraCliente, type DadosCliente, type Falha, type FiltroClientes, type FiltroCompras, type LinhaCliente, type PaginaClientes, type PaginaCompras } from '../contrato'
 import { emAberto, situacaoCliente, situacaoCompra, type FichaDaConta } from './notinha'
 import { paginaQueExiste, paraBusca, POR_PAGINA_MAXIMO, textoDoCadastro } from './produto'
 
@@ -188,25 +188,57 @@ export function paginaDeClientes(
 /** Uma ficha do cliente como cada lado junta. */
 export type FichaDaCompra = FichaDaConta & Pick<CompraCliente, 'id' | 'numero' | 'registradoEm' | 'rotulo'>
 
-/** O histórico do cliente: da mais nova para a mais velha; a cancelada fica, mas não é compra. */
-export function paginaDeCompras(fichas: FichaDaCompra[], pagina: number, porPagina: number, hoje: string): PaginaCompras {
-  const ordem = [...fichas].sort((a, b) => b.registradoEm.localeCompare(a.registradoEm) || Number(b.numero) - Number(a.numero))
-  const compras = ordem.filter((f) => !f.cancelada)
-  const atual = paginaQueExiste(pagina, ordem.length, porPagina)
+/** A ficha do histórico (3.3): o que a linha mostra além da conta. */
+export type FichaDoHistorico = FichaDaCompra & Pick<CompraCliente, 'itens' | 'servicos' | 'canceladaEm'> & {
+  /** O dia do último pagamento que vale (`AAAA-MM-DD`), ou `null`. */
+  ultimoPagamento: string | null
+}
+
+/**
+ * O histórico do cliente (`R-CLIENTE-05`): da mais nova para a mais velha. A
+ * cancelada fica em "Todas", mas não é compra nem entra no ticket médio. Os
+ * cartões e as abas contam o cliente inteiro; o filtro só escolhe as linhas.
+ */
+export function paginaDeCompras(fichas: FichaDoHistorico[], filtro: FiltroCompras, pagina: number, porPagina: number, hoje: string): PaginaCompras {
+  const ordem = [...fichas]
+    .sort((a, b) => b.registradoEm.localeCompare(a.registradoEm) || Number(b.numero) - Number(a.numero))
+    .map((f): CompraCliente => {
+      const situacao = situacaoCompra(f, hoje)
+      return {
+        id: f.id, numero: f.numero, registradoEm: f.registradoEm, total: f.total, forma: f.forma, rotulo: f.rotulo,
+        situacao, emAberto: emAberto(f), vencimento: f.forma === 'notinha' ? f.vencimento : null,
+        quitadaEm: f.forma === 'notinha' && situacao === 'paga' ? f.ultimoPagamento : null,
+        canceladaEm: f.cancelada ? f.canceladaEm : null, itens: f.itens, servicos: f.servicos,
+      }
+    })
+  const compras = ordem.filter((c) => c.situacao !== 'cancelada')
+  const abertas = ordem.filter((c) => c.emAberto > 0)
+  const contar = (situacao: CompraCliente['situacao']) => ordem.filter((c) => c.situacao === situacao).length
+  const totalComprado = compras.reduce((soma, c) => soma + c.total, 0)
+  const achadas = filtro === 'todas' ? ordem : ordem.filter((c) => c.situacao === filtro)
+  const atual = paginaQueExiste(pagina, achadas.length, porPagina)
   return {
-    compras: ordem.slice((atual - 1) * porPagina, atual * porPagina).map((f) => ({
-      id: f.id, numero: f.numero, registradoEm: f.registradoEm, total: f.total, forma: f.forma, rotulo: f.rotulo,
-      situacao: situacaoCompra(f, hoje), emAberto: emAberto(f),
-    })),
-    total: ordem.length,
+    compras: achadas.slice((atual - 1) * porPagina, atual * porPagina),
+    total: achadas.length,
     pagina: atual,
-    resumo: { compras: compras.length, totalComprado: compras.reduce((soma, f) => soma + f.total, 0) },
+    resumo: {
+      compras: compras.length,
+      totalComprado,
+      ticketMedio: compras.length ? Math.round(totalComprado / compras.length) : 0,
+      emAberto: abertas.reduce((soma, c) => soma + c.emAberto, 0),
+      notinhasEmAberto: abertas.length,
+      situacao: situacaoCliente(ordem.map((c) => c.situacao)),
+      contagem: { todas: ordem.length, pagas: contar('paga'), aVencer: contar('a-vencer'), emAtraso: contar('em-atraso') },
+    },
   }
 }
 
-/** O pedido do histórico: id e números inteiros. */
-export function conferirPedidoDeCompras(clienteId: unknown, pagina: unknown, porPagina: unknown): Falha | null {
+const FILTROS_COMPRAS: FiltroCompras[] = ['todas', 'paga', 'a-vencer', 'em-atraso']
+
+/** O pedido do histórico: id, filtro e números inteiros. */
+export function conferirPedidoDeCompras(clienteId: unknown, filtro: unknown, pagina: unknown, porPagina: unknown): Falha | null {
   if (typeof clienteId !== 'string' || !clienteId) return falha('nao-encontrado', MENSAGENS_CLIENTE.naoEncontrado)
+  if (!FILTROS_COMPRAS.includes(filtro as FiltroCompras)) return falha('validacao', 'Pedido inválido.')
   if (!inteiro(pagina) || !inteiro(porPagina) || (porPagina as number) > POR_PAGINA_MAXIMO) return falha('validacao', 'Pedido de página inválido.')
   return null
 }

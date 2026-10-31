@@ -296,7 +296,7 @@ function ComprasRecentes({ cliente }: { cliente: LinhaCliente }) {
 
   useEffect(() => {
     let vivo = true
-    void api().listarComprasDoCliente(cliente.id, 1, 3).then((r) => {
+    void api().listarComprasDoCliente(cliente.id, 'todas', 1, 3).then((r) => {
       if (vivo) setCarga(r.ok ? { fase: 'pronto', dado: r.dado } : { fase: 'erro', mensagem: mensagem(r) })
     })
     return () => { vivo = false }

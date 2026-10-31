@@ -1,12 +1,12 @@
 /**
- * Lista de Clientes e compras do cliente (1.0, tela 3.2): os mesmos cenários
+ * Lista de Clientes (1.0, tela 3.2) e histórico do cliente (3.3): os mesmos cenários
  * no mock (base da demonstração) e no SQLite. Regras em Memoria.md, "Clientes".
  *
  * Ainda não há operação de venda (tela 4.1): cada lado monta as fichas direto
  * na própria base, só neste teste, como a venda e o recebimento vão gravar.
  */
 import { expect, it } from 'vitest'
-import type { DadosCliente, FiltroClientes, FormaFicha } from '../../comum/contrato'
+import type { DadosCliente, FiltroClientes, FiltroCompras, FormaFicha } from '../../comum/contrato'
 import { proximoNumero, type Banco } from '../../electron/banco/banco'
 import { clientesSqlite } from '../../electron/banco/clientes'
 import type { Ficha } from '../../src/mock/base/tipos'
@@ -14,10 +14,11 @@ import { obterBase, proximoNumeroFicha, substituirBase } from '../../src/mock/es
 import { criarClientesDaBase, type OperacoesCliente } from '../../src/mock/operacoes/clientes'
 import { testarContrato } from './estrutura'
 
-type PagamentoTeste = { valor: number; meio?: 'dinheiro' | 'pix' | 'cartao'; rotulo?: string; entrada?: boolean; estornado?: boolean }
+type PagamentoTeste = { valor: number; meio?: 'dinheiro' | 'pix' | 'cartao'; rotulo?: string; entrada?: boolean; estornado?: boolean; dia?: string }
 type FichaTeste = {
   cliente: string | null; dia: string; horario?: string; total: number; forma: FormaFicha
-  vencimento?: string; pagamentos?: PagamentoTeste[]; cancelada?: boolean
+  vencimento?: string; pagamentos?: PagamentoTeste[]; cancelada?: boolean; canceladaEm?: string
+  itens?: { descricao: string; quantidade: number }[]; servicos?: string[]
 }
 type Api = OperacoesCliente & { vender(f: FichaTeste): void }
 
@@ -25,15 +26,17 @@ const instante = (dia: string, horario: string) => new Date(`${dia}T${horario}:0
 
 const mock = (): Api => ({
   ...criarClientesDaBase(),
-  vender({ cliente, dia, horario = '10:00', total, forma, vencimento, pagamentos = [], cancelada }) {
+  vender({ cliente, dia, horario = '10:00', total, forma, vencimento, pagamentos = [], cancelada, canceladaEm = dia, itens = [], servicos = [] }) {
     const base = obterBase()
     const ocorrido = { data: dia, horario, motivo: 'Teste' }
     const ficha: Ficha = {
-      id: proximoNumeroFicha(base), clienteId: cliente, data: dia, horario, operador: 'Teste', itens: [], desconto: 0, total, forma, vencimento,
+      id: proximoNumeroFicha(base), clienteId: cliente, data: dia, horario, operador: 'Teste', desconto: 0, total, forma, vencimento,
+      itens: itens.map((i, n) => ({ codigo: `T${n}`, descricao: i.descricao, quantidade: i.quantidade, preco: 100 })),
+      servicos: servicos.map((nome) => ({ nome, valor: 100 })),
       pagamentos: pagamentos.map((p) => ({
-        data: dia, horario, meio: p.meio ?? 'dinheiro', valor: p.valor, entrada: p.entrada, rotulo: p.rotulo, estorno: p.estornado ? ocorrido : undefined,
+        data: p.dia ?? dia, horario, meio: p.meio ?? 'dinheiro', valor: p.valor, entrada: p.entrada, rotulo: p.rotulo, estorno: p.estornado ? ocorrido : undefined,
       })),
-      cancelamento: cancelada ? ocorrido : undefined,
+      cancelamento: cancelada ? { ...ocorrido, data: canceladaEm } : undefined,
     }
     substituirBase({ ...base, fichas: [...base.fichas, ficha] })
   },
@@ -45,7 +48,7 @@ const sqlite = (banco: Banco): Api => {
     banco.prepare(`insert into ${tabela} (${Object.keys(linha).join(', ')}) values (${Object.keys(linha).map(() => '?').join(', ')})`).run(...Object.values(linha))
   return {
     ...clientesSqlite(() => banco),
-    vender({ cliente, dia, horario = '10:00', total, forma, vencimento, pagamentos = [], cancelada }) {
+    vender({ cliente, dia, horario = '10:00', total, forma, vencimento, pagamentos = [], cancelada, canceladaEm = dia, itens = [], servicos = [] }) {
       const quando = instante(dia, horario)
       if (!operador) inserir('operador', { id: (operador = crypto.randomUUID()), nome: 'Teste', pin_hash: 'scrypt$00$00', criado_em: quando })
       const quem = { operador_id: operador, dia, registrado_em: quando }
@@ -53,15 +56,22 @@ const sqlite = (banco: Banco): Api => {
       inserir('ficha', {
         id: fichaId, numero: proximoNumero(banco, 'ficha'), cliente_id: cliente, forma, subtotal: total, total, vencimento: vencimento ?? null, ...quem,
       })
+      for (const i of itens) {
+        const produto = crypto.randomUUID()
+        inserir('produto', { id: produto, numero: proximoNumero(banco, 'produto'), descricao: i.descricao, categoria: 'Teste', unidade: 'un', preco: 100, criado_em: quando })
+        inserir('ficha_item', { id: crypto.randomUUID(), ficha_id: fichaId, produto_id: produto, descricao: i.descricao, quantidade: i.quantidade, preco: 100 })
+      }
+      for (const nome of servicos) inserir('ficha_servico', { id: crypto.randomUUID(), ficha_id: fichaId, nome, valor: 100 })
       for (const p of pagamentos) {
         const tipo = forma !== 'notinha' ? 'venda' : p.entrada ? 'entrada' : 'recebimento'
+        const noDia = { ...quem, dia: p.dia ?? dia }
         const recebimento = tipo === 'recebimento' ? crypto.randomUUID() : null
-        if (recebimento) inserir('recebimento', { id: recebimento, cliente_id: cliente, ...quem })
+        if (recebimento) inserir('recebimento', { id: recebimento, cliente_id: cliente, ...noDia })
         const id = crypto.randomUUID()
-        inserir('pagamento', { id, ficha_id: fichaId, recebimento_id: recebimento, tipo, meio: p.meio ?? 'dinheiro', valor: p.valor, rotulo: p.rotulo ?? null, ...quem })
+        inserir('pagamento', { id, ficha_id: fichaId, recebimento_id: recebimento, tipo, meio: p.meio ?? 'dinheiro', valor: p.valor, rotulo: p.rotulo ?? null, ...noDia })
         if (p.estornado) inserir('pagamento_estorno', { id: crypto.randomUUID(), pagamento_id: id, motivo: 'Teste', ...quem })
       }
-      if (cancelada) inserir('ficha_cancelamento', { id: crypto.randomUUID(), ficha_id: fichaId, motivo: 'Teste', ...quem })
+      if (cancelada) inserir('ficha_cancelamento', { id: crypto.randomUUID(), ficha_id: fichaId, motivo: 'Teste', ...quem, dia: canceladaEm })
     },
   }
 }
@@ -168,7 +178,7 @@ testarContrato('lista de clientes', { mock, sqlite }, (abrir) => {
   it('[R-CLIENTE-02] as compras do cliente, da mais nova para a mais velha; a cancelada fica, mas não é compra', async () => {
     const api = abrir('vazia')
     const { ana, caio, dora, zeca } = await loja(api)
-    const compras = async (id: string, pagina = 1, porPagina = 3) => dado(await api.listarComprasDoCliente(id, pagina, porPagina))
+    const compras = async (id: string, pagina = 1, porPagina = 3) => dado(await api.listarComprasDoCliente(id, 'todas', pagina, porPagina))
 
     const daAna = await compras(ana)
     expect(daAna.compras.map((c) => [c.total, c.forma, c.situacao, c.emAberto, c.rotulo])).toEqual([
@@ -186,13 +196,16 @@ testarContrato('lista de clientes', { mock, sqlite }, (abrir) => {
       ['cartao', 'paga', 0, 'Cartão crédito Visa'],
       ['notinha', 'cancelada', 0, null],
     ])
-    expect([daDora.total, daDora.resumo]).toEqual([2, { compras: 1, totalComprado: 2500 }])
+    expect([daDora.total, daDora.resumo]).toMatchObject([2, { compras: 1, totalComprado: 2500 }])
 
     const segunda = await compras(dora, 2, 1)
     expect([segunda.pagina, segunda.compras.map((c) => c.situacao)]).toEqual([2, ['cancelada']])
-    expect(await compras(zeca)).toEqual({ compras: [], total: 0, pagina: 1, resumo: { compras: 0, totalComprado: 0 } })
-    expect(await api.listarComprasDoCliente('nao-existe', 1, 3)).toMatchObject({ ok: false, causa: 'nao-encontrado' })
-    expect(await api.listarComprasDoCliente(ana, 0, 3)).toMatchObject({ ok: false, causa: 'validacao' })
+    expect(await compras(zeca)).toEqual({
+      compras: [], total: 0, pagina: 1,
+      resumo: { compras: 0, totalComprado: 0, ticketMedio: 0, emAberto: 0, notinhasEmAberto: 0, situacao: 'em-dia', contagem: { todas: 0, pagas: 0, aVencer: 0, emAtraso: 0 } },
+    })
+    expect(await api.listarComprasDoCliente('nao-existe', 'todas', 1, 3)).toMatchObject({ ok: false, causa: 'nao-encontrado' })
+    expect(await api.listarComprasDoCliente(ana, 'todas', 0, 3)).toMatchObject({ ok: false, causa: 'validacao' })
   })
 
   it('na semente: todo cliente na lista, e as compras de cada um batem com a contagem', async () => {
@@ -201,9 +214,86 @@ testarContrato('lista de clientes', { mock, sqlite }, (abrir) => {
     expect(r.total).toBe(r.resumo.clientes)
     expect(r.resumo.aVencer + r.resumo.emAtraso).toBeGreaterThan(0)
     for (const c of r.clientes) {
-      const h = dado(await api.listarComprasDoCliente(c.id, 1, 100))
+      const h = dado(await api.listarComprasDoCliente(c.id, 'todas', 1, 100))
       expect(h.resumo.compras, c.nome).toBe(c.compras)
       expect(h.compras.reduce((soma, x) => soma + x.emAberto, 0), c.nome).toBe(c.emAberto)
+      // O detalhe e a lista contam igual.
+      expect([h.resumo.emAberto, h.resumo.situacao], c.nome).toEqual([c.emAberto, c.situacao])
+      const { todas, pagas, aVencer, emAtraso } = h.resumo.contagem
+      expect(todas - pagas - aVencer - emAtraso, c.nome).toBe(h.compras.filter((x) => x.situacao === 'cancelada').length)
+      const cliente = dado(await api.obterCliente(c.id))
+      expect(cliente.criadoEm, c.nome).toMatch(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/)
     }
+  })
+
+  // Detalhe do cliente (tela 3.3) ---------------------------------------------
+
+  const historico = async (api: Api, id: string, filtro: FiltroCompras = 'todas', pagina = 1, porPagina = 20) =>
+    dado(await api.listarComprasDoCliente(id, filtro, pagina, porPagina))
+
+  it('[R-CLIENTE-05] os cartões: total comprado, ticket médio e notinhas em aberto, sem as canceladas', async () => {
+    const api = abrir('vazia')
+    const { ana, caio, dora } = await loja(api)
+    expect((await historico(api, ana)).resumo).toEqual({
+      compras: 2, totalComprado: 15000, ticketMedio: 7500, emAberto: 12000, notinhasEmAberto: 2, situacao: 'em-atraso',
+      contagem: { todas: 2, pagas: 0, aVencer: 1, emAtraso: 1 },
+    })
+    // A quitada não está em aberto; o recebimento estornado volta a dever.
+    expect((await historico(api, caio)).resumo).toMatchObject({ emAberto: 4000, notinhasEmAberto: 1, situacao: 'a-vencer', contagem: { todas: 2, pagas: 1, aVencer: 1, emAtraso: 0 } })
+    // A cancelada conta só em "Todas" e fica fora do ticket médio.
+    expect((await historico(api, dora)).resumo).toEqual({
+      compras: 1, totalComprado: 2500, ticketMedio: 2500, emAberto: 0, notinhasEmAberto: 0, situacao: 'em-dia',
+      contagem: { todas: 2, pagas: 1, aVencer: 0, emAtraso: 0 },
+    })
+    // O ticket médio arredonda ao centavo.
+    api.vender({ cliente: dora, dia: '2026-10-26', total: 2501, forma: 'pix', pagamentos: [{ valor: 2501, meio: 'pix' }] })
+    expect((await historico(api, dora)).resumo).toMatchObject({ compras: 2, totalComprado: 5001, ticketMedio: 2501 })
+  })
+
+  it('[R-CLIENTE-05] as abas filtram as linhas no back; os cartões e as contagens não mudam', async () => {
+    const api = abrir('vazia')
+    const { ana, dora } = await loja(api)
+    const todas = await historico(api, ana)
+    const atrasadas = await historico(api, ana, 'em-atraso')
+    expect([atrasadas.total, atrasadas.compras.map((c) => c.total), atrasadas.resumo]).toEqual([1, [10000], todas.resumo])
+    expect((await historico(api, ana, 'a-vencer')).compras.map((c) => c.total)).toEqual([5000])
+    expect((await historico(api, ana, 'paga')).total).toBe(0)
+    // "Pagas" não traz a cancelada; "Todas" traz.
+    expect((await historico(api, dora, 'paga')).compras.map((c) => c.forma)).toEqual(['cartao'])
+    expect((await historico(api, dora)).compras.map((c) => c.situacao)).toEqual(['paga', 'cancelada'])
+    const ultima = await historico(api, ana, 'todas', 5, 1)
+    expect([ultima.pagina, ultima.total]).toEqual([2, 2])
+    expect(await api.listarComprasDoCliente(ana, 'pago' as FiltroCompras, 1, 3)).toMatchObject({ ok: false, causa: 'validacao' })
+  })
+
+  it('[R-CLIENTE-05] cada linha traz o vencimento, o dia em que quitou ou cancelou, os itens e os serviços', async () => {
+    const api = abrir('vazia')
+    const { bruno, erica } = await loja(api)
+    expect((await historico(api, bruno)).compras[0]).toMatchObject({ vencimento: '2026-10-27', quitadaEm: null, canceladaEm: null, itens: [], servicos: [] })
+
+    // Quitada no último pagamento que vale: o estornado, mesmo depois, não conta.
+    api.vender({
+      cliente: erica, dia: '2026-10-01', total: 3000, forma: 'notinha', vencimento: '2026-10-31',
+      pagamentos: [{ valor: 2000, dia: '2026-10-20' }, { valor: 1000, entrada: true }, { valor: 1000, dia: '2026-10-25', estornado: true }],
+      itens: [{ descricao: 'Caneta azul', quantidade: 2 }, { descricao: 'Caderno 10 matérias', quantidade: 1 }], servicos: ['Xerox', 'Encadernação'],
+    })
+    api.vender({ cliente: erica, dia: '2026-10-10', total: 900, forma: 'notinha', vencimento: '2026-10-30', cancelada: true, canceladaEm: '2026-10-12' })
+    api.vender({ cliente: erica, dia: '2026-10-11', total: 700, forma: 'dinheiro', pagamentos: [{ valor: 700 }], servicos: ['Impressão'] })
+    const [avista, cancelada, quitada] = (await historico(api, erica)).compras
+    expect(quitada).toMatchObject({
+      situacao: 'paga', vencimento: '2026-10-31', quitadaEm: '2026-10-20', canceladaEm: null,
+      itens: [{ descricao: 'Caneta azul', quantidade: 2 }, { descricao: 'Caderno 10 matérias', quantidade: 1 }], servicos: ['Xerox', 'Encadernação'],
+    })
+    expect(cancelada).toMatchObject({ situacao: 'cancelada', canceladaEm: '2026-10-12', quitadaEm: null })
+    // À vista: sem vencimento nem "quitada em".
+    expect(avista).toMatchObject({ situacao: 'paga', vencimento: null, quitadaEm: null, itens: [], servicos: ['Impressão'] })
+  })
+
+  it('o cadastro traz o "cliente desde"', async () => {
+    const api = abrir('vazia')
+    const { erica } = await loja(api)
+    const desde = dado(await api.obterCliente(erica)).criadoEm
+    // O mock guarda só o dia; o dia de São Paulo bate nos dois.
+    expect(new Date(desde).toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })).toBe('2026-10-27')
   })
 })

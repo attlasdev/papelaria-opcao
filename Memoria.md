@@ -421,7 +421,12 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   (na 0.1 era uma frase só, "Rua, nº - Bairro - Cidade/UF"). Não se cadastra e-mail (decisão do Victor):
   o contato é por telefone/WhatsApp, sem esse campo nos formulários ou detalhes.
 - `R-CLIENTE-05` Detalhe do cliente: cartões Total comprado, Notinhas em aberto (clicar recebe)
-  e Ticket médio; histórico com filtros e "Receber" por linha.
+  e Ticket médio; histórico com filtros e "Receber" por linha. A cancelada
+  aparece só em "Todas" e fica fora das compras e do ticket médio
+  (arredondado ao centavo). Os cartões e as contagens das abas são do cliente
+  inteiro, sem filtro. "Quitada em" é o dia do último pagamento que vale (o
+  estornado não conta). O subtítulo traz o código e "cliente desde"; o
+  documento aparece inteiro (`2026-10-30`).
 - `R-CLIENTE-06` Receber notinhas permite Dinheiro, Pix, Cartão ou Misto, inclusive em pagamento
   parcial e com várias notinhas selecionadas. No Misto, duas ou três formas
   somam exatamente o valor a pagar agora; só a parte em dinheiro calcula troco
@@ -740,6 +745,19 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-10-30` — Detalhe do cliente pelo back
+Decisão do Agostinho, no percurso da tela 3.3. Os cartões, as abas e o
+histórico paginado vêm de `listarComprasDoCliente(id, filtro, pagina,
+porPagina)`, a mesma da lista; o cadastro, de `obterCliente`, que ganha
+`criadoEm`. O "Receber" continua no mock até a tela 5.1: o detalhe relê
+quando a base muda.
+
+**Por quê:** a conta (ticket médio, em aberto, situação) fica num lugar só,
+`comum/regras/`, para o mock e o SQLite. "Cliente desde" fica: no detalhe
+ajuda a dona a reconhecer o cliente, e o banco já guarda `criado_em`. O
+documento fica inteiro no detalhe (é onde ela confere o CPF para a nota); só
+a lista esconde parte. Descartado: a descrição no subtítulo (P2).
 
 ### `2026-10-30` — Lista de clientes pelo back, sem a descrição
 Decisão do Agostinho, no percurso da tela 3.2. A lista, a busca, os cartões e

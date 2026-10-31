@@ -31,6 +31,18 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-10-30` — Detalhe do cliente (1.0, tela 3.3)
+
+- **Contrato:** `listarComprasDoCliente` ganha o `filtro` (`'todas'`,
+  `'paga'`, `'a-vencer'`, `'em-atraso'`), antes da página: a lista de
+  clientes passa `'todas'`. Cada `CompraCliente` traz `vencimento`,
+  `quitadaEm`, `canceladaEm`, `itens` (descrição e quantidade) e `servicos`.
+  O `resumo` traz os cartões (`ticketMedio`, `emAberto`, `notinhasEmAberto`,
+  `situacao`) e as contagens das abas (`contagem`), sempre do cliente
+  inteiro. `Cliente` ganha `criadoEm` ("cliente desde").
+- **Na tela:** sai a descrição do subtítulo. O histórico pagina no back e
+  mostra carregando e falha. O "Receber" não muda.
+
 ### `2026-10-30` — Lista de clientes (1.0, tela 3.2)
 
 - **Contrato:** `listarClientes(filtro, busca, pagina, porPagina)`, paginada no

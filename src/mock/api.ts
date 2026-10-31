@@ -121,7 +121,7 @@ const mock: Contrato = {
   cadastrarCliente: (dados) => simularAssincrono(() => clientes.cadastrarCliente(dados)),
   editarCliente: (id, dados) => simularAssincrono(() => clientes.editarCliente(id, dados)),
   listarClientes: (filtro, busca, pagina, porPagina) => simularAssincrono(() => clientes.listarClientes(filtro, busca, pagina, porPagina)),
-  listarComprasDoCliente: (clienteId, pagina, porPagina) => simularAssincrono(() => clientes.listarComprasDoCliente(clienteId, pagina, porPagina)),
+  listarComprasDoCliente: (clienteId, filtro, pagina, porPagina) => simularAssincrono(() => clientes.listarComprasDoCliente(clienteId, filtro, pagina, porPagina)),
 }
 
 window.api = mock
