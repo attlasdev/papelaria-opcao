@@ -26,6 +26,11 @@ type Props<T> = {
   fazer: (assinatura: Assinatura, dona: Assinatura | null) => Promise<Resultado<T>>
   aoConcluir: (dado: T) => void
   aoFechar: () => void
+  /**
+   * A janela não fecha sem assinar, com este aviso no topo: o gesto já
+   * aconteceu fora do app (a cobrança aprovada na maquininha) e falta registrar.
+   */
+  obrigatoria?: string
 }
 
 /** Falha da autorização: o back põe "Administradora:" na frente (`comum/regras/operador.ts`). */
@@ -36,7 +41,7 @@ const PREFIXO_DONA = 'Administradora: '
  * pessoa e o PIN dela; no gesto sensível, depois o PIN da administradora. PIN
  * errado deixa a janela aberta para tentar de novo.
  */
-export function JanelaAssinatura<T>({ gesto, rotuloConfirmar, soDona, sensivel, fazer, aoConcluir, aoFechar }: Props<T>) {
+export function JanelaAssinatura<T>({ gesto, rotuloConfirmar, soDona, sensivel, fazer, aoConcluir, aoFechar, obrigatoria }: Props<T>) {
   const operadores = useOperadores()
   const todas = operadores.fase === 'pronto' ? operadores.dado.pessoas.filter((p) => p.ativo && p.temPin) : []
   const pessoas = soDona ? todas.filter((p) => p.admin) : todas
@@ -94,12 +99,12 @@ export function JanelaAssinatura<T>({ gesto, rotuloConfirmar, soDona, sensivel, 
       estreito
       titulo={titulo}
       subtitulo={gesto}
-      aoFechar={aoFechar}
+      aoFechar={obrigatoria ? undefined : aoFechar}
       rodape={
         <>
           {passo === 'dona'
             ? <Botao variante="fantasma" onClick={() => { setPasso('quem'); setPinDona(''); setErro(null) }}>Voltar</Botao>
-            : <Botao variante="fantasma" onClick={aoFechar}>Cancelar</Botao>}
+            : !obrigatoria && <Botao variante="fantasma" onClick={aoFechar}>Cancelar</Botao>}
           <Botao type="submit" form="janela-assinatura" variante="primario" disabled={!quem || !pinCompleto(pinDaVez) || enviando}>
             {enviando ? 'Conferindo…' : rotulo}
           </Botao>
@@ -107,6 +112,7 @@ export function JanelaAssinatura<T>({ gesto, rotuloConfirmar, soDona, sensivel, 
       }
     >
       <form id="janela-assinatura" className="janela-assinatura" onSubmit={confirmar}>
+        {obrigatoria && <p className="janela-assinatura__obrigatoria" role="status">{obrigatoria}</p>}
         {operadores.fase === 'carregando' && <p className="janela-assinatura__texto">Carregando as pessoas…</p>}
         {operadores.fase === 'erro' && <p className="janela-assinatura__erro">{operadores.mensagem}</p>}
         {operadores.fase === 'pronto' && pessoas.length === 0 && (

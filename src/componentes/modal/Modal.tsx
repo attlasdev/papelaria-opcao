@@ -9,7 +9,8 @@ type Props = {
   variante?: 'central' | 'lateral'
   /** Janela central mais estreita, para formulário curto. */
   estreito?: boolean
-  aoFechar: () => void
+  /** Sem ele, a janela não fecha (nem X, nem Esc, nem fundo): só pelos botões dela. */
+  aoFechar?: () => void
   /** Barra fixa no pé da janela: nota à esquerda e botões à direita. */
   rodape?: ReactNode
   children: ReactNode
@@ -41,7 +42,7 @@ export function Modal({ titulo, subtitulo, variante = 'central', estreito, aoFec
       if (pilha[pilha.length - 1] !== eu) return
       if (evento.key === 'Escape') {
         evento.preventDefault()
-        aoFechar()
+        aoFechar?.()
       }
       if (evento.key !== 'Tab' || !janela.current) return
       const focaveis = Array.from(janela.current.querySelectorAll<HTMLElement>('button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'))
@@ -65,14 +66,14 @@ export function Modal({ titulo, subtitulo, variante = 'central', estreito, aoFec
   }, [aoFechar])
 
   return (
-    <div className={`modal modal--${variante}${estreito ? ' modal--estreito' : ''}`} onMouseDown={(e) => e.target === e.currentTarget && aoFechar()}>
+    <div className={`modal modal--${variante}${estreito ? ' modal--estreito' : ''}`} onMouseDown={(e) => e.target === e.currentTarget && aoFechar?.()}>
       <div ref={janela} className="modal__janela" role="dialog" aria-modal="true" aria-label={titulo} tabIndex={-1}>
         <header className="modal__topo">
           <div>
             <h2 className="modal__titulo">{titulo}</h2>
             {subtitulo && <p className="modal__subtitulo">{subtitulo}</p>}
           </div>
-          <BotaoIcone icone="fechar" rotulo="Fechar" onClick={aoFechar} />
+          {aoFechar && <BotaoIcone icone="fechar" rotulo="Fechar" onClick={aoFechar} />}
         </header>
         <div className="modal__corpo">{children}</div>
         {rodape && <footer className="modal__rodape">{rodape}</footer>}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { rotuloPagamento } from './pagamento'
+import { rotuloPagamento } from '../../comum/regras/venda'
 
 describe('rotuloPagamento', () => {
   it('cartão com modalidade, bandeira e maquininha', () => {

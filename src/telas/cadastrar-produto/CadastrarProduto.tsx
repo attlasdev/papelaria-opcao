@@ -110,8 +110,8 @@ const nomes: Record<Unidade, { um: string; varios: string; quantos: string }> = 
 
 type PropsModal = {
   aoFechar: () => void
-  /** Aberto pelo Estoque ou pela ficha: grava e devolve o código do produto. */
-  aoSalvar?: (codigo: string) => void
+  /** Aberto pelo Estoque ou pela ficha: grava e devolve o id do produto. */
+  aoSalvar?: (id: string) => void
   /**
    * Aberto pela entrada: nada é gravado. Volta o cadastro preparado e o que entra
    * no estoque, já na unidade de venda (null mantém a quantidade da linha).
@@ -293,7 +293,7 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
     const r = editar ? await api().editarProduto(editar.id, contrato) : await api().cadastrarProduto(contrato, 0, null)
     setEnviando(false)
     if (!r.ok) return setErroSalvar(mensagemDe(r))
-    if (editar) aoSalvar?.(r.dado.codigo)
+    if (editar) aoSalvar?.(r.dado.id)
     else setSalvo(r.dado)
   }
 
@@ -320,9 +320,9 @@ export function ModalProduto({ aoFechar: fechar, aoSalvar, aoPreparar, daEntrada
           ? 'Código reconhecido. Os dados abaixo são do produto existente.'
           : editar ? 'O saldo muda só por entrada ou ajuste.'
           : daEntrada ? 'A quantidade vem da entrada.' : undefined}
-        aoFechar={salvo ? () => aoSalvar?.(salvo.codigo) : fechar}
+        aoFechar={salvo ? () => aoSalvar?.(salvo.id) : fechar}
         rodape={
-          salvo ? <Botao variante="primario" onClick={() => aoSalvar?.(salvo.codigo)}>Fechar</Botao>
+          salvo ? <Botao variante="primario" onClick={() => aoSalvar?.(salvo.id)}>Fechar</Botao>
           : produtoConsultado ? <Botao variante="primario" onClick={fechar}>Fechar</Botao> : (
             <>
               {editar && <AcaoRemover produto={editar} aoConcluir={fechar} aoFalhar={setErroSalvar} />}

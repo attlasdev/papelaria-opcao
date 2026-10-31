@@ -1,6 +1,6 @@
-import { formatarDocumento, formatarTelefone } from '../../../../comum/regras/cliente'
 import { JanelaCliente } from '../../formulario-cliente/JanelaCliente'
 import type { ClienteFicha as Cliente } from '../tipos'
+import { clienteDaFicha } from './ClienteFicha'
 
 type Props = {
   /** Nome já digitado na busca, para não digitar duas vezes. */
@@ -18,11 +18,7 @@ export function ModalNovoCliente({ nomeInicial, aoSalvar, aoFechar }: Props) {
       subtitulo="Ao salvar, já entra na ficha."
       textoSalvar="Salvar e usar na ficha"
       aoFechar={aoFechar}
-      aoSalvar={(c) => aoSalvar({
-        id: c.id, nome: c.nome,
-        documento: c.documento ? formatarDocumento(c.documento) : 'Sem documento',
-        telefone: c.telefone ? formatarTelefone(c.telefone) : 'Sem telefone',
-      })}
+      aoSalvar={(c) => aoSalvar(clienteDaFicha(c))}
     />
   )
 }

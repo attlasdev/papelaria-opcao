@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import type { LinhaCliente, PaginaCompras } from '../../../../comum/contrato'
+import { formatarDocumento, formatarTelefone } from '../../../../comum/regras/cliente'
 import { Botao } from '../../../componentes/botao/Botao'
 import { Campo } from '../../../componentes/campo/Campo'
 import { Icone } from '../../../componentes/icone/Icone'
+import { api } from '../../../dados/api'
+import { tituloFalha } from '../../../falhas'
 import { reais } from '../../../formatar'
-import { clienteCorrespondeBusca, hojeISO, resumoDoCliente, useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
-import { semIdentificacao, type EscolhaCliente } from '../tipos'
+import { semIdentificacao, type ClienteFicha as Cliente, type EscolhaCliente } from '../tipos'
 import { ModalNovoCliente } from './ModalNovoCliente'
 import './cliente-ficha.css'
 
@@ -17,6 +20,17 @@ type Props = {
 /** Resultados da busca: poucos, para não empurrar os itens da venda para fora da tela. */
 const maximoResultados = 6
 
+/** A linha da lista de clientes como a ficha mostra. */
+export function clienteDaFicha(c: Pick<LinhaCliente, 'id' | 'nome' | 'documento' | 'telefone'>): Cliente {
+  return {
+    id: c.id, nome: c.nome,
+    documento: c.documento ? formatarDocumento(c.documento) : 'Sem documento',
+    telefone: c.telefone ? formatarTelefone(c.telefone) : 'Sem telefone',
+  }
+}
+
+type Busca = { termo: string; clientes: LinhaCliente[]; total: number } | { termo: string; erro: string }
+
 /**
  * Cliente da ficha: busca um cadastrado, cadastra um novo (em janela, sem sair
  * da venda) ou marca a venda como sem identificação. A ficha abre sem nada
@@ -27,19 +41,28 @@ export function ClienteFicha({ cliente, aoEscolher, erro }: Props) {
   /** Nome que abre no cadastro; null = janela fechada. */
   const [cadastro, setCadastro] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
-  const base = useEstadoDemonstracao()
-  const { clientes } = base
 
   const [listaAberta, setListaAberta] = useState(false)
   const [indiceAtivo, setIndiceAtivo] = useState(0)
   const caixaBusca = useRef<HTMLDivElement>(null)
 
-  // Mesma busca por nome, documento e telefone usada na lista de clientes.
+  // A mesma busca da lista de clientes (`R-CLIENTE-03`), no back, depois de uma pausa na digitação.
   const termo = busca.trim()
-  const encontrados = termo
-    ? clientes.filter((c) => clienteCorrespondeBusca(c, termo))
-    : []
-  const visiveis = encontrados.slice(0, maximoResultados)
+  const [resposta, setResposta] = useState<Busca>({ termo: '', clientes: [], total: 0 })
+  useEffect(() => {
+    if (!termo) return
+    let vivo = true
+    const espera = setTimeout(() => {
+      void api().listarClientes('todos', termo, 1, maximoResultados).then((r) => {
+        if (!vivo) return
+        setResposta(r.ok ? { termo, clientes: r.dado.clientes, total: r.dado.total } : { termo, erro: `${tituloFalha(r.causa)} ${r.erro}` })
+      })
+    }, 250)
+    return () => { vivo = false; clearTimeout(espera) }
+  }, [termo])
+  const atual = resposta.termo === termo ? resposta : null
+  const visiveis = atual && 'clientes' in atual ? atual.clientes.map(clienteDaFicha) : []
+  const total = atual && 'clientes' in atual ? atual.total : 0
   const mostrarLista = Boolean(termo) && listaAberta
 
   // Como as outras listas: fecha com clique fora; o texto digitado fica.
@@ -127,7 +150,7 @@ export function ClienteFicha({ cliente, aoEscolher, erro }: Props) {
           </Botao>
         </div>
       )}
-      {modo === 'ver' && cliente && cliente !== semIdentificacao && <AvisoDivida clienteId={cliente.id} base={base} />}
+      {modo === 'ver' && cliente && cliente !== semIdentificacao && <AvisoDivida clienteId={cliente.id} />}
 
       {modo === 'buscar' && (
         <div className="cliente-ficha__busca" ref={caixaBusca}>
@@ -156,12 +179,14 @@ export function ClienteFicha({ cliente, aoEscolher, erro }: Props) {
                   </button>
                 </li>
               ))}
-              {encontrados.length > maximoResultados && (
+              {!atual && <li className="cliente-ficha__nenhum" role="status">Buscando…</li>}
+              {atual && 'erro' in atual && <li className="cliente-ficha__nenhum" role="alert">{atual.erro}</li>}
+              {total > maximoResultados && (
                 <li className="cliente-ficha__nenhum">
-                  Mais {encontrados.length - maximoResultados} com esse nome. Digite mais para refinar.
+                  Mais {total - maximoResultados} com esse nome. Digite mais para refinar.
                 </li>
               )}
-              {encontrados.length === 0 && (
+              {atual && 'clientes' in atual && total === 0 && (
                 <li className="cliente-ficha__nenhum cliente-ficha__nenhum--acao">
                   <span>Nenhum cliente com esse nome ou documento.</span>
                   <Botao tamanho="pequeno" icone="adicionar-pessoa" onClick={() => setCadastro(busca.trim())}>
@@ -186,20 +211,30 @@ export function ClienteFicha({ cliente, aoEscolher, erro }: Props) {
 }
 
 /**
- * Quem já deve fica à vista antes de vender de novo, principalmente na notinha.
- * Só avisa: vender ou não é decisão do balcão.
+ * Quem já deve fica à vista antes de vender de novo, principalmente na notinha
+ * (`R-VENDA-03`). Só avisa: vender ou não é decisão do balcão. As atrasadas vêm
+ * filtradas no back; o resumo é do cliente inteiro.
  */
-function AvisoDivida({ clienteId, base }: { clienteId: string; base: ReturnType<typeof useEstadoDemonstracao> }) {
-  const { abertas, emAberto } = resumoDoCliente(base, clienteId, hojeISO())
-  if (abertas.length === 0) return null
-  const atrasadas = abertas.filter((n) => n.situacao === 'vencido')
-  const valorAtraso = atrasadas.reduce((t, n) => t + n.emAberto, 0)
+function AvisoDivida({ clienteId }: { clienteId: string }) {
+  const [dado, setDado] = useState<{ de: string; pagina: PaginaCompras } | null>(null)
+  useEffect(() => {
+    let vivo = true
+    void api().listarComprasDoCliente(clienteId, 'em-atraso', 1, 100).then((r) => {
+      if (vivo && r.ok) setDado({ de: clienteId, pagina: r.dado })
+    })
+    return () => { vivo = false }
+  }, [clienteId])
+  if (!dado || dado.de !== clienteId) return null
+  const { resumo, compras: atrasadas } = dado.pagina
+  if (resumo.notinhasEmAberto === 0) return null
+  const valorAtraso = atrasadas.reduce((t, c) => t + c.emAberto, 0)
+  const quantas = resumo.contagem.emAtraso
   return (
-    <p className={atrasadas.length ? 'cliente-ficha__divida cliente-ficha__divida--atraso' : 'cliente-ficha__divida'} role="status">
-      <Icone nome={atrasadas.length ? 'alerta' : 'relogio'} tamanho={16} />
-      {atrasadas.length
-        ? <span><strong>{reais(valorAtraso)} em atraso</strong> ({atrasadas.length === 1 ? '1 notinha' : `${atrasadas.length} notinhas`}){emAberto > valorAtraso && ` · ${reais(emAberto)} em aberto no total`}</span>
-        : <span>{reais(emAberto)} em aberto ({abertas.length === 1 ? '1 notinha' : `${abertas.length} notinhas`} no prazo)</span>}
+    <p className={quantas ? 'cliente-ficha__divida cliente-ficha__divida--atraso' : 'cliente-ficha__divida'} role="status">
+      <Icone nome={quantas ? 'alerta' : 'relogio'} tamanho={16} />
+      {quantas
+        ? <span><strong>{reais(valorAtraso)} em atraso</strong> ({quantas === 1 ? '1 notinha' : `${quantas} notinhas`}){resumo.emAberto > valorAtraso && ` · ${reais(resumo.emAberto)} em aberto no total`}</span>
+        : <span>{reais(resumo.emAberto)} em aberto ({resumo.notinhasEmAberto === 1 ? '1 notinha' : `${resumo.notinhasEmAberto} notinhas`} no prazo)</span>}
     </p>
   )
 }

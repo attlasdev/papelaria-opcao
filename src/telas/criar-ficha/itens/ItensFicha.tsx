@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 import { Link } from 'react-router'
+import type { Produto } from '../../../../comum/contrato'
 import { Botao, BotaoIcone } from '../../../componentes/botao/Botao'
 import { Icone } from '../../../componentes/icone/Icone'
+import { api } from '../../../dados/api'
+import { tituloFalha } from '../../../falhas'
 import { reais } from '../../../formatar'
 import { useLeitorCodigo } from '../../../leitor/useLeitorCodigo'
-import { normalizar, useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
 import type { ItemFicha } from '../tipos'
 import { rotas } from '../../../rotas-caminhos'
 import './itens-ficha.css'
@@ -13,13 +15,41 @@ type Props = {
   itens: ItemFicha[]
   aoMudar: (itens: ItemFicha[]) => void
   erroFalta?: string
-  erroEstoque?: { codigo: string; descricao: string; disponivel: number; solicitado: number }
+  erroEstoque?: { produtoId: string; descricao: string; disponivel: number; solicitado: number }
   /** Botão ao lado de "Inserir item" (o "Inserir serviço" da ficha). */
   acaoExtra?: ReactNode
   /** Conteúdo logo abaixo da tabela de produtos (os serviços da ficha). */
   depoisDaTabela?: ReactNode
   /** Ficha só de serviço: sem a linha "Nenhum item ainda". */
   semAvisoVazio?: boolean
+}
+
+/** Resultados da busca: poucos, para não empurrar os itens para fora da tela. */
+const MAXIMO_SUGESTOES = 6
+
+/** O produto do cadastro como linha da ficha. */
+export function itemDoProduto(p: Produto, quantidade = 1): ItemFicha {
+  return { produtoId: p.id, codigo: p.codigoBarras ?? p.codigo, descricao: p.descricao, preco: p.preco, saldo: p.saldo, unidade: p.unidade, quantidade }
+}
+
+const igual = (a: string, b: string) => a.toLocaleLowerCase('pt-BR') === b.toLocaleLowerCase('pt-BR')
+
+/**
+ * O produto pelo que foi bipado ou digitado: o código de barras, ou o código
+ * interno ("EST-0031"). Ativo ou não: o desativado avisa em vez de oferecer
+ * cadastro novo.
+ */
+async function acharPorCodigo(lido: string): Promise<{ produto: Produto | null } | { erro: string }> {
+  const porBarras = await api().buscarProdutoPorCodigoBarras(lido)
+  if (!porBarras.ok) return { erro: `${tituloFalha(porBarras.causa)} ${porBarras.erro}` }
+  if (porBarras.dado) return { produto: porBarras.dado }
+  for (const filtro of ['todos', 'desativados'] as const) {
+    const r = await api().listarProdutos(filtro, lido, 1, MAXIMO_SUGESTOES)
+    if (!r.ok) return { erro: `${tituloFalha(r.causa)} ${r.erro}` }
+    const exato = r.dado.produtos.find((p) => igual(p.codigo, lido))
+    if (exato) return { produto: exato }
+  }
+  return { produto: null }
 }
 
 /** Leitura de código de barras e lista de itens. Ler o mesmo código de novo soma 1. */
@@ -31,31 +61,35 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
   const [lendoCodigo, setLendoCodigo] = useState(false)
   const [leituras, setLeituras] = useState(0)
   const entrada = useRef<HTMLInputElement>(null)
-  const { produtos: todos } = useEstadoDemonstracao()
-  // Desativado não se vende; bipado, avisa em vez de oferecer cadastro novo.
-  // semAtalho: o aviso não oferece "Fazer cadastro rápido" (desativado, campo vazio, ambíguo).
-  const produtos = todos.filter((produto) => !produto.inativo)
+  // semAtalho: o aviso não oferece "Cadastrar produto" (desativado, campo vazio, ambíguo, falha).
   const [semAtalho, setSemAtalho] = useState(false)
   // Código que não achou: vai preenchido para o cadastro aberto pela ficha.
   const [semCadastro, setSemCadastro] = useState<string | undefined>()
-  const termo = normalizar(codigo.trim())
-  const sugestoes = termo ? produtos
-    .filter((produto) => {
-      const palavras = termo.split(/\s+/)
-      const descricao = normalizar(produto.descricao)
-      return palavras.every((palavra) => descricao.includes(palavra) || normalizar(produto.codigo).includes(palavra) || produto.codigoBarras?.includes(palavra))
-    })
-    .sort((a, b) => {
-      const prioridade = (produto: typeof a) => produto.codigoBarras === codigo.trim() || produto.codigo === codigo.trim() ? 0 : normalizar(produto.descricao).startsWith(termo) ? 1 : 2
-      return prioridade(a) - prioridade(b)
-    })
-    .slice(0, 6) : []
+  // A busca vai ao back depois de uma pausa na digitação; só os ativos se vendem.
+  const termo = codigo.trim()
+  const [sugestoes, setSugestoes] = useState<{ termo: string; produtos: Produto[] }>({ termo: '', produtos: [] })
+  useEffect(() => {
+    if (!termo || lendoCodigo) return
+    let vivo = true
+    const espera = setTimeout(() => {
+      void api().listarProdutos('todos', termo, 1, MAXIMO_SUGESTOES).then((r) => {
+        if (vivo && r.ok) setSugestoes({ termo, produtos: r.dado.produtos })
+      })
+    }, 200)
+    return () => { vivo = false; clearTimeout(espera) }
+  }, [termo, lendoCodigo])
+  const listadas = sugestoes.termo === termo ? sugestoes.produtos : []
 
-  function inserir(produto: Omit<ItemFicha, 'quantidade'>) {
-    if (itens.some((item) => item.codigoBarras === produto.codigoBarras)) {
-      aoMudar(itens.map((item) => item.codigoBarras === produto.codigoBarras ? { ...item, quantidade: item.quantidade + 1 } : item))
+  // Itens novos e somados chegam a toda hora: o callback lê a lista de agora.
+  const atuais = useRef(itens)
+  atuais.current = itens
+
+  function inserir(produto: Produto) {
+    const lista = atuais.current
+    if (lista.some((item) => item.produtoId === produto.id)) {
+      aoMudar(lista.map((item) => item.produtoId === produto.id ? { ...item, quantidade: item.quantidade + 1 } : item))
     } else {
-      aoMudar([...itens, { ...produto, quantidade: 1 }])
+      aoMudar([...lista, itemDoProduto(produto)])
     }
     setErro(null)
     setCodigo('')
@@ -64,29 +98,31 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
     entrada.current?.focus()
   }
 
-  function itemCadastrado(produto: (typeof produtos)[number]) {
-    return { codigo: produto.codigo, codigoBarras: produto.codigoBarras ?? produto.codigo, descricao: produto.descricao, preco: produto.preco }
-  }
-
-  useLeitorCodigo((lido) => {
-    const produto = produtos.find((item) => item.codigoBarras === lido || item.codigo === lido)
-    if (produto) {
-      inserir(itemCadastrado(produto))
-      setLeituras((atual) => atual + 1)
-    } else {
-      setCodigo(lido)
-      setSugestoesAbertas(false)
-      naoAchou(lido, true)
-    }
-  }, lendoCodigo)
-
-  function naoAchou(lido: string, ehCodigo: boolean) {
-    const fora = todos.find((item) => item.inativo && (item.codigo === lido || item.codigoBarras === lido))
+  function naoAchou(lido: string, ehCodigo: boolean, fora?: Produto) {
     setSemAtalho(Boolean(fora))
     setSemCadastro(ehCodigo && !fora ? lido : undefined)
     setErro(fora ? `“${fora.descricao}” está desativado. Reative no Estoque para vender.`
       : ehCodigo ? `Código “${lido}” sem cadastro.` : `Produto “${lido}” não encontrado.`)
   }
+
+  function falhou(mensagem: string) {
+    setSemAtalho(true)
+    setErro(mensagem)
+  }
+
+  useLeitorCodigo((lido) => {
+    void acharPorCodigo(lido).then((achado) => {
+      if ('erro' in achado) return falhou(achado.erro)
+      if (achado.produto?.ativo) {
+        inserir(achado.produto)
+        setLeituras((atual) => atual + 1)
+        return
+      }
+      setCodigo(lido)
+      setSugestoesAbertas(false)
+      naoAchou(lido, true, achado.produto ?? undefined)
+    })
+  }, lendoCodigo)
 
   useEffect(() => {
     if (!lendoCodigo) return
@@ -102,7 +138,7 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
     return () => window.removeEventListener('keydown', parar, true)
   }, [lendoCodigo])
 
-  function ler(evento: FormEvent) {
+  async function ler(evento: FormEvent) {
     evento.preventDefault()
     const lido = codigo.trim()
     if (!lido) {
@@ -111,20 +147,26 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
       entrada.current?.focus()
       return
     }
-    const exato = produtos.find((produto) => produto.codigo === lido || produto.codigoBarras === lido)
-    // Com a lista aberta, Enter/botão levam o destacado. Fechada e com vários
-    // resultados, pede para escolher: inserir o primeiro às cegas cobraria o errado.
-    const escolhido = exato ?? (sugestoes.length === 1 || (sugestoesAbertas && sugestoes.length) ? sugestoes[Math.min(indiceAtivo, sugestoes.length - 1)] : undefined)
-    if (escolhido) {
-      inserir(itemCadastrado(escolhido))
-    } else if (sugestoes.length > 1) {
+    // Com a lista aberta, Enter/botão levam o destacado.
+    if (sugestoesAbertas && listadas.length) return inserir(listadas[Math.min(indiceAtivo, listadas.length - 1)])
+    const achado = await acharPorCodigo(lido)
+    if ('erro' in achado) return falhou(achado.erro)
+    if (achado.produto?.ativo) return inserir(achado.produto)
+    if (achado.produto) return naoAchou(lido, true, achado.produto)
+    // Pelo nome: fechada e com vários resultados, pede para escolher; inserir o
+    // primeiro às cegas cobraria o errado.
+    const r = await api().listarProdutos('todos', lido, 1, MAXIMO_SUGESTOES)
+    if (!r.ok) return falhou(`${tituloFalha(r.causa)} ${r.erro}`)
+    setSugestoes({ termo: lido, produtos: r.dado.produtos })
+    if (r.dado.produtos.length === 1) return inserir(r.dado.produtos[0])
+    if (r.dado.produtos.length > 1) {
       setSugestoesAbertas(true)
       setSemAtalho(true)
       setErro('Vários produtos encontrados. Escolha um da lista.')
-    } else {
-      naoAchou(lido, /^\d{4,}$/.test(lido))
-      setSugestoesAbertas(false)
+      return
     }
+    naoAchou(lido, /^\d{4,}$/.test(lido))
+    setSugestoesAbertas(false)
   }
 
   function teclado(evento: KeyboardEvent<HTMLInputElement>) {
@@ -132,27 +174,27 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
       setSugestoesAbertas(false)
       return
     }
-    if (!sugestoesAbertas || sugestoes.length === 0) return
+    if (!sugestoesAbertas || listadas.length === 0) return
     if (evento.key === 'ArrowDown' || evento.key === 'ArrowUp') {
       evento.preventDefault()
-      setIndiceAtivo((atual) => (atual + (evento.key === 'ArrowDown' ? 1 : -1) + sugestoes.length) % sugestoes.length)
+      setIndiceAtivo((atual) => (atual + (evento.key === 'ArrowDown' ? 1 : -1) + listadas.length) % listadas.length)
     }
   }
 
-  function definirQuantidade(codigoBarras: string, proxima: number) {
-    aoMudar(itens.map((i) => (i.codigoBarras === codigoBarras ? { ...i, quantidade: Math.max(1, proxima) } : i)))
+  function definirQuantidade(produtoId: string, proxima: number) {
+    aoMudar(itens.map((i) => (i.produtoId === produtoId ? { ...i, quantidade: Math.max(1, proxima) } : i)))
   }
 
-  function quantidade(codigoBarras: string, delta: number) {
-    const atual = itens.find((i) => i.codigoBarras === codigoBarras)
-    if (atual) definirQuantidade(codigoBarras, atual.quantidade + delta)
+  function quantidade(produtoId: string, delta: number) {
+    const atual = itens.find((i) => i.produtoId === produtoId)
+    if (atual) definirQuantidade(produtoId, atual.quantidade + delta)
   }
 
   const unidades = itens.reduce((soma, i) => soma + i.quantidade, 0)
 
   return (
     <section className="itens-ficha">
-      <form className="itens-ficha__leitor" onSubmit={ler}>
+      <form className="itens-ficha__leitor" onSubmit={(e) => void ler(e)}>
         <div className="itens-ficha__busca" onBlur={(evento) => {
           if (!evento.currentTarget.contains(evento.relatedTarget)) setLendoCodigo(false)
         }}>
@@ -185,17 +227,17 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
               role="combobox"
               aria-autocomplete="list"
               aria-controls="itens-ficha-sugestoes"
-              aria-expanded={sugestoesAbertas && sugestoes.length > 0}
-              aria-activedescendant={sugestoesAbertas && sugestoes.length > 0 ? `itens-ficha-sugestao-${indiceAtivo}` : undefined}
+              aria-expanded={sugestoesAbertas && listadas.length > 0}
+              aria-activedescendant={sugestoesAbertas && listadas.length > 0 ? `itens-ficha-sugestao-${indiceAtivo}` : undefined}
               aria-invalid={Boolean(erro || erroFalta)}
             />
             <kbd>{lendoCodigo ? 'Esc' : 'Enter'}</kbd>
           </div>
-          {sugestoesAbertas && sugestoes.length > 0 && (
+          {sugestoesAbertas && listadas.length > 0 && (
             <div id="itens-ficha-sugestoes" className="itens-ficha__sugestoes" role="listbox" aria-label="Produtos encontrados">
-              {sugestoes.map((produto, indice) => (
+              {listadas.map((produto, indice) => (
                 <button
-                  key={produto.codigo}
+                  key={produto.id}
                   id={`itens-ficha-sugestao-${indice}`}
                   type="button"
                   role="option"
@@ -203,7 +245,7 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
                   className={indice === indiceAtivo ? 'itens-ficha__sugestao itens-ficha__sugestao--ativa' : 'itens-ficha__sugestao'}
                   onMouseDown={(evento) => evento.preventDefault()}
                   onMouseEnter={() => setIndiceAtivo(indice)}
-                  onClick={() => inserir(itemCadastrado(produto))}
+                  onClick={() => inserir(produto)}
                 >
                   <span><strong>{produto.descricao}</strong><small>{produto.codigoBarras ?? produto.codigo} · estoque {produto.saldo} {produto.unidade}</small></span>
                   <strong className="numero">{reais(produto.preco)}</strong>
@@ -225,7 +267,7 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
       )}
       {!erro && erroFalta && <p className="itens-ficha__erro" role="alert">{erroFalta}</p>}
       {erroEstoque && <p className="itens-ficha__erro" role="alert">
-        Estoque insuficiente para {erroEstoque.descricao}: {erroEstoque.disponivel} disponível, {erroEstoque.solicitado} na ficha. Confira a prateleira e <Link to={rotas.ajustarEstoque(erroEstoque.codigo)}>ajuste o estoque</Link> antes de concluir.
+        Estoque insuficiente para {erroEstoque.descricao}: {erroEstoque.disponivel} disponível, {erroEstoque.solicitado} na ficha. Confira a prateleira e <Link to={rotas.ajustarEstoque(erroEstoque.produtoId)}>ajuste o estoque</Link> antes de concluir.
       </p>}
 
       <div className="itens-ficha__topo">
@@ -247,20 +289,20 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
         </thead>
         <tbody>
           {itens.map((item) => (
-            <tr key={item.codigoBarras}>
+            <tr key={item.produtoId}>
               <td>
                 <span className="itens-ficha__nome">{item.descricao}</span>
                 <span className="itens-ficha__detalhe">
-                  Cód. {item.codigoBarras} · estoque {todos.find((produto) => produto.codigo === item.codigo)?.saldo ?? 0} {todos.find((produto) => produto.codigo === item.codigo)?.unidade ?? ''}
+                  Cód. {item.codigo} · estoque {item.saldo} {item.unidade}
                 </span>
               </td>
               <td className="itens-ficha__centro">
                 <div className="itens-ficha__qtd">
-                  <button type="button" aria-label="Diminuir" onClick={() => quantidade(item.codigoBarras, -1)}>
+                  <button type="button" aria-label="Diminuir" onClick={() => quantidade(item.produtoId, -1)}>
                     <Icone nome="menos" tamanho={16} />
                   </button>
-                  <CampoQuantidade valor={item.quantidade} descricao={item.descricao} aoMudar={(n) => definirQuantidade(item.codigoBarras, n)} />
-                  <button type="button" aria-label="Aumentar" onClick={() => quantidade(item.codigoBarras, 1)}>
+                  <CampoQuantidade valor={item.quantidade} descricao={item.descricao} aoMudar={(n) => definirQuantidade(item.produtoId, n)} />
+                  <button type="button" aria-label="Aumentar" onClick={() => quantidade(item.produtoId, 1)}>
                     <Icone nome="mais" tamanho={16} />
                   </button>
                 </div>
@@ -271,7 +313,7 @@ export function ItensFicha({ itens, aoMudar, erroFalta, erroEstoque, acaoExtra, 
                 <BotaoIcone
                   icone="lixeira"
                   rotulo="Remover item"
-                  onClick={() => aoMudar(itens.filter((i) => i.codigoBarras !== item.codigoBarras))}
+                  onClick={() => aoMudar(itens.filter((i) => i.produtoId !== item.produtoId))}
                 />
               </td>
             </tr>
