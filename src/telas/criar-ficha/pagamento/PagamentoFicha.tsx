@@ -178,7 +178,7 @@ export function PagamentoFicha(props: Props) {
               aoMudar={(valor) => props.aoMudarDivisao(meio, valor ?? 0)}
             />
           ))}
-          {/* A parte no cartão diz qual cartão e em qual maquininha (`R-VENDA-12`); no misto, sempre conferida no balcão. */}
+          {/* O misto é manual: o cartão passa na Sicoob, e a ficha só pergunta crédito ou débito (`R-VENDA-12`). */}
           {props.divisaoPagamento.cartao > 0 && (
             <div className="pagamento-ficha__maquininha">
               <Filtros
@@ -187,12 +187,10 @@ export function PagamentoFicha(props: Props) {
                 aoMudar={props.aoMudarCartao}
                 opcoes={[{ valor: 'credito', rotulo: 'Crédito' }, { valor: 'debito', rotulo: 'Débito' }]}
               />
-              <Filtros
-                rotulo="Maquininha"
-                valor={props.maquininhaCartao}
-                aoMudar={props.aoMudarMaquininhaCartao}
-                opcoes={[{ valor: 'mercado-pago', rotulo: 'Mercado Pago' }, { valor: 'sicoob', rotulo: 'Sicoob' }]}
-              />
+              <p className="pagamento-ficha__nota">
+                <Icone nome="info" tamanho={16} />
+                Cartão do misto na maquininha Sicoob.
+              </p>
             </div>
           )}
           <p className={restaMisto < 0 ? 'pagamento-ficha__misto-restante pagamento-ficha__misto-restante--erro' : 'pagamento-ficha__misto-restante'}>
