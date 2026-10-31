@@ -319,6 +319,20 @@ export function semearBanco(banco: Banco, { hoje, minutoAtual = 24 * 60 - 1 }: O
       for (const i of venda.itens) movimentar(i.produtoId, 'cancelamento', i.quantidade, momento, { ficha_id: venda.fichaId, operador_id: operadores.joao })
     })
 
+    // Venda no Pix cancelada no dia seguinte e conferida pela dona (R-FICHA-02);
+    // a de cima continua aguardando.
+    let canceladaConferida = ''
+    quando(dia(3), '10:00', () => {
+      const venda = vender(dia(3), '10:00', {
+        clienteId: null, forma: 'pix', itens: [{ codigo: 'EST-0029', quantidade: 1 }],
+        pagamentos: (total) => [{ tipo: 'venda', meio: 'pix', valor: total }],
+      })
+      const momento = instante(dia(2), '09:10')
+      canceladaConferida = novoId()
+      inserir('ficha_cancelamento', { id: canceladaConferida, ficha_id: venda.fichaId, motivo: 'Pix devolvido: cobrado em dobro', dia: dia(2), caixa_id: caixaAberto, operador_id: operadores.joao, registrado_em: momento })
+      for (const i of venda.itens) movimentar(i.produtoId, 'cancelamento', i.quantidade, momento, { ficha_id: venda.fichaId, operador_id: operadores.joao })
+    })
+
     // Notinha com entrada, recebimento estornado (cliente errado) e recebimento
     // parcial que fica: continua devendo o resto.
     let notinhaParcial = ''
@@ -415,8 +429,10 @@ export function semearBanco(banco: Banco, { hoje, minutoAtual = 24 * 60 - 1 }: O
     inserir('boleto_evento', { id: novoId(), boleto_id: duplicado, tipo: 'excluido', motivo: 'Cadastrado em dobro', operador_id: operadores.joao, registrado_em: instante(dia(5), '11:02') })
 
     banco.prepare('update operador set ativo = 0 where id = ?').run(operadores.marcia)
-    // A dona: administradora, sem fato próprio na semente (só autoriza).
-    inserir('operador', { id: novoId(), nome: 'Helena Prado', admin: 1, pin_hash: hashDoPin(PINS.dona, 'semente-dona'), criado_em: desde })
+    // A dona: administradora; o único fato dela na semente é conferir um cancelamento.
+    const dona = novoId()
+    inserir('operador', { id: dona, nome: 'Helena Prado', admin: 1, pin_hash: hashDoPin(PINS.dona, 'semente-dona'), criado_em: desde })
+    inserir('conferencia_cancelamento', { cancelamento_id: canceladaConferida, operador_id: dona, registrado_em: instante(dia(1), '18:00') })
     inserir('preferencia', { chave: 'operador_atual', valor: JSON.stringify(operadores.joao) })
   })
 }
