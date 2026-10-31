@@ -5,7 +5,7 @@
  * lado mostra aqui a ficha que gravou (`ficha`).
  */
 import { expect, it } from 'vitest'
-import type { Assinatura, DadosCliente, DadosProduto, PagamentoVenda, RascunhoFicha, Venda } from '../../comum/contrato'
+import type { Assinatura, CartaoDoMisto, DadosCliente, DadosProduto, PagamentoVenda, RascunhoFicha, Venda } from '../../comum/contrato'
 import { MENSAGENS, criarTentativas } from '../../comum/regras/operador'
 import { MENSAGENS_PRODUTO } from '../../comum/regras/produto'
 import { MENSAGENS_VENDA } from '../../comum/regras/venda'
@@ -199,7 +199,8 @@ testarContrato('nova ficha', { mock, sqlite }, (abrir) => {
     const api = abrir('vazia')
     const { joao, caderno } = await loja(api)
     const dois = [{ produtoId: caderno.id, quantidade: 2, precoVisto: 2500 }]
-    const misto = (parcelas: { meio: 'dinheiro' | 'pix' | 'cartao'; valor: number }[], recebido: number | null): PagamentoVenda => ({ forma: 'misto', parcelas, recebido })
+    const misto = (parcelas: { meio: 'dinheiro' | 'pix' | 'cartao'; valor: number }[], recebido: number | null, cartao: CartaoDoMisto | null = { cartao: 'debito', maquininha: 'sicoob' }): PagamentoVenda =>
+      ({ forma: 'misto', parcelas, recebido, cartao })
     expect(await api.concluirFicha(venda(dois, misto([{ meio: 'dinheiro', valor: 2000 }, { meio: 'pix', valor: 2000 }], 2000)), joao))
       .toEqual({ ok: false, causa: 'validacao', erro: MENSAGENS_VENDA.mistoTotal(5000) })
     expect(await api.concluirFicha(venda(dois, misto([{ meio: 'dinheiro', valor: 2000 }, { meio: 'pix', valor: 3000 }], 1000)), joao))
@@ -209,6 +210,27 @@ testarContrato('nova ficha', { mock, sqlite }, (abrir) => {
       .toEqual({ ok: false, causa: 'validacao', erro: MENSAGENS_VENDA.mistoMeios })
     const ok = dado(await api.concluirFicha(venda(dois, misto([{ meio: 'dinheiro', valor: 2000 }, { meio: 'cartao', valor: 3000 }, { meio: 'pix', valor: 0 }], 5000)), joao))
     expect(api.ficha(ok.id)?.pagamentos.map((p) => [p.meio, p.valor])).toEqual([['dinheiro', 2000], ['cartao', 3000]])
+  })
+
+  it('[R-VENDA-12] misto com cartão: a parte no cartão leva o tipo, a maquininha e o rótulo; sem eles, não grava', async () => {
+    const api = abrir('vazia')
+    const { joao, caderno } = await loja(api)
+    const dois = [{ produtoId: caderno.id, quantidade: 2, precoVisto: 2500 }]
+    type Parcela = { meio: 'dinheiro' | 'pix' | 'cartao'; valor: number }
+    const misto = (cartao: CartaoDoMisto | null, parcelas: Parcela[] = [{ meio: 'pix', valor: 1000 }, { meio: 'cartao', valor: 4000 }]): PagamentoVenda =>
+      ({ forma: 'misto', parcelas, recebido: null, cartao })
+    expect(await api.concluirFicha(venda(dois, misto(null)), joao)).toEqual({ ok: false, causa: 'validacao', erro: MENSAGENS_VENDA.mistoCartao })
+    expect(await api.concluirFicha(venda(dois, misto({ cartao: 'pre-pago', maquininha: 'sicoob' } as never)), joao)).toEqual({ ok: false, causa: 'validacao', erro: MENSAGENS_VENDA.mistoCartao })
+    expect(api.fichas()).toBe(0)
+    const pago = dado(await api.concluirFicha(venda(dois, misto({ cartao: 'credito', maquininha: 'mercado-pago' })), joao))
+    expect(api.ficha(pago.id)?.pagamentos).toEqual([
+      { tipo: 'venda', meio: 'pix', valor: 1000, rotulo: null, maquininha: null, cartao: null },
+      { tipo: 'venda', meio: 'cartao', valor: 4000, rotulo: 'Cartão crédito · Mercado Pago', maquininha: 'mercado-pago', cartao: 'credito' },
+    ])
+    // Sem valor no cartão, o campo do cartão não vale.
+    const semCartao = dado(await api.concluirFicha(venda([{ produtoId: caderno.id, quantidade: 1, precoVisto: 2500 }],
+      { ...misto({ cartao: 'debito', maquininha: 'sicoob' }, [{ meio: 'pix', valor: 1000 }, { meio: 'dinheiro', valor: 1500 }]), recebido: 1500 } as PagamentoVenda), joao))
+    expect(api.ficha(semCartao.id)?.pagamentos.map((p) => [p.meio, p.cartao, p.rotulo])).toEqual([['pix', null, null], ['dinheiro', null, null]])
   })
 
   it('[R-NOTINHA-03] notinha: a entrada paga na hora e o resto em aberto até o vencimento', async () => {

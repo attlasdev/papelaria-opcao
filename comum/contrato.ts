@@ -438,6 +438,9 @@ export type ItemVendido = { produtoId: string; quantidade: number; precoVisto: n
 /** Servico sem cadastro (`R-SERVICO-01`): o nome e o valor sao os da loja. */
 export type ServicoVendido = { nome: string; valor: number; perdas: number | null; observacao: string | null }
 
+/** A parte no cartao do misto (`R-VENDA-12`): obrigatoria quando ha valor no cartao. */
+export type CartaoDoMisto = { cartao: ModalidadeCartao; maquininha: Maquininha }
+
 /**
  * Como a venda e paga. Dinheiro e misto levam o que a pessoa entregou (o troco
  * sai dele, `R-VENDA-09`); a notinha, o vencimento e a entrada na hora.
@@ -448,7 +451,7 @@ export type PagamentoVenda =
   | { forma: 'dinheiro'; recebido: number }
   | { forma: 'pix'; maquininha: 'mercado-pago' | null }
   | { forma: 'cartao'; cartao: ModalidadeCartao; maquininha: Maquininha; bandeira: string | null }
-  | { forma: 'misto'; parcelas: { meio: MeioPagamento; valor: number }[]; recebido: number | null }
+  | { forma: 'misto'; parcelas: { meio: MeioPagamento; valor: number }[]; recebido: number | null; cartao: CartaoDoMisto | null }
   | { forma: 'notinha'; vencimento: string; entrada: { meio: MeioPagamento; valor: number } | null }
 
 /** A venda do balcao. Sem cliente: venda sem identificacao (`R-VENDA-02`). */

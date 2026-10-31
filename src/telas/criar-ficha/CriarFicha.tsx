@@ -233,7 +233,7 @@ export function CriarFicha() {
       forma === 'dinheiro' ? { forma, recebido }
       : forma === 'pix' ? { forma, maquininha: pixNaMaquininha ? 'mercado-pago' : null }
       : forma === 'cartao' ? { forma, cartao, maquininha: maquininhaCartao, bandeira: cobranca?.bandeira ?? null }
-      : forma === 'misto' ? { forma, parcelas: (['dinheiro', 'pix', 'cartao'] as const).map((meio) => ({ meio, valor: divisaoPagamento[meio] })), recebido: divisaoPagamento.dinheiro > 0 ? recebidoMisto : null }
+      : forma === 'misto' ? { forma, parcelas: (['dinheiro', 'pix', 'cartao'] as const).map((meio) => ({ meio, valor: divisaoPagamento[meio] })), recebido: divisaoPagamento.dinheiro > 0 ? recebidoMisto : null, cartao: divisaoPagamento.cartao > 0 ? { cartao, maquininha: maquininhaCartao } : null }
       : { forma, vencimento, entrada: entradaNaNotinha > 0 ? { meio: meioEntrada, valor: entradaNaNotinha } : null }
     return {
       clienteId: cliente && cliente !== semIdentificacao ? cliente.id : null,
