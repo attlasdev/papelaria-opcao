@@ -18,6 +18,7 @@ import { recebimentosDaBase as recebimentos } from './operacoes/recebimentos'
 import { vendasSemIdentificacaoDaBase as semIdentificacao } from './operacoes/vendas-sem-identificacao'
 import { boletosDaBase as boletos } from './operacoes/boletos'
 import { servicosDaBase as servicos } from './operacoes/servicos'
+import { caixaDaBase as caixa } from './operacoes/caixa'
 import { marcarMockInstalado } from './instalado'
 
 /** Mesmos dados inventados de `recursos/comprovante.exemplo.json`. */
@@ -145,6 +146,14 @@ const mock: Contrato = {
   desfazerPagamentoBoleto: (id, motivo, quem) => simularAssincrono(() => boletos.desfazerPagamentoBoleto(id, motivo, quem)),
   excluirBoleto: (id, motivo, quem) => simularAssincrono(() => boletos.excluirBoleto(id, motivo, quem)),
   listarServicos: (periodo) => simularAssincrono(() => servicos.listarServicos(periodo)),
+  obterCaixaAtual: () => simularAssincrono(() => caixa.obterCaixaAtual()),
+  abrirCaixa: (contado, quem) => simularAssincrono(() => caixa.abrirCaixa(contado, quem)),
+  movimentarGaveta: (tipo, valor, motivo, quem) => simularAssincrono(() => caixa.movimentarGaveta(tipo, valor, motivo, quem)),
+  fecharCaixa: (contado, justificativa, quem) => simularAssincrono(() => caixa.fecharCaixa(contado, justificativa, quem)),
+  conferirFechamento: (caixaId, dona) => simularAssincrono(() => caixa.conferirFechamento(caixaId, dona)),
+  listarCaixas: (periodo, soFechados, pagina, porPagina) => simularAssincrono(() => caixa.listarCaixas(periodo, soFechados, pagina, porPagina)),
+  listarMovimentosGaveta: (periodo, pagina, porPagina) => simularAssincrono(() => caixa.listarMovimentosGaveta(periodo, pagina, porPagina)),
+  obterCaixa: (id) => simularAssincrono(() => caixa.obterCaixa(id)),
   listarNotinhasAbertas: (clienteId) => simularAssincrono(() => recebimentos.listarNotinhasAbertas(clienteId)),
   receberNotinhas: (recebimento, quem) => simularAssincrono(() => recebimentos.receberNotinhas(recebimento, quem)),
 }

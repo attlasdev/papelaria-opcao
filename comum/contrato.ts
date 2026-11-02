@@ -659,6 +659,77 @@ export type ServicosDoPeriodo = {
 }
 
 /**
+ * O que mexe no dinheiro da gaveta (tela 7.1). `venda`, `entrada` e
+ * `recebimento` vem das fichas; `estorno-recebimento` e `cancelamento` os
+ * desfazem; `lancamento` e o manual do Financeiro (e `estorno-lancamento`);
+ * `adicao` e `retirada` sao a gaveta (e `estorno-gaveta`).
+ */
+export type TipoMovimentoCaixa =
+  | 'venda' | 'servico' | 'entrada' | 'recebimento' | 'estorno-recebimento' | 'cancelamento'
+  | 'lancamento' | 'estorno-lancamento' | 'adicao' | 'retirada' | 'estorno-gaveta'
+
+/** Um movimento em dinheiro de um caixa. `valor` com sinal: + entra na gaveta, - sai. */
+export type MovimentoCaixa = {
+  id: string
+  registradoEm: string
+  tipo: TipoMovimentoCaixa
+  /** "Venda da ficha #1131", "Retirada de caixa": pronto para a tela. */
+  descricao: string
+  /** O motivo do estorno, do cancelamento, da adicao ou da retirada; a descricao do lancamento. */
+  motivo: string | null
+  valor: number
+  operador: string
+  ficha: { id: string; numero: string } | null
+  /** Ja desfeito por um estorno ou pelo cancelamento da ficha. */
+  estornado: boolean
+}
+
+/** O fechamento: o esperado e gravado no momento (`R-CAIXA-10`). */
+export type FechamentoCaixa = {
+  registradoEm: string
+  operador: string
+  contado: number
+  esperado: number
+  /** contado - esperado: negativo e falta, positivo e sobra. */
+  diferenca: number
+  justificativa: string | null
+  /** So com diferenca: a dona que deu o visto; `null` e "aguardando a dona". */
+  conferidoPor: string | null
+}
+
+/** Um caixa (a gaveta de um turno). Dinheiro em centavos. */
+export type CaixaResumido = {
+  id: string
+  abertoEm: string
+  operadorAbertura: string
+  dinheiroAbertura: number
+  fechamento: FechamentoCaixa | null
+}
+
+export type CaixaDetalhe = CaixaResumido & {
+  /** So o dinheiro (`R-CAIXA-02`): Pix e cartao nao entram. */
+  resumo: { entradas: number; saidas: number; esperado: number }
+  /** Do mais velho para o mais novo. */
+  movimentos: MovimentoCaixa[]
+}
+
+/** Uma adicao, retirada ou o estorno delas, no historico (`R-CAIXA-08`). `caixaId` `null`: registro antigo sem caixa. */
+export type MovimentoGaveta = {
+  id: string
+  registradoEm: string
+  tipo: 'adicao' | 'retirada' | 'estorno-gaveta'
+  descricao: string
+  motivo: string
+  valor: number
+  operador: string
+  caixaId: string | null
+  estornado: boolean
+}
+
+export type PaginaCaixas = { caixas: CaixaResumido[]; total: number; pagina: number }
+export type PaginaMovimentosGaveta = { movimentos: MovimentoGaveta[]; total: number; pagina: number }
+
+/**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
  * O vocabulario sai das telas e da loja, nao do banco. Quem escreve e o back
@@ -941,6 +1012,36 @@ export type Contrato = {
    * depois de hoje, `validacao`.
    */
   listarServicos(periodo: { de: string; ate: string }): Promise<Resultado<ServicosDoPeriodo>>
+
+  // Caixa (1.0, tela 7.1) ------------------------------------------------------
+  // Um caixa aberto por vez (restricao do banco). O esperado e calculado pelo
+  // back (`R-CAIXA-03`). Os gestos pedem pessoa e PIN (`R-CAIXA-09`) e devolvem
+  // o caixa como ficou; a assinatura falha como a dos operadores.
+  /** O caixa aberto, ou `null`. */
+  obterCaixaAtual(): Promise<Resultado<CaixaDetalhe | null>>
+  /** Abre com o dinheiro contado na gaveta. Ja ha um aberto ou valor fora do formato, `validacao`. */
+  abrirCaixa(contado: number, quem: Assinatura): Promise<Resultado<CaixaDetalhe>>
+  /** Adicao ou retirada na gaveta aberta (`R-CAIXA-06`). Sem caixa aberto, valor ou motivo vazio, `validacao`. */
+  movimentarGaveta(tipo: 'adicao' | 'retirada', valor: number, motivo: string, quem: Assinatura): Promise<Resultado<CaixaDetalhe>>
+  /**
+   * Fecha o caixa aberto com o contado; grava o esperado de agora. Diferenca
+   * sem justificativa, `validacao` (`R-CAIXA-04`). Com diferenca, fica
+   * aguardando a dona, menos se quem fecha e ela (`R-CAIXA-10`).
+   */
+  fecharCaixa(contado: number, justificativa: string, quem: Assinatura): Promise<Resultado<CaixaDetalhe>>
+  /** O visto da dona no fechamento com diferenca. Aberto ou sem diferenca, `validacao`. `permissao`: nao e a dona. */
+  conferirFechamento(caixaId: string, dona: Assinatura): Promise<Resultado<CaixaDetalhe>>
+  /**
+   * Os caixas do periodo, do mais novo ao mais velho: o fechado pelo dia do
+   * fechamento, o aberto pelo da abertura (`R-CAIXA-08`). `soFechados`: os
+   * fechamentos recentes (`R-CAIXA-07`). Periodo invalido ou no futuro, ou
+   * `porPagina` fora de 1 a 100, `validacao`.
+   */
+  listarCaixas(periodo: { de: string; ate: string }, soFechados: boolean, pagina: number, porPagina: number): Promise<Resultado<PaginaCaixas>>
+  /** As adicoes, retiradas e os estornos delas no periodo, do mais novo ao mais velho. */
+  listarMovimentosGaveta(periodo: { de: string; ate: string }, pagina: number, porPagina: number): Promise<Resultado<PaginaMovimentosGaveta>>
+  /** Um caixa com o resumo e os movimentos em dinheiro. */
+  obterCaixa(id: string): Promise<Resultado<CaixaDetalhe>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

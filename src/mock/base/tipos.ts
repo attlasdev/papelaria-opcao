@@ -191,6 +191,8 @@ export type TurnoCaixa = {
   esperadoFechamento?: number
   contadoFechamento?: number
   justificativaDiferenca?: string
+  /** Fechamento com diferença: a dona que deu o visto (1.0, `R-CAIXA-10`). */
+  conferidoPor?: string
 }
 
 export type MovimentoEstoque = {

@@ -115,9 +115,9 @@ Para o back:
 | --- | --- | --- |
 | `financeiro/Financeiro` | **todos** os movimentos financeiros, filtrados na tela por intervalo | `estornarMovimentoCaixa` |
 | `registrar-movimento/RegistrarMovimento` | — | `registrarMovimentoCaixa` |
-| `caixa/CaixaAtual`, `ConferenciaCaixa` | turno aberto e resumo | `abrirTurnoCaixa`, `fecharTurnoCaixa` |
-| `caixa/MovimentarDinheiro` | — | `movimentarDinheiroCaixa` |
-| `caixa/FechamentosRecentes`, `HistoricoCaixa` | turnos e movimentos físicos do período | — |
+| `caixa/CaixaAtual`, `ConferenciaCaixa` | caixa aberto e resumo (`obterCaixaAtual`) | `abrirCaixa`, `fecharCaixa`, `conferirFechamento`: **no contrato desde `2026-11-02` (tela 7.1)** |
+| `caixa/MovimentarDinheiro` | — | `movimentarGaveta`: **desde `2026-11-02`** |
+| `caixa/FechamentosRecentes`, `HistoricoCaixa` | caixas e movimentos da gaveta do período (`listarCaixas`, `listarMovimentosGaveta`, `obterCaixa`): **desde `2026-11-02`** | — |
 
 Operações propostas: `consultarFinanceiro(de, ate, meio)` (resumo + linhas
 paginadas), `registrarLancamento`, `estornarLancamento`, `obterCaixaAtual`,

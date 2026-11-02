@@ -69,9 +69,6 @@ Os motivos se repetem em quatro tipos:
 | R-ESTOQUE-03 | tela | tela 2.4 (bloco "Bipados") e Fase 3 (a gaveta da linha) |
 | R-FINANCEIRO-01 | tela | Fase 3 |
 | R-FINANCEIRO-03 | contrato | tela 7.2 |
-| R-CAIXA-03 | contrato | tela 7.1 (esperado calculado pelo back) |
-| R-CAIXA-05 | contrato | tela 7.1 |
-| R-CAIXA-09 | contrato | tela 7.1 (assinatura nos gestos do caixa) |
 | R-PAGAMENTO-01 | tela | Fase 3 |
 | R-INICIO-02 | tela | Fase 3 |
 | R-INICIO-03 | tela | Fase 3 |

@@ -218,47 +218,56 @@ export function alterarSaldo(codigo: string, depois: number, motivo: string, tip
   return true
 }
 
-export function registrarMovimentoCaixa(dados: Omit<MovimentoCaixa, 'id'>) {
+export function registrarMovimentoCaixa(dados: Omit<MovimentoCaixa, 'id'>, operador = base.operador) {
   if (!Number.isSafeInteger(dados.valor) || dados.valor === 0 || !dados.descricao.trim()) return false
   if (dados.categoria === CATEGORIA_RETIRADA_CAIXA && (dados.meio !== 'dinheiro' || dados.valor >= 0)) return false
   if (dados.categoria === CATEGORIA_ADICAO_CAIXA && (dados.meio !== 'dinheiro' || dados.valor <= 0 || !turnoCaixaAberto())) return false
-  const movimento = { ...dados, id: `${dados.data}-${dados.horario}-${base.movimentosCaixa.length}`, operador: base.operador, registradoEm: new Date().toISOString(), turnoCaixaId: turnoCaixaAberto() }
+  const movimento = { ...dados, id: `${dados.data}-${dados.horario}-${base.movimentosCaixa.length}`, operador, registradoEm: new Date().toISOString(), turnoCaixaId: turnoCaixaAberto() }
   mudar({ ...base, movimentosCaixa: [movimento, ...base.movimentosCaixa] })
   return true
 }
 
 /** Transferir notas/moedas exige uma conferência aberta, sem criar receita/despesa. */
-export function movimentarDinheiroCaixa(acao: 'adicionar' | 'retirar', valor: number, motivo: string) {
+export function movimentarDinheiroCaixa(acao: 'adicionar' | 'retirar', valor: number, motivo: string, operador = base.operador) {
   if (!turnoCaixaAberto() || !Number.isSafeInteger(valor) || valor <= 0 || !motivo.trim()) return false
-  return registrarMovimentoCaixa({ data: hojeISO(), horario: agoraHorario(), descricao: motivo.trim(), origem: 'Movimentação da gaveta', categoria: acao === 'adicionar' ? CATEGORIA_ADICAO_CAIXA : CATEGORIA_RETIRADA_CAIXA, meio: 'dinheiro', valor: acao === 'adicionar' ? valor : -valor })
+  return registrarMovimentoCaixa({ data: hojeISO(), horario: agoraHorario(), descricao: motivo.trim(), origem: 'Movimentação da gaveta', categoria: acao === 'adicionar' ? CATEGORIA_ADICAO_CAIXA : CATEGORIA_RETIRADA_CAIXA, meio: 'dinheiro', valor: acao === 'adicionar' ? valor : -valor }, operador)
 }
 
 /** Abre uma conferência a partir do dinheiro contado agora. */
-export function abrirTurnoCaixa(fundoInicial: number) {
+export function abrirTurnoCaixa(fundoInicial: number, operador = base.operador) {
   if (!Number.isSafeInteger(fundoInicial) || fundoInicial < 0 || (base.turnosCaixa ?? []).some((turno) => !turno.fechadoEm)) return false
   const abertoEm = new Date().toISOString()
   mudar({
     ...base,
-    turnosCaixa: [{ id: `${abertoEm}-${(base.turnosCaixa ?? []).length}`, abertoEm, operadorAbertura: base.operador, fundoInicial }, ...(base.turnosCaixa ?? [])],
+    turnosCaixa: [{ id: `${abertoEm}-${(base.turnosCaixa ?? []).length}`, abertoEm, operadorAbertura: operador, fundoInicial }, ...(base.turnosCaixa ?? [])],
   })
   return true
 }
 
-/** Fecha sem reescrever movimentos; diferença exige explicação. */
-export function fecharTurnoCaixa(id: string, contadoFechamento: number, justificativaDiferenca: string) {
+/**
+ * Fecha sem reescrever movimentos; diferença exige explicação. Na 1.0 o
+ * esperado vem da regra comum (`comum/regras/caixa.ts`), com quem fechou e,
+ * se é a dona com diferença, o visto dela (`R-CAIXA-10`).
+ */
+export function fecharTurnoCaixa(id: string, contadoFechamento: number, justificativaDiferenca: string, operador = base.operador, esperado?: number, conferidoPor?: string) {
   const turno = (base.turnosCaixa ?? []).find((item) => item.id === id)
   if (!turno || turno.fechadoEm || !Number.isSafeInteger(contadoFechamento) || contadoFechamento < 0) return false
   const fechadoEm = new Date().toISOString()
-  const esperadoFechamento = resumoTurnoCaixa(base, { ...turno, fechadoEm }).esperado
+  const esperadoFechamento = esperado ?? resumoTurnoCaixa(base, { ...turno, fechadoEm }).esperado
   if (contadoFechamento !== esperadoFechamento && !justificativaDiferenca.trim()) return false
   mudar({
     ...base,
     turnosCaixa: (base.turnosCaixa ?? []).map((item) => item.id === id ? {
-      ...item, fechadoEm, operadorFechamento: base.operador, esperadoFechamento, contadoFechamento,
-      justificativaDiferenca: justificativaDiferenca.trim() || undefined,
+      ...item, fechadoEm, operadorFechamento: operador, esperadoFechamento, contadoFechamento,
+      justificativaDiferenca: justificativaDiferenca.trim() || undefined, ...(conferidoPor ? { conferidoPor } : {}),
     } : item),
   })
   return true
+}
+
+/** O visto da dona no fechamento com diferença (`R-CAIXA-10`); o já conferido não muda. */
+export function conferirFechamentoCaixa(id: string, dona: string) {
+  mudar({ ...base, turnosCaixa: (base.turnosCaixa ?? []).map((t) => (t.id === id && t.fechadoEm && !t.conferidoPor ? { ...t, conferidoPor: dona } : t)) })
 }
 
 /** Venda concluída somente se todas as unidades já existirem no estoque. */

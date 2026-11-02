@@ -676,7 +676,14 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   Fechamentos anteriores são preservados.
 - `R-CAIXA-09` Novos movimentos, pagamentos e estornos guardam quem fez, escolhido com
   PIN no gesto (`R-OPERADOR-02`). Na 0.1 era o operador fixo da base, sem
-  autenticar quem estava na máquina.
+  autenticar quem estava na máquina. Abrir, adicionar, retirar e fechar o
+  caixa pedem pessoa e PIN depois do formulário (`2026-11-02`).
+- `R-CAIXA-10` **Fechamento com diferença: conferência depois** (`2026-11-02`, D3): o
+  fechamento grava na hora com o motivo da diferença, assinado só por quem
+  fecha; com diferença, fica "aguardando a dona" até ela conferir com o PIN
+  dela, no detalhe do caixa no histórico. Sem diferença, não precisa de visto;
+  o fechamento da dona já nasce conferido. O esperado é calculado pelo back e
+  gravado no fechamento.
 
 ### Pagamentos (Pix e cartão)
 - `R-PAGAMENTO-01` A funcionária marca Pix ou cartão **depois de conferir** no balcão; não há
@@ -737,7 +744,8 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   o jeito de cada gesto (D3). **Ligados:** ajustar estoque, com conferência
   depois (`R-ESTOQUE-11`); cancelar ficha, com conferência depois
   (`R-FICHA-02`, `2026-10-31`); estornar recebimento, com conferência depois
-  (`R-CORRECAO-03`, `2026-11-02`).
+  (`R-CORRECAO-03`, `2026-11-02`); fechar caixa com diferença, com conferência
+  depois (`R-CAIXA-10`, `2026-11-02`).
 - `R-OPERADOR-07` Pessoa desativada some da escolha, não assina nem autoriza, e continua
   no histórico com o nome.
 - `R-OPERADOR-08` O PIN só existe no back, guardado com hash (scrypt, com sal); nunca
@@ -789,6 +797,21 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-11-02` — Caixa pelo back; fechamento com diferença com conferência depois
+Decisão do Agostinho, no percurso da tela 7.1 (a validação do Caixa que estava
+com o Victor passou a ser dele). O caixa atual, o histórico e o detalhe vêm do
+contrato; o esperado é do back, num lugar só (`comum/regras/caixa.ts`); abrir,
+adicionar, retirar e fechar pedem pessoa e PIN. Fechamento com diferença fica
+aguardando o visto da dona (`R-CAIXA-10`, `conferencia_fechamento`, migration
+0006), como o cancelar e o estornar.
+
+**Por quê:** a diferença já vem com motivo escrito; o visto da dona depois dá
+o rastro sem travar o fechamento quando ela não está. Descartado: PIN da dona
+na hora (o caixa com diferença não fecharia sem ela) e só quem fecha (sem
+visto nenhum num gesto que mexe com dinheiro). Lançamento em dinheiro e
+estorno de adição ou retirada nascem no Financeiro (tela 7.2); o Caixa só os
+lê.
 
 ### `2026-11-02` — Boletos pelo back; pagar e desfazer só com o PIN de quem faz
 Decisão do Agostinho, no percurso da tela 6.1. Os boletos vêm de
