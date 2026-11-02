@@ -113,8 +113,8 @@ Para o back:
 
 | Tela | Lê | Grava |
 | --- | --- | --- |
-| `financeiro/Financeiro` | **todos** os movimentos financeiros, filtrados na tela por intervalo | `estornarMovimentoCaixa` |
-| `registrar-movimento/RegistrarMovimento` | — | `registrarMovimentoCaixa` |
+| `financeiro/Financeiro` | as linhas do período, paginadas, com os cartões (`consultarFinanceiro`); a planilha (`listarFinanceiroDoPeriodo`) | `estornarLancamento`, `conferirEstornoLancamento`: **no contrato desde `2026-11-02` (tela 7.2)** |
+| `registrar-movimento/RegistrarMovimento` | — | `registrarLancamento`: **desde `2026-11-02`** |
 | `caixa/CaixaAtual`, `ConferenciaCaixa` | caixa aberto e resumo (`obterCaixaAtual`) | `abrirCaixa`, `fecharCaixa`, `conferirFechamento`: **no contrato desde `2026-11-02` (tela 7.1)** |
 | `caixa/MovimentarDinheiro` | — | `movimentarGaveta`: **desde `2026-11-02`** |
 | `caixa/FechamentosRecentes`, `HistoricoCaixa` | caixas e movimentos da gaveta do período (`listarCaixas`, `listarMovimentosGaveta`, `obterCaixa`): **desde `2026-11-02`** | — |

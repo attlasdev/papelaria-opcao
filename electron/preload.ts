@@ -74,6 +74,11 @@ const api: Contrato = {
   listarCaixas: (periodo, soFechados, pagina, porPagina) => ipcRenderer.invoke('listarCaixas', periodo, soFechados, pagina, porPagina),
   listarMovimentosGaveta: (periodo, pagina, porPagina) => ipcRenderer.invoke('listarMovimentosGaveta', periodo, pagina, porPagina),
   obterCaixa: (id) => ipcRenderer.invoke('obterCaixa', id),
+  consultarFinanceiro: (periodo, filtro, pagina, porPagina) => ipcRenderer.invoke('consultarFinanceiro', periodo, filtro, pagina, porPagina),
+  listarFinanceiroDoPeriodo: (periodo) => ipcRenderer.invoke('listarFinanceiroDoPeriodo', periodo),
+  registrarLancamento: (dados, quem) => ipcRenderer.invoke('registrarLancamento', dados, quem),
+  estornarLancamento: (id, motivo, quem) => ipcRenderer.invoke('estornarLancamento', id, motivo, quem),
+  conferirEstornoLancamento: (estornoId, dona) => ipcRenderer.invoke('conferirEstornoLancamento', estornoId, dona),
   listarNotinhasAbertas: (clienteId) => ipcRenderer.invoke('listarNotinhasAbertas', clienteId),
   receberNotinhas: (recebimento, quem) => ipcRenderer.invoke('receberNotinhas', recebimento, quem),
 }

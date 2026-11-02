@@ -458,7 +458,7 @@ export function conferirEstornos(linhas: { fichaId: string; indice: number }[], 
 }
 
 /** Lançamento manual errado: um lançamento novo, de sinal contrário, anula o primeiro. */
-export function estornarMovimentoCaixa(id: string, motivo: string) {
+export function estornarMovimentoCaixa(id: string, motivo: string, operador = base.operador, conferidoPor?: string) {
   const original = base.movimentosCaixa.find((m) => m.id === id)
   if (!original || original.estornoDe || base.movimentosCaixa.some((m) => m.estornoDe === id) || !motivo.trim()) return false
   const { data, horario, registradoEm, turnoCaixaId } = estornoAgora(motivo)
@@ -471,13 +471,19 @@ export function estornarMovimentoCaixa(id: string, motivo: string) {
     categoria: CATEGORIA_ESTORNO,
     meio: original.meio,
     valor: -original.valor,
-    operador: base.operador,
+    operador,
     registradoEm,
     turnoCaixaId,
     estornoDe: id,
+    ...(conferidoPor ? { conferidoPor } : {}),
   }
   mudar({ ...base, movimentosCaixa: [estorno, ...base.movimentosCaixa] })
   return true
+}
+
+/** O visto da dona no estorno de lançamento (`R-FINANCEIRO-07`); o já conferido não muda. */
+export function conferirEstornoLancamento(id: string, dona: string) {
+  mudar({ ...base, movimentosCaixa: base.movimentosCaixa.map((m) => (m.id === id && m.estornoDe && !m.conferidoPor ? { ...m, conferidoPor: dona } : m)) })
 }
 
 /** Lembrete na ficha. Só se acrescenta: o que foi anotado fica como foi. `operador`: quem anotou (1.0). */

@@ -730,6 +730,58 @@ export type PaginaCaixas = { caixas: CaixaResumido[]; total: number; pagina: num
 export type PaginaMovimentosGaveta = { movimentos: MovimentoGaveta[]; total: number; pagina: number }
 
 /**
+ * Uma linha do Financeiro (tela 7.2): um pagamento de ficha (em qualquer meio),
+ * um lancamento manual, ou o estorno de um deles. A gaveta (adicao e retirada)
+ * fica no Caixa (`R-FINANCEIRO-05`). `valor` com sinal; `lado` diz de qual
+ * total ela faz parte: o estorno abate do proprio lado (`R-FINANCEIRO-03`).
+ */
+export type LinhaFinanceira = {
+  id: string
+  /** O dia em que o dinheiro conta, `AAAA-MM-DD`. */
+  dia: string
+  registradoEm: string
+  descricao: string
+  origem: string
+  /** "Venda", "Venda e servico", "Servico", "Recebimento de notinha", "Recebimento avulso", "Despesa" ou "Estorno". */
+  categoria: string
+  meio: MeioPagamento
+  /** Como foi registrado, ex. "Cartão crédito Visa · Mercado Pago"; sem rotulo, o nome do meio. */
+  rotulo: string | null
+  valor: number
+  lado: 'entrada' | 'saida'
+  operador: string
+  ficha: { id: string; numero: string } | null
+  cliente: string | null
+  /** Linha de estorno: o id da linha que ela desfaz. */
+  estornoDe: string | null
+  /** Ja desfeita por um estorno ou pelo cancelamento da ficha. */
+  estornado: boolean
+  /** Venda a vista ativa: "Estornar" cancela a ficha inteira (`R-CORRECAO-02`). */
+  vendaEstornavel: boolean
+  /** Lancamento manual ativo: "Estornar" lanca o contrario (`R-FINANCEIRO-07`). */
+  lancamentoEstornavel: boolean
+  /** So no estorno de lancamento: a dona que deu o visto; `null` e "a conferir". */
+  conferidoPor: string | null
+  /** Estorno de lancamento sem o visto da dona. */
+  aguardandoDona: boolean
+}
+
+export type FiltroFinanceiro = 'todos' | MeioPagamento | 'estornos'
+
+export type ResumoFinanceiro = {
+  entradas: number
+  saidas: number
+  /** Entradas menos despesas: nao e lucro nem saldo (`R-FINANCEIRO-04`). */
+  liquido: number
+  quantidadeSaidas: number
+  contagem: Record<FiltroFinanceiro, number>
+}
+
+export type PaginaFinanceiro = { linhas: LinhaFinanceira[]; total: number; pagina: number; resumo: ResumoFinanceiro }
+
+export type DadosLancamento = { tipo: 'entrada' | 'despesa'; meio: MeioPagamento; descricao: string; valor: number }
+
+/**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
  * O vocabulario sai das telas e da loja, nao do banco. Quem escreve e o back
@@ -1042,6 +1094,27 @@ export type Contrato = {
   listarMovimentosGaveta(periodo: { de: string; ate: string }, pagina: number, porPagina: number): Promise<Resultado<PaginaMovimentosGaveta>>
   /** Um caixa com o resumo e os movimentos em dinheiro. */
   obterCaixa(id: string): Promise<Resultado<CaixaDetalhe>>
+
+  // Financeiro (1.0, tela 7.2) -------------------------------------------------
+  /**
+   * As linhas do periodo (dia em que o dinheiro conta), da mais nova para a
+   * mais velha, paginadas, com os cartoes e as contagens dos filtros do periodo
+   * inteiro (`R-FINANCEIRO-02` a `05`). Periodo invalido ou no futuro, ou
+   * `porPagina` fora de 1 a 100, `validacao`.
+   */
+  consultarFinanceiro(periodo: { de: string; ate: string }, filtro: FiltroFinanceiro, pagina: number, porPagina: number): Promise<Resultado<PaginaFinanceiro>>
+  /** Todas as linhas do periodo, sem paginar: so para a planilha (`R-FINANCEIRO-06`). */
+  listarFinanceiroDoPeriodo(periodo: { de: string; ate: string }): Promise<Resultado<LinhaFinanceira[]>>
+  /** Entrada avulsa ou despesa (`R-FINANCEIRO-07`); em dinheiro, no caixa aberto. Descricao vazia ou valor nao positivo, `validacao`. */
+  registrarLancamento(dados: DadosLancamento, quem: Assinatura): Promise<Resultado<LinhaFinanceira>>
+  /**
+   * Lanca o contrario do lancamento manual, com motivo (`R-FINANCEIRO-07`);
+   * devolve a linha do estorno. Ja estornado, e estorno, ou motivo vazio,
+   * `validacao`; nao e lancamento manual, `nao-encontrado`.
+   */
+  estornarLancamento(id: string, motivo: string, quem: Assinatura): Promise<Resultado<LinhaFinanceira>>
+  /** O visto da dona no estorno de lancamento (o id e o da linha do estorno). `permissao`: nao e a dona. */
+  conferirEstornoLancamento(estornoId: string, dona: Assinatura): Promise<Resultado<LinhaFinanceira>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

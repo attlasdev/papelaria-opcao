@@ -633,6 +633,12 @@ o que foi discutido e implementado; a avaliação de uso continua na próxima se
   contador somar. Formato escolhido por nós, **ainda não visto pelo contador**:
   ajustar depois da resposta dele (pendente). Atalho "Mês passado" para o
   fechamento mensal.
+- `R-FINANCEIRO-07` **Lançar e estornar com PIN; estorno com conferência depois**
+  (`2026-11-02`, D3): registrar entrada ou despesa pede pessoa e PIN; em
+  dinheiro, entra no caixa aberto, se houver. Estornar um lançamento pede
+  motivo e PIN, grava na hora um lançamento de sinal contrário e fica "A
+  conferir" até a dona dar o visto com o PIN dela, na própria linha do
+  Financeiro; o da dona já nasce conferido. O original fica "Estornado".
 
 ### Caixa
 **Situação de validação: NÃO VALIDADO pelo Victor.** A gaveta tem tela e item
@@ -745,7 +751,9 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   depois (`R-ESTOQUE-11`); cancelar ficha, com conferência depois
   (`R-FICHA-02`, `2026-10-31`); estornar recebimento, com conferência depois
   (`R-CORRECAO-03`, `2026-11-02`); fechar caixa com diferença, com conferência
-  depois (`R-CAIXA-10`, `2026-11-02`).
+  depois (`R-CAIXA-10`, `2026-11-02`); estornar lançamento, com conferência
+  depois (`R-FINANCEIRO-07`, `2026-11-02`). Com isso, toda a lista provisória
+  está decidida.
 - `R-OPERADOR-07` Pessoa desativada some da escolha, não assina nem autoriza, e continua
   no histórico com o nome.
 - `R-OPERADOR-08` O PIN só existe no back, guardado com hash (scrypt, com sal); nunca
@@ -797,6 +805,19 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-11-02` — Financeiro pelo back; estorno de lançamento com conferência depois
+Decisão do Agostinho, no percurso da tela 7.2. As linhas, os cartões e as
+contagens vêm do contrato (`consultarFinanceiro`), e a planilha do período lê
+todas as linhas do back (`listarFinanceiroDoPeriodo`), gerada na tela como
+antes. Lançar e estornar pedem pessoa e PIN; o estorno de lançamento fica
+aguardando a dona (`conferencia_lancamento`, migration 0007). O texto, a
+categoria e o lado de cada linha saem de `comum/regras/financeiro.ts`, iguais
+nos dois lados.
+
+**Por quê:** é o último gesto da lista da D3, e segue o mesmo jeito dos outros
+três que mexem com dinheiro (cancelar, estornar recebimento, fechar com
+diferença). Descartado: PIN da dona na hora e só quem estorna.
 
 ### `2026-11-02` — Caixa pelo back; fechamento com diferença com conferência depois
 Decisão do Agostinho, no percurso da tela 7.1 (a validação do Caixa que estava

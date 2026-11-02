@@ -178,6 +178,8 @@ export type MovimentoCaixa = {
   turnoCaixaId?: string
   /** Este lançamento desfaz outro (id), com o valor invertido. */
   estornoDe?: string
+  /** No estorno de lançamento: a dona que deu o visto (1.0, `R-FINANCEIRO-07`). */
+  conferidoPor?: string
 }
 
 /** Conferência do dinheiro físico; períodos anteriores não são recalculados. */

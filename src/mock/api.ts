@@ -19,6 +19,7 @@ import { vendasSemIdentificacaoDaBase as semIdentificacao } from './operacoes/ve
 import { boletosDaBase as boletos } from './operacoes/boletos'
 import { servicosDaBase as servicos } from './operacoes/servicos'
 import { caixaDaBase as caixa } from './operacoes/caixa'
+import { financeiroDaBase as financeiro } from './operacoes/financeiro'
 import { marcarMockInstalado } from './instalado'
 
 /** Mesmos dados inventados de `recursos/comprovante.exemplo.json`. */
@@ -154,6 +155,11 @@ const mock: Contrato = {
   listarCaixas: (periodo, soFechados, pagina, porPagina) => simularAssincrono(() => caixa.listarCaixas(periodo, soFechados, pagina, porPagina)),
   listarMovimentosGaveta: (periodo, pagina, porPagina) => simularAssincrono(() => caixa.listarMovimentosGaveta(periodo, pagina, porPagina)),
   obterCaixa: (id) => simularAssincrono(() => caixa.obterCaixa(id)),
+  consultarFinanceiro: (periodo, filtro, pagina, porPagina) => simularAssincrono(() => financeiro.consultarFinanceiro(periodo, filtro, pagina, porPagina)),
+  listarFinanceiroDoPeriodo: (periodo) => simularAssincrono(() => financeiro.listarFinanceiroDoPeriodo(periodo)),
+  registrarLancamento: (dados, quem) => simularAssincrono(() => financeiro.registrarLancamento(dados, quem)),
+  estornarLancamento: (id, motivo, quem) => simularAssincrono(() => financeiro.estornarLancamento(id, motivo, quem)),
+  conferirEstornoLancamento: (estornoId, dona) => simularAssincrono(() => financeiro.conferirEstornoLancamento(estornoId, dona)),
   listarNotinhasAbertas: (clienteId) => simularAssincrono(() => recebimentos.listarNotinhasAbertas(clienteId)),
   receberNotinhas: (recebimento, quem) => simularAssincrono(() => recebimentos.receberNotinhas(recebimento, quem)),
 }

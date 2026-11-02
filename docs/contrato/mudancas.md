@@ -31,6 +31,18 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-11-02` — Financeiro (1.0, tela 7.2)
+
+- **Contrato:** `consultarFinanceiro(periodo, filtro, pagina, porPagina)` com
+  as linhas (`LinhaFinanceira`: texto, categoria, lado, ficha, cliente e se
+  está estornada), os cartões e as contagens; `listarFinanceiroDoPeriodo`
+  para a planilha; `registrarLancamento`, `estornarLancamento` e
+  `conferirEstornoLancamento`, com pessoa e PIN (`R-FINANCEIRO-07`).
+- **Na tela:** registrar e estornar abrem "Quem está fazendo?". O estorno de
+  lançamento de funcionário mostra "A conferir" e o "Conferir" na linha. A
+  categoria do lançamento manual passa a ser "Recebimento avulso" ou "Despesa"
+  (a base antiga tinha também "Avulso"). A planilha sai das linhas do back.
+
 ### `2026-11-02` — Caixa (1.0, tela 7.1)
 
 - **Contrato:** `obterCaixaAtual`, `abrirCaixa`, `movimentarGaveta`,
