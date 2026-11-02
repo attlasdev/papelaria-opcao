@@ -27,3 +27,15 @@
 
 
 .servicos__perdas { margin-top: var(--espaco-6); }
+
+.servicos__falha {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-4);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-critico-fundo);
+  color: var(--color-critico-texto);
+  font-size: var(--text-corpo);
+}
