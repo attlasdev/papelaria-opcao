@@ -501,8 +501,16 @@ export type PagamentoDaFicha = {
   dia: string
   registradoEm: string
   operador: string
-  /** Recebimento de notinha lancado por engano: nao conta como pago. */
-  estorno: { dia: string; motivo: string; operador: string } | null
+  /**
+   * So no recebimento: as outras notinhas que o mesmo "Receber" abateu, e
+   * quanto em cada uma. Estornar desfaz todas juntas (`R-CORRECAO-03`).
+   */
+  mesmoRecebimento: { fichaId: string; numero: string; valor: number }[]
+  /**
+   * Recebimento de notinha lancado por engano: nao conta como pago.
+   * `conferidoPor`: a dona que deu o visto; `null` e "aguardando a dona".
+   */
+  estorno: { dia: string; motivo: string; operador: string; conferidoPor: string | null } | null
 }
 
 /** `conferidoPor`: a dona que deu o visto; `null` e "aguardando a dona" (`R-FICHA-02`). */
@@ -810,6 +818,19 @@ export type Contrato = {
    * entregue menor que a parte em dinheiro. `nao-encontrado`: ficha que nao existe.
    */
   receberNotinhas(recebimento: Recebimento, quem: Assinatura): Promise<Resultado<RecebimentoFeito>>
+
+  // Estornar recebimento (1.0, tela 5.2) ---------------------------------------
+  /**
+   * Desfaz o "Receber" inteiro de que este pagamento faz parte, em todas as
+   * notinhas que ele abateu, numa transacao (`R-CORRECAO-03`); o dinheiro sai
+   * da gaveta aberta hoje. Assina so quem estorna; o da dona ja nasce
+   * conferido. Devolve a ficha deste pagamento como ficou. `validacao`: motivo
+   * vazio, pagamento que nao e recebimento (venda, entrada), ja estornado ou
+   * de ficha cancelada. Pagamento que nao existe, `nao-encontrado`.
+   */
+  estornarRecebimento(pagamentoId: string, motivo: string, quem: Assinatura): Promise<Resultado<FichaDetalhe>>
+  /** O visto da dona no recebimento estornado, em todas as linhas dele. Nao estornado, `validacao`. `permissao`: nao e a dona. */
+  conferirEstorno(pagamentoId: string, dona: Assinatura): Promise<Resultado<FichaDetalhe>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

@@ -132,6 +132,8 @@ const mock: Contrato = {
   cancelarFicha: (id, motivo, quem) => simularAssincrono(() => fichas.cancelarFicha(id, motivo, quem)),
   conferirCancelamento: (fichaId, dona) => simularAssincrono(() => fichas.conferirCancelamento(fichaId, dona)),
   anotarFicha: (id, texto, quem) => simularAssincrono(() => fichas.anotarFicha(id, texto, quem)),
+  estornarRecebimento: (pagamentoId, motivo, quem) => simularAssincrono(() => fichas.estornarRecebimento(pagamentoId, motivo, quem)),
+  conferirEstorno: (pagamentoId, dona) => simularAssincrono(() => fichas.conferirEstorno(pagamentoId, dona)),
   listarNotinhasAbertas: (clienteId) => simularAssincrono(() => recebimentos.listarNotinhasAbertas(clienteId)),
   receberNotinhas: (recebimento, quem) => simularAssincrono(() => recebimentos.receberNotinhas(recebimento, quem)),
 }

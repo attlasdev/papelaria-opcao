@@ -12,6 +12,11 @@ export const MENSAGENS_FICHA = {
   naoCancelada: 'Esta ficha não está cancelada.',
   motivo: 'Informe o motivo do cancelamento.',
   anotacao: 'Escreva a anotação.',
+  pagamentoNaoEncontrado: 'Pagamento não encontrado.',
+  soRecebimento: 'Só recebimento de notinha se estorna. Venda ou entrada errada se corrige cancelando a ficha.',
+  jaEstornado: 'Este recebimento já foi estornado.',
+  naoEstornado: 'Este recebimento não foi estornado.',
+  fichaCancelada: 'A ficha está cancelada: os pagamentos dela já saíram.',
   longo: (maximo: number) => `Use no máximo ${maximo} caracteres.`,
 }
 

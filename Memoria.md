@@ -412,7 +412,13 @@ com "Nota:". Item sem um dos dois quebra a suíte.
     continuam sem o botão no Financeiro: corrigem-se na ficha (decidido pelo
     Agostinho; descartado o "Estornar" do recebimento direto no Financeiro).
   - `R-CORRECAO-03` **Estornar recebimento de notinha:** pagamento riscado com o motivo; a
-    notinha volta a dever.
+    notinha volta a dever. Desde `2026-11-02`: estornar desfaz o **"Receber"
+    inteiro**, em todas as notinhas que ele abateu, numa vez só (a janela avisa
+    as outras); o dinheiro estornado sai da gaveta aberta hoje. Quem estorna
+    assina só com o próprio PIN, e o estorno de funcionário fica **"aguardando a
+    dona"** até ela conferir na ficha; o da dona já nasce conferido. Só
+    recebimento se estorna: a entrada da notinha errada se corrige cancelando a
+    ficha.
   - `R-CORRECAO-04` **Estornar lançamento manual** do Financeiro: entra um lançamento de sinal
     contrário; o original fica "Estornado".
 - `R-CORRECAO-05` Entrada ou ajuste de estoque errado se corrige com outro ajuste.
@@ -725,7 +731,8 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   "aguardando conferência" e a dona dá o visto com o PIN dela). A dona escolhe
   o jeito de cada gesto (D3). **Ligados:** ajustar estoque, com conferência
   depois (`R-ESTOQUE-11`); cancelar ficha, com conferência depois
-  (`R-FICHA-02`, `2026-10-31`).
+  (`R-FICHA-02`, `2026-10-31`); estornar recebimento, com conferência depois
+  (`R-CORRECAO-03`, `2026-11-02`).
 - `R-OPERADOR-07` Pessoa desativada some da escolha, não assina nem autoriza, e continua
   no histórico com o nome.
 - `R-OPERADOR-08` O PIN só existe no back, guardado com hash (scrypt, com sal); nunca
@@ -777,6 +784,19 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-11-02` — Estornar recebimento: o recebimento inteiro, com conferência depois
+Decisão do Agostinho, no percurso da tela 5.2. `estornarRecebimento` desfaz o
+"Receber" inteiro (uma linha de estorno por pagamento, numa transação) e
+`conferirEstorno` é o visto da dona, num registro à parte
+(`conferencia_estorno`, migration 0005), como no cancelar ficha.
+
+**Por quê:** o erro típico (cliente errado, valor errado) é do gesto inteiro;
+estornar só a parte de uma notinha deixaria as outras abatidas por um dinheiro
+que não entrou. A conferência depois segue o cancelar: o balcão não trava, e
+a dona vê o rastro. Descartado: estornar linha por linha (desfazer o gesto
+pedia achar cada ficha) e o PIN da dona na hora. A lista dos estornos
+aguardando entra com o Início e o sino, junto da dos cancelamentos.
 
 ### `2026-10-31` — Receber notinhas pelo back; dinheiro só com data de hoje
 Decisão do Agostinho, no percurso da tela 5.1. As notinhas abertas vêm de

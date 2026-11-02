@@ -1,5 +1,6 @@
 /**
- * O detalhe da ficha no banco da 1.0 (tela 4.2; `R-FICHA-02`, `03`). As regras
+ * O detalhe da ficha no banco da 1.0 (telas 4.2 e 5.2; `R-FICHA-02`, `03`,
+ * `R-CORRECAO-03`). As regras
  * estão em `comum/regras/ficha.ts`, as mesmas do mock; aqui fica o que é do
  * banco: o cancelamento com a devolução ao estoque numa transação, e a
  * conferência da dona como registro à parte (`conferencia_cancelamento`,
@@ -14,7 +15,7 @@ import { codigoProduto, MENSAGENS_PRODUTO } from '../../comum/regras/produto'
 import { transacao, type Banco } from './banco'
 import { criarConferencia, gravarUltimoOperador } from './operadores'
 
-type OperacoesFicha = Pick<Contrato, 'obterFicha' | 'cancelarFicha' | 'conferirCancelamento' | 'anotarFicha'>
+type OperacoesFicha = Pick<Contrato, 'obterFicha' | 'cancelarFicha' | 'conferirCancelamento' | 'anotarFicha' | 'estornarRecebimento' | 'conferirEstorno'>
 
 type LinhaFicha = {
   id: string; numero: number; cliente_id: string | null; cliente: string | null; registrado_em: string; operador: string
@@ -33,17 +34,27 @@ function ler(banco: Banco, id: string): FichaDetalhe | null {
     { produto_id: string; numero: number; descricao: string; quantidade: number; preco: number }[]
   const servicos = banco.prepare('select nome, valor, perdas, observacao from ficha_servico where ficha_id = ? order by rowid').all(id) as
     FichaDetalhe['servicos']
+  // As outras notinhas do mesmo "Receber": estornar desfaz todas juntas (`R-CORRECAO-03`).
+  const outras = banco.prepare(`
+    select o.ficha_id, f.numero, o.valor from pagamento o join ficha f on f.id = o.ficha_id
+    where o.recebimento_id = ? and o.ficha_id <> ? order by f.dia, f.numero, o.rowid`)
   const pagamentos = (banco.prepare(`
-    select p.id, p.tipo, p.meio, p.valor, p.rotulo, p.dia, p.registrado_em, o.nome as operador,
-           e.dia as estorno_dia, e.motivo as estorno_motivo, eo.nome as estorno_operador
+    select p.id, p.tipo, p.meio, p.valor, p.rotulo, p.dia, p.registrado_em, p.recebimento_id, o.nome as operador,
+           e.dia as estorno_dia, e.motivo as estorno_motivo, eo.nome as estorno_operador, d.nome as conferido_por
     from pagamento p join operador o on o.id = p.operador_id
     left join pagamento_estorno e on e.pagamento_id = p.id left join operador eo on eo.id = e.operador_id
+    left join conferencia_estorno ce on ce.estorno_id = e.id left join operador d on d.id = ce.operador_id
     where p.ficha_id = ? order by p.registrado_em, p.rowid`).all(id) as {
       id: string; tipo: PagamentoDaFicha['tipo']; meio: PagamentoDaFicha['meio']; valor: number; rotulo: string | null; dia: string
-      registrado_em: string; operador: string; estorno_dia: string | null; estorno_motivo: string | null; estorno_operador: string | null
+      registrado_em: string; recebimento_id: string | null; operador: string
+      estorno_dia: string | null; estorno_motivo: string | null; estorno_operador: string | null; conferido_por: string | null
     }[]).map((p): PagamentoDaFicha => ({
     id: p.id, tipo: p.tipo, meio: p.meio, valor: p.valor, rotulo: p.rotulo, dia: p.dia, registradoEm: p.registrado_em, operador: p.operador,
-    estorno: p.estorno_dia ? { dia: p.estorno_dia, motivo: p.estorno_motivo!, operador: p.estorno_operador! } : null,
+    mesmoRecebimento: p.recebimento_id
+      ? (outras.all(p.recebimento_id, id) as { ficha_id: string; numero: number; valor: number }[])
+        .map((o) => ({ fichaId: o.ficha_id, numero: numeroFicha(o.numero), valor: o.valor }))
+      : [],
+    estorno: p.estorno_dia ? { dia: p.estorno_dia, motivo: p.estorno_motivo!, operador: p.estorno_operador!, conferidoPor: p.conferido_por } : null,
   }))
   const c = banco.prepare(`
     select fc.dia, fc.registrado_em, fc.motivo, o.nome as operador, d.nome as conferido_por
@@ -77,6 +88,11 @@ export function fichasSqlite(banco: () => Banco, tentativas: Tentativas = criarT
   }
   const existe = (id: unknown) => typeof id === 'string' && Boolean(banco().prepare('select 1 from ficha where id = ?').get(id))
   const cancelada = (id: string) => Boolean(banco().prepare('select 1 from ficha_cancelamento where ficha_id = ?').get(id))
+  const lerPagamento = (id: unknown) => (typeof id === 'string'
+    ? banco().prepare(`select p.id, p.ficha_id, p.tipo, p.recebimento_id,
+        exists (select 1 from pagamento_estorno e where e.pagamento_id = p.id) as estornado
+        from pagamento p where p.id = ?`).get(id) as { id: string; ficha_id: string; tipo: string; recebimento_id: string | null; estornado: number } | undefined
+    : undefined)
 
   return {
     async obterFicha(id) {
@@ -138,6 +154,54 @@ export function fichasSqlite(banco: () => Banco, tentativas: Tentativas = criarT
         .run(crypto.randomUUID(), id, texto, pessoa.id, new Date().toISOString())
       gravarUltimoOperador(banco(), pessoa.id)
       return devolver(id)
+    },
+
+    async estornarRecebimento(pagamentoId, bruto, quem) {
+      const alvo = lerPagamento(pagamentoId)
+      if (!alvo) return falha('nao-encontrado', MENSAGENS_FICHA.pagamentoNaoEncontrado)
+      if (alvo.tipo !== 'recebimento' || !alvo.recebimento_id) return falha('validacao', MENSAGENS_FICHA.soRecebimento)
+      if (cancelada(alvo.ficha_id)) return falha('validacao', MENSAGENS_FICHA.fichaCancelada)
+      if (alvo.estornado) return falha('validacao', MENSAGENS_FICHA.jaEstornado)
+      const motivo = conferirTexto(bruto, MENSAGENS_FICHA.motivo, MOTIVO_MAXIMO)
+      if (typeof motivo !== 'string') return motivo
+      if (!quem) return falha('validacao', MENSAGENS_PRODUTO.semAssinatura)
+      const pessoa = await conferir(quem)
+      if ('ok' in pessoa) return pessoa
+      return transacao(banco(), () => {
+        // Outra máquina pode ter estornado durante o PIN.
+        if (lerPagamento(pagamentoId)!.estornado) return falha('validacao', MENSAGENS_FICHA.jaEstornado)
+        const agora = new Date().toISOString()
+        const caixa = banco().prepare(`select c.id from caixa c
+          where not exists (select 1 from caixa_fechamento f where f.caixa_id = c.id)`).get() as { id: string } | undefined
+        // O "Receber" inteiro: todas as linhas dele que ainda contam.
+        const linhas = banco().prepare(`select p.id from pagamento p where p.recebimento_id = ?
+          and not exists (select 1 from pagamento_estorno e where e.pagamento_id = p.id)`).all(alvo.recebimento_id) as { id: string }[]
+        const estorna = banco().prepare(`insert into pagamento_estorno (id, pagamento_id, motivo, dia, caixa_id, operador_id, registrado_em)
+          values (?, ?, ?, ?, ?, ?, ?)`)
+        const visto = banco().prepare('insert into conferencia_estorno (estorno_id, operador_id, registrado_em) values (?, ?, ?)')
+        for (const l of linhas) {
+          const estorno = crypto.randomUUID()
+          estorna.run(estorno, l.id, motivo, hojeEmSaoPaulo(), caixa?.id ?? null, pessoa.id, agora)
+          // O da dona já nasce conferido (`R-CORRECAO-03`).
+          if (pessoa.admin) visto.run(estorno, pessoa.id, agora)
+        }
+        gravarUltimoOperador(banco(), pessoa.id)
+        return devolver(alvo.ficha_id)
+      })
+    },
+
+    async conferirEstorno(pagamentoId, dona) {
+      const alvo = lerPagamento(pagamentoId)
+      if (!alvo) return falha('nao-encontrado', MENSAGENS_FICHA.pagamentoNaoEncontrado)
+      if (!alvo.estornado) return falha('validacao', MENSAGENS_FICHA.naoEstornado)
+      const pessoa = await conferir(dona, { soAdmin: true })
+      if ('ok' in pessoa) return pessoa
+      // Todas as linhas estornadas do mesmo recebimento; a linha antiga sem recebimento, sozinha.
+      banco().prepare(`insert into conferencia_estorno (estorno_id, operador_id, registrado_em)
+        select e.id, ?, ? from pagamento_estorno e join pagamento p on p.id = e.pagamento_id
+        where p.id = ? or (p.recebimento_id is not null and p.recebimento_id = ?)
+        on conflict do nothing`).run(pessoa.id, new Date().toISOString(), alvo.id, alvo.recebimento_id)
+      return devolver(alvo.ficha_id)
     },
   }
 }

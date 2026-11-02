@@ -320,6 +320,7 @@ export function gravarRecebimento(
 ) {
   const registradoEm = new Date().toISOString()
   const turnoCaixaId = turnoCaixaAberto()
+  const recebimentoId = crypto.randomUUID()
   mudar({
     ...base,
     fichas: base.fichas.map((f) => {
@@ -328,7 +329,7 @@ export function gravarRecebimento(
       return {
         ...f,
         pagamentos: [...f.pagamentos, ...suas.map((l) => ({
-          data, horario, meio: l.meio, valor: l.valor, operador, registradoEm, turnoCaixaId,
+          data, horario, meio: l.meio, valor: l.valor, operador, registradoEm, turnoCaixaId, recebimentoId,
           ...(l.rotulo ? { rotulo: l.rotulo } : {}), ...(l.cartao ? { cartao: l.cartao } : {}), ...(l.maquininha ? { maquininha: l.maquininha } : {}),
         }))],
       }
@@ -418,6 +419,33 @@ export function estornarPagamento(fichaId: string, indice: number, motivo: strin
   const pagamentos = ficha.pagamentos.map((p, i) => (i === indice ? { ...p, estorno: estornoAgora(motivo) } : p))
   mudar({ ...base, fichas: base.fichas.map((f) => (f.id === fichaId ? { ...f, pagamentos } : f)) })
   return true
+}
+
+/**
+ * O "Receber" inteiro estornado (1.0, `R-CORRECAO-03`): cada linha, pela ficha e
+ * pela posição, ganha o estorno com quem estornou; `conferidoPor` quando é a dona.
+ */
+export function estornarPagamentos(linhas: { fichaId: string; indice: number }[], motivo: string, operador: string, conferidoPor?: string) {
+  const estorno = { ...estornoAgora(motivo), operador, ...(conferidoPor ? { conferidoPor } : {}) }
+  mudar({
+    ...base,
+    fichas: base.fichas.map((f) => {
+      const suas = linhas.filter((l) => l.fichaId === f.id).map((l) => l.indice)
+      return suas.length ? { ...f, pagamentos: f.pagamentos.map((p, i) => (suas.includes(i) && !p.estorno ? { ...p, estorno } : p)) } : f
+    }),
+  })
+}
+
+/** O visto da dona nas linhas estornadas; a já conferida não muda. */
+export function conferirEstornos(linhas: { fichaId: string; indice: number }[], dona: string) {
+  mudar({
+    ...base,
+    fichas: base.fichas.map((f) => {
+      const suas = linhas.filter((l) => l.fichaId === f.id).map((l) => l.indice)
+      if (!suas.length) return f
+      return { ...f, pagamentos: f.pagamentos.map((p, i) => (suas.includes(i) && p.estorno && !p.estorno.conferidoPor ? { ...p, estorno: { ...p.estorno, conferidoPor: dona } } : p)) }
+    }),
+  })
 }
 
 /** Lançamento manual errado: um lançamento novo, de sinal contrário, anula o primeiro. */

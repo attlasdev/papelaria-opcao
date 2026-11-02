@@ -31,6 +31,16 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-11-02` — Estornar recebimento (1.0, tela 5.2)
+
+- **Contrato:** `estornarRecebimento(pagamentoId, motivo, quem)` desfaz o
+  "Receber" inteiro e `conferirEstorno(pagamentoId, dona)` é o visto da dona;
+  os dois devolvem a ficha. `PagamentoDaFicha` ganha `mesmoRecebimento` (as
+  outras notinhas que o recebimento abateu) e `estorno.conferidoPor`.
+- **Na ficha:** "Estornar" só nas linhas de recebimento (sai da entrada e da
+  venda). A janela de motivo avisa as outras notinhas; depois, "Quem está
+  fazendo?". O estorno de funcionário mostra "Aguardando a dona" e "Conferir".
+
 ### `2026-10-31` — Receber notinhas (1.0, tela 5.1)
 
 - **Contrato:** `listarNotinhasAbertas(clienteId)` devolve as notinhas que

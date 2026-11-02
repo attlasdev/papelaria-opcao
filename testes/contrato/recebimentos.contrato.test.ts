@@ -9,6 +9,7 @@ import type { Assinatura, DadosCliente, DadosProduto, Recebimento } from '../../
 import { criarTentativas, MENSAGENS } from '../../comum/regras/operador'
 import { MENSAGENS_PRODUTO } from '../../comum/regras/produto'
 import { MENSAGENS_RECEBIMENTO } from '../../comum/regras/recebimento'
+import { MENSAGENS_FICHA } from '../../comum/regras/ficha'
 import type { Banco } from '../../electron/banco/banco'
 import { clientesSqlite } from '../../electron/banco/clientes'
 import { fichasSqlite } from '../../electron/banco/fichas'
@@ -156,6 +157,62 @@ testarContrato('receber notinhas', { mock, sqlite }, (abrir) => {
     expect(await api.receberNotinhas(receber([primeira], [{ meio: 'pix', valor: 100 }]), { ...joao, pin: '0000' })).toEqual(recusa(MENSAGENS.pinErrado))
     expect(await api.receberNotinhas(receber([primeira], [{ meio: 'pix', valor: 100 }]), null as never)).toEqual(recusa(MENSAGENS_PRODUTO.semAssinatura))
     expect(dado(await api.listarNotinhasAbertas(ana)).notinhas.map((n) => [n.id, n.emAberto])).toEqual([[primeira, 4000], [segunda, 3000]])
+  })
+
+  // Estornar recebimento (tela 5.2) ---------------------------------------------
+
+  /** O recebimento de R$ 50 no Pix que abate a primeira (R$ 40) e parte da segunda (R$ 10). */
+  async function receberDuas(api: Api) {
+    const loja_ = await loja(api)
+    dado(await api.receberNotinhas(receber([loja_.primeira, loja_.segunda], [{ meio: 'pix', valor: 5000 }]), loja_.joao))
+    const linha = async (fichaId: string) => dado(await api.obterFicha(fichaId)).pagamentos.find((p) => p.tipo === 'recebimento')!
+    return { ...loja_, linha }
+  }
+
+  it('[R-CORRECAO-03] estornar desfaz o recebimento inteiro, nas duas notinhas, e fica aguardando a dona', async () => {
+    const api = abrir('vazia')
+    const { dona, joao, ana, primeira, segunda, linha } = await receberDuas(api)
+    const daSegunda = await linha(segunda)
+    expect(daSegunda.mesmoRecebimento.map((o) => [o.fichaId, o.valor])).toEqual([[primeira, 4000]])
+    expect(await api.estornarRecebimento(daSegunda.id, '  ', joao)).toEqual(recusa(MENSAGENS_FICHA.motivo))
+    expect(await api.estornarRecebimento(daSegunda.id, 'Cliente errado', { ...joao, pin: '0000' })).toEqual(recusa(MENSAGENS.pinErrado))
+    expect(dado(await api.listarNotinhasAbertas(ana)).notinhas.map((n) => n.id)).toEqual([segunda])
+    dado(await api.anotarFicha(segunda, 'Antes do estorno', dona))
+
+    const f = dado(await api.estornarRecebimento(daSegunda.id, ' Lançado no  cliente errado ', joao))
+    expect(f.id).toBe(segunda)
+    expect(f.pagamentos.find((p) => p.id === daSegunda.id)?.estorno).toMatchObject({ dia: HOJE, motivo: 'Lançado no cliente errado', operador: 'João', conferidoPor: null })
+    expect((await linha(primeira)).estorno).toMatchObject({ operador: 'João', conferidoPor: null })
+    // As duas voltam a dever o que deviam antes.
+    expect(dado(await api.listarNotinhasAbertas(ana)).notinhas.map((n) => [n.id, n.emAberto])).toEqual([[primeira, 4000], [segunda, 3000]])
+    expect(dado(await api.listarOperadores()).ultimoId).toBe(joao.operadorId)
+    expect(await api.estornarRecebimento((await linha(primeira)).id, 'De novo', joao)).toEqual(recusa(MENSAGENS_FICHA.jaEstornado))
+    expect(await api.estornarRecebimento('nao-existe', 'x', joao)).toMatchObject({ ok: false, causa: 'nao-encontrado' })
+  })
+
+  it('[R-CORRECAO-03] só a dona confere, nas duas notinhas; o estorno dela já nasce conferido', async () => {
+    const api = abrir('vazia')
+    const { dona, joao, primeira, segunda, quitada, linha } = await receberDuas(api)
+    const daPrimeira = await linha(primeira)
+    expect(await api.conferirEstorno(daPrimeira.id, dona)).toEqual(recusa(MENSAGENS_FICHA.naoEstornado))
+    dado(await api.estornarRecebimento(daPrimeira.id, 'Valor errado', joao))
+    expect(await api.conferirEstorno(daPrimeira.id, joao)).toMatchObject({ ok: false, causa: 'permissao' })
+    dado(await api.conferirEstorno(daPrimeira.id, dona))
+    expect([(await linha(primeira)).estorno?.conferidoPor, (await linha(segunda)).estorno?.conferidoPor]).toEqual(['Helena', 'Helena'])
+
+    const daQuitada = await linha(quitada)
+    expect(dado(await api.estornarRecebimento(daQuitada.id, 'Pix não caiu', dona)).pagamentos.find((p) => p.id === daQuitada.id)?.estorno)
+      .toMatchObject({ operador: 'Helena', conferidoPor: 'Helena' })
+  })
+
+  it('[R-CORRECAO-03] só recebimento se estorna: entrada e venda, não; ficha cancelada, também não', async () => {
+    const api = abrir('vazia')
+    const { joao, primeira, quitada, linha } = await receberDuas(api)
+    const entrada = dado(await api.obterFicha(primeira)).pagamentos.find((p) => p.tipo === 'entrada')!
+    expect(await api.estornarRecebimento(entrada.id, 'Errado', joao)).toEqual(recusa(MENSAGENS_FICHA.soRecebimento))
+    const daQuitada = await linha(quitada)
+    dado(await api.cancelarFicha(quitada, 'Venda errada', joao))
+    expect(await api.estornarRecebimento(daQuitada.id, 'Errado', joao)).toEqual(recusa(MENSAGENS_FICHA.fichaCancelada))
   })
 
   it('na semente: as notinhas abertas de cada cliente somam o em aberto da lista', async () => {

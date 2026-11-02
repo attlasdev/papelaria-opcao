@@ -124,6 +124,8 @@ export type Pagamento = {
   cartao?: ModalidadeCartao
   /** Cobrança feita pela maquininha integrada: o id dela e a bandeira devolvida. */
   cobranca?: { id: string; bandeira?: string; demonstracao?: boolean }
+  /** O "Receber" de que a linha faz parte (1.0): estornar desfaz todas as linhas dele. */
+  recebimentoId?: string
   /** Recebimento lançado por engano: sai do pago e volta a dever. */
   estorno?: Estorno
 }

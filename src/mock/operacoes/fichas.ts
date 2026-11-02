@@ -13,12 +13,35 @@ import { numeroFicha } from '../../../comum/regras/movimentos'
 import { criarTentativas } from '../../../comum/regras/operador'
 import { MENSAGENS_PRODUTO } from '../../../comum/regras/produto'
 import type { Ficha } from '../base/tipos'
-import { anotarFicha, cancelarFicha, conferirCancelamento, gravarUltimoOperador, obterBase } from '../estado-demonstracao'
+import { anotarFicha, cancelarFicha, conferirCancelamento, conferirEstornos, estornarPagamentos, gravarUltimoOperador, obterBase } from '../estado-demonstracao'
 import { criarConferencia, tentativasDaBase } from './operadores'
 
-export type OperacoesFicha = Pick<Contrato, 'obterFicha' | 'cancelarFicha' | 'conferirCancelamento' | 'anotarFicha'>
+export type OperacoesFicha = Pick<Contrato, 'obterFicha' | 'cancelarFicha' | 'conferirCancelamento' | 'anotarFicha' | 'estornarRecebimento' | 'conferirEstorno'>
 
 const instante = (data: string, horario: string) => new Date(`${data}T${horario}:00-03:00`).toISOString()
+
+type Linha = { fichaId: string; indice: number }
+
+/** O pagamento pelo id do contrato: `<ficha>-<posição>`. */
+function pagamentoPeloId(id: unknown): (Linha & { ficha: Ficha }) | null {
+  if (typeof id !== 'string') return null
+  const corte = id.lastIndexOf('-')
+  const ficha = obterBase().fichas.find((f) => f.id === id.slice(0, corte))
+  const indice = Number(id.slice(corte + 1))
+  return ficha && Number.isInteger(indice) && ficha.pagamentos[indice] ? { fichaId: ficha.id, indice, ficha } : null
+}
+
+/**
+ * As linhas do mesmo "Receber", pelo id que o recebimento da 1.0 grava em cada
+ * uma. Sem id (dado da 0.1), a linha fica sozinha.
+ */
+function mesmoRecebimento(f: Ficha, indice: number): Linha[] {
+  const p = f.pagamentos[indice]
+  if (f.forma !== 'notinha' || p.entrada) return []
+  if (!p.recebimentoId) return [{ fichaId: f.id, indice }]
+  return obterBase().fichas
+    .flatMap((x) => x.pagamentos.flatMap((y, i) => (y.recebimentoId === p.recebimentoId ? [{ fichaId: x.id, indice: i }] : [])))
+}
 
 function paraDetalhe(f: Ficha): FichaDetalhe {
   const base = obterBase()
@@ -29,7 +52,11 @@ function paraDetalhe(f: Ficha): FichaDetalhe {
     tipo: !notinha ? 'venda' : p.entrada ? 'entrada' : 'recebimento',
     meio: p.meio, valor: p.valor, rotulo: p.rotulo ?? null, dia: p.data,
     registradoEm: p.registradoEm ?? instante(p.data, p.horario), operador: p.operador ?? f.operador,
-    estorno: p.estorno ? { dia: p.estorno.data, motivo: p.estorno.motivo, operador: p.estorno.operador ?? '' } : null,
+    mesmoRecebimento: mesmoRecebimento(f, i).filter((l) => l.fichaId !== f.id).map((l) => {
+      const outra = base.fichas.find((x) => x.id === l.fichaId)!
+      return { fichaId: outra.id, numero: numeroFicha(outra.id), valor: outra.pagamentos[l.indice].valor }
+    }),
+    estorno: p.estorno ? { dia: p.estorno.data, motivo: p.estorno.motivo, operador: p.estorno.operador ?? '', conferidoPor: p.estorno.conferidoPor ?? null } : null,
   }))
   const c = f.cancelamento
   const servicos = (f.servicos ?? []).map((s) => ({ nome: s.nome, valor: s.valor, perdas: s.perdas?.quantidade ?? null, observacao: s.observacao ?? null }))
@@ -100,6 +127,34 @@ export function criarFichasDaBase(tentativas = criarTentativas()): OperacoesFich
       anotarFicha(f.id, texto, pessoa.nome)
       gravarUltimoOperador(pessoa.id)
       return devolver(f.id)
+    },
+
+    async estornarRecebimento(id, bruto, quem) {
+      const alvo = pagamentoPeloId(id)
+      if (!alvo) return falha('nao-encontrado', MENSAGENS_FICHA.pagamentoNaoEncontrado)
+      const linhas = mesmoRecebimento(alvo.ficha, alvo.indice)
+      if (!linhas.length) return falha('validacao', MENSAGENS_FICHA.soRecebimento)
+      if (alvo.ficha.cancelamento) return falha('validacao', MENSAGENS_FICHA.fichaCancelada)
+      if (alvo.ficha.pagamentos[alvo.indice].estorno) return falha('validacao', MENSAGENS_FICHA.jaEstornado)
+      const motivo = conferirTexto(bruto, MENSAGENS_FICHA.motivo, MOTIVO_MAXIMO)
+      if (typeof motivo !== 'string') return motivo
+      if (!quem) return falha('validacao', MENSAGENS_PRODUTO.semAssinatura)
+      const pessoa = await conferir(quem)
+      if ('ok' in pessoa) return pessoa
+      // O da dona já nasce conferido (`R-CORRECAO-03`).
+      estornarPagamentos(linhas, motivo, pessoa.nome, pessoa.admin ? pessoa.nome : undefined)
+      gravarUltimoOperador(pessoa.id)
+      return devolver(alvo.fichaId)
+    },
+
+    async conferirEstorno(id, dona) {
+      const alvo = pagamentoPeloId(id)
+      if (!alvo) return falha('nao-encontrado', MENSAGENS_FICHA.pagamentoNaoEncontrado)
+      if (!alvo.ficha.pagamentos[alvo.indice].estorno) return falha('validacao', MENSAGENS_FICHA.naoEstornado)
+      const pessoa = await conferir(dona, { soAdmin: true })
+      if ('ok' in pessoa) return pessoa
+      conferirEstornos(mesmoRecebimento(alvo.ficha, alvo.indice), pessoa.nome)
+      return devolver(alvo.fichaId)
     },
   }
 }
