@@ -8,6 +8,7 @@ import inicial from './migracoes/0001-inicial.sql?raw'
 import operadorPin from './migracoes/0002-operador-pin.sql?raw'
 import conferenciaAjuste from './migracoes/0003-conferencia-ajuste.sql?raw'
 import conferenciaCancelamento from './migracoes/0004-conferencia-cancelamento.sql?raw'
+import conferenciaEstorno from './migracoes/0005-conferencia-estorno.sql?raw'
 
 export type Migracao = { versao: number; nome: string; sql: string }
 
@@ -16,4 +17,5 @@ export const migracoes: readonly Migracao[] = [
   { versao: 2, nome: 'operador-pin', sql: operadorPin },
   { versao: 3, nome: 'conferencia-ajuste', sql: conferenciaAjuste },
   { versao: 4, nome: 'conferencia-cancelamento', sql: conferenciaCancelamento },
+  { versao: 5, nome: 'conferencia-estorno', sql: conferenciaEstorno },
 ]
