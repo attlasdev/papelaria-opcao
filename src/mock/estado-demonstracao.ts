@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { assinaturaAviso, CATEGORIA_ADICAO_CAIXA, CATEGORIA_RETIRADA_CAIXA, CATEGORIA_ESTORNO, distribuir, documentoJaCadastrado, faltaEstoqueParaVenda, MOTIVO_SALDO_INICIAL, notinha, produtoTemHistorico, resumoTurnoCaixa, type Abatimento, type Notificacao, type Notinha } from './base/derivados'
+import { CATEGORIA_ADICAO_CAIXA, CATEGORIA_RETIRADA_CAIXA, CATEGORIA_ESTORNO, distribuir, documentoJaCadastrado, faltaEstoqueParaVenda, MOTIVO_SALDO_INICIAL, notinha, produtoTemHistorico, resumoTurnoCaixa, type Abatimento, type Notinha } from './base/derivados'
 import { agoraHorario, dataCalendarioValida, hojeISO, minutoDoDia } from './base/datas'
 import { apagarBase, carregarBase, salvarBase } from './base/persistencia'
 import { criarBaseVazia, criarSemente } from './base/semente'
@@ -574,8 +574,3 @@ export function gravarAvisosLidos(lidos: Record<string, string>) {
   mudar({ ...base, avisosLidos: lidos })
 }
 
-export function marcarAvisosLidos(avisos: Notificacao[]) {
-  const lidos = { ...base.avisosLidos }
-  for (const aviso of avisos) lidos[aviso.id] = assinaturaAviso(aviso)
-  mudar({ ...base, avisosLidos: lidos })
-}

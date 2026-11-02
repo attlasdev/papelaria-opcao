@@ -4,6 +4,8 @@
  */
 export const rotas = {
   inicio: '/',
+  /** O Início com a lista do que aguarda a dona aberta (o aviso do sino). */
+  inicioAguardando: '/?aguardando=1',
   busca: (termo: string) => `/busca?q=${encodeURIComponent(termo)}`,
   criarFicha: '/ficha/nova',
   /** Produto que a ficha não achou: o modal abre sobre a ficha, com o código lido. */

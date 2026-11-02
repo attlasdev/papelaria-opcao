@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { funcoes } from '../../funcoes'
 import { criarSemente } from './semente'
 import {
   buscar,
@@ -12,7 +11,6 @@ import {
   movimentosFisicosCaixa,
   movimentosOperacionaisFinanceiro,
   linhasFinanceiroNoIntervalo,
-  notificacoes,
   notinha,
   notinhasDoCliente,
   resumoDoCliente,
@@ -189,7 +187,7 @@ describe('financeiro', () => {
   })
 })
 
-describe('estoque, busca e sino', () => {
+describe('estoque e busca', () => {
   it('conta o estoque pela lista real', () => {
     expect(resumoEstoque(base)).toMatchObject({ produtos: 16, baixo: 5, semCodigo: 2 })
   })
@@ -199,23 +197,5 @@ describe('estoque, busca e sino', () => {
     expect(r.fichas.length).toBeGreaterThan(0)
     expect(r.fichas.every((f) => f.clienteId === 'CLI-0104')).toBe(true)
     expect(buscar(base, '789102711').produtos[0].codigo).toBe('EST-0021')
-  })
-  it('[R-INICIO-05] avisa notinhas em atraso, estoque e (com a área de notas ligada) rascunhos, do mais grave para o menos grave', () => {
-    const avisos = notificacoes(base, HOJE)
-    const texto = avisos.map((n) => `${n.titulo} ${n.detalhe}`).join(' | ')
-    expect(texto).toMatch(/Associação Girassol/)
-    expect(texto).toMatch(/Carlos Eduardo Santos/)
-    expect(avisos.find((n) => n.tipo === 'estoque-zerado')?.titulo).toBe('1 produto zerado')
-    expect(avisos.find((n) => n.tipo === 'estoque-baixo')?.titulo).toBe('4 produtos com estoque baixo')
-    // Área de notas oculta: o rascunho não vira aviso (`2026-10-19`).
-    expect(avisos.find((n) => n.tipo === 'rascunho')?.titulo).toBe(funcoes.notasFiscais ? '2 rascunhos de nota em revisão' : undefined)
-    const peso = { critico: 0, atencao: 1, neutro: 2 }
-    const pesos = avisos.map((n) => peso[n.tom])
-    expect([...pesos].sort((a, b) => a - b)).toEqual(pesos)
-  })
-  it('[R-INICIO-05] avisa notinha que vence em até 3 dias', () => {
-    const hojeMais = '2026-10-05' // a notinha da Mariana vence em 07/10
-    const avisos = notificacoes(base, hojeMais).filter((n) => n.tipo === 'vencendo')
-    expect(avisos.some((n) => n.titulo === 'Mariana Costa' && /vence em 2 dias/.test(n.detalhe))).toBe(true)
   })
 })

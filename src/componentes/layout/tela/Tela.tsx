@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Icone, type NomeIcone } from '../../icone/Icone'
-import { avisoLido, hojeISO, marcarAvisosLidos, notificacoes, useEstadoDemonstracao, type TipoNotificacao } from '../../../mock/estado-demonstracao'
+import type { Aviso, TipoAviso } from '../../../../comum/contrato'
+import { api } from '../../../dados/api'
+import { tituloFalha } from '../../../falhas'
+import { useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
 import { rotas } from '../../../rotas-caminhos'
 import './tela.css'
 
@@ -21,15 +24,22 @@ type Props = {
   children: ReactNode
 }
 
-const iconeAviso: Record<TipoNotificacao, NomeIcone> = {
+const iconeAviso: Record<TipoAviso, NomeIcone> = {
   atraso: 'alerta',
   vencendo: 'relogio',
   'estoque-zerado': 'pacote',
   'estoque-baixo': 'pacote',
-  'ajuste-aguardando': 'ajustes',
-  rascunho: 'notas',
+  'aguardando-dona': 'cadeado',
   'boleto-vencido': 'documento',
   'boleto-vencendo': 'documento',
+}
+
+function destinoDo(aviso: Aviso) {
+  const d = aviso.destino
+  if (d.tela === 'cliente') return rotas.cliente(d.clienteId)
+  if (d.tela === 'boletos') return rotas.boletos
+  if (d.tela === 'estoque') return rotas.estoque
+  return rotas.inicioAguardando
 }
 
 /**
@@ -43,11 +53,24 @@ export function Tela({ titulo, subtitulo, trilha, voltar, acaoCabecalho, acoesTi
   const [termo, setTermo] = useState('')
   const [notificacoesAbertas, setNotificacoesAbertas] = useState(false)
   const areaAvisos = useRef<HTMLDivElement>(null)
+  const [carga, setCarga] = useState<{ avisos: Aviso[] | null; erro: string | null }>({ avisos: null, erro: null })
+  const [tentativa, setTentativa] = useState(0)
+  // Fase 2: as telas gravam na base da demonstração; o sino relê quando ela muda. Digitar na busca não relê (M8).
   const base = useEstadoDemonstracao()
+  useEffect(() => {
+    let vivo = true
+    void api().listarAvisos().then((r) => {
+      if (vivo) setCarga(r.ok ? { avisos: r.dado, erro: null } : { avisos: null, erro: `${tituloFalha(r.causa)} ${r.erro}` })
+    })
+    return () => { vivo = false }
+  }, [base, tentativa])
   // Novas primeiro; as lidas continuam na lista, apagadas, até a pendência sumir.
-  const todosAvisos = notificacoes(base, hojeISO())
-  const novos = todosAvisos.filter((aviso) => !avisoLido(base, aviso))
-  const avisos = [...novos, ...todosAvisos.filter((aviso) => avisoLido(base, aviso))]
+  const novos = (carga.avisos ?? []).filter((aviso) => !aviso.lido)
+  const avisos = [...novos, ...(carga.avisos ?? []).filter((aviso) => aviso.lido)]
+  async function marcarLidos(lista: Aviso[]) {
+    const r = await api().marcarAvisosLidos(lista.map((a) => a.id))
+    if (r.ok) setCarga({ avisos: r.dado, erro: null })
+  }
 
   useEffect(() => {
     const atalho = (evento: KeyboardEvent) => {
@@ -99,19 +122,26 @@ export function Tela({ titulo, subtitulo, trilha, voltar, acaoCabecalho, acoesTi
                 <header className="tela__notificacoes-topo">
                   <h2>Notificações</h2>
                   {novos.length > 0 ? (
-                    <button type="button" className="tela__notificacoes-lidas" onClick={() => marcarAvisosLidos(novos)}>
+                    <button type="button" className="tela__notificacoes-lidas" onClick={() => void marcarLidos(novos)}>
                       <Icone nome="check" tamanho={14} /> Marcar todas como lidas
                     </button>
                   ) : avisos.length > 0 && <span>Tudo lido</span>}
                 </header>
-                {avisos.length > 0 ? (
+                {carga.erro ? (
+                  <div className="tela__notificacoes-vazio" role="alert">
+                    <p>{carga.erro}</p>
+                    <button type="button" className="tela__notificacoes-lidas" onClick={() => setTentativa((n) => n + 1)}>Tentar de novo</button>
+                  </div>
+                ) : !carga.avisos ? (
+                  <p className="tela__notificacoes-vazio" role="status">Carregando os avisos…</p>
+                ) : avisos.length > 0 ? (
                   <ul className="tela__notificacoes-lista">
                     {avisos.map((aviso) => (
                       <li key={aviso.id}>
                         <Link
-                          className={avisoLido(base, aviso) ? 'tela__aviso tela__aviso--lido' : 'tela__aviso'}
-                          to={aviso.destino}
-                          onClick={() => { marcarAvisosLidos([aviso]); setNotificacoesAbertas(false) }}
+                          className={aviso.lido ? 'tela__aviso tela__aviso--lido' : 'tela__aviso'}
+                          to={destinoDo(aviso)}
+                          onClick={() => { if (!aviso.lido) void marcarLidos([aviso]); setNotificacoesAbertas(false) }}
                         >
                           <span className={`tela__aviso-icone tela__aviso-icone--${aviso.tom}`} aria-hidden>
                             <Icone nome={iconeAviso[aviso.tipo]} tamanho={16} />
@@ -119,7 +149,7 @@ export function Tela({ titulo, subtitulo, trilha, voltar, acaoCabecalho, acoesTi
                           <span className="tela__aviso-texto">
                             <strong>
                               {aviso.titulo}
-                              {!avisoLido(base, aviso) && <span className="tela__aviso-novo" aria-label="Nova" />}
+                              {!aviso.lido && <span className="tela__aviso-novo" aria-label="Nova" />}
                             </strong>
                             <small>{aviso.detalhe}</small>
                           </span>

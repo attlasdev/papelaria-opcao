@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import type { AguardandoDona, Falha, FichaDaLista, PaginaFichas, ResumoDoDia } from '../../../comum/contrato'
 import { hojeEmSaoPaulo } from '../../../comum/regras/entrada'
 import { POR_PAGINA_MAXIMO } from '../../../comum/regras/produto'
@@ -48,6 +48,13 @@ export function Inicio() {
   const [dataSelecionada, setDataSelecionada] = useState('')
   const [pagina, setPagina] = useState(1)
   const [vendoAguardando, setVendoAguardando] = useState(false)
+  // O aviso do sino chega com `?aguardando=1`: abre a lista e limpa o endereço, para voltar a funcionar no próximo clique.
+  const [parametros, setParametros] = useSearchParams()
+  useEffect(() => {
+    if (parametros.get('aguardando') !== '1') return
+    setVendoAguardando(true)
+    setParametros({}, { replace: true })
+  }, [parametros, setParametros])
   const abrirFicha = useAbrirFicha()
   const navegar = useNavigate()
   const { referencia: painelHistorico, linhasPorPagina } = useLinhasPorPagina()

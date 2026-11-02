@@ -1,7 +1,5 @@
 import { MOTIVO_SALDO_INICIAL, situacaoSaldo as situacaoDoSaldo } from '../../../comum/regras/produto'
 import { dataCurta, reais } from '../../formatar'
-import { funcoes } from '../../funcoes'
-import { rotas } from '../../rotas-caminhos'
 import { dataCalendarioValida, diaDoInstante, diasEntre, noPeriodo, periodoAnterior, type Periodo } from './datas'
 import type { Base, Boleto, Cliente, Ficha, ItemVenda, Meio, Produto, TurnoCaixa } from './tipos'
 
@@ -468,137 +466,9 @@ export function situacaoBoleto(boleto: Boleto, hoje: string): { situacao: Situac
   return { situacao: dias < 0 ? 'vencido' : dias <= DIAS_AVISO_BOLETO ? 'vencendo' : 'a-vencer', dias }
 }
 
-/** "vence hoje", "vence amanhã", "vence em 3 dias", "venceu há 2 dias". */
-export function prazoBoleto(dias: number) {
-  if (dias === 0) return 'vence hoje'
-  if (dias === 1) return 'vence amanhã'
-  if (dias > 1) return `vence em ${dias} dias`
-  return dias === -1 ? 'venceu ontem' : `venceu há ${-dias} dias`
-}
-
-type GrupoBoletos = { quantidade: number; valor: number }
-
-export function resumoBoletos(base: Base, hoje: string): Record<'vencidos' | 'vencendo' | 'aPagar', GrupoBoletos> {
-  const grupo = (lista: Boleto[]): GrupoBoletos => ({ quantidade: lista.length, valor: lista.reduce((t, b) => t + b.valor, 0) })
-  const abertos = base.boletos.filter((b) => !b.pagoEm && !b.excluido)
-  return {
-    vencidos: grupo(abertos.filter((b) => situacaoBoleto(b, hoje).situacao === 'vencido')),
-    vencendo: grupo(abertos.filter((b) => situacaoBoleto(b, hoje).situacao === 'vencendo')),
-    aPagar: grupo(abertos),
-  }
-}
-
 /** Outro boleto com o mesmo número de arquivo: só avisa, não impede (`2026-10-23`). */
 export function boletoComMesmoNumero(base: Base, numero: string, ignorar?: string) {
   const alvo = numero.trim().toLowerCase()
   return alvo ? base.boletos.find((b) => b.id !== ignorar && !b.excluido && b.numero.trim().toLowerCase() === alvo) : undefined
 }
 
-export type TipoNotificacao = 'atraso' | 'vencendo' | 'estoque-zerado' | 'estoque-baixo' | 'ajuste-aguardando' | 'rascunho' | 'boleto-vencido' | 'boleto-vencendo'
-
-export type Notificacao = {
-  id: string
-  tipo: TipoNotificacao
-  tom: 'critico' | 'atencao' | 'neutro'
-  titulo: string
-  detalhe: string
-  destino: string
-}
-
-/** O aviso só conta como lido enquanto diz a mesma coisa que foi lida. */
-export function assinaturaAviso(aviso: Notificacao) {
-  return `${aviso.titulo}|${aviso.detalhe}`
-}
-
-export function avisoLido(base: Base, aviso: Notificacao) {
-  return base.avisosLidos[aviso.id] === assinaturaAviso(aviso)
-}
-
-/** Notinha que vence nestes dias entra no sino antes de atrasar. */
-const DIAS_AVISO_VENCIMENTO = 3
-
-const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`
-
-/** Tudo o que pede atenção agora, do mais grave para o menos grave. */
-export function notificacoes(base: Base, hoje: string): Notificacao[] {
-  const atrasos: Notificacao[] = []
-  const vencendo: Notificacao[] = []
-  for (const c of base.clientes) {
-    const abertas = notinhasDoCliente(base, c.id, hoje).filter((n) => n.emAberto > 0)
-    const atrasadas = abertas.filter((n) => n.situacao === 'vencido')
-    if (atrasadas.length) {
-      atrasos.push({
-        id: `atraso-${c.id}`, tipo: 'atraso', tom: 'critico', titulo: c.nome,
-        detalhe: `${plural(atrasadas.length, 'notinha', 'notinhas')} em atraso · ${reais(atrasadas.reduce((t, n) => t + n.emAberto, 0))}`,
-        destino: rotas.cliente(c.id),
-      })
-    }
-    const proximas = abertas.filter((n) => n.situacao === 'pendente' && diasEntre(hoje, n.ficha.vencimento ?? hoje) <= DIAS_AVISO_VENCIMENTO)
-    if (proximas.length) {
-      const dias = Math.min(...proximas.map((n) => diasEntre(hoje, n.ficha.vencimento ?? hoje)))
-      vencendo.push({
-        id: `vencendo-${c.id}`, tipo: 'vencendo', tom: 'atencao', titulo: c.nome,
-        detalhe: `${proximas.length === 1 ? 'Notinha' : `${proximas.length} notinhas`} ${dias === 0 ? 'vence hoje' : `vence em ${plural(dias, 'dia', 'dias')}`} · ${reais(proximas.reduce((t, n) => t + n.emAberto, 0))}`,
-        destino: rotas.cliente(c.id),
-      })
-    }
-  }
-  // Boletos da loja: os vencidos logo depois das notinhas em atraso; os que vencem, depois das que vencem.
-  const abertos = base.boletos.filter((b) => !b.pagoEm && !b.excluido).sort((a, b) => a.vencimento.localeCompare(b.vencimento))
-  const boletosVencidos = abertos.filter((b) => situacaoBoleto(b, hoje).situacao === 'vencido')
-  const boletosVencendo = abertos.filter((b) => situacaoBoleto(b, hoje).situacao === 'vencendo')
-  const descricoes = (lista: Boleto[]) => lista.length === 1 ? lista[0].descricao : `${lista[0].descricao} e mais ${lista.length - 1}`
-  const total = (lista: Boleto[]) => reais(lista.reduce((t, b) => t + b.valor, 0))
-  if (boletosVencidos.length) {
-    atrasos.push({
-      id: 'boleto-vencido', tipo: 'boleto-vencido', tom: 'critico',
-      titulo: plural(boletosVencidos.length, 'boleto vencido', 'boletos vencidos'),
-      detalhe: `${descricoes(boletosVencidos)} · ${total(boletosVencidos)}`, destino: rotas.boletos,
-    })
-  }
-  if (boletosVencendo.length) {
-    const prazo = prazoBoleto(situacaoBoleto(boletosVencendo[0], hoje).dias)
-    vencendo.push({
-      id: 'boleto-vencendo', tipo: 'boleto-vencendo', tom: 'atencao',
-      titulo: boletosVencendo.length === 1 ? '1 boleto vence em breve' : `${boletosVencendo.length} boletos vencem em breve`,
-      detalhe: `${descricoes(boletosVencendo)} · ${boletosVencendo.length === 1 ? prazo : `o primeiro ${prazo}`} · ${total(boletosVencendo)}`,
-      destino: rotas.boletos,
-    })
-  }
-  const avisos = [...atrasos, ...vencendo]
-
-  const nomes = (lista: Produto[]) => lista.length === 1 ? lista[0].descricao : `${lista[0].descricao} e mais ${lista.length - 1}`
-  const contados = produtosAtivos(base)
-  const zerados = contados.filter((p) => situacaoSaldo(p) === 'zerado')
-  const baixos = contados.filter((p) => situacaoSaldo(p) === 'baixo')
-  if (zerados.length) {
-    avisos.splice(atrasos.length, 0, {
-      id: 'estoque-zerado', tipo: 'estoque-zerado', tom: 'critico',
-      titulo: plural(zerados.length, 'produto zerado', 'produtos zerados'), detalhe: nomes(zerados), destino: rotas.estoque,
-    })
-  }
-  if (baixos.length) {
-    avisos.push({
-      id: 'estoque-baixo', tipo: 'estoque-baixo', tom: 'atencao',
-      titulo: plural(baixos.length, 'produto com estoque baixo', 'produtos com estoque baixo'), detalhe: nomes(baixos), destino: rotas.estoque,
-    })
-  }
-  // Ajuste de funcionário sem o visto da dona (`R-ESTOQUE-11`); abre as Movimentações já no filtro.
-  const aguardando = base.movimentosEstoque.filter((m) => m.tipo === 'Ajuste' && !m.conferidoPor)
-  if (aguardando.length) {
-    avisos.push({
-      id: 'ajuste-aguardando', tipo: 'ajuste-aguardando', tom: 'atencao',
-      titulo: plural(aguardando.length, 'ajuste aguardando conferência', 'ajustes aguardando conferência'),
-      detalhe: 'A administradora confere em Movimentações', destino: rotas.movimentacoesAguardando,
-    })
-  }
-  // Com a área de notas oculta, o aviso levaria a uma tela sem caminho (`2026-10-19`).
-  if (funcoes.notasFiscais && base.rascunhosNota.length) {
-    avisos.push({
-      id: 'rascunho', tipo: 'rascunho', tom: 'neutro',
-      titulo: plural(base.rascunhosNota.length, 'rascunho de nota em revisão', 'rascunhos de nota em revisão'),
-      detalhe: 'Conferir antes de emitir', destino: rotas.rascunhosNotas,
-    })
-  }
-  return avisos
-}

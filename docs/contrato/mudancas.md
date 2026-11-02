@@ -39,6 +39,10 @@ componentes, CSS por componente).
   lista atualizada. Saem o rascunho de nota e o aviso próprio do ajuste; o
   que aguarda a dona vira um aviso só, com a contagem da faixa do Início
   (`R-INICIO-05`).
+- **Na tela:** o sino carrega ao abrir a tela e quando algo muda, não mais a
+  cada tecla da busca (M8); tem "carregando" e a falha com "Tentar de novo"
+  dentro do painel. O aviso "aguardando a dona" (ícone de cadeado) abre o
+  Início com a lista aberta (`/?aguardando=1`).
 
 ### `2026-11-02` — Início (1.0, tela 8.1)
 

@@ -3,7 +3,6 @@ import {
   alterarSaldo,
   abrirTurnoCaixa,
   anotarFicha,
-  avisoLido,
   cancelarFicha,
   estornarMovimentoCaixa,
   estornarPagamento,
@@ -23,8 +22,6 @@ import {
   editarCliente,
   marcarEnviadosEmitte,
   excluirProduto,
-  marcarAvisosLidos,
-  notificacoes,
   concluirFicha,
   movimentosFinanceiro,
   movimentosDoTurnoCaixa,
@@ -40,7 +37,6 @@ import {
   editarBoleto,
   excluirBoleto,
   marcarBoletoPago,
-  resumoBoletos,
   situacaoBoleto,
 } from './estado-demonstracao'
 import { carregarBase, normalizarBase } from './base/persistencia'
@@ -276,18 +272,6 @@ describe('conferência do dinheiro', () => {
     expect(fechado).toMatchObject({ esperadoFechamento: 5800, contadoFechamento: 5700, justificativaDiferenca: 'Troco não lançado' })
     lancar('dinheiro', 900)
     expect(resumoTurnoCaixa(obterBase(), fechado)).toMatchObject({ esperado: 5800, diferenca: -100 })
-  })
-})
-
-describe('avisos lidos', () => {
-  it('[R-INICIO-05] marca como lido e volta a ser novo quando o aviso muda', () => {
-    const avisos = notificacoes(obterBase(), HOJE)
-    marcarAvisosLidos(avisos)
-    expect(notificacoes(obterBase(), HOJE).every((a) => avisoLido(obterBase(), a))).toBe(true)
-    const girassol = notinhasDoCliente(obterBase(), 'CLI-0117', HOJE).filter((n) => n.situacao === 'vencido')
-    receberNotinhas([girassol[0].ficha.id], { data: HOJE, horario: '15:00', meio: 'pix', valor: 1000 })
-    const depois = notificacoes(obterBase(), HOJE).find((a) => a.id === 'atraso-CLI-0117')!
-    expect(avisoLido(obterBase(), depois)).toBe(false)
   })
 })
 
@@ -588,16 +572,6 @@ describe('boletos', () => {
     expect(situacaoBoleto(b('2026-09-30'), HOJE).situacao).toBe('vencendo')
     expect(situacaoBoleto(b('2026-10-01'), HOJE).situacao).toBe('a-vencer')
     expect(situacaoBoleto(b('2026-09-01', '2026-09-20'), HOJE).situacao).toBe('pago')
-  })
-
-  it('[R-BOLETO-05] sino: vencidos e os que vencem em breve; pagar tira do aviso', () => {
-    const avisos = () => notificacoes(obterBase(), HOJE).filter((a) => a.tipo.startsWith('boleto'))
-    // Semente: 1 vencido (Tilibra) e 2 no prazo do aviso (luz hoje, Faber-Castell em 5 dias).
-    expect(avisos().map((a) => [a.id, a.titulo])).toEqual([['boleto-vencido', '1 boleto vencido'], ['boleto-vencendo', '2 boletos vencem em breve']])
-    expect(avisos()[1].detalhe).toMatch(/^Conta de luz e mais 1 · o primeiro vence hoje · R\$\s1\.372,37$/)
-    marcarBoletoPago('BOL-0002', true)
-    expect(avisos().map((a) => a.id)).toEqual(['boleto-vencendo'])
-    expect(resumoBoletos(obterBase(), HOJE).vencidos.quantidade).toBe(0)
   })
 
   it('[R-BOLETO-03] marcar como pago guarda dia e operador; desfazer volta a ficar em aberto', () => {

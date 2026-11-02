@@ -71,7 +71,7 @@ function dado<T>(r: { ok: true; dado: T } | { ok: false; erro: string }): T {
  *   Gil   notinha que vence em 31/10, daqui a 4 dias        (nada)
  *   Davi  notinha vencida, mas paga                         (nada)
  *   Eva   notinha vencida, cancelada pela dona              (nada)
- *   boletos: vencido, vencendo, longe, vencido mas pago, vencido mas excluído
+ *   boletos: Luz vencido; Gás vence hoje e Água em 3 dias; longe, vencido mas pago, vencido mas excluído
  *   produtos: Cola zerada, Lápis baixo, Caderno normal, Tinta zerada mas desativada
  *   o João cancela uma venda à vista: aguarda a dona
  */
@@ -105,8 +105,9 @@ async function umaLoja(api: Api) {
 
   const boleto = async (descricao: string, vencimento: string) =>
     dado(await api.cadastrarBoleto({ descricao, valor: 10000, numero: descricao, vencimento })).id
-  await boleto('Luz', '2026-10-20')
+  const luz = await boleto('Luz', '2026-10-20')
   await boleto('Água', '2026-10-30')
+  await boleto('Gás', HOJE)
   await boleto('Aluguel', '2026-11-20')
   dado(await api.marcarBoletoPago(await boleto('Internet', '2026-10-15'), joao))
   dado(await api.excluirBoleto(await boleto('Telefone', '2026-10-10'), 'Cadastrado em dobro', joao))
@@ -116,7 +117,7 @@ async function umaLoja(api: Api) {
     pagamento: { forma: 'pix', maquininha: null },
   }, joao)).id
   dado(await api.cancelarFicha(avulsa, 'Cliente desistiu', joao))
-  return { dona, joao, ana, bia, caio, lapis, caderno, avulsa }
+  return { dona, joao, ana, bia, caio, lapis, caderno, avulsa, luz }
 }
 
 const texto = (a: Aviso) => [a.tipo, a.tom, a.titulo, a.detalhe.replace(/\s/g, ' ')]
@@ -134,7 +135,7 @@ testarContrato('sino', { mock, sqlite }, (abrir) => {
       ['vencendo', 'atencao', 'Ana', 'Notinha vence em 2 dias · R$ 10,00'],
       ['vencendo', 'atencao', 'Bia', 'Notinha vence hoje · R$ 5,00'],
       ['vencendo', 'atencao', 'Caio', 'Notinha vence em 3 dias · R$ 5,00'],
-      ['boleto-vencendo', 'atencao', '1 boleto vence em breve', 'Água · vence em 3 dias · R$ 100,00'],
+      ['boleto-vencendo', 'atencao', '2 boletos vencem em breve', 'Gás e mais 1 · o primeiro vence hoje · R$ 200,00'],
       ['estoque-baixo', 'atencao', '1 produto com estoque baixo', 'Lápis'],
       ['aguardando-dona', 'atencao', '1 item aguardando a dona', 'A dona confere com o PIN dela'],
     ])
@@ -145,6 +146,21 @@ testarContrato('sino', { mock, sqlite }, (abrir) => {
     expect(r.every((a) => !a.lido)).toBe(true)
     // O cliente com atraso e vencendo tem os dois avisos, com ids diferentes.
     expect(new Set(r.map((a) => a.id)).size).toBe(r.length)
+  })
+
+  it('[R-BOLETO-05] [R-INICIO-05] boleto pago sai do aviso; um boleto só diz o prazo dele', async () => {
+    const api = abrir('vazia')
+    const { joao, luz } = await umaLoja(api)
+    dado(await api.marcarBoletoPago(luz, joao))
+    const boletos = (await avisos(api)).filter((a) => a.tipo.startsWith('boleto')).map(texto)
+    expect(boletos).toEqual([['boleto-vencendo', 'atencao', '2 boletos vencem em breve', 'Gás e mais 1 · o primeiro vence hoje · R$ 200,00']])
+    dado(await api.cadastrarBoleto({ descricao: 'Só', valor: 5000, numero: 'x', vencimento: '2026-10-28' }))
+    const r = await (async () => { vi.setSystemTime(new Date('2026-10-30T10:00:00-03:00')); try { return await avisos(api) } finally { vi.setSystemTime(AGORA) } })()
+    // Em 30/10 o Gás e o Só venceram e a Água vence hoje.
+    expect(r.filter((a) => a.tipo.startsWith('boleto')).map(texto)).toEqual([
+      ['boleto-vencido', 'critico', '2 boletos vencidos', 'Gás e mais 1 · R$ 150,00'],
+      ['boleto-vencendo', 'atencao', '1 boleto vence em breve', 'Água · vence hoje · R$ 100,00'],
+    ])
   })
 
   it('[R-INICIO-05] sem pendência, o sino fica vazio', async () => {
