@@ -5,7 +5,10 @@ import { Campo } from '../../componentes/campo/Campo'
 import { CampoMoeda } from '../../componentes/campo/CampoMoeda'
 import { Botao } from '../../componentes/botao/Botao'
 import { Filtros } from '../../componentes/filtros/Filtros'
-import { agoraHorario, hojeISO, registrarMovimentoCaixa, type Meio } from '../../mock/estado-demonstracao'
+import { JanelaAssinatura } from '../../componentes/assinatura/JanelaAssinatura'
+import { api } from '../../dados/api'
+import { reais } from '../../formatar'
+import type { Meio } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import './registrar-movimento.css'
 
@@ -15,7 +18,7 @@ const meios: { valor: Meio; rotulo: string }[] = [
   { valor: 'cartao', rotulo: 'Cartão' },
 ]
 
-/** Gaveta sobre o Financeiro: lançamento avulso, fora de venda. */
+/** Gaveta sobre o Financeiro: lançamento avulso, fora de venda. Depois do formulário, quem está fazendo (`R-FINANCEIRO-07`). */
 export function RegistrarMovimento() {
   const navegar = useNavigate()
   const fechar = useCallback(() => navegar(rotas.financeiro), [navegar])
@@ -25,6 +28,7 @@ export function RegistrarMovimento() {
   const [valor, setValor] = useState<number | null>(null)
   const [erros, setErros] = useState<Partial<Record<'descricao' | 'valor', string>>>({})
   const [erroRegistro, setErroRegistro] = useState('')
+  const [assinando, setAssinando] = useState(false)
 
   function salvar(evento: FormEvent) {
     evento.preventDefault()
@@ -39,17 +43,19 @@ export function RegistrarMovimento() {
       requestAnimationFrame(() => formulario.querySelector<HTMLInputElement>(`[name="${primeiro}"]`)?.focus())
       return
     }
-    const registrado = registrarMovimentoCaixa({
-      horario: agoraHorario(),
-      data: hojeISO(),
-      descricao: descricao.trim(),
-      origem: 'Lançamento manual',
-      categoria: fluxo === 'entrada' ? 'Recebimento avulso' : 'Despesa',
-      meio,
-      valor: fluxo === 'entrada' ? centavos : -centavos,
-    })
-    if (!registrado) { setErroRegistro('Não foi possível registrar. Confira os dados do movimento.'); return }
-    fechar()
+    setAssinando(true)
+  }
+
+  if (assinando) {
+    return (
+      <JanelaAssinatura
+        gesto={`${fluxo === 'entrada' ? 'Registrar a entrada' : 'Registrar a despesa'} de ${reais(valor ?? 0)} · ${descricao.trim()}`}
+        rotuloConfirmar={fluxo === 'entrada' ? 'Registrar entrada' : 'Registrar despesa'}
+        fazer={(quem) => api().registrarLancamento({ tipo: fluxo === 'entrada' ? 'entrada' : 'despesa', meio, descricao, valor: valor ?? 0 }, quem)}
+        aoConcluir={fechar}
+        aoFechar={() => setAssinando(false)}
+      />
+    )
   }
 
   return (
