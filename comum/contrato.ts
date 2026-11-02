@@ -821,6 +821,23 @@ export type FichaDaLista = {
 
 export type PaginaFichas = { fichas: FichaDaLista[]; total: number; pagina: number }
 
+export type TipoAviso = 'atraso' | 'vencendo' | 'boleto-vencido' | 'boleto-vencendo' | 'estoque-zerado' | 'estoque-baixo' | 'aguardando-dona'
+
+/**
+ * Um aviso do sino (tela 8.2; `R-INICIO-05`). O texto vem pronto. `lido`: a
+ * loja ja leu este texto; mudou o texto, volta a ser novo. `destino`: a tela
+ * que o aviso abre (`aguardando`: o Inicio com a lista da dona aberta).
+ */
+export type Aviso = {
+  id: string
+  tipo: TipoAviso
+  tom: 'critico' | 'atencao'
+  titulo: string
+  detalhe: string
+  destino: { tela: 'cliente'; clienteId: string } | { tela: 'boletos' } | { tela: 'estoque' } | { tela: 'aguardando' }
+  lido: boolean
+}
+
 /** O que ficou aguardando o visto da dona (a "conferencia depois" da D3). */
 export type TipoAguardando = 'ajuste' | 'cancelamento' | 'estorno-recebimento' | 'fechamento' | 'estorno-lancamento'
 
@@ -1193,6 +1210,19 @@ export type Contrato = {
    * lancamento. O que a dona fez ja nasce conferido e nao entra.
    */
   listarAguardandoDona(): Promise<Resultado<AguardandoDona[]>>
+
+  // Sino (1.0, tela 8.2) -------------------------------------------------------
+  /**
+   * Os avisos de agora, do mais grave ao menos grave (`R-INICIO-05`): notinha
+   * em atraso e vencendo (um por cliente), boleto vencido e vencendo, produto
+   * zerado e com estoque baixo, e o que aguarda a dona (um aviso so).
+   */
+  listarAvisos(): Promise<Resultado<Aviso[]>>
+  /**
+   * Marca como lido o texto de agora de cada aviso pedido; id que nao existe
+   * mais e ignorado. Devolve a lista atualizada. Pedido fora do formato, `validacao`.
+   */
+  marcarAvisosLidos(ids: string[]): Promise<Resultado<Aviso[]>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

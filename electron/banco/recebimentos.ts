@@ -18,16 +18,17 @@ import { criarConferencia, gravarUltimoOperador } from './operadores'
 type OperacoesRecebimento = Pick<Contrato, 'listarNotinhasAbertas' | 'receberNotinhas'>
 
 /** As notinhas que ainda podem dever: não canceladas, com o pago sem os estornados. */
-const NOTINHAS = `
+export const NOTINHAS = `
   select f.id, f.numero, f.cliente_id, f.dia, f.total, f.vencimento,
          (select coalesce(sum(p.valor), 0) from pagamento p
           where p.ficha_id = f.id and not exists (select 1 from pagamento_estorno e where e.pagamento_id = p.id)) as pago
   from ficha f
   where f.forma = 'notinha' and not exists (select 1 from ficha_cancelamento c where c.ficha_id = f.id)`
 
-type Linha = { id: string; numero: number; cliente_id: string; dia: string; total: number; vencimento: string; pago: number }
+export type LinhaNotinha = { id: string; numero: number; cliente_id: string; dia: string; total: number; vencimento: string; pago: number }
+type Linha = LinhaNotinha
 
-function abertas(linhas: Linha[], hoje: string) {
+export function abertas(linhas: Linha[], hoje: string) {
   return linhas.flatMap((l): (NotinhaAberta & { clienteId: string })[] => {
     const conta = { forma: 'notinha' as const, total: l.total, vencimento: l.vencimento, cancelada: false, pago: l.pago }
     const falta = emAberto(conta)

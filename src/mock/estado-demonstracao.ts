@@ -569,6 +569,11 @@ export function excluirBoleto(id: string, motivo = 'Lançado por engano', operad
   return true
 }
 
+/** O sino da 1.0 grava o mapa inteiro, já com o texto lido de cada aviso (`R-INICIO-05`). */
+export function gravarAvisosLidos(lidos: Record<string, string>) {
+  mudar({ ...base, avisosLidos: lidos })
+}
+
 export function marcarAvisosLidos(avisos: Notificacao[]) {
   const lidos = { ...base.avisosLidos }
   for (const aviso of avisos) lidos[aviso.id] = assinaturaAviso(aviso)

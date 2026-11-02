@@ -133,12 +133,12 @@ validação com o Victor: migrar por último, porque a regra pode mudar.
 | Tela | Lê | Grava |
 | --- | --- | --- |
 | `inicio/Inicio` | cartões de hoje (`obterResumoDoDia`), histórico paginado (`listarFichas`), o que aguarda a dona (`listarAguardandoDona`), a venda guardada (`obterRascunhoFicha`): **no contrato desde `2026-11-02` (tela 8.1)** | — |
-| `layout/tela/Tela` (sino) | notificações calculadas da base | `marcarAvisosLidos` |
+| `layout/tela/Tela` (sino) | os avisos (`listarAvisos`): **no contrato desde `2026-11-02` (tela 8.2)** | `marcarAvisosLidos` |
 | `resultados-busca/ResultadosBusca` | busca em clientes, fichas e produtos | — |
 | `notas-fiscais/*`, `detalhe-fiscal` | rascunhos de nota, fichas | — |
 | `layout/barra-lateral/BarraLateral` | operador | `restaurarDemonstracao` |
 
-Operações propostas: `listarAvisos`, `marcarAvisosLidos`, `buscar(termo)`, `listarRascunhosNota`.
+Operações propostas: `buscar(termo)`, `listarRascunhosNota`.
 
 `restaurarDemonstracao` **não entra no contrato**: é ferramenta da base local.
 Com banco, restaurar dados é seed do ambiente de teste, nunca botão no app.

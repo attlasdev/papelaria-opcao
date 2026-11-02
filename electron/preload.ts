@@ -82,6 +82,8 @@ const api: Contrato = {
   obterResumoDoDia: () => ipcRenderer.invoke('obterResumoDoDia'),
   listarFichas: (filtro, pagina, porPagina) => ipcRenderer.invoke('listarFichas', filtro, pagina, porPagina),
   listarAguardandoDona: () => ipcRenderer.invoke('listarAguardandoDona'),
+  listarAvisos: () => ipcRenderer.invoke('listarAvisos'),
+  marcarAvisosLidos: (ids) => ipcRenderer.invoke('marcarAvisosLidos', ids),
   listarNotinhasAbertas: (clienteId) => ipcRenderer.invoke('listarNotinhasAbertas', clienteId),
   receberNotinhas: (recebimento, quem) => ipcRenderer.invoke('receberNotinhas', recebimento, quem),
 }

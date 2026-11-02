@@ -31,6 +31,15 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-11-02` — Sino (1.0, tela 8.2)
+
+- **Contrato:** `listarAvisos()` devolve os avisos prontos (`Aviso`: tipo,
+  tom, título, detalhe, `destino` como tela e id, e `lido`), do mais grave ao
+  menos grave; `marcarAvisosLidos(ids)` grava o texto de agora e devolve a
+  lista atualizada. Saem o rascunho de nota e o aviso próprio do ajuste; o
+  que aguarda a dona vira um aviso só, com a contagem da faixa do Início
+  (`R-INICIO-05`).
+
 ### `2026-11-02` — Início (1.0, tela 8.1)
 
 - **Contrato:** `obterResumoDoDia()` com os três cartões de hoje (a mesma

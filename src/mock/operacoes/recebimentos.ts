@@ -24,7 +24,7 @@ const horarioEmSaoPaulo = () =>
   new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date())
 
 /** A notinha que ainda deve, ou `null`. */
-function aberta(f: Ficha, hoje: string): (NotinhaAberta & { clienteId: string }) | null {
+export function aberta(f: Ficha, hoje: string): (NotinhaAberta & { clienteId: string }) | null {
   if (f.forma !== 'notinha' || !f.clienteId || !f.vencimento) return null
   const pago = f.pagamentos.filter((p) => !p.estorno).reduce((t, p) => t + p.valor, 0)
   const conta = { forma: f.forma, total: f.total, vencimento: f.vencimento, cancelada: Boolean(f.cancelamento), pago }

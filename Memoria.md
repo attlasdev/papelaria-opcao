@@ -721,7 +721,13 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   essa janela nas alterações do front, sem abrir outra instância a cada conferência.
 - `R-INICIO-05` Sino: notinha em atraso, notinha que vence em até 3 dias, produto zerado,
   estoque baixo, cadastro rápido a completar, rascunho de nota; do mais grave ao
-  menos grave. Lido volta a ser novo se o texto mudar.
+  menos grave. Lido volta a ser novo se o texto mudar. Na 1.0 (`2026-11-02`,
+  tela 8.2): saem o cadastro rápido (`2026-10-28`) e o rascunho de nota (D8);
+  entram os boletos vencidos e vencendo, que já estavam no código. O que
+  aguarda a dona é **um aviso só**, "N itens aguardando a dona", com a mesma
+  lista e a mesma contagem da faixa do Início (`R-INICIO-06`), e leva ao
+  Início com a lista aberta; o aviso próprio do ajuste sai. O sino carrega ao
+  abrir a tela e quando algo muda, não a cada tecla (M8); o lido fica no banco.
 - `R-INICIO-06` **Aguardando a dona no Início** (`2026-11-02`, tela 8.1): só
   quando há pendência, uma faixa discreta como a do rascunho ("N itens
   aguardando a dona · Ver"). A janela lista os cinco tipos de conferência

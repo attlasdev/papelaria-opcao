@@ -21,6 +21,7 @@ import { servicosDaBase as servicos } from './operacoes/servicos'
 import { caixaDaBase as caixa } from './operacoes/caixa'
 import { financeiroDaBase as financeiro } from './operacoes/financeiro'
 import { inicioDaBase as inicio } from './operacoes/inicio'
+import { avisosDaBase as avisos } from './operacoes/avisos'
 import { marcarMockInstalado } from './instalado'
 
 /** Mesmos dados inventados de `recursos/comprovante.exemplo.json`. */
@@ -164,6 +165,8 @@ const mock: Contrato = {
   obterResumoDoDia: () => simularAssincrono(() => inicio.obterResumoDoDia()),
   listarFichas: (filtro, pagina, porPagina) => simularAssincrono(() => inicio.listarFichas(filtro, pagina, porPagina)),
   listarAguardandoDona: () => simularAssincrono(() => inicio.listarAguardandoDona()),
+  listarAvisos: () => simularAssincrono(() => avisos.listarAvisos()),
+  marcarAvisosLidos: (ids) => simularAssincrono(() => avisos.marcarAvisosLidos(ids)),
   listarNotinhasAbertas: (clienteId) => simularAssincrono(() => recebimentos.listarNotinhasAbertas(clienteId)),
   receberNotinhas: (recebimento, quem) => simularAssincrono(() => recebimentos.receberNotinhas(recebimento, quem)),
 }
