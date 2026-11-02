@@ -64,7 +64,7 @@ export function DetalheFicha() {
               <TotaisFicha ficha={ficha} />
             </Painel>
             <Painel titulo={<ComIcone icone="dinheiro">{ficha.forma === 'notinha' ? 'Pagamentos da notinha' : 'Pagamento'}</ComIcone>}>
-              <PagamentosFicha ficha={ficha} />
+              <PagamentosFicha ficha={ficha} aoMudar={atualizar} />
             </Painel>
             {ficha.forma === 'notinha' && (
               <Painel titulo={<ComIcone icone="editar">Anotações</ComIcone>}>

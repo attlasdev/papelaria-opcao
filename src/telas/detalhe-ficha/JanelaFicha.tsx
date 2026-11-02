@@ -82,7 +82,7 @@ export function JanelaFicha({ id, aoFechar }: Props) {
         <div className="janela-ficha__rodape">
           <section>
             <h3><ComIcone icone="dinheiro">{ficha.forma === 'notinha' ? 'Pagamentos da notinha' : 'Pagamento'}</ComIcone></h3>
-            <PagamentosFicha ficha={ficha} />
+            <PagamentosFicha ficha={ficha} aoMudar={atualizar} />
             {ficha.forma === 'notinha' && (
               <>
                 <h3 className="janela-ficha__subtitulo"><ComIcone icone="editar">Anotações</ComIcone></h3>

@@ -12,7 +12,7 @@ import { api } from '../../dados/api'
 import { detalheDaSituacao, SELO_COMPRA } from '../../dados/situacao'
 import { tituloFalha } from '../../falhas'
 import { dataCurta, reais } from '../../formatar'
-import { estornarPagamento, hojeISO, NOME_MEIO, ROTULO_SEM_IDENTIFICACAO, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { hojeISO, NOME_MEIO, ROTULO_SEM_IDENTIFICACAO, useEstadoDemonstracao } from '../../mock/estado-demonstracao'
 import { rotas } from '../../rotas-caminhos'
 import './detalhe-ficha.css'
 
@@ -56,8 +56,9 @@ export function subtituloFicha(f: FichaDetalhe) {
 export type CargaFicha = { fase: 'carregando' } | { fase: 'erro'; mensagem: string; naoEncontrada: boolean } | { fase: 'pronto'; ficha: FichaDetalhe }
 
 /**
- * A ficha pelo contrato. Relê quando a base da demonstração muda: o receber e
- * o estornar recebimento (telas 5.1 e 5.2) ainda gravam direto nela.
+ * A ficha pelo contrato. Relê quando a base da demonstração muda: até a Fase 3
+ * é ela que responde, e um gesto em outra janela (o receber, por exemplo) muda
+ * esta ficha.
  */
 export function useFicha(id: string) {
   const base = useEstadoDemonstracao()
@@ -196,16 +197,20 @@ export function TotaisFicha({ ficha }: { ficha: FichaDetalhe }) {
 
 const TITULO_PAGAMENTO = { venda: 'Na venda', entrada: 'Entrada na venda', recebimento: 'Recebimento' } as const
 
-export function PagamentosFicha({ ficha }: { ficha: FichaDetalhe }) {
-  const notinha = ficha.forma === 'notinha'
-  // Recebimento lançado errado se estorna aqui; venda à vista se corrige cancelando a ficha.
-  const [estornando, setEstornando] = useState<number | null>(null)
+/**
+ * Os pagamentos da ficha. Só recebimento de notinha se estorna, e o estorno
+ * desfaz o "Receber" inteiro (`R-CORRECAO-03`); venda ou entrada errada se
+ * corrige cancelando a ficha.
+ */
+export function PagamentosFicha({ ficha, aoMudar }: { ficha: FichaDetalhe; aoMudar: (f: FichaDetalhe) => void }) {
+  const [estornando, setEstornando] = useState<{ id: string; motivo: string | null } | null>(null)
+  const [conferindo, setConferindo] = useState<string | null>(null)
   if (ficha.pagamentos.length === 0) return <p className="detalhe-ficha__resumo">Nenhum pagamento registrado ainda.</p>
-  const alvo = estornando === null ? undefined : ficha.pagamentos[estornando]
+  const alvo = estornando ? ficha.pagamentos.find((p) => p.id === estornando.id) : undefined
   return (
     <>
       <ul className="detalhe-ficha__pagamentos">
-        {ficha.pagamentos.map((pagamento, indice) => {
+        {ficha.pagamentos.map((pagamento) => {
           const desfeito = pagamento.estorno ?? ficha.cancelamento
           return (
             <li key={pagamento.id} className={desfeito ? 'detalhe-ficha__pagamento--estornado' : undefined}>
@@ -218,14 +223,22 @@ export function PagamentosFicha({ ficha }: { ficha: FichaDetalhe }) {
                 {desfeito && (
                   <small className="detalhe-ficha__estorno">
                     Estornado em {dataCurta(desfeito.dia)} · {desfeito.motivo} · {desfeito.operador}
+                    {pagamento.estorno && (pagamento.estorno.conferidoPor
+                      ? ` · conferido por ${pagamento.estorno.conferidoPor}`
+                      : <strong className="detalhe-ficha__aguardando"> · aguardando a dona</strong>)}
                   </small>
                 )}
               </span>
               <span className="detalhe-ficha__pagamento-valor">
                 <strong className="numero">{reais(pagamento.valor)}</strong>
-                {notinha && !desfeito && (
-                  <button type="button" className="detalhe-ficha__estornar" onClick={() => setEstornando(indice)}>
+                {pagamento.tipo === 'recebimento' && !desfeito && (
+                  <button type="button" className="detalhe-ficha__estornar" onClick={() => setEstornando({ id: pagamento.id, motivo: null })}>
                     Estornar
+                  </button>
+                )}
+                {pagamento.estorno && !pagamento.estorno.conferidoPor && (
+                  <button type="button" className="detalhe-ficha__estornar" onClick={() => setConferindo(pagamento.id)}>
+                    Conferir
                   </button>
                 )}
               </span>
@@ -233,21 +246,49 @@ export function PagamentosFicha({ ficha }: { ficha: FichaDetalhe }) {
           )
         })}
       </ul>
-      {alvo && estornando !== null && (
+      {alvo && estornando && estornando.motivo === null && (
         <ModalMotivo
           titulo="Estornar recebimento"
           subtitulo={`Notinha #${ficha.numero} · ${reais(alvo.valor)} em ${dataCurta(alvo.dia)}`}
           consequencias={
             <ul>
+              {alvo.mesmoRecebimento.length > 0 && (
+                <li>
+                  Este recebimento também abateu {alvo.mesmoRecebimento.map((o) => `a #${o.numero} (${reais(o.valor)})`).join(', ')}:
+                  o estorno desfaz <strong>todas</strong>.
+                </li>
+              )}
               <li>O recebimento fica no registro, marcado como estornado.</li>
-              <li><strong>{reais(alvo.valor)}</strong> saem do Financeiro hoje ({NOME_MEIO[alvo.meio]}).{alvo.dia !== hojeISO() && ` O dia ${dataCurta(alvo.dia)} não muda.`}</li>
-              <li>A notinha volta a dever esse valor.</li>
+              <li>
+                <strong>{reais(alvo.valor + alvo.mesmoRecebimento.reduce((t, o) => t + o.valor, 0))}</strong> saem do Financeiro hoje.
+                {alvo.dia !== hojeISO() && ` O dia ${dataCurta(alvo.dia)} não muda.`}
+              </li>
+              <li>{alvo.mesmoRecebimento.length ? 'As notinhas voltam' : 'A notinha volta'} a dever esse valor.</li>
+              <li>Se quem estorna não é a dona, o estorno fica aguardando o visto dela.</li>
             </ul>
           }
-          textoConfirmar="Estornar recebimento"
-          // Até a tela 5.2, o estorno grava direto na base da demonstração, pela posição do pagamento.
-          aoConfirmar={(motivo) => { estornarPagamento(ficha.id, estornando, motivo); setEstornando(null) }}
+          textoConfirmar="Continuar"
+          aoConfirmar={(motivo) => setEstornando({ id: alvo.id, motivo })}
           aoFechar={() => setEstornando(null)}
+        />
+      )}
+      {alvo && estornando?.motivo && (
+        <JanelaAssinatura
+          gesto={`Estornar o recebimento · ${estornando.motivo}`}
+          rotuloConfirmar="Estornar recebimento"
+          fazer={(quem) => api().estornarRecebimento(alvo.id, estornando.motivo!, quem)}
+          aoConcluir={(f) => { setEstornando(null); aoMudar(f) }}
+          aoFechar={() => setEstornando(null)}
+        />
+      )}
+      {conferindo && (
+        <JanelaAssinatura
+          soDona
+          gesto={`Conferir o estorno na ficha #${ficha.numero}`}
+          rotuloConfirmar="Conferir"
+          fazer={(dona) => api().conferirEstorno(conferindo, dona)}
+          aoConcluir={(f) => { setConferindo(null); aoMudar(f) }}
+          aoFechar={() => setConferindo(null)}
         />
       )}
     </>
