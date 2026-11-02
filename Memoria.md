@@ -471,7 +471,9 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   pessoa e PIN (`R-OPERADOR-02`, `2026-10-31`).
 - `R-CLIENTE-07` Vendas sem identificação: filtros Todos, Dinheiro, Pix e Cartão, sem filtro
   exclusivo para Misto. Vendas mistas aparecem em cada meio usado e conservam
-  a divisão dos pagamentos no detalhe da ficha, como no Início.
+  a divisão dos pagamentos no detalhe da ficha, como no Início. A contagem de
+  cada aba é o número de linhas que ela mostra, canceladas inclusive; os
+  cartões (total vendido e por meio) ficam sem as canceladas (`2026-11-02`).
 - `R-CLIENTE-08` O calendário de vendas sem identificação permite hoje e qualquer dia passado;
   datas futuras são bloqueadas também na digitação e na navegação por teclado.
 - `R-CLIENTE-09` **CPF/CNPJ válido** (`2026-10-30`): 11 ou 14 dígitos com os dígitos

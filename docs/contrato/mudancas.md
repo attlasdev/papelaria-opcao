@@ -31,6 +31,15 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-11-02` — Vendas sem identificação (1.0, tela 5.3)
+
+- **Contrato:** `listarVendasSemIdentificacao(periodo, meio, pagina,
+  porPagina)`, paginada no back, com os cartões (`resumo`, sem as canceladas)
+  e as contagens das abas (`contagem`, as linhas que cada aba mostra,
+  canceladas inclusive). A tela continua calculando o dia, a semana e o mês.
+- **Na tela:** a contagem de cada aba passa a bater com a lista dela (antes a
+  aba não contava as canceladas que mostrava). Carregando e falha.
+
 ### `2026-11-02` — Estornar recebimento (1.0, tela 5.2)
 
 - **Contrato:** `estornarRecebimento(pagamentoId, motivo, quem)` desfaz o

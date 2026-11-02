@@ -58,6 +58,7 @@ const api: Contrato = {
   anotarFicha: (id, texto, quem) => ipcRenderer.invoke('anotarFicha', id, texto, quem),
   estornarRecebimento: (pagamentoId, motivo, quem) => ipcRenderer.invoke('estornarRecebimento', pagamentoId, motivo, quem),
   conferirEstorno: (pagamentoId, dona) => ipcRenderer.invoke('conferirEstorno', pagamentoId, dona),
+  listarVendasSemIdentificacao: (periodo, meio, pagina, porPagina) => ipcRenderer.invoke('listarVendasSemIdentificacao', periodo, meio, pagina, porPagina),
   listarNotinhasAbertas: (clienteId) => ipcRenderer.invoke('listarNotinhasAbertas', clienteId),
   receberNotinhas: (recebimento, quem) => ipcRenderer.invoke('receberNotinhas', recebimento, quem),
 }

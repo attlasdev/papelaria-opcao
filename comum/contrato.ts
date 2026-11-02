@@ -581,6 +581,35 @@ export type Recebimento = {
 /** Quanto entrou em cada notinha, da mais antiga para a mais nova. */
 export type RecebimentoFeito = { abatimentos: { fichaId: string; numero: string; valor: number; quitada: boolean }[] }
 
+export type FiltroMeioVenda = 'todos' | MeioPagamento
+/** Dias de Sao Paulo, `AAAA-MM-DD`, os dois inclusive; `null` e todo o historico. */
+export type PeriodoVendas = { de: string; ate: string } | null
+
+/** Uma venda sem cliente (tela 5.3). Sem cliente nao ha notinha. */
+export type VendaSemIdentificacao = {
+  id: string
+  numero: string
+  registradoEm: string
+  total: number
+  forma: Exclude<FormaFicha, 'notinha'>
+  /** Pagamento num meio so: como foi registrado; no misto, `null`. */
+  rotulo: string | null
+  cancelada: boolean
+  itens: { descricao: string; quantidade: number }[]
+  servicos: string[]
+}
+
+export type PaginaVendasSemIdentificacao = {
+  vendas: VendaSemIdentificacao[]
+  /** Quantas vendas o periodo e o meio acham, somando todas as paginas. */
+  total: number
+  pagina: number
+  /** Os cartoes, sem as canceladas: dinheiro que entrou no periodo. */
+  resumo: { vendas: number; totalVendido: number; porMeio: Record<MeioPagamento, { valor: number; vendas: number }> }
+  /** As abas: as linhas que cada uma mostra no periodo, canceladas inclusive (`R-CLIENTE-07`). */
+  contagem: Record<FiltroMeioVenda, number>
+}
+
 /**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
@@ -831,6 +860,15 @@ export type Contrato = {
   estornarRecebimento(pagamentoId: string, motivo: string, quem: Assinatura): Promise<Resultado<FichaDetalhe>>
   /** O visto da dona no recebimento estornado, em todas as linhas dele. Nao estornado, `validacao`. `permissao`: nao e a dona. */
   conferirEstorno(pagamentoId: string, dona: Assinatura): Promise<Resultado<FichaDetalhe>>
+
+  // Vendas sem identificacao (1.0, tela 5.3) -----------------------------------
+  /**
+   * As fichas sem cliente do periodo, da mais nova para a mais velha,
+   * paginadas no back. O misto entra em cada meio usado (`R-CLIENTE-07`).
+   * Dia invalido, `de` depois de `ate`, `ate` depois de hoje (`R-CLIENTE-08`)
+   * ou `porPagina` fora de 1 a 100, `validacao`.
+   */
+  listarVendasSemIdentificacao(periodo: PeriodoVendas, meio: FiltroMeioVenda, pagina: number, porPagina: number): Promise<Resultado<PaginaVendasSemIdentificacao>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

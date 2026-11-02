@@ -64,7 +64,6 @@ Os motivos se repetem em quatro tipos:
 | R-VENDA-08 | tela | tela 2.1 / Fase 3 |
 | R-NOTINHA-04 | tela | Fase 3 |
 | R-FICHA-01 | tela | Fase 3 |
-| R-CLIENTE-07 | contrato | tela 5.3 |
 | R-CLIENTE-08 | tela | Fase 3 |
 | R-BOLETO-04 | contrato | tela 6.1 |
 | R-BOLETO-06 | contrato | tela 6.1 (filtros e busca; excluir vira evento, D7) |

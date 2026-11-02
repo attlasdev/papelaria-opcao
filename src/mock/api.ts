@@ -15,6 +15,7 @@ import { clientesDaBase as clientes } from './operacoes/clientes'
 import { vendasDaBase as vendas } from './operacoes/vendas'
 import { fichasDaBase as fichas } from './operacoes/fichas'
 import { recebimentosDaBase as recebimentos } from './operacoes/recebimentos'
+import { vendasSemIdentificacaoDaBase as semIdentificacao } from './operacoes/vendas-sem-identificacao'
 import { marcarMockInstalado } from './instalado'
 
 /** Mesmos dados inventados de `recursos/comprovante.exemplo.json`. */
@@ -134,6 +135,7 @@ const mock: Contrato = {
   anotarFicha: (id, texto, quem) => simularAssincrono(() => fichas.anotarFicha(id, texto, quem)),
   estornarRecebimento: (pagamentoId, motivo, quem) => simularAssincrono(() => fichas.estornarRecebimento(pagamentoId, motivo, quem)),
   conferirEstorno: (pagamentoId, dona) => simularAssincrono(() => fichas.conferirEstorno(pagamentoId, dona)),
+  listarVendasSemIdentificacao: (periodo, meio, pagina, porPagina) => simularAssincrono(() => semIdentificacao.listarVendasSemIdentificacao(periodo, meio, pagina, porPagina)),
   listarNotinhasAbertas: (clienteId) => simularAssincrono(() => recebimentos.listarNotinhasAbertas(clienteId)),
   receberNotinhas: (recebimento, quem) => simularAssincrono(() => recebimentos.receberNotinhas(recebimento, quem)),
 }
