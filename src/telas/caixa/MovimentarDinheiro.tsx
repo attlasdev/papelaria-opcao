@@ -1,18 +1,21 @@
 import { useId, useRef, useState, type FormEvent } from 'react'
+import { JanelaAssinatura } from '../../componentes/assinatura/JanelaAssinatura'
 import { Botao } from '../../componentes/botao/Botao'
 import { Campo } from '../../componentes/campo/Campo'
 import { CampoMoeda } from '../../componentes/campo/CampoMoeda'
 import { Modal } from '../../componentes/modal/Modal'
+import { api } from '../../dados/api'
 import { reais } from '../../formatar'
-import { movimentarDinheiroCaixa } from '../../mock/estado-demonstracao'
 import './conferencia-caixa.css'
 
+/** Adicionar ou retirar dinheiro da gaveta aberta: o valor e o motivo, depois quem está fazendo (`R-CAIXA-06`, `09`). */
 export function MovimentarDinheiro({ acao, aoFechar, aoConcluir }: { acao: 'adicionar' | 'retirar'; aoFechar: () => void; aoConcluir: (mensagem: string) => void }) {
   const id = useId()
   const formulario = useRef<HTMLFormElement>(null)
   const [valor, setValor] = useState<number | null>(null)
   const [motivo, setMotivo] = useState('')
   const [erro, setErro] = useState('')
+  const [assinando, setAssinando] = useState(false)
   const adicionando = acao === 'adicionar'
   const rotuloMotivo = adicionando ? 'Origem ou motivo' : 'Destino ou motivo'
 
@@ -24,8 +27,19 @@ export function MovimentarDinheiro({ acao, aoFechar, aoConcluir }: { acao: 'adic
       formulario.current?.querySelector<HTMLInputElement>(`[name="${campo}"]`)?.focus()
       return
     }
-    if (!movimentarDinheiroCaixa(acao, valor!, motivo)) { setErro('Não foi possível registrar. Confira o valor e se o caixa está aberto.'); return }
-    aoConcluir(adicionando ? `${reais(valor!)} adicionados à gaveta.` : `Retirada de ${reais(valor!)} registrada.`)
+    setAssinando(true)
+  }
+
+  if (assinando) {
+    return (
+      <JanelaAssinatura
+        gesto={`${adicionando ? 'Adicionar' : 'Retirar'} ${reais(valor!)} · ${motivo.trim()}`}
+        rotuloConfirmar={adicionando ? 'Adicionar dinheiro' : 'Registrar retirada'}
+        fazer={(quem) => api().movimentarGaveta(adicionando ? 'adicao' : 'retirada', valor!, motivo, quem)}
+        aoConcluir={() => aoConcluir(adicionando ? `${reais(valor!)} adicionados à gaveta.` : `Retirada de ${reais(valor!)} registrada.`)}
+        aoFechar={() => setAssinando(false)}
+      />
+    )
   }
 
   return <Modal estreito titulo={adicionando ? 'Adicionar dinheiro' : 'Retirar dinheiro'} aoFechar={aoFechar}

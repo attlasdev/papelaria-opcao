@@ -39,8 +39,8 @@ componentes, CSS por componente).
   (`CaixaDetalhe.resumo`) e o fechamento grava o esperado do momento. Os
   movimentos em dinheiro vêm com o texto pronto (`descricao`) e a ficha.
 - **Na tela:** abrir, adicionar, retirar e fechar pedem pessoa e PIN depois do
-  formulário. Fechamento com diferença mostra "Aguardando a dona" na lista e no
-  detalhe, que tem o "Conferir" (`R-CAIXA-10`). Lançamento em dinheiro e
+  formulário. Fechamento com diferença mostra "A conferir" na lista e
+  "Aguardando a dona" no detalhe, que tem o "Conferir" (`R-CAIXA-10`). Lançamento em dinheiro e
   estorno de adição ou retirada continuam no Financeiro (tela 7.2).
 
 ### `2026-11-02` — Serviços (1.0, tela 6.2)

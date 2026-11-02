@@ -15,3 +15,15 @@
 .caixa-atual__historico-topo h3 { font-size: var(--text-destaque); font-weight: var(--font-weight-forte); }
 .caixa-atual__historico-topo p { margin-top: var(--espaco-1); font-size: var(--text-rotulo); color: var(--color-texto-suave); }
 .caixa-atual__vazio { padding: var(--espaco-4); color: var(--color-texto-suave); text-align: center; }
+
+.caixa-atual__falha {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-4);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-critico-fundo);
+  color: var(--color-critico-texto);
+  font-size: var(--text-corpo);
+}
