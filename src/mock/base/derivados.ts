@@ -395,20 +395,6 @@ function resumirFinanceiro(linhas: LinhaFinanceiro[], doPeriodo: LinhaFinanceiro
   }
 }
 
-export function resumoDoDia(base: Base, dia: string, agora?: string) {
-  const r = resumoFinanceiro(movimentosFinanceiro(base), 'dia', dia, agora)
-  const vendas = base.fichas.filter((f) => f.data === dia && !f.cancelamento)
-  const totalVendido = vendas.reduce((t, f) => t + f.total, 0)
-  return {
-    recebimentos: r.entradas,
-    variacao: r.variacao,
-    vendas: vendas.length,
-    ticketMedio: vendas.length ? Math.round(totalVendido / vendas.length) : 0,
-    saidas: r.saidas,
-    quantidadeSaidas: r.quantidadeSaidas,
-  }
-}
-
 export type SituacaoSaldo = 'normal' | 'baixo' | 'zerado'
 
 /** A regra é a de `comum/regras/produto.ts`, a mesma do back. */

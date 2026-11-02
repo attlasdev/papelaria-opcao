@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router'
+import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router'
 import type { Falha, FiltroFinanceiro, LinhaFinanceira, PaginaFinanceiro } from '../../../comum/contrato'
 import { hojeEmSaoPaulo } from '../../../comum/regras/entrada'
 import { JanelaAssinatura } from '../../componentes/assinatura/JanelaAssinatura'
@@ -37,10 +37,13 @@ const horario = (instante: string) =>
 export function Financeiro() {
   const abrirFicha = useAbrirFicha()
   const hoje = hojeEmSaoPaulo()
-  const [periodo, setPeriodo] = useState<AtalhoPeriodo>('dia')
-  const [de, setDe] = useState(hoje)
-  const [ate, setAte] = useState(hoje)
-  const [meio, setMeio] = useState<FiltroFinanceiro>('todos')
+  // Vindo do "aguardando a dona" do Início: os estornos daquele dia.
+  const [parametros] = useSearchParams()
+  const diaPedido = parametros.get('dia')
+  const [periodo, setPeriodo] = useState<AtalhoPeriodo>(diaPedido && diaPedido !== hoje ? 'personalizado' : 'dia')
+  const [de, setDe] = useState(diaPedido ?? hoje)
+  const [ate, setAte] = useState(diaPedido ?? hoje)
+  const [meio, setMeio] = useState<FiltroFinanceiro>(diaPedido ? 'estornos' : 'todos')
   const [pagina, setPagina] = useState(1)
   // O estorno de lançamento: o motivo, depois quem está fazendo (`R-FINANCEIRO-07`).
   const [estornando, setEstornando] = useState<{ linha: LinhaFinanceira; motivo: string | null } | null>(null)

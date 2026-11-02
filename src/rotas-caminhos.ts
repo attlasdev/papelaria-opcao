@@ -15,7 +15,11 @@ export const rotas = {
   cliente: (id: string) => `/clientes/${id}`,
   editarCliente: (id: string) => `/clientes/${id}/editar`,
   financeiro: '/financeiro',
+  /** Os estornos do dia: onde a dona confere o estorno de lançamento. */
+  financeiroDoDia: (dia: string) => `/financeiro?dia=${dia}`,
   caixa: '/caixa',
+  /** O turno no histórico do caixa: onde a dona confere o fechamento com diferença. */
+  caixaTurno: (id: string) => `/caixa?turno=${encodeURIComponent(id)}`,
   registrarMovimento: '/financeiro/movimento/novo',
   estoque: '/estoque',
   cadastrarProduto: '/estoque/produto/novo',

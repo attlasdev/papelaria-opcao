@@ -40,6 +40,12 @@ componentes, CSS por componente).
   histórico); `listarAguardandoDona()`, a lista única do que espera o visto
   da dona (`AguardandoDona`: tipo, quem fez, quando, texto pronto e a tela onde
   se confere), que o sino da 8.2 também vai usar (`R-INICIO-06`).
+- **Na tela:** o Início lê os três pelo contrato, com "carregando" e a falha
+  com "Tentar de novo". Quando há pendência, aparece uma faixa discreta como a
+  da venda guardada ("N itens aguardando a dona · Ver"); a janela lista quem
+  fez e quando, sem motivo nem valor, e "Abrir" leva ao lugar onde se confere:
+  a ficha, o turno no Caixa (`/caixa?turno=`), os estornos do dia no
+  Financeiro (`/financeiro?dia=`) ou as Movimentações aguardando.
 
 ### `2026-11-02` — Financeiro (1.0, tela 7.2)
 

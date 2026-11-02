@@ -6,7 +6,8 @@
   text-overflow: ellipsis;
 }
 
-.inicio__rascunho {
+/* Faixa discreta sobre os cartões: a venda guardada e o que aguarda a dona (`R-INICIO-06`). */
+.inicio__faixa {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -107,4 +108,45 @@
 /* A linha inteira abre a ficha em janela */
 .inicio__linha {
   cursor: pointer;
+}
+
+.inicio__falha {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-4);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-critico-fundo);
+  color: var(--color-critico-texto);
+  font-size: var(--text-corpo);
+}
+
+.inicio__aguardando {
+  display: grid;
+  gap: var(--espaco-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.inicio__aguardando-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  padding: var(--espaco-3) var(--espaco-4);
+  border: 1px solid var(--color-borda);
+  border-radius: var(--radius-medio);
+}
+
+.inicio__aguardando-texto {
+  display: grid;
+  gap: var(--espaco-1);
+  min-width: 0;
+}
+
+.inicio__aguardando-texto span {
+  font-size: var(--text-rotulo);
+  color: var(--color-texto-suave);
 }

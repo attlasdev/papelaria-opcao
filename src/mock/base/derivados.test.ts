@@ -16,7 +16,6 @@ import {
   notinha,
   notinhasDoCliente,
   resumoDoCliente,
-  resumoDoDia,
   resumoEstoque,
   resumoFinanceiro,
   resumoFinanceiroIntervalo,
@@ -187,15 +186,6 @@ describe('financeiro', () => {
     expect(r.entradas).toBe(doDia.filter((l) => l.valor > 0).reduce((t, l) => t + l.valor, 0))
     expect(r.contagem.todos).toBe(movimentosOperacionaisFinanceiro(doDia).length)
     expect(r.liquido).toBe(r.entradas - r.saidas)
-  })
-})
-
-describe('início', () => {
-  it('[R-INICIO-01] conta as vendas e os recebimentos de hoje', () => {
-    const r = resumoDoDia(base, HOJE)
-    expect(r.vendas).toBe(base.fichas.filter((f) => f.data === HOJE).length)
-    expect(r.recebimentos).toBe(base.fichas.flatMap((f) => f.pagamentos).filter((p) => p.data === HOJE).reduce((t, p) => t + p.valor, 0)
-      + base.movimentosCaixa.filter((m) => m.data === HOJE && m.valor > 0).reduce((t, m) => t + m.valor, 0))
   })
 })
 

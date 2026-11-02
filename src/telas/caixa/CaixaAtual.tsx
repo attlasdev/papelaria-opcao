@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router'
 import type { CaixaDetalhe } from '../../../comum/contrato'
 import { Botao } from '../../componentes/botao/Botao'
 import { Painel } from '../../componentes/painel/Painel'
@@ -30,9 +31,11 @@ export function CaixaAtual() {
     return () => { vivo = false }
   }, [base, tentativa])
   const aberto = carga.fase === 'pronto' ? carga.caixa : null
-  const [janela, setJanela] = useState<Janela | null>(null)
+  // Vindo do "aguardando a dona" do Início, o histórico abre no turno.
+  const [parametros] = useSearchParams()
+  const [janela, setJanela] = useState<Janela | null>(parametros.get('turno') ? 'historico' : null)
   const [mensagem, setMensagem] = useState('')
-  const [turnoSelecionado, setTurnoSelecionado] = useState<string | null>(null)
+  const [turnoSelecionado, setTurnoSelecionado] = useState<string | null>(parametros.get('turno'))
   const fechar = () => setJanela(null)
   const abrir = (proxima: Janela) => { setMensagem(''); setJanela(proxima) }
   const concluir = (texto: string) => { setMensagem(texto); fechar(); recarregar() }
