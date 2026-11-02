@@ -633,6 +633,31 @@ export type ListaBoletos = {
   contagem: Record<FiltroBoletos, number>
 }
 
+/** Um servico feito, com a ficha em que entrou (tela 6.2). `cliente`: `null` e venda sem identificacao. */
+export type ServicoFeito = {
+  fichaId: string
+  numero: string
+  registradoEm: string
+  cliente: string | null
+  servico: string
+  observacao: string | null
+  perdas: number
+  valor: number
+  /** A ficha tem produtos alem de servicos. */
+  comProdutos: boolean
+}
+
+/** Uma perda anotada num servico: so conferencia, nao mexe no estoque (`R-SERVICO-03`). */
+export type PerdaServico = { fichaId: string; numero: string; registradoEm: string; servico: string; quantidade: number; observacao: string | null }
+
+export type ServicosDoPeriodo = {
+  /** Sem as fichas canceladas (`R-SERVICO-02`). Da mais nova para a mais velha. */
+  feitos: ServicoFeito[]
+  /** Com as canceladas: o material se perdeu do mesmo jeito. */
+  perdas: PerdaServico[]
+  resumo: { feitos: number; valorFeitos: number; anotacoes: number; unidadesPerdidas: number }
+}
+
 /**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
@@ -908,6 +933,14 @@ export type Contrato = {
   desfazerPagamentoBoleto(id: string, motivo: string, quem: Assinatura): Promise<Resultado<Boleto>>
   /** Boleto lancado por engano vira "excluido", com motivo (D7): sai da lista e dos avisos. */
   excluirBoleto(id: string, motivo: string, quem: Assinatura): Promise<Resultado<null>>
+
+  // Servicos (1.0, tela 6.2) ---------------------------------------------------
+  /**
+   * Os servicos feitos e as perdas anotadas no periodo (dia da ficha, de Sao
+   * Paulo; os dois inclusive). Dia invalido, `de` depois de `ate` ou `ate`
+   * depois de hoje, `validacao`.
+   */
+  listarServicos(periodo: { de: string; ate: string }): Promise<Resultado<ServicosDoPeriodo>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

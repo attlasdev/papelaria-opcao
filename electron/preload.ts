@@ -65,6 +65,7 @@ const api: Contrato = {
   marcarBoletoPago: (id, quem) => ipcRenderer.invoke('marcarBoletoPago', id, quem),
   desfazerPagamentoBoleto: (id, motivo, quem) => ipcRenderer.invoke('desfazerPagamentoBoleto', id, motivo, quem),
   excluirBoleto: (id, motivo, quem) => ipcRenderer.invoke('excluirBoleto', id, motivo, quem),
+  listarServicos: (periodo) => ipcRenderer.invoke('listarServicos', periodo),
   listarNotinhasAbertas: (clienteId) => ipcRenderer.invoke('listarNotinhasAbertas', clienteId),
   receberNotinhas: (recebimento, quem) => ipcRenderer.invoke('receberNotinhas', recebimento, quem),
 }

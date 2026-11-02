@@ -31,6 +31,13 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-11-02` — Serviços (1.0, tela 6.2)
+
+- **Contrato:** `listarServicos(periodo)` devolve os serviços feitos (sem as
+  fichas canceladas) e as perdas anotadas (com elas), da mais nova para a mais
+  velha, com os totais. A tela continua calculando o período.
+- **Na tela:** o mesmo visual; carregando e falha com "Tentar de novo".
+
 ### `2026-11-02` — Boletos (1.0, tela 6.1)
 
 - **Contrato:** `listarBoletos(filtro, busca)` devolve os boletos que não

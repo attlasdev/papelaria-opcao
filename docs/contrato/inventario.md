@@ -148,7 +148,7 @@ Com banco, restaurar dados é seed do ambiente de teste, nunca botão no app.
 
 | Tela ou peça | Lê | Grava / chama |
 | --- | --- | --- |
-| `servicos/Servicos` | serviços feitos e perdas do período (das fichas) | — |
+| `servicos/Servicos` | serviços feitos e perdas do período (`listarServicos`): **no contrato desde `2026-11-02` (tela 6.2)** | — |
 | `criar-ficha/servicos/*` | — | serviços entram na ficha (`ServicoVenda`) e são gravados por `concluirFicha` |
 | `criar-ficha/cobranca/JanelaCobranca` | — | `iniciarCobranca`, `consultarCobranca`, `cancelarCobranca`, `simularCobranca` (já no contrato) |
 | `entrar/Entrar` e `src/dados/sincronia.ts` | sessão e a base inteira | `sessaoAtual`, `entrar`, `carregarBase`, `salvarBase` (já no contrato; do piloto) |

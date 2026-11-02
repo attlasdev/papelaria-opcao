@@ -17,6 +17,7 @@ import { fichasDaBase as fichas } from './operacoes/fichas'
 import { recebimentosDaBase as recebimentos } from './operacoes/recebimentos'
 import { vendasSemIdentificacaoDaBase as semIdentificacao } from './operacoes/vendas-sem-identificacao'
 import { boletosDaBase as boletos } from './operacoes/boletos'
+import { servicosDaBase as servicos } from './operacoes/servicos'
 import { marcarMockInstalado } from './instalado'
 
 /** Mesmos dados inventados de `recursos/comprovante.exemplo.json`. */
@@ -143,6 +144,7 @@ const mock: Contrato = {
   marcarBoletoPago: (id, quem) => simularAssincrono(() => boletos.marcarBoletoPago(id, quem)),
   desfazerPagamentoBoleto: (id, motivo, quem) => simularAssincrono(() => boletos.desfazerPagamentoBoleto(id, motivo, quem)),
   excluirBoleto: (id, motivo, quem) => simularAssincrono(() => boletos.excluirBoleto(id, motivo, quem)),
+  listarServicos: (periodo) => simularAssincrono(() => servicos.listarServicos(periodo)),
   listarNotinhasAbertas: (clienteId) => simularAssincrono(() => recebimentos.listarNotinhasAbertas(clienteId)),
   receberNotinhas: (recebimento, quem) => simularAssincrono(() => recebimentos.receberNotinhas(recebimento, quem)),
 }
