@@ -21,7 +21,8 @@ import { criarConferencia, gravarUltimoOperador } from './operadores'
 
 type OperacoesFinanceiro = Pick<Contrato, 'consultarFinanceiro' | 'listarFinanceiroDoPeriodo' | 'registrarLancamento' | 'estornarLancamento' | 'conferirEstornoLancamento'>
 
-function todasAsLinhas(banco: Banco): LinhaFinanceira[] {
+/** Todas as linhas do banco, como o contrato as vê (o Início lê as do dia). */
+export function todasAsLinhas(banco: Banco): LinhaFinanceira[] {
   const pagamentos = (banco.prepare(`
     select p.id, p.dia, p.registrado_em, p.tipo, p.meio, p.rotulo, p.valor, o.nome as operador,
            f.id as ficha_id, f.numero, f.forma, c.nome as cliente,

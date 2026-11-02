@@ -68,9 +68,6 @@ Os motivos se repetem em quatro tipos:
 | R-ESTOQUE-03 | tela | tela 2.4 (bloco "Bipados") e Fase 3 (a gaveta da linha) |
 | R-FINANCEIRO-01 | tela | Fase 3 |
 | R-PAGAMENTO-01 | tela | Fase 3 |
-| R-INICIO-02 | tela | Fase 3 |
-| R-INICIO-03 | tela | Fase 3 |
-| R-INICIO-04 | contrato | tela 8.1 |
 | R-LOGIN-01 | contrato | Fase 3 (abertura da 1.0 e aviso do backup no sino) |
 | R-UI-01 | revisão | — |
 | R-UI-02 | revisão | — |

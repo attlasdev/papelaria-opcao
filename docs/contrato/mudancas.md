@@ -31,6 +31,16 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-11-02` — Início (1.0, tela 8.1)
+
+- **Contrato:** `obterResumoDoDia()` com os três cartões de hoje (a mesma
+  conta do Financeiro do dia, sem a gaveta); `listarFichas({ dia, pagamento },
+  pagina, porPagina)`, o histórico paginado no back (`FichaDaLista`: cliente,
+  rótulo, itens, serviços e se está cancelada; `dia: null` é todo o
+  histórico); `listarAguardandoDona()`, a lista única do que espera o visto
+  da dona (`AguardandoDona`: tipo, quem fez, quando, texto pronto e a tela onde
+  se confere), que o sino da 8.2 também vai usar (`R-INICIO-06`).
+
 ### `2026-11-02` — Financeiro (1.0, tela 7.2)
 
 - **Contrato:** `consultarFinanceiro(periodo, filtro, pagina, porPagina)` com

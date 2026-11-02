@@ -722,6 +722,13 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
 - `R-INICIO-05` Sino: notinha em atraso, notinha que vence em até 3 dias, produto zerado,
   estoque baixo, cadastro rápido a completar, rascunho de nota; do mais grave ao
   menos grave. Lido volta a ser novo se o texto mudar.
+- `R-INICIO-06` **Aguardando a dona no Início** (`2026-11-02`, tela 8.1): só
+  quando há pendência, uma faixa discreta como a do rascunho ("N itens
+  aguardando a dona · Ver"). A janela lista os cinco tipos de conferência
+  depois (ajuste de estoque, cancelamento, estorno de recebimento, fechamento
+  com diferença, estorno de lançamento) com quem fez e quando, e cada item leva
+  ao lugar onde já se confere. Não confere ali, nem mostra motivo ou valor: a tela fica
+  virada para o cliente. A lista é uma operação só, a mesma do sino (8.2).
 
 ### Operadores e login (`2026-10-28`, 1.0)
 - `R-OPERADOR-01` Cada pessoa da loja é um operador, com nome único (sem diferenciar

@@ -782,6 +782,67 @@ export type PaginaFinanceiro = { linhas: LinhaFinanceira[]; total: number; pagin
 export type DadosLancamento = { tipo: 'entrada' | 'despesa'; meio: MeioPagamento; descricao: string; valor: number }
 
 /**
+ * Os cartoes do Inicio (tela 8.1; `R-INICIO-01`, `02`): o dia de hoje em Sao
+ * Paulo. Recebimentos e saidas sao os do Financeiro do dia (sem a gaveta);
+ * vendas e media, as fichas do dia sem as canceladas.
+ */
+export type ResumoDoDia = {
+  dia: string
+  recebimentos: number
+  vendas: number
+  /** Arredondada ao centavo; 0 sem vendas. */
+  ticketMedio: number
+  saidas: number
+  quantidadeSaidas: number
+}
+
+/** O filtro de pagamento do historico do Inicio: o misto entra em cada meio que usou (`R-INICIO-04`). */
+export type FiltroPagamentoFicha = 'todos' | MeioPagamento | 'notinha'
+/** `dia`: so as fichas desse dia; `null` e todo o historico (`R-INICIO-03`). */
+export type FiltroFichas = { dia: string | null; pagamento: FiltroPagamentoFicha }
+
+/** Uma linha do historico de fichas do Inicio. */
+export type FichaDaLista = {
+  id: string
+  numero: string
+  /** O dia da venda em Sao Paulo, `AAAA-MM-DD`. */
+  dia: string
+  registradoEm: string
+  /** `null`: venda sem identificacao. */
+  cliente: { id: string; nome: string } | null
+  total: number
+  forma: FormaFicha
+  /** Pagamento num meio so: como foi registrado; no misto e na notinha, `null`. */
+  rotulo: string | null
+  cancelada: boolean
+  itens: { descricao: string; quantidade: number }[]
+  servicos: string[]
+}
+
+export type PaginaFichas = { fichas: FichaDaLista[]; total: number; pagina: number }
+
+/** O que ficou aguardando o visto da dona (a "conferencia depois" da D3). */
+export type TipoAguardando = 'ajuste' | 'cancelamento' | 'estorno-recebimento' | 'fechamento' | 'estorno-lancamento'
+
+/**
+ * Um item aguardando a dona (`R-INICIO-06`). Sem motivo nem valor: o Inicio
+ * fica virado para o cliente. `onde`: a tela em que ele se confere.
+ */
+export type AguardandoDona = {
+  tipo: TipoAguardando
+  /** O registro que espera: o movimento, a ficha, o recebimento, o caixa ou o estorno do lancamento. */
+  id: string
+  registradoEm: string
+  operador: string
+  descricao: string
+  onde:
+    | { tela: 'movimentacoes' }
+    | { tela: 'ficha'; fichaId: string }
+    | { tela: 'caixa'; caixaId: string }
+    | { tela: 'financeiro'; dia: string }
+}
+
+/**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
  * O vocabulario sai das telas e da loja, nao do banco. Quem escreve e o back
@@ -1115,6 +1176,23 @@ export type Contrato = {
   estornarLancamento(id: string, motivo: string, quem: Assinatura): Promise<Resultado<LinhaFinanceira>>
   /** O visto da dona no estorno de lancamento (o id e o da linha do estorno). `permissao`: nao e a dona. */
   conferirEstornoLancamento(estornoId: string, dona: Assinatura): Promise<Resultado<LinhaFinanceira>>
+
+  // Inicio (1.0, tela 8.1) -----------------------------------------------------
+  /** Os cartoes de hoje (`R-INICIO-01`, `02`). */
+  obterResumoDoDia(): Promise<Resultado<ResumoDoDia>>
+  /**
+   * O historico de fichas, da mais nova para a mais velha, paginado
+   * (`R-INICIO-03`, `04`). Canceladas inclusive. Dia invalido ou no futuro,
+   * filtro desconhecido, ou `porPagina` fora de 1 a 100, `validacao`.
+   */
+  listarFichas(filtro: FiltroFichas, pagina: number, porPagina: number): Promise<Resultado<PaginaFichas>>
+  /**
+   * Tudo o que aguarda o visto da dona, do mais novo para o mais velho
+   * (`R-INICIO-06`): ajuste de estoque, cancelamento, estorno de recebimento
+   * (um item por recebimento), fechamento com diferenca e estorno de
+   * lancamento. O que a dona fez ja nasce conferido e nao entra.
+   */
+  listarAguardandoDona(): Promise<Resultado<AguardandoDona[]>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

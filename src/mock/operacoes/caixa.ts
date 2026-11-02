@@ -85,18 +85,24 @@ function movimentosDoTurno(turnoId: string): MovimentoLido[] {
   return [...daVenda, ...manuais]
 }
 
+const turnos = () => obterBase().turnosCaixa ?? []
+
+function detalhe(t: TurnoCaixa): CaixaDetalhe {
+  const movimentos = movimentosDoTurno(t.id)
+  return detalheDoCaixa(paraCaixa(t, () => detalheDoCaixa(paraCaixa({ ...t, fechadoEm: undefined }, () => 0), movimentos).resumo.esperado), movimentos)
+}
+
+function resumido(t: TurnoCaixa): CaixaResumido {
+  const { resumo: _r, movimentos: _m, ...c } = detalhe(t)
+  return c
+}
+
+/** Todos os caixas da base, como o contrato os vê (o Início lê os que aguardam a dona). */
+export const caixasDaBase = () => turnos().map(resumido)
+
 export function criarCaixaDaBase(tentativas = criarTentativas()): OperacoesCaixa {
   const conferir = criarConferencia(tentativas)
-  const turnos = () => obterBase().turnosCaixa ?? []
   const aberto = () => turnos().find((t) => !t.fechadoEm)
-  const detalhe = (t: TurnoCaixa): CaixaDetalhe => {
-    const movimentos = movimentosDoTurno(t.id)
-    return detalheDoCaixa(paraCaixa(t, () => detalheDoCaixa(paraCaixa({ ...t, fechadoEm: undefined }, () => 0), movimentos).resumo.esperado), movimentos)
-  }
-  const resumido = (t: TurnoCaixa) => {
-    const { resumo: _r, movimentos: _m, ...c } = detalhe(t)
-    return c
-  }
   const devolver = (id: string): Resultado<CaixaDetalhe> => {
     const t = turnos().find((x) => x.id === id)
     return t ? ok(detalhe(t)) : falha('nao-encontrado', MENSAGENS_CAIXA.naoEncontrado)

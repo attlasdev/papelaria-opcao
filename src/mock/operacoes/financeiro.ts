@@ -32,7 +32,7 @@ const instante = (data: string, horario: string) => new Date(`${data}T${horario}
 const daGaveta = (m: MovimentoCaixa) => [CATEGORIA_ADICAO_CAIXA, CATEGORIA_RETIRADA_CAIXA, 'Troco', 'Saída de caixa'].includes(m.categoria)
 
 /** Todas as linhas da base, como o contrato as vê. */
-function todasAsLinhas(): LinhaFinanceira[] {
+export function todasAsLinhas(): LinhaFinanceira[] {
   const { fichas, clientes, movimentosCaixa } = obterBase()
   const pagamentos = fichas.flatMap((f) => f.pagamentos.map((p, i): PagamentoLido => {
     const desfeito = p.estorno ?? f.cancelamento
