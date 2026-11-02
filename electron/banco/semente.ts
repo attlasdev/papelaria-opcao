@@ -390,6 +390,16 @@ export function semearBanco(banco: Banco, { hoje, minutoAtual = 24 * 60 - 1 }: O
       inserir('lancamento', { ...comum, id: original, valor: -1200, registrado_em: instante(dia(6), '12:10') })
       inserir('lancamento', { ...comum, id: novoId(), valor: 1200, estorno_de: original, motivo: 'Lançado em dobro', registrado_em: instante(dia(6), '12:12') })
     })
+    // Despesa no Pix com o valor errado, estornada e conferida pela dona (R-FINANCEIRO-07);
+    // a de cima continua aguardando.
+    let estornoConferido = ''
+    quando(dia(5), '10:00', () => {
+      const original = novoId()
+      const comum = { tipo: 'despesa', descricao: 'Material de escritório', origem: 'Papelaria Central', meio: 'pix', dia: dia(5), caixa_id: null, operador_id: operadores.joao }
+      inserir('lancamento', { ...comum, id: original, valor: -4500, registrado_em: instante(dia(5), '10:00') })
+      estornoConferido = novoId()
+      inserir('lancamento', { ...comum, id: estornoConferido, valor: 4500, estorno_de: original, motivo: 'Valor errado', registrado_em: instante(dia(5), '10:05') })
+    })
     quando(dia(1), '08:30', () => {
       inserir('movimento_gaveta', { id: novoId(), caixa_id: caixaAberto, tipo: 'adicao', valor: 5000, motivo: 'Troco do cofre', operador_id: operadores.joao, registrado_em: instante(dia(1), '08:30') })
     })
@@ -433,11 +443,12 @@ export function semearBanco(banco: Banco, { hoje, minutoAtual = 24 * 60 - 1 }: O
     inserir('boleto_evento', { id: novoId(), boleto_id: duplicado, tipo: 'excluido', motivo: 'Cadastrado em dobro', operador_id: operadores.joao, registrado_em: instante(dia(5), '11:02') })
 
     banco.prepare('update operador set ativo = 0 where id = ?').run(operadores.marcia)
-    // A dona: administradora; os fatos dela na semente são conferir um cancelamento e um fechamento.
+    // A dona: administradora; os fatos dela na semente são conferir um cancelamento, um fechamento e um estorno de lançamento.
     const dona = novoId()
     inserir('operador', { id: dona, nome: 'Helena Prado', admin: 1, pin_hash: hashDoPin(PINS.dona, 'semente-dona'), criado_em: desde })
     inserir('conferencia_cancelamento', { cancelamento_id: canceladaConferida, operador_id: dona, registrado_em: instante(dia(1), '18:00') })
     inserir('conferencia_fechamento', { fechamento_id: fechamentoConferido, operador_id: dona, registrado_em: instante(dia(8), '09:00') })
+    inserir('conferencia_lancamento', { estorno_id: estornoConferido, operador_id: dona, registrado_em: instante(dia(4), '09:00') })
     inserir('preferencia', { chave: 'operador_atual', valor: JSON.stringify(operadores.joao) })
   })
 }

@@ -108,7 +108,9 @@ describe('patologias da semente', () => {
   })
 
   it('estorno de lançamento e movimento da gaveta nos dois sentidos', () => {
-    expect(contar('select id from lancamento where estorno_de is not null')).toBe(1)
+    // Dois estornos: um aguardando a dona, outro conferido por ela (R-FINANCEIRO-07).
+    expect(contar('select id from lancamento where estorno_de is not null')).toBe(2)
+    expect(contar('select estorno_id from conferencia_lancamento')).toBe(1)
     expect(contar(`select distinct tipo from movimento_gaveta`)).toBe(2)
     expect(contar(`select id from movimento_estoque where tipo = 'ajuste'`)).toBe(1)
   })
