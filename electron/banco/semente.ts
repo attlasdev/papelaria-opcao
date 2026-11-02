@@ -122,6 +122,8 @@ export function semearBanco(banco: Banco, { hoje, minutoAtual = 24 * 60 - 1 }: O
       [somarDias(hoje, -2), { diferenca: -1000, justificativa: 'Troco entregue sem registro.' }],
       [somarDias(hoje, -9), { diferenca: 500, justificativa: 'Sobrou: cliente não esperou o troco.' }],
     ])
+    // O de 9 dias a dona conferiu (R-CAIXA-10); o de 2 dias continua aguardando.
+    let fechamentoConferido = ''
     for (let atras = 99; atras >= 0; atras--) {
       const dia = somarDias(hoje, -atras)
       quando(dia, '07:55', () => {
@@ -144,8 +146,10 @@ export function semearBanco(banco: Banco, { hoje, minutoAtual = 24 * 60 - 1 }: O
         quando(dia, '18:30', () => {
           const esperado = esperadoDoCaixa(caixaAberto!)
           const diferenca = diferencas.get(dia)
+          const fechamento = novoId()
+          if (dia === somarDias(hoje, -9)) fechamentoConferido = fechamento
           inserir('caixa_fechamento', {
-            id: novoId(), caixa_id: caixaAberto, esperado, contado: esperado + (diferenca?.diferenca ?? 0),
+            id: fechamento, caixa_id: caixaAberto, esperado, contado: esperado + (diferenca?.diferenca ?? 0),
             justificativa: diferenca?.justificativa ?? null, operador_id: operadorDoDia(dia), registrado_em: instante(dia, '18:30'),
           })
           caixaAberto = null
@@ -429,10 +433,11 @@ export function semearBanco(banco: Banco, { hoje, minutoAtual = 24 * 60 - 1 }: O
     inserir('boleto_evento', { id: novoId(), boleto_id: duplicado, tipo: 'excluido', motivo: 'Cadastrado em dobro', operador_id: operadores.joao, registrado_em: instante(dia(5), '11:02') })
 
     banco.prepare('update operador set ativo = 0 where id = ?').run(operadores.marcia)
-    // A dona: administradora; o único fato dela na semente é conferir um cancelamento.
+    // A dona: administradora; os fatos dela na semente são conferir um cancelamento e um fechamento.
     const dona = novoId()
     inserir('operador', { id: dona, nome: 'Helena Prado', admin: 1, pin_hash: hashDoPin(PINS.dona, 'semente-dona'), criado_em: desde })
     inserir('conferencia_cancelamento', { cancelamento_id: canceladaConferida, operador_id: dona, registrado_em: instante(dia(1), '18:00') })
+    inserir('conferencia_fechamento', { fechamento_id: fechamentoConferido, operador_id: dona, registrado_em: instante(dia(8), '09:00') })
     inserir('preferencia', { chave: 'operador_atual', valor: JSON.stringify(operadores.joao) })
   })
 }
