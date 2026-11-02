@@ -609,12 +609,13 @@ describe('boletos', () => {
     expect('pagoEm' in aberto || 'pagoPor' in aberto).toBe(false)
   })
 
-  it('[R-BOLETO-02] número repetido só é apontado; excluir apaga', () => {
+  it('[R-BOLETO-02] número repetido só é apontado; excluir marca, não apaga (D7)', () => {
     expect(boletoComMesmoNumero(obterBase(), ' 12 ')?.id).toBe('BOL-0002')
     expect(boletoComMesmoNumero(obterBase(), '12', 'BOL-0002')?.id).toBe('BOL-0004')
     expect(cadastrarBoleto({ ...dados, numero: '12' })).not.toBeNull()
-    expect(excluirBoleto('BOL-0001')).toBe(true)
-    expect(obterBase().boletos.some((b) => b.id === 'BOL-0001')).toBe(false)
+    expect(excluirBoleto('BOL-0001', 'Cadastrado em dobro')).toBe(true)
+    expect(obterBase().boletos.find((b) => b.id === 'BOL-0001')?.excluido).toMatchObject({ motivo: 'Cadastrado em dobro' })
+    expect(excluirBoleto('BOL-0001')).toBe(false)
   })
 
   it('base guardada antes dos boletos abre com a lista vazia', () => {

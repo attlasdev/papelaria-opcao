@@ -494,7 +494,7 @@ type GrupoBoletos = { quantidade: number; valor: number }
 
 export function resumoBoletos(base: Base, hoje: string): Record<'vencidos' | 'vencendo' | 'aPagar', GrupoBoletos> {
   const grupo = (lista: Boleto[]): GrupoBoletos => ({ quantidade: lista.length, valor: lista.reduce((t, b) => t + b.valor, 0) })
-  const abertos = base.boletos.filter((b) => !b.pagoEm)
+  const abertos = base.boletos.filter((b) => !b.pagoEm && !b.excluido)
   return {
     vencidos: grupo(abertos.filter((b) => situacaoBoleto(b, hoje).situacao === 'vencido')),
     vencendo: grupo(abertos.filter((b) => situacaoBoleto(b, hoje).situacao === 'vencendo')),
@@ -505,7 +505,7 @@ export function resumoBoletos(base: Base, hoje: string): Record<'vencidos' | 've
 /** Outro boleto com o mesmo número de arquivo: só avisa, não impede (`2026-10-23`). */
 export function boletoComMesmoNumero(base: Base, numero: string, ignorar?: string) {
   const alvo = numero.trim().toLowerCase()
-  return alvo ? base.boletos.find((b) => b.id !== ignorar && b.numero.trim().toLowerCase() === alvo) : undefined
+  return alvo ? base.boletos.find((b) => b.id !== ignorar && !b.excluido && b.numero.trim().toLowerCase() === alvo) : undefined
 }
 
 export type TipoNotificacao = 'atraso' | 'vencendo' | 'estoque-zerado' | 'estoque-baixo' | 'ajuste-aguardando' | 'rascunho' | 'boleto-vencido' | 'boleto-vencendo'
@@ -558,7 +558,7 @@ export function notificacoes(base: Base, hoje: string): Notificacao[] {
     }
   }
   // Boletos da loja: os vencidos logo depois das notinhas em atraso; os que vencem, depois das que vencem.
-  const abertos = base.boletos.filter((b) => !b.pagoEm).sort((a, b) => a.vencimento.localeCompare(b.vencimento))
+  const abertos = base.boletos.filter((b) => !b.pagoEm && !b.excluido).sort((a, b) => a.vencimento.localeCompare(b.vencimento))
   const boletosVencidos = abertos.filter((b) => situacaoBoleto(b, hoje).situacao === 'vencido')
   const boletosVencendo = abertos.filter((b) => situacaoBoleto(b, hoje).situacao === 'vencendo')
   const descricoes = (lista: Boleto[]) => lista.length === 1 ? lista[0].descricao : `${lista[0].descricao} e mais ${lista.length - 1}`

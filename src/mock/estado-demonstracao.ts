@@ -537,19 +537,20 @@ export function editarBoleto(id: string, dados: DadosBoleto) {
  * lança no Financeiro. A confirmação do operador está sendo desenhada à parte
  * (Memoria.md, PENDENTE); por ora a tela pede um segundo clique.
  */
-export function marcarBoletoPago(id: string, pago: boolean) {
+export function marcarBoletoPago(id: string, pago: boolean, operador = base.operador) {
   const boleto = base.boletos.find((b) => b.id === id)
-  if (!boleto || Boolean(boleto.pagoEm) === pago) return false
+  if (!boleto || boleto.excluido || Boolean(boleto.pagoEm) === pago) return false
   const { pagoEm: _pagoEm, pagoPor: _pagoPor, ...aberto } = boleto
-  const proximo: Boleto = pago ? { ...aberto, pagoEm: hojeISO(), pagoPor: base.operador } : aberto
+  const proximo: Boleto = pago ? { ...aberto, pagoEm: hojeISO(), pagoPor: operador } : aberto
   mudar({ ...base, boletos: base.boletos.map((b) => (b.id === id ? proximo : b)) })
   return true
 }
 
-/** Boleto lançado por engano. Não há histórico ligado a ele. */
-export function excluirBoleto(id: string) {
-  if (!base.boletos.some((b) => b.id === id)) return false
-  mudar({ ...base, boletos: base.boletos.filter((b) => b.id !== id) })
+/** Boleto lançado por engano (D7): fica marcado como excluído, com o motivo e quem excluiu. */
+export function excluirBoleto(id: string, motivo = 'Lançado por engano', operador = base.operador) {
+  if (!base.boletos.some((b) => b.id === id && !b.excluido)) return false
+  const excluido = { motivo, operador, em: new Date().toISOString() }
+  mudar({ ...base, boletos: base.boletos.map((b) => (b.id === id ? { ...b, excluido } : b)) })
   return true
 }
 

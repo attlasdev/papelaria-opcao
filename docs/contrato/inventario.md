@@ -154,7 +154,7 @@ Com banco, restaurar dados é seed do ambiente de teste, nunca botão no app.
 | `entrar/Entrar` e `src/dados/sincronia.ts` | sessão e a base inteira | `sessaoAtual`, `entrar`, `carregarBase`, `salvarBase` (já no contrato; do piloto) |
 | `estoque/ExportarEmitte`, `clientes/ExportarClientesEmitte`, `financeiro/ExportarPeriodo` | produtos, clientes, movimentos do período | `salvarArquivo` (já no contrato); `marcarEnviadosEmitte` (base local). **As duas da Emitte estão desligadas desde `2026-10-29`** (comentadas); só o `ExportarPeriodo` segue em uso |
 | comprovante (ainda sem tela) | — | `imprimirComprovante` (já no contrato) |
-| `boletos/Boletos`, `boletos/JanelaBoleto` (`2026-10-23`) | boletos da loja; avisos de vencimento no sino | `cadastrarBoleto`, `editarBoleto`, `marcarBoletoPago`, `excluirBoleto` (base local; no piloto vão no documento) |
+| `boletos/Boletos`, `boletos/JanelaBoleto` (`2026-10-23`) | boletos da loja (`listarBoletos`); avisos de vencimento no sino (tela 8.2) | `cadastrarBoleto`, `editarBoleto`, `marcarBoletoPago`, `desfazerPagamentoBoleto`, `excluirBoleto`: **no contrato desde `2026-11-02` (tela 6.1)** |
 
 Para o back:
 - **Serviços fazem parte da ficha:** `concluirFicha` recebe e confere os

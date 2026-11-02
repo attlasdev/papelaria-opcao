@@ -610,6 +610,29 @@ export type PaginaVendasSemIdentificacao = {
   contagem: Record<FiltroMeioVenda, number>
 }
 
+/** O boleto da loja, so anotado (`R-BOLETO-01`). `numero`: o do arquivo da dona, texto livre. */
+export type DadosBoleto = { descricao: string; valor: number; numero: string; vencimento: string }
+/** `vencendo`: em ate 5 dias (`R-BOLETO-05`). */
+export type SituacaoBoleto = 'pago' | 'vencido' | 'vencendo' | 'a-vencer'
+export type Boleto = DadosBoleto & {
+  id: string
+  /** ISO 8601, UTC: gravado ao cadastrar; editar nao muda. */
+  cadastradoEm: string
+  situacao: SituacaoBoleto
+  /** Dias de hoje ate o vencimento; negativo e atraso. */
+  dias: number
+  pago: { dia: string; operador: string } | null
+}
+export type FiltroBoletos = 'a-pagar' | 'vencidos' | 'pagos' | 'todos'
+export type GrupoBoletos = { quantidade: number; valor: number }
+export type ListaBoletos = {
+  /** Em aberto primeiro, pelo vencimento; pagos depois, do mais recente. Sem os excluidos. */
+  boletos: Boleto[]
+  /** Os cartoes, sem filtro nem busca. */
+  resumo: { vencidos: GrupoBoletos; vencendo: GrupoBoletos; aPagar: GrupoBoletos }
+  contagem: Record<FiltroBoletos, number>
+}
+
 /**
  * As operacoes. Uma linha por coisa que a interface pode pedir.
  *
@@ -869,6 +892,22 @@ export type Contrato = {
    * ou `porPagina` fora de 1 a 100, `validacao`.
    */
   listarVendasSemIdentificacao(periodo: PeriodoVendas, meio: FiltroMeioVenda, pagina: number, porPagina: number): Promise<Resultado<PaginaVendasSemIdentificacao>>
+
+  // Boletos (1.0, tela 6.1) ----------------------------------------------------
+  // Id que nao e de um boleto (ou de um excluido), `nao-encontrado`. A
+  // assinatura falha como a dos operadores.
+  /** Todos os boletos que nao foram excluidos: sao dezenas, sem pagina. Busca na descricao e no numero, sem acento. */
+  listarBoletos(filtro: FiltroBoletos, busca: string): Promise<Resultado<ListaBoletos>>
+  /** Cadastro: sem assinatura. Numero repetido e aceito (`R-BOLETO-02`). Campo fora do formato, `validacao`. */
+  cadastrarBoleto(dados: DadosBoleto): Promise<Resultado<Boleto>>
+  /** Corrige os dados; o cadastro e o pagamento ficam como estavam. */
+  editarBoleto(id: string, dados: DadosBoleto): Promise<Resultado<Boleto>>
+  /** Pago hoje, por quem assina (`R-BOLETO-03`); nao lanca no Financeiro (`R-BOLETO-04`). Ja pago, `validacao`. */
+  marcarBoletoPago(id: string, quem: Assinatura): Promise<Resultado<Boleto>>
+  /** Desfaz o pagamento, com motivo (`R-BOLETO-03`). Nao pago ou motivo vazio, `validacao`. */
+  desfazerPagamentoBoleto(id: string, motivo: string, quem: Assinatura): Promise<Resultado<Boleto>>
+  /** Boleto lancado por engano vira "excluido", com motivo (D7): sai da lista e dos avisos. */
+  excluirBoleto(id: string, motivo: string, quem: Assinatura): Promise<Resultado<null>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

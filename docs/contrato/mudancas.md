@@ -31,6 +31,17 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-11-02` — Boletos (1.0, tela 6.1)
+
+- **Contrato:** `listarBoletos(filtro, busca)` devolve os boletos que não
+  foram excluídos, com a situação, os cartões e as contagens das abas.
+  `cadastrarBoleto` e `editarBoleto` sem assinatura; `marcarBoletoPago`,
+  `desfazerPagamentoBoleto` e `excluirBoleto` com pessoa e PIN, e motivo para
+  desfazer e excluir (D7).
+- **Na tela:** "Marcar como pago" abre "Quem está fazendo?" (sai o segundo
+  clique); desfazer e excluir pedem o motivo e depois o PIN. O excluído some
+  da lista e dos avisos.
+
 ### `2026-11-02` — Vendas sem identificação (1.0, tela 5.3)
 
 - **Contrato:** `listarVendasSemIdentificacao(periodo, meio, pagina,

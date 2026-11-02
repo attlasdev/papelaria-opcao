@@ -16,6 +16,7 @@ import { vendasDaBase as vendas } from './operacoes/vendas'
 import { fichasDaBase as fichas } from './operacoes/fichas'
 import { recebimentosDaBase as recebimentos } from './operacoes/recebimentos'
 import { vendasSemIdentificacaoDaBase as semIdentificacao } from './operacoes/vendas-sem-identificacao'
+import { boletosDaBase as boletos } from './operacoes/boletos'
 import { marcarMockInstalado } from './instalado'
 
 /** Mesmos dados inventados de `recursos/comprovante.exemplo.json`. */
@@ -136,6 +137,12 @@ const mock: Contrato = {
   estornarRecebimento: (pagamentoId, motivo, quem) => simularAssincrono(() => fichas.estornarRecebimento(pagamentoId, motivo, quem)),
   conferirEstorno: (pagamentoId, dona) => simularAssincrono(() => fichas.conferirEstorno(pagamentoId, dona)),
   listarVendasSemIdentificacao: (periodo, meio, pagina, porPagina) => simularAssincrono(() => semIdentificacao.listarVendasSemIdentificacao(periodo, meio, pagina, porPagina)),
+  listarBoletos: (filtro, busca) => simularAssincrono(() => boletos.listarBoletos(filtro, busca)),
+  cadastrarBoleto: (dados) => simularAssincrono(() => boletos.cadastrarBoleto(dados)),
+  editarBoleto: (id, dados) => simularAssincrono(() => boletos.editarBoleto(id, dados)),
+  marcarBoletoPago: (id, quem) => simularAssincrono(() => boletos.marcarBoletoPago(id, quem)),
+  desfazerPagamentoBoleto: (id, motivo, quem) => simularAssincrono(() => boletos.desfazerPagamentoBoleto(id, motivo, quem)),
+  excluirBoleto: (id, motivo, quem) => simularAssincrono(() => boletos.excluirBoleto(id, motivo, quem)),
   listarNotinhasAbertas: (clienteId) => simularAssincrono(() => recebimentos.listarNotinhasAbertas(clienteId)),
   receberNotinhas: (recebimento, quem) => simularAssincrono(() => recebimentos.receberNotinhas(recebimento, quem)),
 }

@@ -494,8 +494,10 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   Agostinho).
 - `R-BOLETO-02` **Número repetido é aceito**, só com aviso no campo ("Já existe o boleto Nº
   12: ...").
-- `R-BOLETO-03` **Marcar como pago** grava o dia e o operador; dá para desfazer. Hoje pede um
-  segundo clique; vai pedir a confirmação do operador (PENDENTE).
+- `R-BOLETO-03` **Marcar como pago** grava o dia de hoje e quem marcou, com pessoa e PIN
+  (`2026-11-02`); dá para desfazer, com motivo e PIN, e o desfazer fica no
+  histórico do boleto. Só quem faz assina: não é gesto da dona (sai da D3),
+  porque o pago não mexe em dinheiro do sistema (`R-BOLETO-04`).
 - `R-BOLETO-04` **Pagar não lança nada no Financeiro** (Agostinho): é anotação, e lançar
   sozinho duplicaria a despesa que ela já registra à mão.
 - `R-BOLETO-05` **Sino:** "N boletos vencidos" (crítico) e "N boletos vencem em breve"
@@ -503,7 +505,8 @@ com "Nota:". Item sem um dos dois quebra a suíte.
   notinhas usam 3). Pago sai do aviso.
 - `R-BOLETO-06` Tela no menu, abaixo de Serviços: resumo (vencidos, vencem em até 5 dias, a
   pagar), filtros A pagar/Vencidos/Pagos/Todos e busca por descrição ou número.
-  Excluir fica em Editar, para boleto lançado por engano.
+  Excluir fica em Editar, para boleto lançado por engano: pede motivo e PIN, e
+  o boleto vira "excluído" (D7), sai da lista e dos avisos e fica no banco.
 - Nota: Piloto: os boletos vão no documento da base; base antiga abre com a lista
   vazia. Nada mudou no Supabase.
 
@@ -727,8 +730,8 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
 - `R-OPERADOR-06` **Gesto sensível pede também o PIN da dona**, gravado como quem
   autorizou; se é a própria dona que faz, um PIN basta. Lista provisória, a
   confirmar com ela (D3): cancelar ficha, estornar recebimento e lançamento,
-  ajustar estoque, marcar e desfazer pagamento de boleto, fechar caixa com
-  diferença. **Dois jeitos** (`2026-10-30`): com o PIN da dona **na hora**, ou
+  ajustar estoque, fechar caixa com diferença. Marcar e desfazer pagamento de
+  boleto saíram (`2026-11-02`): só quem faz assina (`R-BOLETO-03`). **Dois jeitos** (`2026-10-30`): com o PIN da dona **na hora**, ou
   com **conferência depois** (quem faz assina sozinho, o registro fica
   "aguardando conferência" e a dona dá o visto com o PIN dela). A dona escolhe
   o jeito de cada gesto (D3). **Ligados:** ajustar estoque, com conferência
@@ -786,6 +789,17 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-11-02` — Boletos pelo back; pagar e desfazer só com o PIN de quem faz
+Decisão do Agostinho, no percurso da tela 6.1. Os boletos vêm de
+`listarBoletos`; pagar, desfazer e excluir viram eventos (`boleto_evento`)
+com quem fez, e desfazer e excluir pedem motivo (D7). Cadastrar e editar
+seguem sem PIN (cadastro). Marcar e desfazer pagamento saem da lista da D3.
+
+**Por quê:** o boleto pago é anotação e não lança nada no Financeiro
+(`R-BOLETO-04`); o registro de quem marcou já basta, e o visto da dona não
+protegeria dinheiro nenhum. Descartado: conferência depois e PIN da dona na
+hora (custo de tela e de balcão sem ganho).
 
 ### `2026-11-02` — Estornar recebimento: o recebimento inteiro, com conferência depois
 Decisão do Agostinho, no percurso da tela 5.2. `estornarRecebimento` desfaz o

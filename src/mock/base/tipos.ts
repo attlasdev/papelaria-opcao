@@ -252,6 +252,8 @@ export type Boleto = {
   cadastradoEm: string // ISO 8601 UTC, gravado no cadastro; editar não muda
   pagoEm?: string // YYYY-MM-DD
   pagoPor?: string // operador que marcou
+  /** Lançado por engano (1.0, D7): sai da lista e dos avisos, e fica na base. */
+  excluido?: { motivo: string; operador: string; em: string }
 }
 
 /**
