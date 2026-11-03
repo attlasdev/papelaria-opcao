@@ -39,6 +39,9 @@ componentes, CSS por componente).
   listas de Clientes e Estoque; a ficha (`FichaDaLista`, a mesma do Início)
   casa por número, cliente, item e serviço, da mais nova para a mais velha,
   com `cancelada`. O produto (`Produto`) vem com os desativados, `ativo: false`.
+- **Na tela:** os resultados leem por `buscar`, com "carregando" e a falha
+  com "Tentar de novo"; cada grupo mostra "e mais N: refine a busca" quando
+  passa de 20, e os selos "Cancelada" e "Desativado" (`SeloCompacto`).
 ### `2026-11-02` — Sino (1.0, tela 8.2)
 
 - **Contrato:** `listarAvisos()` devolve os avisos prontos (`Aviso`: tipo,
