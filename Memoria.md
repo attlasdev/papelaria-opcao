@@ -184,6 +184,11 @@ Tarefas feitas e roteiro detalhado: `docs/historico/2026-10-01-revisao-com-victo
 ## PENDENTE
 
 *Retomar na próxima sessão — prioridade:*
+- [ ] **Ao derrubar a 0.1** (antes da 1.0 ir para a loja, decisão de
+  `2026-11-03`): o código da 1.0 já não usa o documento (Fase 3.4). Sair do
+  Supabase com `base_loja`, `base_loja_anteriores` e `salvar_base` por
+  migration nova, testada antes no `papelaria-dev`; sair do repositório o
+  `scripts/semente-produtos-piloto.mjs`. O `docs/piloto.md` fica até lá.
 - [ ] **Executar a 1.0:** plano em
   `docs/superpowers/plans/2026-10-23-versao-1.0.md` (rascunho de `2026-10-23`,
   reescrito em `2026-10-27` no processo **linear, tela a tela**: fundação com o

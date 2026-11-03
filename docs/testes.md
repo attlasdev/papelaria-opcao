@@ -38,7 +38,7 @@ Agostinho em `2026-10-27`.
 | Pasta | O quê |
 | --- | --- |
 | `src/mock/` | regras e cálculos da 0.1 (store e derivados); dão lugar aos testes de contrato tela a tela |
-| `src/dados/`, `src/leitor/` | integrações e formatos: Emitte, comprovante, fiscal, sincronia, leitor |
+| `src/dados/`, `src/leitor/` | integrações e formatos: Emitte, Financeiro, comprovante, fiscal, leitor |
 | `electron/banco/` | banco da 1.0: o que o schema garante, migrations, semente e as fotos por versão (`fotos.test.ts`: cada migration roda sobre dados no formato antigo) |
 | `testes/` | a cobertura e as regras de interface que dá para conferir lendo o código |
 | `testes/regras/` | as regras puras de `comum/regras/`, que os dois lados do contrato usam |

@@ -60,7 +60,7 @@ O produto não guarda fornecedor. **Corrigido** na v0.1.8: o campo saiu.
 O foco pula a cada renderização da janela. **Aberto.**
 
 ### M3 · Sincronia: qualquer falha vira "Sem conexão"
-**Só da 0.1** (a sincronia do documento sai na 1.0).
+**Só da 0.1:** a sincronia do documento saiu da 1.0 em `2026-11-03` (Fase 3.4).
 
 ### M4 · Regras de negócio só na tela e no store · estrutural
 Sai com as regras no back e os testes de contrato da 1.0.

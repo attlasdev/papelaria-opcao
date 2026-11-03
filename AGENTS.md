@@ -78,21 +78,21 @@ src/
   telas/<tela>/       Tela.tsx + tela.css (+ tipos.ts / constantes.ts quando há)
     inicio, criar-ficha (blocos cliente/, itens/, pagamento/, servicos/,
     cobranca/), clientes, detalhe-cliente, financeiro, caixa, estoque,
-    cadastrar-produto, registrar-entrada, servicos, entrar, notas-fiscais
+    cadastrar-produto, registrar-entrada, servicos, entrar,
     detalhe-ficha, formulario-cliente, ajustar-estoque, entrada-rapida,
-    movimentacoes-estoque, registrar-movimento, rascunhos-notas, detalhe-fiscal,
+    movimentacoes-estoque, registrar-movimento,
     resultados-busca,
     vendas-sem-identificacao (fichas sem cliente; nao e um cadastro)
     formulario-cliente/JanelaCliente: o formulario de cliente, gaveta em Clientes e janela na nova ficha
     caixa/             CaixaAtual, ConferenciaCaixa, MovimentarDinheiro,
                        FechamentosRecentes, HistoricoCaixa (base compartilhada)
-    entrar/            login e "carregando os dados da loja" (piloto 0.1)
-  mock/base/          base local única: tipos (fatos), semente, derivados, persistência
+    entrar/            abrindo, erro, primeira abertura e o login (pedido no 3.5)
+  mock/base/          base do mock (só navegador; fora da build): tipos (fatos), semente, derivados, persistência
                       derivados.ts também tem normalizar() (busca sem acento): não duplicar
                       cenario-caixa.ts: exemplos de fechamento só em desenvolvimento
   mock/estado-demonstracao.ts  store (useEstadoDemonstracao) e ações sobre a base
   mock/api.ts         o mock do contrato (navegador); simular.ts põe atraso e falha
-  dados/              sincronia.ts (base <-> banco, piloto 0.1), planilhas da Emitte
+  dados/              api.ts e mudancas.ts (o contrato e o aviso às telas), planilhas da Emitte
                       e do Financeiro, regras fiscais, rótulo do pagamento
   leitor/             leitor de código de barras (detector, hook e painel)
   funcoes.ts          interruptores do que está ligado nesta versão
