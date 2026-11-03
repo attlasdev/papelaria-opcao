@@ -42,8 +42,9 @@ Cada item diz a partir de que passo da Fase 3 ele vale.
 | --- | --- | --- | --- |
 | 3.0 | Suíte | `npm test` | tudo verde, igual ao Linux |
 | 3.0 | Build | `npm run build` | sem erro |
-| 3.3 | Banco de desenvolvimento | `npm run banco:semear "%APPDATA%\papelaria-opcao\loja.sqlite"` (recusa se já existir) | o arquivo nasce, com a semente de patologias |
+| 3.3 | Banco de desenvolvimento | com o app fechado, `npm run banco:semear "%APPDATA%\papelaria-opcao\loja.sqlite"` (recusa se já existir; para recomeçar, apagar o `loja.sqlite`, o `-wal` e o `-shm` com OK do Agostinho) | o arquivo nasce com a semente até o minuto de agora; Helena 1234, João 2222 |
 | 3.3 | App de desenvolvimento | `npm run dev` | abre a janela com os dados da semente |
+| 3.3 | Conferir a janela por fora (opcional) | no PowerShell, `$env:PAPELARIA_DEPURACAO=9555; npm run dev`: a porta de depuração só existe no desenvolvimento e fica anotada no log | a conversa consegue ler a tela pela porta 9555 |
 | 3.5 | Login na primeira abertura | apagar a sessão (`sessao.json`) e abrir | pede o login; entra com o usuário de teste |
 | 3.5 | Backup | usar o app 10 minutos com mudanças | `copias/` na pasta de dados e a `atual` no `papelaria-dev` |
 | 3.5 | Restaurar | o comando do suporte (detalhe no passo 3.5) | o banco volta igual à cópia |

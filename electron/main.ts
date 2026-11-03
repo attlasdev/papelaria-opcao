@@ -12,6 +12,15 @@ const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
 app.setPath('userData', path.join(app.getPath('appData'), 'papelaria-opcao'))
 configurarLog(path.join(app.getPath('userData'), 'logs'))
 
+// Só no desenvolvimento e só pedida (`PAPELARIA_DEPURACAO=<porta>`): deixa
+// conferir a janela por fora (plano da 1.0, Fase 3.3). O app empacotado não
+// tem o servidor do Vite, então nunca abre a porta.
+const PORTA_DEPURACAO = VITE_DEV_SERVER_URL ? process.env.PAPELARIA_DEPURACAO : undefined
+if (PORTA_DEPURACAO && /^\d{4,5}$/.test(PORTA_DEPURACAO)) {
+  app.commandLine.appendSwitch('remote-debugging-port', PORTA_DEPURACAO)
+  log.aviso('inicio', `porta de depuração aberta (${PORTA_DEPURACAO}): só no desenvolvimento`)
+}
+
 // Erro solto no processo principal vai para o log em vez de virar a caixa de
 // erro do Electron (que mostraria o texto cru na tela). O app segue: as
 // operações já são embrulhadas uma a uma, e o banco grava em transação.

@@ -72,8 +72,7 @@ const texto = (valor: unknown) => (typeof valor === 'string' ? valor.trim() : ''
 
 /**
  * O banco da 1.0 (`userData/loja.sqlite`), aberto na primeira operação que o
- * usa. Até a Fase 3 a tela não chama estas operações aqui (ver
- * `src/dados/api.ts`): elas respondem pela base da demonstração.
+ * usa.
  */
 let banco: Banco | null = null
 const bancoDaLoja = () => (banco ??= abrirBanco(path.join(app.getPath('userData'), 'loja.sqlite')))
