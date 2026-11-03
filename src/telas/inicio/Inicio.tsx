@@ -18,7 +18,7 @@ import type { NomeIcone } from '../../componentes/icone/Icone'
 import { api } from '../../dados/api'
 import { tituloFalha } from '../../falhas'
 import { dataCurta, dataHora, NOME_MEIO, reais, reaisOcultos, ROTULO_SEM_IDENTIFICACAO } from '../../formatar'
-import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { useDadosMudaram } from '../../dados/mudancas'
 import { dataPorExtenso } from '../../datas'
 import { rotas } from '../../rotas-caminhos'
 import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
@@ -64,8 +64,8 @@ export function Inicio() {
   const hoje = hojeEmSaoPaulo()
   const [carga, setCarga] = useState<Carga>({ resumo: null, pagina: null, aguardando: [], rascunho: false, erro: null })
   const [tentativa, setTentativa] = useState(0)
-  // Fase 2: a venda, o cancelamento e as conferências gravam na base da demonstração; o Início relê quando ela muda.
-  const base = useEstadoDemonstracao()
+  // Gravação que deu certo avisa (`src/dados/mudancas.ts`); a tela relê.
+  const versaoDados = useDadosMudaram()
   useEffect(() => {
     let vivo = true
     void Promise.all([
@@ -82,7 +82,7 @@ export function Inicio() {
       if (fichas.dado.pagina !== pagina) setPagina(fichas.dado.pagina)
     })
     return () => { vivo = false }
-  }, [dataSelecionada, filtro, pagina, fichasPorPagina, base, tentativa])
+  }, [dataSelecionada, filtro, pagina, fichasPorPagina, versaoDados, tentativa])
 
   const dia = carga.resumo
   const valor = (centavos: number | undefined) => (centavos === undefined ? '—' : mostrarValores ? reais(centavos) : reaisOcultos)

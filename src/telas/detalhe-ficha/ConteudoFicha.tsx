@@ -12,7 +12,7 @@ import { api } from '../../dados/api'
 import { detalheDaSituacao, SELO_COMPRA } from '../../dados/situacao'
 import { tituloFalha } from '../../falhas'
 import { dataCurta, NOME_MEIO, reais, ROTULO_SEM_IDENTIFICACAO } from '../../formatar'
-import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { useDadosMudaram } from '../../dados/mudancas'
 import { hojeISO } from '../../datas'
 import { rotas } from '../../rotas-caminhos'
 import './detalhe-ficha.css'
@@ -57,12 +57,11 @@ export function subtituloFicha(f: FichaDetalhe) {
 export type CargaFicha = { fase: 'carregando' } | { fase: 'erro'; mensagem: string; naoEncontrada: boolean } | { fase: 'pronto'; ficha: FichaDetalhe }
 
 /**
- * A ficha pelo contrato. Relê quando a base da demonstração muda: até a Fase 3
- * é ela que responde, e um gesto em outra janela (o receber, por exemplo) muda
- * esta ficha.
+ * A ficha pelo contrato. Relê quando uma gravação avisa (`src/dados/mudancas.ts`):
+ * um gesto em outra janela (o receber, por exemplo) muda esta ficha.
  */
 export function useFicha(id: string) {
-  const base = useEstadoDemonstracao()
+  const versaoDados = useDadosMudaram()
   const [carga, setCarga] = useState<{ de: string; carga: CargaFicha } | null>(null)
   const [tentativa, setTentativa] = useState(0)
   useEffect(() => {
@@ -71,7 +70,7 @@ export function useFicha(id: string) {
       if (vivo) setCarga({ de: id, carga: r.ok ? { fase: 'pronto', ficha: r.dado } : { fase: 'erro', mensagem: mensagem(r), naoEncontrada: r.causa === 'nao-encontrado' } })
     })
     return () => { vivo = false }
-  }, [id, base, tentativa])
+  }, [id, versaoDados, tentativa])
   return {
     carga: carga?.de === id ? carga.carga : { fase: 'carregando' } as CargaFicha,
     /** A ficha como o gesto devolveu. */

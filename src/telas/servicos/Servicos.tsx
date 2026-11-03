@@ -9,7 +9,7 @@ import { Filtros } from '../../componentes/filtros/Filtros'
 import { api } from '../../dados/api'
 import { tituloFalha } from '../../falhas'
 import { reais, ROTULO_SEM_IDENTIFICACAO } from '../../formatar'
-import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { useDadosMudaram } from '../../dados/mudancas'
 import { intervaloAtual, intervaloMesPassado, somarDias } from '../../datas'
 import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
 import './servicos.css'
@@ -38,15 +38,15 @@ export function Servicos() {
   const ate = intervalo.ate > hoje ? hoje : intervalo.ate
   const [carga, setCarga] = useState<{ dado: ServicosDoPeriodo | null; erro: string | null }>({ dado: null, erro: null })
   const [tentativa, setTentativa] = useState(0)
-  // Fase 2: a venda e o cancelamento gravam na base da demonstração; a tela relê quando ela muda.
-  const base = useEstadoDemonstracao()
+  // Gravação que deu certo avisa (`src/dados/mudancas.ts`); a tela relê.
+  const versaoDados = useDadosMudaram()
   useEffect(() => {
     let vivo = true
     void api().listarServicos({ de, ate }).then((r) => {
       if (vivo) setCarga((atual) => (r.ok ? { dado: r.dado, erro: null } : { ...atual, erro: mensagem(r) }))
     })
     return () => { vivo = false }
-  }, [de, ate, base, tentativa])
+  }, [de, ate, versaoDados, tentativa])
   const feitos = carga.dado?.feitos ?? []
   const perdas = carga.dado?.perdas ?? []
   const resumo = carga.dado?.resumo

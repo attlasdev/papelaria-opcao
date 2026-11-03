@@ -14,7 +14,7 @@ import { Icone } from '../../componentes/icone/Icone'
 import { api } from '../../dados/api'
 import { tituloFalha } from '../../falhas'
 import { reais } from '../../formatar'
-import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { useDadosMudaram } from '../../dados/mudancas'
 import { rotas } from '../../rotas-caminhos'
 // Exportação para a Emitte desligada em 2026-10-29 (ver ExportarEmitte.tsx).
 // import { ExportarProdutosEmitte } from './ExportarEmitte'
@@ -61,10 +61,8 @@ export function Estoque() {
   const [carga, setCarga] = useState<Carga>({ dado: null, carregando: true, erro: null })
   const [falhaAcao, setFalhaAcao] = useState<string | null>(null)
   const [tentativa, setTentativa] = useState(0)
-  // Fase 2: Entrada rápida, Ajustar e Registrar entrada ainda gravam direto na
-  // base da demonstração; a lista relê sempre que ela muda. Na Fase 3 relê
-  // depois de cada gesto.
-  const base = useEstadoDemonstracao()
+  // Gravação que deu certo avisa (`src/dados/mudancas.ts`); a tela relê.
+  const versaoDados = useDadosMudaram()
   const porPagina = Math.min(linhasPorPagina, POR_PAGINA_MAXIMO)
 
   useEffect(() => {
@@ -78,7 +76,7 @@ export function Estoque() {
       if (r.dado.pagina !== pagina) setPagina(r.dado.pagina)
     })
     return () => { vivo = false }
-  }, [filtro, buscaEnviada, pagina, porPagina, base, tentativa])
+  }, [filtro, buscaEnviada, pagina, porPagina, versaoDados, tentativa])
 
   const reativar = useCallback(async (id: string) => {
     setFalhaAcao(null)

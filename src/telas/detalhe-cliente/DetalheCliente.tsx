@@ -18,7 +18,7 @@ import { juntarEndereco } from '../../dados/endereco'
 import { detalheDaSituacao, SELO_COMPRA } from '../../dados/situacao'
 import { tituloFalha } from '../../falhas'
 import { reais } from '../../formatar'
-import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { useDadosMudaram } from '../../dados/mudancas'
 import { rotas } from '../../rotas-caminhos'
 import { ReceberNotinhas } from './receber/ReceberNotinhas'
 import './detalhe-cliente.css'
@@ -83,9 +83,8 @@ export function DetalheCliente() {
   const [respostaCliente, setCargaCliente] = useState<CargaCliente | null>(null)
   const [respostaCompras, setCarga] = useState<CargaCompras | null>(null)
   const [tentativa, setTentativa] = useState(0)
-  // Fase 2: a edição, a venda e o recebimento ainda gravam direto na base da
-  // demonstração; o detalhe relê sempre que ela muda.
-  const base = useEstadoDemonstracao()
+  // Gravação que deu certo avisa (`src/dados/mudancas.ts`); a tela relê.
+  const versaoDados = useDadosMudaram()
   const hoje = hojeEmSaoPaulo()
 
   useEffect(() => {
@@ -96,7 +95,7 @@ export function DetalheCliente() {
       else setCargaCliente(r.causa === 'nao-encontrado' ? { de: id, fase: 'nao-encontrado' } : { de: id, fase: 'erro', mensagem: mensagem(r) })
     })
     return () => { vivo = false }
-  }, [id, base, tentativa])
+  }, [id, versaoDados, tentativa])
 
   useEffect(() => {
     let vivo = true
@@ -108,7 +107,7 @@ export function DetalheCliente() {
       if (r.dado.pagina !== pagina) setPagina(r.dado.pagina)
     })
     return () => { vivo = false }
-  }, [id, filtro, pagina, porPagina, base, tentativa])
+  }, [id, filtro, pagina, porPagina, versaoDados, tentativa])
 
   const cargaCliente = respostaCliente?.de === id ? respostaCliente : null
   const carga = respostaCompras?.de === id ? respostaCompras : null

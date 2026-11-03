@@ -16,7 +16,7 @@ import { POR_PAGINA_MAXIMO } from '../../../comum/regras/produto'
 import { api } from '../../dados/api'
 import { tituloFalha } from '../../falhas'
 import { dataCurta, NOME_MEIO, reais } from '../../formatar'
-import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { useDadosMudaram } from '../../dados/mudancas'
 import type { Meio } from '../../mock/base/tipos'
 import { rotas } from '../../rotas-caminhos'
 import './vendas-sem-identificacao.css'
@@ -88,8 +88,8 @@ export function VendasSemIdentificacao() {
   const referencia = dataEscolhida || hoje
   const [carga, setCarga] = useState<{ dado: PaginaVendasSemIdentificacao | null; erro: string | null }>({ dado: null, erro: null })
   const [tentativa, setTentativa] = useState(0)
-  // Fase 2: a venda e o cancelamento gravam na base da demonstração; a lista relê quando ela muda.
-  const base = useEstadoDemonstracao()
+  // Gravação que deu certo avisa (`src/dados/mudancas.ts`); a tela relê.
+  const versaoDados = useDadosMudaram()
   const pedido = JSON.stringify(periodoDe(referencia, periodo, hoje))
   useEffect(() => {
     let vivo = true
@@ -100,7 +100,7 @@ export function VendasSemIdentificacao() {
       if (r.dado.pagina !== pagina) setPagina(r.dado.pagina)
     })
     return () => { vivo = false }
-  }, [pedido, filtroMeio, pagina, porPagina, base, tentativa])
+  }, [pedido, filtroMeio, pagina, porPagina, versaoDados, tentativa])
 
   const dado = carga.dado
   const resumo = dado?.resumo

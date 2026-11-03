@@ -16,7 +16,7 @@ import { Icone } from '../../componentes/icone/Icone'
 import { api } from '../../dados/api'
 import { tituloFalha } from '../../falhas'
 import { dataHora, reais } from '../../formatar'
-import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { useDadosMudaram } from '../../dados/mudancas'
 import { rotas } from '../../rotas-caminhos'
 // Exportação para a Emitte desligada em 2026-10-29 (ver ExportarClientesEmitte.tsx).
 // import { ExportarClientesEmitte } from './ExportarClientesEmitte'
@@ -85,9 +85,8 @@ export function Clientes() {
   }, [busca])
   const [carga, setCarga] = useState<Carga>({ dado: null, erro: null })
   const [tentativa, setTentativa] = useState(0)
-  // Fase 2: a venda e o recebimento ainda gravam direto na base da demonstração;
-  // a lista relê sempre que ela muda.
-  const base = useEstadoDemonstracao()
+  // Gravação que deu certo avisa (`src/dados/mudancas.ts`); a tela relê.
+  const versaoDados = useDadosMudaram()
 
   useEffect(() => {
     let vivo = true
@@ -99,7 +98,7 @@ export function Clientes() {
       if (r.dado.pagina !== pagina) setPagina(r.dado.pagina)
     })
     return () => { vivo = false }
-  }, [filtro, buscaEnviada, pagina, porPagina, base, tentativa])
+  }, [filtro, buscaEnviada, pagina, porPagina, versaoDados, tentativa])
 
   const dado = carga.dado
   const resumo = dado?.resumo

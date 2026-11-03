@@ -9,7 +9,7 @@ import { SeloCompacto, type Tom } from '../../componentes/selo/Selo'
 import { api } from '../../dados/api'
 import { tituloFalha } from '../../falhas'
 import { dataCurta, reais } from '../../formatar'
-import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { useDadosMudaram } from '../../dados/mudancas'
 import { rotas } from '../../rotas-caminhos'
 import './movimentacoes-estoque.css'
 import { useAbrirFicha } from '../detalhe-ficha/AbrirFicha'
@@ -53,8 +53,8 @@ export function MovimentacoesEstoque() {
   const [erro, setErro] = useState<string | null>(null)
   const [tentativa, setTentativa] = useState(0)
   const [conferindo, setConferindo] = useState<Conferindo | null>(null)
-  // Fase 2: Entrada, Ajuste e a venda ainda gravam na base da demonstração; a lista relê quando ela muda.
-  const base = useEstadoDemonstracao()
+  // Gravação que deu certo avisa (`src/dados/mudancas.ts`); a tela relê.
+  const versaoDados = useDadosMudaram()
 
   useEffect(() => {
     if (!produtoId) { setProduto(null); return }
@@ -84,7 +84,7 @@ export function MovimentacoesEstoque() {
       setAguardando(paginas[0]?.aguardando ?? 0)
     })
     return () => { vivo = false }
-  }, [aba, produtoId, carregadas, base, tentativa])
+  }, [aba, produtoId, carregadas, versaoDados, tentativa])
 
   // Conferiu o último que aguardava: o filtro some e a lista volta para Todas.
   useEffect(() => { if (aba === 'aguardando' && !carregando && !erro && aguardando === 0) setAba('todas') }, [aba, carregando, erro, aguardando])

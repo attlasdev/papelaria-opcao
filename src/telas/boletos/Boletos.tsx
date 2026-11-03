@@ -13,7 +13,7 @@ import { Icone } from '../../componentes/icone/Icone'
 import { api } from '../../dados/api'
 import { tituloFalha } from '../../falhas'
 import { dataCurta, dataHora, reais } from '../../formatar'
-import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { useDadosMudaram } from '../../dados/mudancas'
 import { JanelaBoleto } from './JanelaBoleto'
 import './boletos.css'
 
@@ -56,8 +56,8 @@ export function Boletos() {
   const [carga, setCarga] = useState<{ dado: ListaBoletos | null; erro: string | null }>({ dado: null, erro: null })
   const [tentativa, setTentativa] = useState(0)
   const recarregar = () => setTentativa((n) => n + 1)
-  // Fase 2: o sino ainda lê a base da demonstração; a lista relê quando ela muda.
-  const base = useEstadoDemonstracao()
+  // Gravação que deu certo avisa (`src/dados/mudancas.ts`); a tela relê.
+  const versaoDados = useDadosMudaram()
   useEffect(() => {
     let vivo = true
     void api().listarBoletos(filtro, buscaEnviada).then((r) => {
@@ -65,7 +65,7 @@ export function Boletos() {
       setCarga((atual) => (r.ok ? { dado: r.dado, erro: null } : { ...atual, erro: mensagem(r) }))
     })
     return () => { vivo = false }
-  }, [filtro, buscaEnviada, base, tentativa])
+  }, [filtro, buscaEnviada, versaoDados, tentativa])
 
   const dado = carga.dado
   const resumo = dado?.resumo

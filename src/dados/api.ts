@@ -1,5 +1,6 @@
 import type { Contrato } from '../../comum/contrato'
 import { mockInstalado } from '../mock/instalado'
+import { comAviso } from './mudancas'
 import { operadoresDaBase } from '../mock/operacoes/operadores'
 import { produtosDaBase } from '../mock/operacoes/produtos'
 import { entradasDaBase } from '../mock/operacoes/entradas'
@@ -33,6 +34,10 @@ import { buscaDaBase } from '../mock/operacoes/busca'
  * Na Fase 3 isto vira `window.api` puro, e o arquivo some.
  *
  * Função, não constante: no navegador o mock só preenche `window.api` depois
- * que os módulos das telas já foram carregados.
+ * que os módulos das telas já foram carregados. Toda chamada passa pelo aviso
+ * às telas (`./mudancas`).
  */
-export const api = (): Contrato => (mockInstalado() ? window.api : { ...window.api, ...operadoresDaBase, ...produtosDaBase, ...entradasDaBase, ...ajustesDaBase, ...movimentosDaBase, ...clientesDaBase, ...vendasDaBase, ...fichasDaBase, ...recebimentosDaBase, ...vendasSemIdentificacaoDaBase, ...boletosDaBase, ...servicosDaBase, ...caixaDaBase, ...financeiroDaBase, ...inicioDaBase, ...avisosDaBase, ...buscaDaBase })
+let daBase: Contrato | null = null
+const fonte = (): Contrato => (mockInstalado() ? window.api : (daBase ??= { ...window.api, ...operadoresDaBase, ...produtosDaBase, ...entradasDaBase, ...ajustesDaBase, ...movimentosDaBase, ...clientesDaBase, ...vendasDaBase, ...fichasDaBase, ...recebimentosDaBase, ...vendasSemIdentificacaoDaBase, ...boletosDaBase, ...servicosDaBase, ...caixaDaBase, ...financeiroDaBase, ...inicioDaBase, ...avisosDaBase, ...buscaDaBase }))
+const comOAviso = comAviso(fonte)
+export const api = (): Contrato => comOAviso

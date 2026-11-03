@@ -7,7 +7,7 @@ import { Icone } from '../../componentes/icone/Icone'
 import { SeloCompacto } from '../../componentes/selo/Selo'
 import { api } from '../../dados/api'
 import { dataHora, reais } from '../../formatar'
-import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { useDadosMudaram } from '../../dados/mudancas'
 import { mensagemDe } from './comum'
 import { ConferenciaCaixa } from './ConferenciaCaixa'
 import { HistoricoCaixa } from './HistoricoCaixa'
@@ -21,15 +21,15 @@ export function CaixaAtual() {
   const [carga, setCarga] = useState<{ fase: 'carregando' } | { fase: 'erro'; mensagem: string } | { fase: 'pronto'; caixa: CaixaDetalhe | null }>({ fase: 'carregando' })
   const [tentativa, setTentativa] = useState(0)
   const recarregar = () => setTentativa((n) => n + 1)
-  // Fase 2: a venda e o receber gravam na base da demonstração; o caixa relê quando ela muda.
-  const base = useEstadoDemonstracao()
+  // Gravação que deu certo avisa (`src/dados/mudancas.ts`); a tela relê.
+  const versaoDados = useDadosMudaram()
   useEffect(() => {
     let vivo = true
     void api().obterCaixaAtual().then((r) => {
       if (vivo) setCarga(r.ok ? { fase: 'pronto', caixa: r.dado } : { fase: 'erro', mensagem: mensagemDe(r) })
     })
     return () => { vivo = false }
-  }, [base, tentativa])
+  }, [versaoDados, tentativa])
   const aberto = carga.fase === 'pronto' ? carga.caixa : null
   // Vindo do "aguardando a dona" do Início, o histórico abre no turno.
   const [parametros] = useSearchParams()

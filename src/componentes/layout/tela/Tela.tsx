@@ -4,7 +4,7 @@ import { Icone, type NomeIcone } from '../../icone/Icone'
 import type { Aviso, TipoAviso } from '../../../../comum/contrato'
 import { api } from '../../../dados/api'
 import { tituloFalha } from '../../../falhas'
-import { useEstadoDemonstracao } from '../../../mock/estado-demonstracao'
+import { useDadosMudaram } from '../../../dados/mudancas'
 import { rotas } from '../../../rotas-caminhos'
 import './tela.css'
 
@@ -55,15 +55,15 @@ export function Tela({ titulo, subtitulo, trilha, voltar, acaoCabecalho, acoesTi
   const areaAvisos = useRef<HTMLDivElement>(null)
   const [carga, setCarga] = useState<{ avisos: Aviso[] | null; erro: string | null }>({ avisos: null, erro: null })
   const [tentativa, setTentativa] = useState(0)
-  // Fase 2: as telas gravam na base da demonstração; o sino relê quando ela muda. Digitar na busca não relê (M8).
-  const base = useEstadoDemonstracao()
+  // Gravação que deu certo avisa (`src/dados/mudancas.ts`); o sino relê. Digitar na busca não relê (M8).
+  const versaoDados = useDadosMudaram()
   useEffect(() => {
     let vivo = true
     void api().listarAvisos().then((r) => {
       if (vivo) setCarga(r.ok ? { avisos: r.dado, erro: null } : { avisos: null, erro: `${tituloFalha(r.causa)} ${r.erro}` })
     })
     return () => { vivo = false }
-  }, [base, tentativa])
+  }, [versaoDados, tentativa])
   // Novas primeiro; as lidas continuam na lista, apagadas, até a pendência sumir.
   const novos = (carga.avisos ?? []).filter((aviso) => !aviso.lido)
   const avisos = [...novos, ...(carga.avisos ?? []).filter((aviso) => aviso.lido)]

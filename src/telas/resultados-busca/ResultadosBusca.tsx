@@ -8,7 +8,7 @@ import { SeloCompacto } from '../../componentes/selo/Selo'
 import { api } from '../../dados/api'
 import { tituloFalha } from '../../falhas'
 import { dataCurta, NOME_MEIO, reais, ROTULO_SEM_IDENTIFICACAO } from '../../formatar'
-import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { useDadosMudaram } from '../../dados/mudancas'
 import { rotas } from '../../rotas-caminhos'
 import './resultados-busca.css'
 import { documentoNaLista } from '../clientes/Clientes'
@@ -32,8 +32,8 @@ export function ResultadosBusca() {
   const termo = (parametros.get('q') ?? '').trim()
   const [carga, setCarga] = useState<Carga>({ termo: '', resultado: null, erro: null })
   const [tentativa, setTentativa] = useState(0)
-  // Fase 2: as telas gravam na base da demonstração; a busca relê quando ela muda.
-  const base = useEstadoDemonstracao()
+  // Gravação que deu certo avisa (`src/dados/mudancas.ts`); a tela relê.
+  const versaoDados = useDadosMudaram()
   useEffect(() => {
     let vivo = true
     void api().buscar(termo).then((r) => {
@@ -41,7 +41,7 @@ export function ResultadosBusca() {
       setCarga(r.ok ? { termo, resultado: r.dado, erro: null } : { termo, resultado: null, erro: r.causa === 'validacao' ? r.erro : `${tituloFalha(r.causa)} ${r.erro}` })
     })
     return () => { vivo = false }
-  }, [termo, base, tentativa])
+  }, [termo, versaoDados, tentativa])
 
   // O resultado de outro termo não vale: enquanto o novo chega, é "buscando".
   const resultado = carga.termo === termo ? carga.resultado : null

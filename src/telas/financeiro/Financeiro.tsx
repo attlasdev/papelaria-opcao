@@ -16,7 +16,7 @@ import type { NomeIcone } from '../../componentes/icone/Icone'
 import { api } from '../../dados/api'
 import { tituloFalha } from '../../falhas'
 import { dataCurta, NOME_MEIO, reais, reaisComSinal } from '../../formatar'
-import { useEstadoDemonstracao } from '../../mock/estado-demonstracao'
+import { useDadosMudaram } from '../../dados/mudancas'
 import { dataCalendarioValida, intervaloAtual, intervaloMesPassado, type Periodo } from '../../datas'
 import type { Meio } from '../../mock/base/tipos'
 import { rotas } from '../../rotas-caminhos'
@@ -54,8 +54,8 @@ export function Financeiro() {
   const navegar = useNavigate()
   // Voltar do "Registrar movimento" muda a chave da rota: a lista relê.
   const { key: volta } = useLocation()
-  // Fase 2: as fichas e o caixa gravam na base da demonstração; a lista relê quando ela muda.
-  const base = useEstadoDemonstracao()
+  // Gravação que deu certo avisa (`src/dados/mudancas.ts`); a tela relê.
+  const versaoDados = useDadosMudaram()
   const [carga, setCarga] = useState<{ dado: PaginaFinanceiro | null; erro: string | null }>({ dado: null, erro: null })
   const [tentativa, setTentativa] = useState(0)
   const recarregar = () => setTentativa((n) => n + 1)
@@ -69,7 +69,7 @@ export function Financeiro() {
       if (r.ok && r.dado.pagina !== pagina) setPagina(r.dado.pagina)
     })
     return () => { vivo = false }
-  }, [de, ate, meio, pagina, periodoValido, base, volta, tentativa])
+  }, [de, ate, meio, pagina, periodoValido, versaoDados, volta, tentativa])
 
   const dado = periodoValido ? carga.dado : null
   const r = dado?.resumo ?? { entradas: 0, saidas: 0, liquido: 0, quantidadeSaidas: 0, contagem: { todos: 0, dinheiro: 0, pix: 0, cartao: 0, estornos: 0 } }
