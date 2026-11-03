@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { criarSemente } from './semente'
 import {
-  buscar,
-  clienteCorrespondeBusca,
   textoDiferencaCaixa,
   fechamentosCaixaNoPeriodo,
   turnosCaixaNoPeriodo,
@@ -65,24 +63,6 @@ describe('notinha', () => {
 })
 
 describe('cliente', () => {
-  it('[R-CLIENTE-03] encontra documento e telefone com ou sem pontuação', () => {
-    const cliente = { ...base.clientes[0], documento: 'CPF 123.456.789-00', telefone: '(11) 98452-1100' }
-    for (const termo of ['12345678900', '123.456.789-00', 'CPF 12345678900', '11984521100', '(11) 98452-1100', '984521100', '98452 1100']) {
-      expect(clienteCorrespondeBusca(cliente, termo), termo).toBe(true)
-      expect(buscar({ ...base, clientes: [cliente] }, termo).clientes).toEqual([cliente])
-    }
-    expect(clienteCorrespondeBusca({ ...cliente, documento: '12345678900', telefone: '11984521100' }, '(11) 98452-1100')).toBe(true)
-    expect(clienteCorrespondeBusca({ ...cliente, documento: '12345678900' }, '123.456.789-00')).toBe(true)
-  })
-  it('[R-CLIENTE-03] preserva nomes/códigos e não junta números de campos diferentes', () => {
-    const cliente = { ...base.clientes[0], nome: 'João da Conceição', documento: '123.456', telefone: '789-000' }
-    expect(clienteCorrespondeBusca(cliente, 'joao da conceicao')).toBe(true)
-    expect(clienteCorrespondeBusca(cliente, cliente.id.toLowerCase())).toBe(true)
-    expect(clienteCorrespondeBusca(cliente, '   ')).toBe(true)
-    expect(clienteCorrespondeBusca(cliente, '456789')).toBe(false)
-    expect(clienteCorrespondeBusca(cliente, 'outro nome 123')).toBe(false)
-    expect(clienteCorrespondeBusca(cliente, '()---')).toBe(false)
-  })
   it('[R-CLIENTE-05] Mariana está com notinha a vencer, visível no resumo', () => {
     const r = resumoDoCliente(base, 'CLI-0104', HOJE)
     expect(r.abertas.some((n) => n.ficha.vencimento === '2026-10-07')).toBe(true)
@@ -187,15 +167,8 @@ describe('financeiro', () => {
   })
 })
 
-describe('estoque e busca', () => {
+describe('estoque', () => {
   it('conta o estoque pela lista real', () => {
     expect(resumoEstoque(base)).toMatchObject({ produtos: 16, baixo: 5, semCodigo: 2 })
-  })
-  it('acha cliente, ficha e produto', () => {
-    const r = buscar(base, 'mariana')
-    expect(r.clientes.map((c) => c.id)).toContain('CLI-0104')
-    expect(r.fichas.length).toBeGreaterThan(0)
-    expect(r.fichas.every((f) => f.clienteId === 'CLI-0104')).toBe(true)
-    expect(buscar(base, '789102711').produtos[0].codigo).toBe('EST-0021')
   })
 })

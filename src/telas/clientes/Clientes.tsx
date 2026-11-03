@@ -53,7 +53,7 @@ const rotuloForma = (c: CompraCliente) => c.rotulo ?? NOME_FORMA[c.forma]
  * `docs/contrato/schema-1.0.md`); o CNPJ, de empresa, aparece inteiro. A base
  * da demonstração só tem o meio do CPF.
  */
-function documentoNaLista(d: string | null) {
+export function documentoNaLista(d: string | null) {
   if (!d) return 'Sem documento'
   if (d.length === 14) return `CNPJ ${formatarDocumento(d)}`
   const meio = d.length === 11 ? d.slice(3, 9) : d

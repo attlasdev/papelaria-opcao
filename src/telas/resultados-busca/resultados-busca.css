@@ -6,3 +6,17 @@
 .resultados-busca__lista button:hover strong { text-decoration: underline; }
 .resultados-busca__lista span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-texto-suave); font-size: var(--text-rotulo); }
 .resultados-busca__lista strong { overflow-wrap: anywhere; }
+.resultados-busca__titulo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espaco-2); min-width: 0; }
+.resultados-busca__lista .resultados-busca__titulo { overflow: visible; white-space: normal; color: inherit; font-size: inherit; }
+.resultados-busca__mais { margin-top: var(--espaco-2); color: var(--color-texto-suave); font-size: var(--text-rotulo); }
+.resultados-busca__falha {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-4);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--radius-pequeno);
+  background: var(--color-critico-fundo);
+  color: var(--color-critico-texto);
+  font-size: var(--text-corpo);
+}

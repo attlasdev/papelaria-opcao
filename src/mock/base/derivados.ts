@@ -430,30 +430,6 @@ export function normalizar(texto: string) {
   return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
 }
 
-/** Nome/código sem acento; documento e telefone com ou sem a pontuação do cadastro. */
-export function clienteCorrespondeBusca(cliente: Cliente, busca: string) {
-  const termo = normalizar(busca.trim())
-  if (!termo || normalizar(`${cliente.id} ${cliente.nome} ${cliente.documento} ${cliente.telefone}`).includes(termo)) return true
-  const numero = termo.replace(/^(cpf|cnpj)\s*/, '')
-  if (!/^[\d\s()./+*\-]+$/.test(numero)) return false
-  const digitos = numero.replace(/\D/g, '')
-  return Boolean(digitos) && [cliente.documento, cliente.telefone].some((campo) => campo.replace(/\D/g, '').includes(digitos))
-}
-
-export function buscar(base: Base, termo: string): { clientes: Cliente[]; fichas: Ficha[]; produtos: Produto[] } {
-  const t = normalizar(termo.trim())
-  if (!t) return { clientes: [], fichas: [], produtos: [] }
-  const casa = (texto: string) => normalizar(texto).includes(t)
-  return {
-    clientes: base.clientes.filter((c) => clienteCorrespondeBusca(c, termo)),
-    fichas: base.fichas
-      .filter((f) => casa(`${f.id} ${nomeCliente(base, f.clienteId)} ${resumoItens(f)}`))
-      .sort(porDataDecrescente)
-      .slice(0, 30),
-    produtos: base.produtos.filter((p) => casa(`${p.codigo} ${p.codigoBarras ?? ''} ${p.descricao} ${p.categoria}`)),
-  }
-}
-
 /** Boleto que vence nestes dias entra no sino antes de vencer (`2026-10-23`, Agostinho). */
 export const DIAS_AVISO_BOLETO = 5
 

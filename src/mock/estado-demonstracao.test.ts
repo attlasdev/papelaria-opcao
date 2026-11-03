@@ -12,7 +12,6 @@ import {
   movimentosFisicosCaixa,
   resumoFinanceiro,
   resumoTurnoCaixa,
-  buscar,
   cadastrarCliente,
   cadastrarProduto,
   definirProdutoAtivo,
@@ -58,7 +57,6 @@ describe('cadastrarProduto', () => {
     const guardada = carregarBase()!
     expect(guardada.produtos.find((produto) => produto.codigo === codigo)?.saldo).toBe(0)
     expect(resumoEstoque(guardada).produtos).toBe(antes + 1)
-    expect(buscar(guardada, '789999001').produtos[0].codigo).toBe(codigo)
   })
 })
 
