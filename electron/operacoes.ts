@@ -79,8 +79,12 @@ const texto = (valor: unknown) => (typeof valor === 'string' ? valor.trim() : ''
 let banco: Banco | null = null
 export const bancoDaLoja = () => (banco ??= abrirBanco(path.join(app.getPath('userData'), 'loja.sqlite')))
 /** Quem copia é o processo principal (`main.ts`); daqui sai só o que a tela lê. */
-export const registroBackup = criarRegistro(path.join(app.getPath('userData'), 'estado-backup.json'))
-const temSessao = async () => Boolean((await supabase().auth.getSession()).data.session)
+export const registroBackup = criarRegistro(() => path.join(app.getPath('userData'), 'estado-backup.json'))
+const fonteDoBackup = {
+  registro: () => registroBackup.ler(),
+  temSessao: async () => Boolean((await supabase().auth.getSession()).data.session),
+  marcarEntrada: () => { registroBackup.atualizar({ entrouEm: new Date().toISOString() }) },
+}
 /** Uma conta de PINs errados para o app inteiro (`R-OPERADOR-04`). */
 const tentativas = criarTentativas()
 
@@ -100,7 +104,7 @@ export const operacoes: Contrato = {
   ...caixaSqlite(bancoDaLoja, tentativas),
   ...financeiroSqlite(bancoDaLoja, tentativas),
   ...inicioSqlite(bancoDaLoja),
-  ...operacoesDoBackup({ registro: () => registroBackup.ler(), temSessao }, avisosSqlite(bancoDaLoja)),
+  ...operacoesDoBackup(fonteDoBackup, avisosSqlite(bancoDaLoja)),
   ...buscaSqlite(bancoDaLoja),
 
   async sessaoAtual() {
@@ -119,7 +123,7 @@ export const operacoes: Contrato = {
     try {
       const { data, error } = await supabase().auth.signInWithPassword({ email: texto(email), password: senha })
       if (error) return falhou('entrar', error, error.status)
-      if (!registroBackup.ler().entrouEm) registroBackup.atualizar({ entrouEm: new Date().toISOString() })
+      if (!registroBackup.ler().entrouEm) fonteDoBackup.marcarEntrada()
       return ok({ email: data.user.email ?? texto(email) })
     } catch (erro) {
       return falhou('entrar', erro)

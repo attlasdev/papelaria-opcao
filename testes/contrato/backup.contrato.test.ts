@@ -20,7 +20,11 @@ import { AGORA, testarContrato } from './estrutura'
 const maquina: { sessao: boolean; registro: RegistroBackup } = { sessao: true, registro: { ...REGISTRO_VAZIO } }
 beforeEach(() => { maquina.sessao = true; maquina.registro = { ...REGISTRO_VAZIO } })
 
-const fonte = { registro: () => maquina.registro, temSessao: async () => maquina.sessao }
+const fonte = {
+  registro: () => maquina.registro,
+  temSessao: async () => maquina.sessao,
+  marcarEntrada: () => { maquina.registro = { ...maquina.registro, entrouEm: new Date().toISOString() } },
+}
 const mock = () => {
   const t = criarTentativas()
   return { ...criarBoletosDaBase(t), ...criarInicioDaBase(), ...criarBackupDaBase(maquina) }
@@ -45,6 +49,14 @@ testarContrato('login e backup', { mock, sqlite }, (abrir) => {
     maquina.sessao = false
     const estado: EstadoBackup = dado(await abrir().obterEstadoBackup())
     expect(estado).toEqual({ sessao: false, precisaEntrar: true, ultimaCopiaEm: null, pendenteDesde: null, parada: true })
+  })
+
+  it('[B-005] entrou antes do registro existir: com sessão, fica registrado, e perder a sessão não pede o login', async () => {
+    const api = abrir()
+    expect(dado(await api.obterEstadoBackup())).toMatchObject({ sessao: true, precisaEntrar: false })
+    expect(maquina.registro.entrouEm).toBe(AGORA.toISOString())
+    maquina.sessao = false
+    expect(dado(await api.obterEstadoBackup())).toMatchObject({ sessao: false, precisaEntrar: false, parada: true })
   })
 
   it('[R-LOGIN-01] já entrou uma vez: perder a sessão não para a loja, só a cópia', async () => {

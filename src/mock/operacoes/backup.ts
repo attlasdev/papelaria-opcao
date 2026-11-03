@@ -13,7 +13,11 @@ const abertura = new Date().toISOString()
 export const backupDoMock: EstadoDoBackupMock = { sessao: true, registro: { entrouEm: abertura, ultimaCopiaEm: abertura, pendenteDesde: null } }
 
 export function criarBackupDaBase(estado: EstadoDoBackupMock = backupDoMock) {
-  return operacoesDoBackup({ registro: () => estado.registro, temSessao: async () => estado.sessao }, criarAvisosDaBase())
+  return operacoesDoBackup({
+    registro: () => estado.registro,
+    temSessao: async () => estado.sessao,
+    marcarEntrada: () => { estado.registro = { ...estado.registro, entrouEm: new Date().toISOString() } },
+  }, criarAvisosDaBase())
 }
 
 export const backupDaBase = criarBackupDaBase()

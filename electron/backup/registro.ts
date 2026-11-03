@@ -16,11 +16,13 @@ export type Registro = {
   atualizar(mudanca: Partial<RegistroBackup>): RegistroBackup
 }
 
-export function criarRegistro(arquivo: string): Registro {
+/** `caminho` como função: a pasta de dados só vale depois de `main.ts` defini-la, e este módulo carrega antes. */
+export function criarRegistro(caminho: string | (() => string)): Registro {
+  const arquivo = typeof caminho === 'string' ? () => caminho : caminho
   let atual: RegistroBackup | null = null
   const ler = () => {
     if (atual) return atual
-    try { atual = registroDe(JSON.parse(readFileSync(arquivo, 'utf8'))) }
+    try { atual = registroDe(JSON.parse(readFileSync(arquivo(), 'utf8'))) }
     catch { atual = { ...REGISTRO_VAZIO } }
     return atual
   }
@@ -29,8 +31,8 @@ export function criarRegistro(arquivo: string): Registro {
     atualizar(mudanca) {
       const proximo = { ...ler(), ...mudanca }
       try {
-        writeFileSync(`${arquivo}.gravando`, JSON.stringify(proximo, null, 2))
-        renameSync(`${arquivo}.gravando`, arquivo)
+        writeFileSync(`${arquivo()}.gravando`, JSON.stringify(proximo, null, 2))
+        renameSync(`${arquivo()}.gravando`, arquivo())
       } catch (erro) {
         // Fica na memória: a próxima mudança tenta gravar de novo.
         log.aviso('backup', 'não consegui gravar o registro do backup:', erro)

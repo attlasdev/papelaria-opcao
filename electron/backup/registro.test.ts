@@ -36,6 +36,16 @@ describe('[R-LOGIN-01] registro do backup da máquina', () => {
     expect(criarRegistro(arquivo).ler()).toEqual({ entrouEm: null, ultimaCopiaEm: null, pendenteDesde: '2026-10-27T18:01:00.000Z' })
   })
 
+  it('[B-004] lê o caminho na hora de usar: a pasta de dados muda depois de o módulo carregar', () => {
+    let pastaDeDados = path.join(pasta, 'nao-existe')
+    const registro = criarRegistro(() => path.join(pastaDeDados, 'estado-backup.json'))
+    writeFileSync(arquivo, JSON.stringify({ entrouEm: '2026-10-27T18:00:00.000Z' }))
+    pastaDeDados = pasta
+    expect(registro.ler().entrouEm).toBe('2026-10-27T18:00:00.000Z')
+    registro.atualizar({ ultimaCopiaEm: '2026-10-27T18:05:00.000Z' })
+    expect(criarRegistro(arquivo).ler().ultimaCopiaEm).toBe('2026-10-27T18:05:00.000Z')
+  })
+
   it('sem conseguir gravar, fica na memória e o app segue', () => {
     const registro = criarRegistro(path.join(pasta, 'nao-existe', 'estado-backup.json'))
     expect(registro.atualizar({ entrouEm: '2026-10-27T18:00:00.000Z' }).entrouEm).toBe('2026-10-27T18:00:00.000Z')

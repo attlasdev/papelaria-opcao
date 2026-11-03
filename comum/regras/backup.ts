@@ -76,13 +76,20 @@ export type FonteDoBackup = {
   registro: () => RegistroBackup
   /** Sem como saber (app sem configuração, erro ao ler a sessão): sem sessão. */
   temSessao: () => Promise<boolean>
+  /** Grava `entrouEm` no registro. */
+  marcarEntrada: () => void
 }
 
 type OperacoesDoBackup = Pick<Contrato, 'obterEstadoBackup' | 'listarAvisos' | 'marcarAvisosLidos'>
 
 /** `obterEstadoBackup` e o sino com o aviso do backup por cima dos avisos da loja. */
 export function operacoesDoBackup(fonte: FonteDoBackup, avisos: Pick<Contrato, 'listarAvisos' | 'marcarAvisosLidos'>): OperacoesDoBackup {
-  const estado = async () => estadoDoBackup(fonte.registro(), await fonte.temSessao().catch(() => false), new Date())
+  const estado = async () => {
+    const sessao = await fonte.temSessao().catch(() => false)
+    // Com sessão, esta máquina já entrou: vale para quem entrou antes do registro existir [B-005].
+    if (sessao && !fonte.registro().entrouEm) fonte.marcarEntrada()
+    return estadoDoBackup(fonte.registro(), sessao, new Date())
+  }
   return {
     obterEstadoBackup: async () => ok(await estado()),
     async listarAvisos() {

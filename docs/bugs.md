@@ -98,3 +98,17 @@ Sai com a consulta paginada no banco da 1.0.
 `2026-10-27`. A semente da 1.0 gravava 16 recebimentos no cartão sem
 maquininha, o que não existe na loja. **Corrigido** (passam na Sicoob); o teste
 falhava antes.
+
+### B-004 · Backup: o registro olhava a pasta de dados cedo demais
+`2026-11-03`, Fase 3.5. `estado-backup.json` tinha o caminho calculado quando
+`electron/operacoes.ts` carregava, antes de `main.ts` definir a pasta de dados:
+com outra pasta (`PAPELARIA_PASTA_DADOS`), o app lia o registro da pasta
+padrão. Achado no teste da primeira abertura. **Corrigido:** o caminho é lido
+na hora de usar. Teste em `electron/backup/registro.test.ts`, que falhava antes.
+
+### B-005 · Backup: máquina que entrou antes do registro pediria o login de novo
+`2026-11-03`, Fase 3.5. O registro (`entrouEm`) nasceu no 3.5; uma máquina já
+logada antes ficava com sessão e sem `entrouEm`, e ao perder a sessão o app
+trataria como primeira abertura e travaria a loja no login. **Corrigido:** com
+sessão, o registro marca a entrada. Teste em
+`testes/contrato/backup.contrato.test.ts`, que falhava antes.
