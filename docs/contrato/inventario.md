@@ -134,11 +134,11 @@ validação com o Victor: migrar por último, porque a regra pode mudar.
 | --- | --- | --- |
 | `inicio/Inicio` | cartões de hoje (`obterResumoDoDia`), histórico paginado (`listarFichas`), o que aguarda a dona (`listarAguardandoDona`), a venda guardada (`obterRascunhoFicha`): **no contrato desde `2026-11-02` (tela 8.1)** | — |
 | `layout/tela/Tela` (sino) | os avisos (`listarAvisos`): **no contrato desde `2026-11-02` (tela 8.2)** | `marcarAvisosLidos` |
-| `resultados-busca/ResultadosBusca` | busca em clientes, fichas e produtos | — |
+| `resultados-busca/ResultadosBusca` | clientes, fichas e produtos que casam com o termo (`buscar`): **no contrato desde `2026-11-03` (tela 8.3)** | — |
 | `notas-fiscais/*`, `detalhe-fiscal` | rascunhos de nota, fichas | — |
 | `layout/barra-lateral/BarraLateral` | operador | `restaurarDemonstracao` |
 
-Operações propostas: `buscar(termo)`, `listarRascunhosNota`.
+Operação proposta: `listarRascunhosNota` (fora da 1.0, D8).
 
 `restaurarDemonstracao` **não entra no contrato**: é ferramenta da base local.
 Com banco, restaurar dados é seed do ambiente de teste, nunca botão no app.

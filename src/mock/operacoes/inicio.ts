@@ -23,7 +23,7 @@ export type OperacoesInicio = Pick<Contrato, 'obterResumoDoDia' | 'listarFichas'
 
 const instante = (data: string, horario: string) => new Date(`${data}T${horario}:00-03:00`).toISOString()
 
-function paraLista(f: Ficha): FichaDaLista & { meios: MeioPagamento[] } {
+export function paraLista(f: Ficha): FichaDaLista & { meios: MeioPagamento[] } {
   const cliente = f.clienteId ? obterBase().clientes.find((c) => c.id === f.clienteId) : undefined
   return {
     id: f.id, numero: numeroFicha(f.id), dia: f.data, registradoEm: instante(f.data, f.horario),

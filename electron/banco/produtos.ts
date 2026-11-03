@@ -16,7 +16,7 @@ import { criarConferencia, gravarUltimoOperador } from './operadores'
 type OperacoesProduto = Pick<Contrato,
   'listarProdutos' | 'obterProduto' | 'buscarProdutoPorCodigoBarras' | 'listarCategorias' | 'cadastrarProduto' | 'editarProduto' | 'excluirProduto' | 'ativarProduto'>
 
-type Linha = {
+export type Linha = {
   id: string; numero: number; codigo_barras: string | null; descricao: string; categoria: string; unidade: Produto['unidade']
   preco: number; custo: number | null; saldo: number; minimo: number; marca: string | null; caracteristicas: string | null
   descricao_adicional: string | null; localizacao: string | null; embalagem: 'cx' | 'pct' | null
@@ -28,7 +28,7 @@ type Linha = {
  * Histórico (`R-ESTOQUE-02`): venda, ou movimento além do saldo inicial. É o
  * mesmo critério do gatilho que recusa apagar produto com histórico.
  */
-const SELECT = `
+export const SELECT = `
   select p.*, (
     exists (select 1 from ficha_item i where i.produto_id = p.id)
     or exists (select 1 from movimento_estoque m where m.produto_id = p.id
@@ -36,7 +36,7 @@ const SELECT = `
   ) as tem_historico
   from produto p`
 
-const paraProduto = (l: Linha): Produto => ({
+export const paraProduto = (l: Linha): Produto => ({
   id: l.id, codigo: codigoProduto(l.numero), codigoBarras: l.codigo_barras, descricao: l.descricao, categoria: l.categoria,
   unidade: l.unidade, preco: l.preco, custo: l.custo, minimo: l.minimo, saldo: l.saldo,
   localizacao: l.localizacao, marca: l.marca, caracteristicas: l.caracteristicas, descricaoAdicional: l.descricao_adicional,

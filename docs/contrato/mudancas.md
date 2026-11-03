@@ -31,6 +31,14 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-11-03` — Busca do cabeçalho (1.0, tela 8.3)
+
+- **Contrato:** `buscar(termo)` devolve `ResultadoBusca`, três grupos
+  (`clientes`, `fichas`, `produtos`), cada um com até 20 `itens` e o `total`
+  que casou (`R-INICIO-07`). Cliente e produto casam pelas mesmas regras das
+  listas de Clientes e Estoque; a ficha (`FichaDaLista`, a mesma do Início)
+  casa por número, cliente, item e serviço, da mais nova para a mais velha,
+  com `cancelada`. O produto (`Produto`) vem com os desativados, `ativo: false`.
 ### `2026-11-02` — Sino (1.0, tela 8.2)
 
 - **Contrato:** `listarAvisos()` devolve os avisos prontos (`Aviso`: tipo,

@@ -23,7 +23,7 @@ const SEM_TELEFONE = 'Sem telefone'
 const digitos = (texto: string) => texto.replace(/\D/g, '')
 
 /** Da base para o contrato; na base o id é o próprio código. */
-function paraCliente(c: Cliente): ClienteContrato {
+export function paraCliente(c: Cliente): ClienteContrato {
   // Gravado pela 1.0: as partes. Da 0.1: a frase, separada como dá.
   const e = c.enderecoPartes ?? (() => {
     const s = separarEndereco(c.endereco)

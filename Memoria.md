@@ -735,6 +735,13 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   com diferença, estorno de lançamento) com quem fez e quando, e cada item leva
   ao lugar onde já se confere. Não confere ali, nem mostra motivo ou valor: a tela fica
   virada para o cliente. A lista é uma operação só, a mesma do sino (8.2).
+- `R-INICIO-07` **Busca do cabeçalho** (`2026-11-02`, tela 8.3): procura em
+  clientes, fichas e produtos, até **20 por grupo**, com o total de cada grupo
+  ("e mais N: refine a busca"). Cliente e produto casam pelas **mesmas regras
+  das telas** de Clientes e Estoque (nome, CPF/CNPJ e telefone com ou sem
+  pontuação; código, código de barras, nome e categoria). Ficha casa por
+  número, cliente, item e serviço, da mais recente para a mais antiga; a
+  cancelada aparece, marcada. Produto desativado aparece, marcado.
 
 ### Operadores e login (`2026-10-28`, 1.0)
 - `R-OPERADOR-01` Cada pessoa da loja é um operador, com nome único (sem diferenciar

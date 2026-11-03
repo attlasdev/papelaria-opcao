@@ -838,6 +838,22 @@ export type Aviso = {
   lido: boolean
 }
 
+/** Um grupo da busca: os primeiros (ate 20) e quantos casaram ao todo. */
+export type GrupoDaBusca<T> = { itens: T[]; total: number }
+
+export type ClienteDaBusca = Pick<LinhaCliente, 'id' | 'codigo' | 'nome' | 'documento' | 'telefone'>
+
+/**
+ * A busca do cabecalho (tela 8.3; `R-INICIO-07`). Clientes por nome; fichas da
+ * mais nova para a mais velha, canceladas inclusive (`cancelada`); produtos
+ * pelo codigo, desativados inclusive (`ativo`).
+ */
+export type ResultadoBusca = {
+  clientes: GrupoDaBusca<ClienteDaBusca>
+  fichas: GrupoDaBusca<FichaDaLista>
+  produtos: GrupoDaBusca<Produto>
+}
+
 /** O que ficou aguardando o visto da dona (a "conferencia depois" da D3). */
 export type TipoAguardando = 'ajuste' | 'cancelamento' | 'estorno-recebimento' | 'fechamento' | 'estorno-lancamento'
 
@@ -1223,6 +1239,16 @@ export type Contrato = {
    * mais e ignorado. Devolve a lista atualizada. Pedido fora do formato, `validacao`.
    */
   marcarAvisosLidos(ids: string[]): Promise<Resultado<Aviso[]>>
+
+  // Busca do cabecalho (1.0, tela 8.3) -----------------------------------------
+  /**
+   * Clientes, fichas e produtos que casam com o termo, ate 20 de cada, com o
+   * total de cada grupo (`R-INICIO-07`). Cliente e produto pelas mesmas regras
+   * das listas de Clientes e Estoque; ficha por numero, cliente, item e
+   * servico. Termo vazio, grupos vazios. Termo que nao e texto ou com mais de
+   * 100 caracteres, `validacao`.
+   */
+  buscar(termo: string): Promise<Resultado<ResultadoBusca>>
 }
 
 /** Os nomes das operacoes, derivados. Usado no registro dos handlers. */

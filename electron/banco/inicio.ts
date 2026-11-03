@@ -17,6 +17,32 @@ type OperacoesInicio = Pick<Contrato, 'obterResumoDoDia' | 'listarFichas' | 'lis
 
 const CANCELADA = 'exists (select 1 from ficha_cancelamento x where x.ficha_id = f.id)'
 
+/** As fichas como a lista mostra, na ordem de `leves`: o resto lido só delas. */
+export function fichasDaLista(b: Banco, leves: Pick<FichaLeve, 'id' | 'numero' | 'dia' | 'registradoEm' | 'forma'>[]): FichaDaLista[] {
+  const ids = leves.map((f) => f.id)
+  const lugares = ids.map(() => '?').join(', ') || 'null'
+  const detalhes = b.prepare(`
+    select f.id, f.total, f.cliente_id, c.nome, ${CANCELADA} as cancelada,
+           (select p.rotulo from pagamento p where p.ficha_id = f.id and p.tipo = 'venda' order by p.rowid limit 1) as rotulo
+    from ficha f left join cliente c on c.id = f.cliente_id where f.id in (${lugares})`).all(...ids) as {
+      id: string; total: number; cliente_id: string | null; nome: string | null; cancelada: number; rotulo: string | null
+    }[]
+  const itens = b.prepare(`select i.ficha_id, i.descricao, i.quantidade from ficha_item i where i.ficha_id in (${lugares}) order by i.rowid`)
+    .all(...ids) as { ficha_id: string; descricao: string; quantidade: number }[]
+  const servicos = b.prepare(`select s.ficha_id, s.nome from ficha_servico s where s.ficha_id in (${lugares}) order by s.rowid`)
+    .all(...ids) as { ficha_id: string; nome: string }[]
+  return leves.map((f): FichaDaLista => {
+    const d = detalhes.find((x) => x.id === f.id)!
+    return {
+      id: f.id, numero: f.numero, dia: f.dia, registradoEm: f.registradoEm, forma: f.forma, total: d.total,
+      cliente: d.cliente_id ? { id: d.cliente_id, nome: d.nome! } : null,
+      rotulo: f.forma === 'misto' || f.forma === 'notinha' ? null : d.rotulo, cancelada: d.cancelada === 1,
+      itens: itens.filter((i) => i.ficha_id === f.id).map((i) => ({ descricao: i.descricao, quantidade: i.quantidade })),
+      servicos: servicos.filter((s) => s.ficha_id === f.id).map((s) => s.nome),
+    }
+  })
+}
+
 export function inicioSqlite(banco: () => Banco): OperacoesInicio {
   return {
     async obterResumoDoDia() {
@@ -38,31 +64,7 @@ export function inicioSqlite(banco: () => Banco): OperacoesInicio {
         meios: (f.meios ? f.meios.split(',') : []) as MeioPagamento[],
       }))
       const r = paginaDeFichas(leves, filtro, pagina as number, porPagina as number)
-      const ids = r.fichas.map((f) => f.id)
-      const lugares = ids.map(() => '?').join(', ') || 'null'
-      const detalhes = banco().prepare(`
-        select f.id, f.total, f.cliente_id, c.nome, ${CANCELADA} as cancelada,
-               (select p.rotulo from pagamento p where p.ficha_id = f.id and p.tipo = 'venda' order by p.rowid limit 1) as rotulo
-        from ficha f left join cliente c on c.id = f.cliente_id where f.id in (${lugares})`).all(...ids) as {
-          id: string; total: number; cliente_id: string | null; nome: string | null; cancelada: number; rotulo: string | null
-        }[]
-      const itens = banco().prepare(`select i.ficha_id, i.descricao, i.quantidade from ficha_item i where i.ficha_id in (${lugares}) order by i.rowid`)
-        .all(...ids) as { ficha_id: string; descricao: string; quantidade: number }[]
-      const servicos = banco().prepare(`select s.ficha_id, s.nome from ficha_servico s where s.ficha_id in (${lugares}) order by s.rowid`)
-        .all(...ids) as { ficha_id: string; nome: string }[]
-      return ok({
-        total: r.total, pagina: r.pagina,
-        fichas: r.fichas.map((f): FichaDaLista => {
-          const d = detalhes.find((x) => x.id === f.id)!
-          return {
-            id: f.id, numero: f.numero, dia: f.dia, registradoEm: f.registradoEm, forma: f.forma, total: d.total,
-            cliente: d.cliente_id ? { id: d.cliente_id, nome: d.nome! } : null,
-            rotulo: f.forma === 'misto' || f.forma === 'notinha' ? null : d.rotulo, cancelada: d.cancelada === 1,
-            itens: itens.filter((i) => i.ficha_id === f.id).map((i) => ({ descricao: i.descricao, quantidade: i.quantidade })),
-            servicos: servicos.filter((s) => s.ficha_id === f.id).map((s) => s.nome),
-          }
-        }),
-      })
+      return ok({ total: r.total, pagina: r.pagina, fichas: fichasDaLista(banco(), r.fichas) })
     },
 
     async listarAguardandoDona() {

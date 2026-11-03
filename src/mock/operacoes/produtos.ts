@@ -8,7 +8,7 @@
 import { falha, ok, type Assinatura, type Contrato, type DadosProduto, type Produto as ProdutoContrato, type Resultado } from '../../../comum/contrato'
 import { criarTentativas } from '../../../comum/regras/operador'
 import {
-  categoriaCanonica, conferirPedidoDeLista, MENSAGENS_PRODUTO, ordenarCategorias, paginaQueExiste, paraBusca, produtoValido, saldoInicialValido, situacaoSaldo,
+  categoriaCanonica, conferirPedidoDeLista, MENSAGENS_PRODUTO, ordenarCategorias, paginaQueExiste, paraBusca, produtoCorresponde, produtoValido, saldoInicialValido, situacaoSaldo,
 } from '../../../comum/regras/produto'
 import { anotarNcmCest } from '../../dados/fiscal'
 import type { Base, Grupo, Produto } from '../base/tipos'
@@ -21,7 +21,7 @@ export type OperacoesProduto = Pick<Contrato,
   'listarProdutos' | 'obterProduto' | 'buscarProdutoPorCodigoBarras' | 'listarCategorias' | 'cadastrarProduto' | 'editarProduto' | 'excluirProduto' | 'ativarProduto'>
 
 /** Na base, o código de exibição é o id. */
-function paraProduto(base: Base, p: Produto): ProdutoContrato {
+export function paraProduto(base: Base, p: Produto): ProdutoContrato {
   return {
     id: p.codigo, codigo: p.codigo, codigoBarras: p.codigoBarras ?? null, descricao: p.descricao, categoria: p.categoria,
     unidade: p.unidade, preco: p.preco, custo: p.custo ?? null, minimo: p.minimo, saldo: p.saldo,
@@ -93,7 +93,7 @@ export function criarProdutosDaBase(tentativas = criarTentativas()): OperacoesPr
           if (typeof filtro === 'object') return p.categoria === filtro.categoria
           return true
         })
-        .filter((p) => !termo || paraBusca(`${p.codigo} ${p.codigoBarras ?? ''} ${p.descricao} ${p.categoria}`).includes(termo))
+        .filter((p) => !termo || produtoCorresponde(p, termo))
         .sort((a, b) => Number(a.codigo.slice(4)) - Number(b.codigo.slice(4)))
       const atual = paginaQueExiste(pagina, achados.length, porPagina)
       return ok({

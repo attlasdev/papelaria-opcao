@@ -130,6 +130,10 @@ export function situacaoSaldo(saldo: number, minimo: number): SituacaoSaldo {
 export const paraBusca = (texto: string) =>
   texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
 
+/** A busca do Estoque e do cabeçalho: código, código de barras, nome e categoria (no SQLite, `TEXTO_DA_BUSCA`). */
+export const produtoCorresponde = (p: { codigo: string; codigoBarras?: string | null; descricao: string; categoria: string }, busca: string) =>
+  paraBusca(`${p.codigo} ${p.codigoBarras ?? ''} ${p.descricao} ${p.categoria}`).includes(paraBusca(busca.trim()))
+
 export const POR_PAGINA_MAXIMO = 100
 
 /** O pedido de página que chegou pela IPC: o filtro conhecido e números inteiros. */
