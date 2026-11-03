@@ -137,7 +137,7 @@
 
 .barra-lateral__operador .icone { flex: none; }
 
-/* O estado do backup (volta no 3.5 da Fase 3): discreto quando em dia, em destaque quando há problema. */
+/* O estado do backup: discreto quando em dia, em destaque quando a cópia está parada. */
 .barra-lateral__gravacao {
   display: flex;
   align-items: center;

@@ -9,7 +9,7 @@ import { recarregarOperadores } from '../../dados/operadores'
 import { FormularioPessoa } from '../pessoas/Pessoas'
 import './entrar.css'
 
-/** Antes da loja abrir. O login (`R-LOGIN-01`) é pedido a partir do 3.5 da Fase 3. */
+/** Antes da loja abrir. O login (`R-LOGIN-01`) é pedido na primeira abertura nesta máquina. */
 export type EstadoAbertura =
   | { fase: 'iniciando' }
   | { fase: 'entrar'; aoEntrar: () => void }
@@ -43,7 +43,8 @@ export function Entrar({ estado, tentarDeNovo = () => location.reload() }: Props
   )
 }
 
-function FormularioEntrar({ aoEntrar }: { aoEntrar: () => void }) {
+/** O login da loja: na primeira abertura e na janela do aviso de cópia parada. */
+export function FormularioEntrar({ aoEntrar, texto = 'Entre com o usuário da loja.' }: { aoEntrar: () => void; texto?: string }) {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState<string | null>(null)
@@ -65,7 +66,7 @@ function FormularioEntrar({ aoEntrar }: { aoEntrar: () => void }) {
 
   return (
     <form className="entrar__formulario" onSubmit={enviar}>
-      <p className="entrar__texto">Entre com o usuário da loja.</p>
+      <p className="entrar__texto">{texto}</p>
       <Campo rotulo="E-mail" type="email" autoComplete="username" icone="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
       <Campo rotulo="Senha" type="password" autoComplete="current-password" icone="cadeado" value={senha} onChange={(e) => setSenha(e.target.value)} required erro={Boolean(erro)} ajuda={erro ?? undefined} />
       <Botao type="submit" variante="primario" disabled={entrando}>{entrando ? 'Entrando…' : 'Entrar'}</Botao>

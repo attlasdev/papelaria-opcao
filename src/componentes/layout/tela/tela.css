@@ -157,6 +157,9 @@
 
 .tela__aviso:hover { background: var(--color-superficie-2); }
 
+/* O aviso que abre o login: botão com a cara do link dos outros */
+.tela__aviso--botao { width: 100%; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+
 /* Já lido: some a cor do ícone e o texto fica mais leve; a pendência segue na lista */
 .tela__aviso--lido .tela__aviso-icone { background: var(--color-superficie-2); color: var(--color-texto-apagado); }
 .tela__aviso--lido .tela__aviso-texto strong { font-weight: var(--font-weight-medio); color: var(--color-texto-suave); }

@@ -5,6 +5,9 @@ import type { Aviso, TipoAviso } from '../../../../comum/contrato'
 import { api } from '../../../dados/api'
 import { tituloFalha } from '../../../falhas'
 import { useDadosMudaram } from '../../../dados/mudancas'
+import { useMinuto } from '../../../dados/backup'
+import { Modal } from '../../modal/Modal'
+import { FormularioEntrar } from '../../../telas/entrar/Entrar'
 import { rotas } from '../../../rotas-caminhos'
 import './tela.css'
 
@@ -35,12 +38,31 @@ const iconeAviso: Record<TipoAviso, NomeIcone> = {
   'copia-parada': 'alerta',
 }
 
+/** A tela que o aviso abre; o da cópia parada (`entrar`) abre o login numa janela, sem trocar de tela. */
 function destinoDo(aviso: Aviso) {
   const d = aviso.destino
   if (d.tela === 'cliente') return rotas.cliente(d.clienteId)
   if (d.tela === 'boletos') return rotas.boletos
   if (d.tela === 'estoque') return rotas.estoque
-  return rotas.inicioAguardando
+  if (d.tela === 'aguardando') return rotas.inicioAguardando
+  return null
+}
+
+function ConteudoAviso({ aviso }: { aviso: Aviso }) {
+  return (
+    <>
+      <span className={`tela__aviso-icone tela__aviso-icone--${aviso.tom}`} aria-hidden>
+        <Icone nome={iconeAviso[aviso.tipo]} tamanho={16} />
+      </span>
+      <span className="tela__aviso-texto">
+        <strong>
+          {aviso.titulo}
+          {!aviso.lido && <span className="tela__aviso-novo" aria-label="Nova" />}
+        </strong>
+        <small>{aviso.detalhe}</small>
+      </span>
+    </>
+  )
 }
 
 /**
@@ -56,15 +78,18 @@ export function Tela({ titulo, subtitulo, trilha, voltar, acaoCabecalho, acoesTi
   const areaAvisos = useRef<HTMLDivElement>(null)
   const [carga, setCarga] = useState<{ avisos: Aviso[] | null; erro: string | null }>({ avisos: null, erro: null })
   const [tentativa, setTentativa] = useState(0)
+  const [entrando, setEntrando] = useState(false)
   // Gravação que deu certo avisa (`src/dados/mudancas.ts`); o sino relê. Digitar na busca não relê (M8).
+  // E relê a cada minuto: a cópia parada chega com o tempo, sem gravação (`R-LOGIN-01`).
   const versaoDados = useDadosMudaram()
+  const minuto = useMinuto()
   useEffect(() => {
     let vivo = true
     void api().listarAvisos().then((r) => {
       if (vivo) setCarga(r.ok ? { avisos: r.dado, erro: null } : { avisos: null, erro: `${tituloFalha(r.causa)} ${r.erro}` })
     })
     return () => { vivo = false }
-  }, [versaoDados, tentativa])
+  }, [versaoDados, tentativa, minuto])
   // Novas primeiro; as lidas continuam na lista, apagadas, até a pendência sumir.
   const novos = (carga.avisos ?? []).filter((aviso) => !aviso.lido)
   const avisos = [...novos, ...(carga.avisos ?? []).filter((aviso) => aviso.lido)]
@@ -137,26 +162,23 @@ export function Tela({ titulo, subtitulo, trilha, voltar, acaoCabecalho, acoesTi
                   <p className="tela__notificacoes-vazio" role="status">Carregando os avisos…</p>
                 ) : avisos.length > 0 ? (
                   <ul className="tela__notificacoes-lista">
-                    {avisos.map((aviso) => (
-                      <li key={aviso.id}>
-                        <Link
-                          className={aviso.lido ? 'tela__aviso tela__aviso--lido' : 'tela__aviso'}
-                          to={destinoDo(aviso)}
-                          onClick={() => { if (!aviso.lido) void marcarLidos([aviso]); setNotificacoesAbertas(false) }}
-                        >
-                          <span className={`tela__aviso-icone tela__aviso-icone--${aviso.tom}`} aria-hidden>
-                            <Icone nome={iconeAviso[aviso.tipo]} tamanho={16} />
-                          </span>
-                          <span className="tela__aviso-texto">
-                            <strong>
-                              {aviso.titulo}
-                              {!aviso.lido && <span className="tela__aviso-novo" aria-label="Nova" />}
-                            </strong>
-                            <small>{aviso.detalhe}</small>
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
+                    {avisos.map((aviso) => {
+                      const destino = destinoDo(aviso)
+                      const classe = aviso.lido ? 'tela__aviso tela__aviso--lido' : 'tela__aviso'
+                      return (
+                        <li key={aviso.id}>
+                          {destino ? (
+                            <Link className={classe} to={destino} onClick={() => { if (!aviso.lido) void marcarLidos([aviso]); setNotificacoesAbertas(false) }}>
+                              <ConteudoAviso aviso={aviso} />
+                            </Link>
+                          ) : (
+                            <button type="button" className={`${classe} tela__aviso--botao`} onClick={() => { setNotificacoesAbertas(false); setEntrando(true) }}>
+                              <ConteudoAviso aviso={aviso} />
+                            </button>
+                          )}
+                        </li>
+                      )
+                    })}
                   </ul>
                 ) : (
                   <p className="tela__notificacoes-vazio">Nenhuma pendência.</p>
@@ -167,6 +189,11 @@ export function Tela({ titulo, subtitulo, trilha, voltar, acaoCabecalho, acoesTi
           {acaoCabecalho}
         </div>
       </header>
+      {entrando && (
+        <Modal titulo="Entrar com o usuário da loja" estreito aoFechar={() => setEntrando(false)}>
+          <FormularioEntrar texto="A cópia na nuvem só sobe com o login da loja. A loja continua funcionando enquanto isso." aoEntrar={() => setEntrando(false)} />
+        </Modal>
+      )}
 
       <main className="tela__conteudo">
         {voltar && (
