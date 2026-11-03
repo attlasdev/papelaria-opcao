@@ -3,14 +3,20 @@ import logo from '../../../recursos/marca/logo-original.svg'
 import { Botao } from '../../componentes/botao/Botao'
 import { Campo } from '../../componentes/campo/Campo'
 import { Icone } from '../../componentes/icone/Icone'
-import { sincronia, type EstadoSincronia } from '../../dados/sincronia'
+import type { CausaFalha } from '../../../comum/contrato'
 import { api } from '../../dados/api'
 import { recarregarOperadores } from '../../dados/operadores'
 import { FormularioPessoa } from '../pessoas/Pessoas'
 import './entrar.css'
 
+/** Antes da loja abrir. O login (`R-LOGIN-01`) é pedido a partir do 3.5 da Fase 3. */
+export type EstadoAbertura =
+  | { fase: 'iniciando' }
+  | { fase: 'entrar'; aoEntrar: () => void }
+  | { fase: 'erro'; causa: CausaFalha; mensagem: string; podeTentar: boolean }
+
 type Props = {
-  estado: Exclude<EstadoSincronia, { fase: 'pronto' }>
+  estado: EstadoAbertura
   /** O que "Tentar de novo" faz; padrão, abrir a loja de novo. */
   tentarDeNovo?: () => void
 }
@@ -19,13 +25,13 @@ type Props = {
  * O que aparece antes da loja abrir: carregando os dados, pedindo o login, ou
  * dizendo por que não abriu. Uma janela central só, com a marca.
  */
-export function Entrar({ estado, tentarDeNovo = () => void sincronia.iniciar() }: Props) {
+export function Entrar({ estado, tentarDeNovo = () => location.reload() }: Props) {
   return (
     <main className="entrar">
       <section className="entrar__cartao" aria-live="polite">
         <img className="entrar__logo" src={logo} alt="Papelaria Opção" />
         {estado.fase === 'iniciando' && <p className="entrar__texto">Carregando os dados da loja…</p>}
-        {estado.fase === 'entrar' && <FormularioEntrar />}
+        {estado.fase === 'entrar' && <FormularioEntrar aoEntrar={estado.aoEntrar} />}
         {estado.fase === 'erro' && (
           <>
             <p className="entrar__erro"><Icone nome="alerta" tamanho={18} /> {estado.mensagem}</p>
@@ -37,7 +43,7 @@ export function Entrar({ estado, tentarDeNovo = () => void sincronia.iniciar() }
   )
 }
 
-function FormularioEntrar() {
+function FormularioEntrar({ aoEntrar }: { aoEntrar: () => void }) {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState<string | null>(null)
@@ -48,12 +54,13 @@ function FormularioEntrar() {
     if (entrando) return
     setEntrando(true)
     setErro(null)
-    const r = await sincronia.entrar(email, senha)
-    // Deu certo: a sincronia troca esta tela pela loja.
+    const r = await api().entrar(email, senha)
     if (!r.ok) {
       setErro(r.erro)
       setEntrando(false)
+      return
     }
+    aoEntrar()
   }
 
   return (

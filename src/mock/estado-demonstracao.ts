@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { CATEGORIA_ADICAO_CAIXA, CATEGORIA_RETIRADA_CAIXA, CATEGORIA_ESTORNO, distribuir, documentoJaCadastrado, faltaEstoqueParaVenda, MOTIVO_SALDO_INICIAL, notinha, produtoTemHistorico, resumoTurnoCaixa, type Abatimento, type Notinha } from './base/derivados'
 import { agoraHorario, dataCalendarioValida, hojeISO, minutoDoDia } from '../datas'
 import { apagarBase, carregarBase, salvarBase } from './base/persistencia'
-import { criarBaseVazia, criarSemente } from './base/semente'
+import { criarSemente } from './base/semente'
 import { comFechamentosExemplo } from './base/cenario-caixa'
 import type { Base, Boleto, Cliente, Estorno, ServicoVenda, Ficha, Maquininha, Meio, ModalidadeCartao, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
 
@@ -10,19 +10,20 @@ export * from './base/derivados'
 export * from '../datas'
 export type * from './base/tipos'
 
+/** A amostra de 90 dias até hoje; no desenvolvimento, com fechamentos de caixa de exemplo. */
+function amostra(hoje = hojeISO(), minutoAtual = minutoDoDia()) {
+  const semente = criarSemente(hoje, minutoAtual)
+  return import.meta.env.MODE === 'development' ? comFechamentosExemplo(semente, hoje) : semente
+}
+
 /**
- * A base da loja: uma só, lida por todas as telas. Toda mudança grava a cópia no
- * computador (localStorage) na hora; quem leva ao banco é `src/dados/sincronia.ts`,
- * que também decide, ao abrir o app, qual versão vale.
- *
- * Piloto 0.1 (Memoria.md, `2026-10-06`): a 1.0 troca isto por uma operação do
- * contrato por gesto do usuário.
+ * A base do mock: uma só, lida por todas as operações falsas. Toda mudança
+ * grava a cópia no navegador (localStorage) na hora; na primeira vez, a amostra.
+ * No Electron nada disto carrega: as operações vão ao banco da loja.
  */
-let base: Base = carregarBase() ?? criarBaseVazia(hojeISO())
+let base: Base = carregarBase() ?? amostra()
 
 const ouvintes = new Set<() => void>()
-/** Quem precisa saber que o USUÁRIO mudou algo (a sincronia), não só que a tela mudou. */
-const aoMudar = new Set<() => void>()
 const inscrever = (ouvinte: () => void) => {
   ouvintes.add(ouvinte)
   return () => ouvintes.delete(ouvinte)
@@ -36,7 +37,6 @@ function mudar(proxima: Base) {
   base = proxima
   salvarBase(base)
   ouvintes.forEach((ouvinte) => ouvinte())
-  aoMudar.forEach((observador) => observador())
 }
 
 /** Troca a base inteira pela versão escolhida ao abrir o app, sem contar como mudança do usuário. */
@@ -56,11 +56,6 @@ export function gravarUltimoOperador(id: string) {
   if (base.ultimoOperadorId !== id) mudar({ ...base, ultimoOperadorId: id })
 }
 
-export function observarMudancas(observador: () => void) {
-  aoMudar.add(observador)
-  return () => { aoMudar.delete(observador) }
-}
-
 export function useEstadoDemonstracao() {
   return useSyncExternalStore(inscrever, obterBase)
 }
@@ -68,8 +63,7 @@ export function useEstadoDemonstracao() {
 /** Volta à amostra de 90 dias até hoje, apagando o que foi feito nesta máquina. */
 export function restaurarDemonstracao(hoje = hojeISO(), minutoAtual = minutoDoDia()) {
   apagarBase()
-  const semente = criarSemente(hoje, minutoAtual)
-  mudar(import.meta.env.MODE === 'development' ? comFechamentosExemplo(semente, hoje) : semente)
+  mudar(amostra(hoje, minutoAtual))
 }
 
 function proximoCodigo(codigos: string[], prefixo: string) {

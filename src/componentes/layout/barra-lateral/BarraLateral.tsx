@@ -2,9 +2,7 @@ import { useState, type Ref } from 'react'
 import { NavLink, useNavigate } from 'react-router'
 import logo from '../../../../recursos/marca/logo-original.svg'
 import { Icone, type NomeIcone } from '../../icone/Icone'
-import { useSincronia, type SituacaoGravacao } from '../../../dados/sincronia'
 import { rotas } from '../../../rotas-caminhos'
-import { funcoes } from '../../../funcoes'
 import { Pessoas } from '../../../telas/pessoas/Pessoas'
 import './barra-lateral.css'
 
@@ -16,41 +14,9 @@ const secoes: { rotulo: string; icone: NomeIcone; caminho: string; exato?: boole
   { rotulo: 'Estoque', icone: 'estoque', caminho: rotas.estoque },
   { rotulo: 'Serviços', icone: 'imprimir', caminho: rotas.servicos },
   { rotulo: 'Boletos', icone: 'documento', caminho: rotas.boletos },
-  ...(funcoes.notasFiscais ? [{ rotulo: 'Notas fiscais', icone: 'notas' as const, caminho: rotas.notas }] : []),
 ]
 
 type Props = { recolhida: boolean; ref?: Ref<HTMLElement> }
-
-const textoGravacao: Record<SituacaoGravacao, string> = {
-  salvo: 'Salvo',
-  pendente: 'Salvando…',
-  salvando: 'Salvando…',
-  'sem-conexao': 'Sem conexão',
-  conflito: 'Não salvo',
-}
-
-/** Onde estão os dados: salvos no banco, a caminho, ou presos no computador. */
-function IndicadorGravacao({ recolhida }: { recolhida: boolean }) {
-  const estado = useSincronia()
-  if (estado.fase !== 'pronto') return null
-  const problema = estado.gravacao === 'sem-conexao' || estado.gravacao === 'conflito'
-  const hora = estado.salvoEm ? new Date(estado.salvoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : null
-  const texto = estado.gravacao === 'salvo' && hora ? `Salvo às ${hora}` : textoGravacao[estado.gravacao]
-  const detalhe = estado.gravacao === 'sem-conexao'
-    ? 'Os dados estão guardados neste computador e vão para o banco quando a internet voltar.'
-    : estado.mensagem ?? (estado.descartada ? 'Havia mudanças antigas neste computador que não entraram; elas foram guardadas à parte.' : texto)
-  return (
-    <p
-      className={problema ? 'barra-lateral__gravacao barra-lateral__gravacao--problema' : 'barra-lateral__gravacao'}
-      role="status"
-      title={detalhe}
-      aria-label={`${texto}. ${detalhe}`}
-    >
-      <Icone nome={problema ? 'alerta' : 'nuvem-ok'} tamanho={16} />
-      {!recolhida && <span>{texto}</span>}
-    </p>
-  )
-}
 
 /** A mesma barra em todas as telas: marca, seções, criar ficha, pessoas da loja. */
 export function BarraLateral({ recolhida, ref }: Props) {
@@ -100,7 +66,6 @@ export function BarraLateral({ recolhida, ref }: Props) {
           <Icone nome="pessoa-circulo" tamanho={24} />
           <span>Pessoas</span>
         </button>
-        <IndicadorGravacao recolhida={recolhida} />
       </div>
 
       {pessoas && <Pessoas aoFechar={() => setPessoas(false)} />}

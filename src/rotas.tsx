@@ -18,11 +18,8 @@ import { RegistrarEntrada } from './telas/registrar-entrada/RegistrarEntrada'
 import { EntradaRapida } from './telas/entrada-rapida/EntradaRapida'
 import { AjustarEstoque } from './telas/ajustar-estoque/AjustarEstoque'
 import { MovimentacoesEstoque } from './telas/movimentacoes-estoque/MovimentacoesEstoque'
-import { NotasFiscais } from './telas/notas-fiscais/NotasFiscais'
 import { Servicos } from './telas/servicos/Servicos'
 import { Boletos } from './telas/boletos/Boletos'
-import { RascunhosNotas } from './telas/rascunhos-notas/RascunhosNotas'
-import { DetalheFiscal } from './telas/detalhe-fiscal/DetalheFiscal'
 
 /**
  * Hash (#/clientes) e não caminho real: o app empacotado abre por file://, onde
@@ -57,10 +54,6 @@ export const roteador = createHashRouter([
       { path: '/estoque/entrada', element: <RegistrarEntrada /> },
       { path: '/servicos', element: <Servicos /> },
       { path: '/boletos', element: <Boletos /> },
-      { path: '/notas-fiscais', element: <NotasFiscais /> },
-      { path: '/notas-fiscais/rascunhos', element: <RascunhosNotas /> },
-      { path: '/notas-fiscais/rascunhos/:id', element: <DetalheFiscal /> },
-      { path: '/notas-fiscais/documentos/fornecedor', element: <DetalheFiscal /> },
     ],
   },
 ])

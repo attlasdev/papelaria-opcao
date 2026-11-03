@@ -34,8 +34,4 @@ export const rotas = {
   movimentacoesAguardando: '/estoque/movimentacoes?aguardando=1',
   servicos: '/servicos',
   boletos: '/boletos',
-  notas: '/notas-fiscais',
-  rascunhosNotas: '/notas-fiscais/rascunhos',
-  rascunhoNota: (id: string) => `/notas-fiscais/rascunhos/${id}`,
-  documentoEntrada: '/notas-fiscais/documentos/fornecedor',
 } as const

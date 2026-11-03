@@ -5,12 +5,6 @@
  * Piloto 0.1 (Memoria.md, `2026-10-06`).
  */
 export const funcoes = {
-  /**
-   * Área de Notas fiscais: item do menu e "Preparar rascunho de nota fiscal" na
-   * nova ficha. Oculta enquanto a loja emite as notas pela Emitte. As rotas
-   * continuam existindo, só não há caminho até elas.
-   */
-  notasFiscais: false,
   // Exportar produtos e clientes para a Emitte (planilhas): desligado de vez em
   // 2026-10-29, com os botões comentados (a Emitte duplica o que já existe).
   // exportarEmitte: import.meta.env.DEV,
