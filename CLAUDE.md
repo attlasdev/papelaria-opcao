@@ -37,6 +37,7 @@ para o Codex e catalogo de habilidades: `AGENTS.md` e `.agents/skills/`.
 | checklist para conferir cada operacao do contrato | `revisao-de-contrato.md` |
 | como a suite de testes funciona, e o que ainda nao tem teste | `docs/testes.md` |
 | bugs encontrados, com numero e teste de regressao | `docs/bugs.md` |
+| validar no Windows (conversa no dual boot: o que rodar e como devolver) | `docs/windows.md` |
 | estado atual, PENDENTES, regras de produto, decisoes | `Memoria.md` |
 | o passado sessao a sessao (ideias descartadas, porques antigos) | `docs/historico/` |
 | como a interface esta montada (tokens, CSS por componente, telas) | `AGENTS.md`, "Interface: como esta montada" |

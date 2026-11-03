@@ -782,6 +782,11 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   e-mail e senha e entra uma vez, na primeira abertura. Depois o app abre
   conectado. O login serve só ao backup: sem sessão, a loja não para; o sino
   avisa que a cópia na nuvem está parada.
+  Detalhado em `2026-11-03` (Fase 3): o login é **obrigatório na primeira
+  abertura** (sem ele a 1.0 não abre, então a instalação precisa de internet);
+  depois, perder a sessão não para a loja. O sino avisa **sem sessão, ou com
+  mudança no banco e a última cópia enviada há mais de 1 hora** (o normal é a
+  cada 5 minutos); o aviso leva a entrar de novo.
 
 ### Notas fiscais (fora do escopo atual)
 - Nota: Área mínima: Entradas e Saídas simuladas; "Preparar nota" cria rascunho para
@@ -825,6 +830,25 @@ montada". O que é decisão (e o porquê):
 ---
 
 ## Decisões de arquitetura
+
+### `2026-11-03` — Fase 3 antes da 4.1b; o projeto da loja vira só da 1.0
+Decisão do Agostinho, ao fechar a Fase 2. A ordem passa a ser Fase 3
+(ligação) → Fase 4 (distribuição) → 4.1b (Mercado Pago real) → Fase 5
+(licença). A 4.1b depende de conta, credencial e maquininha do Mercado Pago;
+feita depois da ligação, é escrita uma vez sobre o banco que vale. Custo
+aceito: refazer na rodada o trecho Nova ficha → Caixa → Financeiro depois dela;
+até lá, a venda integrada tem o defeito conhecido (cobra antes do PIN).
+Alternativa em aberto: a 1.0 sair com cartão só manual e a 4.1b virar 1.1.
+
+Backup de produção no **projeto da loja** (o do piloto, `kjntvpksckmkfqjznatx`).
+Antes da 1.0 ir para a loja, a 0.1 é derrubada, o banco limpo e o projeto
+fica só para a 1.0, com upgrade para o plano Pro. Até lá, todo o
+desenvolvimento e a validação usam o `papelaria-dev`.
+
+Testes de tela com **Playwright no navegador, sobre o mock** (dependência só
+de desenvolvimento): cobrem as regras e bugs marcados "tela" em
+`docs/testes.md`. A validação no Windows é na máquina do Agostinho (dual boot),
+numa conversa à parte, guiada pelo que estiver escrito no repositório.
 
 ### `2026-11-02` — Financeiro pelo back; estorno de lançamento com conferência depois
 Decisão do Agostinho, no percurso da tela 7.2. As linhas, os cartões e as
