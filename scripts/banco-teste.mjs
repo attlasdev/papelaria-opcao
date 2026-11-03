@@ -10,7 +10,9 @@
  *     (electron/banco/fotos.test.ts). Rodar ao criar cada migration nova.
  *
  *   node scripts/banco-teste.mjs semear <arquivo.sqlite> [AAAA-MM-DD]
- *     Cria um banco semeado (com as patologias) para conferir à mão.
+ *     Cria um banco semeado (com as patologias) para conferir à mão. Sem o dia,
+ *     a semente vai até o minuto de agora; com o dia, até o fim dele. No
+ *     desenvolvimento do app: o `loja.sqlite` da pasta de dados (Fase 3.3).
  *
  * Carrega o código do banco pelo Vite, como o build faz (as migrations são
  * arquivos .sql embutidos com `?raw`).
@@ -25,6 +27,10 @@ const RAIZ = path.resolve(import.meta.dirname, '..')
 const [comando, alvo, dia] = process.argv.slice(2)
 
 const hojeEmSaoPaulo = () => new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Sao_Paulo' }).format(new Date())
+const minutoEmSaoPaulo = () => {
+  const [h, m] = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date()).split(':').map(Number)
+  return h * 60 + m
+}
 
 function parar(mensagem) {
   console.error(mensagem)
@@ -44,7 +50,8 @@ try {
 
   const hoje = dia ?? hojeEmSaoPaulo()
   const banco = abrirBanco(':memory:')
-  semearBanco(banco, { hoje })
+  // Sem dia pedido, a semente para no minuto de agora: o turno de hoje fica aberto, como na loja.
+  semearBanco(banco, dia ? { hoje } : { hoje, minutoAtual: minutoEmSaoPaulo() })
   const problemas = conferirBanco(banco)
   if (problemas.length) parar(`A semente saiu com problema:\n${problemas.join('\n')}`)
   const versao = versaoDoBanco(banco)
