@@ -1,6 +1,6 @@
 import { BotaoIcone } from '../../../componentes/botao/Botao'
 import { reais } from '../../../formatar'
-import type { ServicoVenda } from '../../../mock/estado-demonstracao'
+import type { ServicoVenda } from '../../../mock/base/tipos'
 import './servicos-ficha.css'
 
 type Props = {

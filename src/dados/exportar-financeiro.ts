@@ -8,7 +8,7 @@ import {
   resumoFinanceiroIntervalo,
   type LinhaFinanceiro,
 } from '../mock/base/derivados'
-import { diasEntre, somarDias } from '../mock/base/datas'
+import { diasEntre, somarDias } from '../datas'
 import type { Meio } from '../mock/base/tipos'
 import { criarPlanilha, type Aba, type CelulaNova, type CelulaRica, type Estilo } from './planilha'
 

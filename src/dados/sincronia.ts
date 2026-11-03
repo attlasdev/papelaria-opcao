@@ -3,7 +3,7 @@ import type { CausaFalha, Contrato, DocumentoBase, Resultado, Sessao } from '../
 import type { Base } from '../mock/base/tipos'
 import { carregarBase, normalizarBase } from '../mock/base/persistencia'
 import { criarBaseVazia } from '../mock/base/semente'
-import { hojeISO } from '../mock/base/datas'
+import { hojeISO } from '../datas'
 import { obterBase, observarMudancas, substituirBase } from '../mock/estado-demonstracao'
 
 /**

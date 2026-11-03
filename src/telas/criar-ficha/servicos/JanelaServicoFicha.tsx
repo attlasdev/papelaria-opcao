@@ -3,7 +3,7 @@ import { Botao } from '../../../componentes/botao/Botao'
 import { Campo } from '../../../componentes/campo/Campo'
 import { CampoMoeda } from '../../../componentes/campo/CampoMoeda'
 import { Modal } from '../../../componentes/modal/Modal'
-import type { ServicoVenda } from '../../../mock/estado-demonstracao'
+import type { ServicoVenda } from '../../../mock/base/tipos'
 import './servicos-ficha.css'
 
 type Props = {

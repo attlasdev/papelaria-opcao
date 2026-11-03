@@ -1,13 +1,13 @@
 import { useSyncExternalStore } from 'react'
 import { CATEGORIA_ADICAO_CAIXA, CATEGORIA_RETIRADA_CAIXA, CATEGORIA_ESTORNO, distribuir, documentoJaCadastrado, faltaEstoqueParaVenda, MOTIVO_SALDO_INICIAL, notinha, produtoTemHistorico, resumoTurnoCaixa, type Abatimento, type Notinha } from './base/derivados'
-import { agoraHorario, dataCalendarioValida, hojeISO, minutoDoDia } from './base/datas'
+import { agoraHorario, dataCalendarioValida, hojeISO, minutoDoDia } from '../datas'
 import { apagarBase, carregarBase, salvarBase } from './base/persistencia'
 import { criarBaseVazia, criarSemente } from './base/semente'
 import { comFechamentosExemplo } from './base/cenario-caixa'
 import type { Base, Boleto, Cliente, Estorno, ServicoVenda, Ficha, Maquininha, Meio, ModalidadeCartao, MovimentoCaixa, MovimentoEstoque, Produto, RascunhoFicha } from './base/tipos'
 
 export * from './base/derivados'
-export * from './base/datas'
+export * from '../datas'
 export type * from './base/tipos'
 
 /**

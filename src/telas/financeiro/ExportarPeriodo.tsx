@@ -5,8 +5,8 @@ import { Modal } from '../../componentes/modal/Modal'
 import { api } from '../../dados/api'
 import { planilhaFinanceiro } from '../../dados/exportar-financeiro'
 import { tituloFalha } from '../../falhas'
-import { dataCurta } from '../../formatar'
-import { NOME_MEIO, type LinhaFinanceiro } from '../../mock/estado-demonstracao'
+import { dataCurta, NOME_MEIO } from '../../formatar'
+import type { LinhaFinanceiro } from '../../mock/base/derivados'
 
 /** A linha do contrato no formato que a planilha lê (o mesmo da 0.1). */
 function paraPlanilha(l: LinhaFinanceira): LinhaFinanceiro {

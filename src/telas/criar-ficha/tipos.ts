@@ -1,4 +1,4 @@
-import type { FormaVenda } from '../../mock/estado-demonstracao'
+import type { FormaVenda } from '../../mock/base/tipos'
 
 export type ClienteFicha = { id: string; nome: string; documento: string; telefone: string }
 

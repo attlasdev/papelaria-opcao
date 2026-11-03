@@ -12,8 +12,7 @@ import { Modal } from '../../../componentes/modal/Modal'
 import { api } from '../../../dados/api'
 import { detalheDaSituacao } from '../../../dados/situacao'
 import { tituloFalha } from '../../../falhas'
-import { dataCurta, reais } from '../../../formatar'
-import { NOME_MEIO } from '../../../mock/estado-demonstracao'
+import { dataCurta, NOME_MEIO, reais } from '../../../formatar'
 import './receber-notinhas.css'
 
 type Props = {

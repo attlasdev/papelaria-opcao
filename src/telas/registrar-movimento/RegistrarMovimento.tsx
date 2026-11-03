@@ -8,7 +8,7 @@ import { Filtros } from '../../componentes/filtros/Filtros'
 import { JanelaAssinatura } from '../../componentes/assinatura/JanelaAssinatura'
 import { api } from '../../dados/api'
 import { reais } from '../../formatar'
-import type { Meio } from '../../mock/estado-demonstracao'
+import type { Meio } from '../../mock/base/tipos'
 import { rotas } from '../../rotas-caminhos'
 import './registrar-movimento.css'
 

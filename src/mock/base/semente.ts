@@ -1,4 +1,4 @@
-import { diasEntre, somarDias } from './datas'
+import { diasEntre, somarDias } from '../../datas'
 import {
   VERSAO_BASE,
   type Base,

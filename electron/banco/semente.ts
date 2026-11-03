@@ -12,7 +12,7 @@
  *
  * Determinística: o mesmo `hoje` dá a mesma base, com os mesmos ids.
  */
-import { somarDias } from '../../src/mock/base/datas'
+import { somarDias } from '../../src/datas'
 import { criarSemente } from '../../src/mock/base/semente'
 import type { Ficha, Meio, Pagamento } from '../../src/mock/base/tipos'
 import { proximoNumero, transacao, type Banco } from './banco'

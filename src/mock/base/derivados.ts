@@ -1,6 +1,6 @@
 import { MOTIVO_SALDO_INICIAL, situacaoSaldo as situacaoDoSaldo } from '../../../comum/regras/produto'
-import { dataCurta, reais } from '../../formatar'
-import { dataCalendarioValida, diaDoInstante, diasEntre, noPeriodo, periodoAnterior, type Periodo } from './datas'
+import { dataCurta, NOME_MEIO, reais, ROTULO_SEM_IDENTIFICACAO } from '../../formatar'
+import { dataCalendarioValida, diaDoInstante, diasEntre, noPeriodo, periodoAnterior, type Periodo } from '../../datas'
 import type { Base, Boleto, Cliente, Ficha, ItemVenda, Meio, Produto, TurnoCaixa } from './tipos'
 
 /**
@@ -12,9 +12,7 @@ export type SituacaoNotinha = 'pago' | 'pendente' | 'vencido' | 'cancelada'
 export type SituacaoCliente = 'em-dia' | 'pendente' | 'vencido'
 export type Notinha = { ficha: Ficha; pago: number; emAberto: number; situacao: SituacaoNotinha; detalhe?: string }
 
-export const ROTULO_SEM_IDENTIFICACAO = 'Não identificado'
-
-export const NOME_MEIO = { dinheiro: 'Dinheiro', pix: 'Pix', cartao: 'Cartão' } as const
+export { NOME_MEIO, ROTULO_SEM_IDENTIFICACAO } from '../../formatar'
 
 /** Pontuação e prefixos não tornam CPF/CNPJ distintos no cadastro. */
 export function documentoJaCadastrado(clientes: Cliente[], documento: string, excetoId?: string) {

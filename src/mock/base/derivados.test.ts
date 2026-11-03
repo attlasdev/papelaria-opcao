@@ -18,7 +18,7 @@ import {
   resumoItens,
   type LinhaFinanceiro,
 } from './derivados'
-import { intervaloAtual } from './datas'
+import { intervaloAtual } from '../../datas'
 import type { Ficha, TurnoCaixa } from './tipos'
 import { reais } from '../../formatar'
 

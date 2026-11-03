@@ -10,6 +10,11 @@ export function reaisComSinal(centavos: number): string {
   return `${centavos < 0 ? '-' : '+'} ${reais(Math.abs(centavos))}`
 }
 
+/** A venda sem cliente, na lista e na ficha. */
+export const ROTULO_SEM_IDENTIFICACAO = 'Não identificado'
+
+export const NOME_MEIO = { dinheiro: 'Dinheiro', pix: 'Pix', cartao: 'Cartão' } as const
+
 /** Valor mascarado, para quando os valores estão ocultos no balcão. */
 export const reaisOcultos = 'R$ ••••••'
 
