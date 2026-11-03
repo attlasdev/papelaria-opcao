@@ -7,6 +7,7 @@ import { abrirBanco, versaoDoBanco, type Banco } from '../banco/banco'
 import { migracoes } from '../banco/migracoes'
 import { semearBanco } from '../banco/semente'
 import { COPIAS_LOCAIS, criarAgendador, fazerCopia, NOME_ATUAL, restaurarCopia, type Destino } from './backup'
+import { criarRegistro } from './registro'
 
 /** O armazenamento da nuvem, em memória, com as mesmas regras: sem apagar, e diária não se sobrescreve. */
 function destinoFalso() {
@@ -100,7 +101,7 @@ describe('agendador', () => {
 
   it('copia só quando houve mudança, a cada volta', async () => {
     const fazer = vi.fn(async () => {})
-    const agenda = criarAgendador(fazer, 1000)
+    const agenda = criarAgendador({ fazer, intervaloMs: 1000 })
     await vi.advanceTimersByTimeAsync(3000)
     expect(fazer).not.toHaveBeenCalled()
     agenda.marcarMudanca()
@@ -113,7 +114,7 @@ describe('agendador', () => {
 
   it('falhou (sem internet): a mudança continua pendente e vai na próxima volta', async () => {
     const fazer = vi.fn().mockRejectedValueOnce(new Error('sem internet')).mockResolvedValue(undefined)
-    const agenda = criarAgendador(fazer, 1000)
+    const agenda = criarAgendador({ fazer, intervaloMs: 1000 })
     agenda.marcarMudanca()
     await vi.advanceTimersByTimeAsync(1000)
     expect(agenda.pendente).toBe(true)
@@ -125,12 +126,50 @@ describe('agendador', () => {
 
   it('ao fechar copia o que estiver pendente, sem esperar além do limite', async () => {
     const fazer = vi.fn(() => new Promise<void>(() => {}))
-    const agenda = criarAgendador(fazer, 60_000)
+    const agenda = criarAgendador({ fazer, intervaloMs: 60_000 })
     agenda.marcarMudanca()
     const fechando = agenda.aoFechar(5000)
     await vi.advanceTimersByTimeAsync(5000)
     await fechando
     expect(fazer).toHaveBeenCalledTimes(1)
+  })
+
+  it('pergunta ao banco se mudou: sem lista de operações que gravam', async () => {
+    const fazer = vi.fn(async () => {})
+    let mudou = false
+    const agenda = criarAgendador({ fazer, intervaloMs: 1000, houveMudanca: () => { const m = mudou; mudou = false; return m } })
+    await vi.advanceTimersByTimeAsync(2000)
+    expect(fazer).not.toHaveBeenCalled()
+    mudou = true
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(fazer).toHaveBeenCalledTimes(1)
+    mudou = true
+    await agenda.aoFechar()
+    expect(fazer).toHaveBeenCalledTimes(2)
+  })
+
+  it('[R-LOGIN-01] a espera fica registrada desde a primeira mudança e some quando a cópia sobe', async () => {
+    vi.setSystemTime(new Date('2026-10-27T18:00:00.000Z'))
+    const registro = criarRegistro(path.join(pasta, 'estado-backup.json'))
+    const fazer = vi.fn().mockRejectedValueOnce(new Error('sem login')).mockResolvedValue(undefined)
+    let mudou = true
+    const agenda = criarAgendador({ fazer, intervaloMs: 1000, registro, houveMudanca: () => { const m = mudou; mudou = false; return m } })
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(registro.ler()).toMatchObject({ pendenteDesde: '2026-10-27T18:00:01.000Z', ultimaCopiaEm: null })
+    mudou = true
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(registro.ler()).toMatchObject({ pendenteDesde: null, ultimaCopiaEm: '2026-10-27T18:00:02.000Z' })
+    await agenda.aoFechar()
+  })
+
+  it('abriu com mudança esperando (fechou sem internet): copia na hora', async () => {
+    const registro = criarRegistro(path.join(pasta, 'estado-backup.json'))
+    registro.atualizar({ pendenteDesde: '2026-10-27T18:00:00.000Z' })
+    const fazer = vi.fn(async () => {})
+    const agenda = criarAgendador({ fazer, intervaloMs: 60_000, registro: criarRegistro(path.join(pasta, 'estado-backup.json')) })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(fazer).toHaveBeenCalledTimes(1)
+    await agenda.aoFechar()
   })
 })
 

@@ -16,6 +16,7 @@ import { backup, DatabaseSync } from 'node:sqlite'
 import { gunzipSync, gzipSync } from 'node:zlib'
 import { conferirBanco, versaoDoBanco, type Banco } from '../banco/banco'
 import { log } from '../log'
+import type { Registro } from './registro'
 
 /** Onde as cópias ficam fora do computador. Os nomes são relativos à pasta da loja. */
 export type Destino = {
@@ -65,17 +66,34 @@ function podarCopiasLocais(pasta: string) {
 
 /**
  * Quem decide quando copiar: a cada `intervaloMs` se algo mudou, e ao fechar.
- * Sem internet, a mudança continua pendente e vai na próxima volta.
+ * Sem internet (ou sem login), a mudança continua pendente e vai na próxima
+ * volta. Com o `registro`, a pendência sobrevive a fechar o app: ao abrir com
+ * mudança esperando, copia na hora (`R-LOGIN-01` conta a espera dali).
  */
-export function criarAgendador(fazer: () => Promise<unknown>, intervaloMs = 5 * 60 * 1000) {
-  let pendente = false
+export function criarAgendador(opcoes: {
+  fazer: () => Promise<unknown>
+  /** Perguntada a cada volta e ao fechar: o banco mudou desde a última pergunta? */
+  houveMudanca?: () => boolean
+  registro?: Registro
+  intervaloMs?: number
+}) {
+  const { fazer, houveMudanca = () => false, registro, intervaloMs = 5 * 60 * 1000 } = opcoes
+  let pendente = Boolean(registro?.ler().pendenteDesde)
   let emAndamento: Promise<void> | null = null
+
+  const marcarMudanca = () => {
+    pendente = true
+    if (registro && !registro.ler().pendenteDesde) registro.atualizar({ pendenteDesde: new Date().toISOString() })
+  }
 
   const copiar = () => {
     if (emAndamento) return emAndamento
     pendente = false
     emAndamento = fazer()
-      .then(() => { log.info('backup', 'cópia feita') })
+      .then(() => {
+        registro?.atualizar({ ultimaCopiaEm: new Date().toISOString(), pendenteDesde: null })
+        log.info('backup', 'cópia feita')
+      })
       .catch((erro) => {
         pendente = true
         log.aviso('backup', 'cópia não foi; tento de novo na próxima volta:', erro)
@@ -84,15 +102,21 @@ export function criarAgendador(fazer: () => Promise<unknown>, intervaloMs = 5 * 
     return emAndamento
   }
 
-  const relogio = setInterval(() => { if (pendente) void copiar() }, intervaloMs)
+  const volta = () => {
+    if (houveMudanca()) marcarMudanca()
+    if (pendente) void copiar()
+  }
+  const relogio = setInterval(volta, intervaloMs)
   relogio.unref?.()
+  if (pendente) void copiar()
 
   return {
-    /** Chamada depois de cada gravação no banco. */
-    marcarMudanca: () => { pendente = true },
+    /** Mudança que o `houveMudanca` não vê (ou nos testes). */
+    marcarMudanca,
     /** Ao fechar o app: copia se houver mudança, sem esperar mais que `limiteMs`. */
     async aoFechar(limiteMs = 10_000) {
       clearInterval(relogio)
+      if (houveMudanca()) marcarMudanca()
       if (!pendente && !emAndamento) return
       await Promise.race([emAndamento ?? copiar(), new Promise((seguir) => setTimeout(seguir, limiteMs))])
     },
