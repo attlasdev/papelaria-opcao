@@ -32,6 +32,7 @@ const iconeAviso: Record<TipoAviso, NomeIcone> = {
   'aguardando-dona': 'cadeado',
   'boleto-vencido': 'documento',
   'boleto-vencendo': 'documento',
+  'copia-parada': 'alerta',
 }
 
 function destinoDo(aviso: Aviso) {

@@ -18,8 +18,8 @@ import { servicosDaBase as servicos } from './operacoes/servicos'
 import { caixaDaBase as caixa } from './operacoes/caixa'
 import { financeiroDaBase as financeiro } from './operacoes/financeiro'
 import { inicioDaBase as inicio } from './operacoes/inicio'
-import { avisosDaBase as avisos } from './operacoes/avisos'
 import { buscaDaBase as busca } from './operacoes/busca'
+import { backupDaBase as backup, backupDoMock } from './operacoes/backup'
 import { marcarMockInstalado } from './instalado'
 
 /** Mesmos dados inventados de `recursos/comprovante.exemplo.json`. */
@@ -39,20 +39,23 @@ const LOJA_EXEMPLO: Loja = {
  * uma resposta falsa para ela — e e assim que o front descobre que tem tela nova
  * para fazer, sem ninguem avisar por mensagem.
  */
-let sessao: { email: string } | null = { email: 'loja@exemplo.com' }
+let email = 'loja@exemplo.com'
 const maquininha = criarMaquininhaDemonstracao()
 
 const mock: Contrato = {
-  sessaoAtual: () => simular(() => ok(sessao)),
-  entrar: (email, senha) => simular(() => {
-    if (!email.trim() || !senha) return falha('validacao', 'Informe o e-mail e a senha.')
-    sessao = { email: email.trim() }
-    return ok(sessao)
+  sessaoAtual: () => simular(() => ok(backupDoMock.sessao ? { email } : null)),
+  entrar: (emailDigitado, senha) => simular(() => {
+    if (!emailDigitado.trim() || !senha) return falha('validacao', 'Informe o e-mail e a senha.')
+    email = emailDigitado.trim()
+    backupDoMock.sessao = true
+    backupDoMock.registro.entrouEm ??= new Date().toISOString()
+    return ok({ email })
   }),
   sair: () => simular(() => {
-    sessao = null
+    backupDoMock.sessao = false
     return ok(null)
   }),
+  obterEstadoBackup: () => simularAssincrono(() => backup.obterEstadoBackup()),
   salvarArquivo: (nomeSugerido, conteudo) => simular(() => {
     // No navegador não há janela de salvar do sistema: vira um download.
     const tipo = nomeSugerido.endsWith('.xlsx') ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/xml'
@@ -130,8 +133,8 @@ const mock: Contrato = {
   obterResumoDoDia: () => simularAssincrono(() => inicio.obterResumoDoDia()),
   listarFichas: (filtro, pagina, porPagina) => simularAssincrono(() => inicio.listarFichas(filtro, pagina, porPagina)),
   listarAguardandoDona: () => simularAssincrono(() => inicio.listarAguardandoDona()),
-  listarAvisos: () => simularAssincrono(() => avisos.listarAvisos()),
-  marcarAvisosLidos: (ids) => simularAssincrono(() => avisos.marcarAvisosLidos(ids)),
+  listarAvisos: () => simularAssincrono(() => backup.listarAvisos()),
+  marcarAvisosLidos: (ids) => simularAssincrono(() => backup.marcarAvisosLidos(ids)),
   buscar: (termo) => simularAssincrono(() => busca.buscar(termo)),
   listarNotinhasAbertas: (clienteId) => simularAssincrono(() => recebimentos.listarNotinhasAbertas(clienteId)),
   receberNotinhas: (recebimento, quem) => simularAssincrono(() => recebimentos.receberNotinhas(recebimento, quem)),

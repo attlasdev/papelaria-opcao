@@ -81,6 +81,22 @@ export const falha = (causa: CausaFalha, erro: string): Falha => ({ ok: false, c
 /** Quem esta usando o app. No piloto e um usuario so, o da loja. */
 export type Sessao = { email: string }
 
+/**
+ * O backup e o login da loja (`R-LOGIN-01`; Fase 3.5). O login serve so ao
+ * backup: sem sessao a loja nao para, a copia e que deixa de subir.
+ */
+export type EstadoBackup = {
+  sessao: boolean
+  /** Primeira abertura nesta maquina, sem login: a loja so abre depois de entrar. */
+  precisaEntrar: boolean
+  /** A ultima copia que subiu para a nuvem (ISO 8601, UTC); `null`: nenhuma ainda. */
+  ultimaCopiaEm: string | null
+  /** A primeira mudanca que ainda nao subiu; `null`: nada esperando. */
+  pendenteDesde: string | null
+  /** Sem sessao, ou mudanca esperando ha mais de 1 hora: o sino avisa. */
+  parada: boolean
+}
+
 /** `salvo: false` quando a pessoa fechou a janela de salvar sem escolher. */
 export type ArquivoSalvo = { salvo: boolean; nome?: string }
 
@@ -805,12 +821,13 @@ export type FichaDaLista = {
 
 export type PaginaFichas = { fichas: FichaDaLista[]; total: number; pagina: number }
 
-export type TipoAviso = 'atraso' | 'vencendo' | 'boleto-vencido' | 'boleto-vencendo' | 'estoque-zerado' | 'estoque-baixo' | 'aguardando-dona'
+export type TipoAviso = 'atraso' | 'vencendo' | 'boleto-vencido' | 'boleto-vencendo' | 'estoque-zerado' | 'estoque-baixo' | 'aguardando-dona' | 'copia-parada'
 
 /**
  * Um aviso do sino (tela 8.2; `R-INICIO-05`). O texto vem pronto. `lido`: a
  * loja ja leu este texto; mudou o texto, volta a ser novo. `destino`: a tela
- * que o aviso abre (`aguardando`: o Inicio com a lista da dona aberta).
+ * que o aviso abre (`aguardando`: o Inicio com a lista da dona aberta;
+ * `entrar`: o login da loja, para a copia voltar a subir).
  */
 export type Aviso = {
   id: string
@@ -818,7 +835,7 @@ export type Aviso = {
   tom: 'critico' | 'atencao'
   titulo: string
   detalhe: string
-  destino: { tela: 'cliente'; clienteId: string } | { tela: 'boletos' } | { tela: 'estoque' } | { tela: 'aguardando' }
+  destino: { tela: 'cliente'; clienteId: string } | { tela: 'boletos' } | { tela: 'estoque' } | { tela: 'aguardando' } | { tela: 'entrar' }
   lido: boolean
 }
 
@@ -883,6 +900,11 @@ export type Contrato = {
   /** Falha `validacao` quando e-mail ou senha nao conferem. */
   entrar(email: string, senha: string): Promise<Resultado<Sessao>>
   sair(): Promise<Resultado<null>>
+  /**
+   * O estado do backup, para o rodape e para saber se a loja precisa entrar
+   * antes de abrir. Lido a cada chamada: a copia sobe sozinha a cada 5 minutos.
+   */
+  obterEstadoBackup(): Promise<Resultado<EstadoBackup>>
 
   /**
    * Salva um arquivo gerado pela tela (ex.: produtos para a Emitte). A tela manda
@@ -1206,7 +1228,8 @@ export type Contrato = {
   /**
    * Os avisos de agora, do mais grave ao menos grave (`R-INICIO-05`): notinha
    * em atraso e vencendo (um por cliente), boleto vencido e vencendo, produto
-   * zerado e com estoque baixo, e o que aguarda a dona (um aviso so).
+   * zerado e com estoque baixo, e o que aguarda a dona (um aviso so). Na
+   * frente de todos, a copia parada (`R-LOGIN-01`), que nunca conta como lida.
    */
   listarAvisos(): Promise<Resultado<Aviso[]>>
   /**

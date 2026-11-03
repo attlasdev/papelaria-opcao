@@ -31,6 +31,20 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-11-03` — Backup e login (1.0, Fase 3.5)
+
+- **Contrato:** `obterEstadoBackup()` devolve `EstadoBackup`: `sessao`,
+  `precisaEntrar` (primeira abertura nesta máquina, sem login: a loja só abre
+  depois de entrar), `ultimaCopiaEm`, `pendenteDesde` e `parada` (sem sessão,
+  ou mudança esperando há mais de 1 hora; `R-LOGIN-01`).
+- **No sino:** `listarAvisos` traz na frente o aviso `copia-parada` (crítico,
+  "Cópia na nuvem parada"), com o destino novo `{ tela: 'entrar' }`. Ele nunca
+  conta como lido: some quando a cópia volta. `entrar` e `sair` passam a avisar
+  as telas (o sino e o rodapé releem).
+- **Na tela (a seguir, no mesmo passo):** o login na primeira abertura, o
+  rodapé com o estado do backup e o aviso abrindo o login numa janela. Por
+  ora, só o ícone do aviso novo (`alerta`), que o tipo obriga.
+
 ### `2026-11-03` — Saída da 0.1 (1.0, Fase 3.4)
 
 - **Contrato:** saem `carregarBase`, `salvarBase`, `DocumentoBase` e

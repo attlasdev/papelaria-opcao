@@ -11,9 +11,10 @@ import type { Contrato, NomeOperacao, Resultado } from '../../comum/contrato'
  * operação nova sem a resposta. `false` também para gravação que não muda o
  * que outra tela aberta mostra: o rascunho da ficha (grava a cada pausa da
  * digitação; o Início lê ao abrir) e os avisos lidos (o sino usa a resposta).
+ * Entrar e sair contam: o sino e o rodapé mostram o estado do backup.
  */
 export const AVISA_AS_TELAS: Record<NomeOperacao, boolean> = {
-  sessaoAtual: false, entrar: false, sair: false, salvarArquivo: false,
+  sessaoAtual: false, entrar: true, sair: true, obterEstadoBackup: false, salvarArquivo: false,
   iniciarCobranca: false, consultarCobranca: false, cancelarCobranca: false, simularCobranca: false, imprimirComprovante: false,
   listarOperadores: false, cadastrarAdministradora: true, cadastrarOperador: true, renomearOperador: true, ativarOperador: true, redefinirPin: true,
   obterCliente: false, cadastrarCliente: true, editarCliente: true, listarClientes: false, listarComprasDoCliente: false,

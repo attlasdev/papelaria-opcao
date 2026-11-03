@@ -18,6 +18,7 @@ const api: Contrato = {
   sessaoAtual: () => ipcRenderer.invoke('sessaoAtual'),
   entrar: (email, senha) => ipcRenderer.invoke('entrar', email, senha),
   sair: () => ipcRenderer.invoke('sair'),
+  obterEstadoBackup: () => ipcRenderer.invoke('obterEstadoBackup'),
   salvarArquivo: (nomeSugerido, conteudo) => ipcRenderer.invoke('salvarArquivo', nomeSugerido, conteudo),
   iniciarCobranca: (dados) => ipcRenderer.invoke('iniciarCobranca', dados),
   consultarCobranca: (id) => ipcRenderer.invoke('consultarCobranca', id),
