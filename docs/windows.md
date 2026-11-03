@@ -46,10 +46,11 @@ Cada item diz a partir de que passo da Fase 3 ele vale.
 | 3.3 | App de desenvolvimento | `npm run dev` | abre a janela com os dados da semente |
 | 3.3 | Conferir a janela por fora (opcional) | no PowerShell, `$env:PAPELARIA_DEPURACAO=9555; npm run dev`: a porta de depuração só existe no desenvolvimento e fica anotada no log | a conversa consegue ler a tela pela porta 9555 |
 | 3.4 | A 0.1 saiu | no app de desenvolvimento, o menu e o rodapé da barra lateral; depois do `npm run build`, no PowerShell, `Select-String -Path dist\assets\*.js -Pattern 'Helena Prado'` | menu sem "Notas fiscais", rodapé sem "Salvo às…"; a busca não acha nada (a semente do mock não vai para a build) |
-| 3.5 | Login na primeira abertura | apagar a sessão (`sessao.json`) e abrir | pede o login; entra com o usuário de teste |
-| 3.5 | Backup | usar o app 10 minutos com mudanças | `copias/` na pasta de dados e a `atual` no `papelaria-dev` |
-| 3.5 | Restaurar | o comando do suporte (detalhe no passo 3.5) | o banco volta igual à cópia |
-| 3.5 | Aviso de cópia parada | sair do login (ou tirar a internet por mais de 1 hora) | o sino avisa e leva a entrar |
+| 3.5 | Backup | no PowerShell, `$env:PAPELARIA_INTERVALO_BACKUP=20; npm run dev`; gravar qualquer coisa (vender, marcar aviso como lido) e esperar 20 s | o rodapé muda para "Cópia às HH:MM"; `copias\` na pasta de dados com o arquivo do dia; `app.log` com "cópia feita" |
+| 3.5 | Cópia ao fechar | gravar e fechar a janela em seguida (antes dos 20 s) | `app.log` com "cópia feita" logo depois do fechamento |
+| 3.5 | Aviso de cópia parada | com o app fechado, renomear `sessao.json` para `sessao.json.guardado`; abrir | a loja abre (não pede login: já entrou antes); rodapé "Cópia parada"; no sino, "Cópia na nuvem parada" na frente. Clicar no aviso abre o login; entrar com o usuário de teste faz o aviso sumir. Depois, apagar o `.guardado` |
+| 3.5 | Login na primeira abertura | `npm run build`; criar `C:\temp\papelaria-primeira` só com uma cópia do `conexao.json`; `$env:PAPELARIA_PASTA_DADOS="C:\temp\papelaria-primeira"; npx electron .` | pede o login antes de abrir a loja; entrando, vai para "Cadastre a administradora" (banco novo) |
+| 3.5 | Restaurar | com o app fechado e a build feita: `npx electron . --restaurar=atual` (no instalado, 3.8: `"Papelaria Opção.exe" --restaurar=atual`); "Restaurar" na janela; abrir o app | a janela confirma e diz onde o banco anterior ficou (`loja.sqlite.antes-restauracao-…`); o app abre com os dados da cópia. `--restaurar=xyz` recusa; com o app aberto, avisa para fechar |
 | 3.6 | Testes de tela | `npx playwright install chromium` uma vez; `npm run test:tela` | tudo verde |
 | 3.7 | Rodada | o roteiro da rodada (escrito no passo 3.7), em 1280x720 e 1920x1080 | sem defeito novo |
 | 3.8 | Instalador | `npm run dist:win`; instalar; SmartScreen → "Executar assim mesmo" | instala e abre |

@@ -92,7 +92,7 @@ src/
                       cenario-caixa.ts: exemplos de fechamento só em desenvolvimento
   mock/estado-demonstracao.ts  store (useEstadoDemonstracao) e ações sobre a base
   mock/api.ts         o mock do contrato (navegador); simular.ts põe atraso e falha
-  dados/              api.ts e mudancas.ts (o contrato e o aviso às telas), planilhas da Emitte
+  dados/              api.ts e mudancas.ts (o contrato e o aviso às telas), backup.ts (estado da cópia), planilhas da Emitte
                       e do Financeiro, regras fiscais, rótulo do pagamento
   leitor/             leitor de código de barras (detector, hook e painel)
   funcoes.ts          interruptores do que está ligado nesta versão

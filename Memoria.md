@@ -792,6 +792,11 @@ próprios no menu, sem filtro Dia/Semana/Mês/Ano do Financeiro.
   depois, perder a sessão não para a loja. O sino avisa **sem sessão, ou com
   mudança no banco e a última cópia enviada há mais de 1 hora** (o normal é a
   cada 5 minutos); o aviso leva a entrar de novo.
+  Como ficou (`2026-11-03`, Fase 3.5): a "1 hora" conta da **primeira mudança
+  que ficou esperando**, não da última cópia (horas sem mexer não é atraso);
+  "primeira abertura" é **esta máquina nunca ter entrado** (`entrouEm` em
+  `estado-backup.json`; quem já tem sessão conta como entrou, B-005). O aviso
+  da cópia parada nunca conta como lido: some quando a cópia volta.
 
 ### Notas fiscais (fora do escopo atual)
 - Nota: Área mínima: Entradas e Saídas simuladas; "Preparar nota" cria rascunho para
