@@ -81,22 +81,6 @@ export const falha = (causa: CausaFalha, erro: string): Falha => ({ ok: false, c
 /** Quem esta usando o app. No piloto e um usuario so, o da loja. */
 export type Sessao = { email: string }
 
-/**
- * PILOTO 0.1 — a base inteira da loja como um documento so (Memoria.md,
- * `2026-10-06`). O conteudo e o formato de `src/mock/base/tipos.ts`; quem o
- * confere e o front, que ja tem as regras. Na 1.0 isto da lugar a uma operacao
- * por gesto do usuario.
- */
-export type DocumentoBase = {
-  conteudo: unknown
-  /** Sobe 1 a cada gravacao. Quem grava diz qual viu por ultimo. */
-  revisao: number
-  /** ISO 8601, UTC. */
-  salvoEm: string
-}
-
-export type Gravacao = { revisao: number; salvoEm: string }
-
 /** `salvo: false` quando a pessoa fechou a janela de salvar sem escolher. */
 export type ArquivoSalvo = { salvo: boolean; nome?: string }
 
@@ -899,15 +883,6 @@ export type Contrato = {
   /** Falha `validacao` quando e-mail ou senha nao conferem. */
   entrar(email: string, senha: string): Promise<Resultado<Sessao>>
   sair(): Promise<Resultado<null>>
-
-  /** `null`: a loja ainda nao gravou nada. */
-  carregarBase(): Promise<Resultado<DocumentoBase | null>>
-  /**
-   * Grava a base inteira. `revisaoEsperada` e a ultima que o app viu (0 se nunca
-   * houve gravacao). Se outra gravacao entrou no meio, devolve `conflito` e nao
-   * grava — sobrescrever apagaria a outra em silencio.
-   */
-  salvarBase(conteudo: unknown, revisaoEsperada: number): Promise<Resultado<Gravacao>>
 
   /**
    * Salva um arquivo gerado pela tela (ex.: produtos para a Emitte). A tela manda

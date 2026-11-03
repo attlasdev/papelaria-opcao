@@ -13,7 +13,7 @@ import type { Contrato, NomeOperacao, Resultado } from '../../comum/contrato'
  * digitação; o Início lê ao abrir) e os avisos lidos (o sino usa a resposta).
  */
 export const AVISA_AS_TELAS: Record<NomeOperacao, boolean> = {
-  sessaoAtual: false, entrar: false, sair: false, carregarBase: false, salvarBase: false, salvarArquivo: false,
+  sessaoAtual: false, entrar: false, sair: false, salvarArquivo: false,
   iniciarCobranca: false, consultarCobranca: false, cancelarCobranca: false, simularCobranca: false, imprimirComprovante: false,
   listarOperadores: false, cadastrarAdministradora: true, cadastrarOperador: true, renomearOperador: true, ativarOperador: true, redefinirPin: true,
   obterCliente: false, cadastrarCliente: true, editarCliente: true, listarClientes: false, listarComprasDoCliente: false,

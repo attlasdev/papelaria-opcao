@@ -135,8 +135,8 @@ validação com o Victor: migrar por último, porque a regra pode mudar.
 | `inicio/Inicio` | cartões de hoje (`obterResumoDoDia`), histórico paginado (`listarFichas`), o que aguarda a dona (`listarAguardandoDona`), a venda guardada (`obterRascunhoFicha`): **no contrato desde `2026-11-02` (tela 8.1)** | — |
 | `layout/tela/Tela` (sino) | os avisos (`listarAvisos`): **no contrato desde `2026-11-02` (tela 8.2)** | `marcarAvisosLidos` |
 | `resultados-busca/ResultadosBusca` | clientes, fichas e produtos que casam com o termo (`buscar`): **no contrato desde `2026-11-03` (tela 8.3)** | — |
-| `notas-fiscais/*`, `detalhe-fiscal` | rascunhos de nota, fichas | — |
-| `layout/barra-lateral/BarraLateral` | operador | `restaurarDemonstracao` |
+| ~~`notas-fiscais/*`, `detalhe-fiscal`~~ | **saíram em `2026-11-03` (D8, Fase 3.4)** | — |
+| `layout/barra-lateral/BarraLateral` | — (o rodapé "Salvo às…" saiu em `2026-11-03`; volta no 3.5 como o estado do backup) | — |
 
 Operação proposta: `listarRascunhosNota` (fora da 1.0, D8).
 
@@ -150,7 +150,7 @@ Com banco, restaurar dados é seed do ambiente de teste, nunca botão no app.
 | `servicos/Servicos` | serviços feitos e perdas do período (`listarServicos`): **no contrato desde `2026-11-02` (tela 6.2)** | — |
 | `criar-ficha/servicos/*` | — | serviços entram na ficha (`ServicoVenda`) e são gravados por `concluirFicha` |
 | `criar-ficha/cobranca/JanelaCobranca` | — | `iniciarCobranca`, `consultarCobranca`, `cancelarCobranca`, `simularCobranca` (já no contrato) |
-| `entrar/Entrar` e `src/dados/sincronia.ts` | sessão e a base inteira | `sessaoAtual`, `entrar`, `carregarBase`, `salvarBase` (já no contrato; do piloto) |
+| `entrar/Entrar` | sessão (o login volta a ser pedido no 3.5, `R-LOGIN-01`) | `entrar`; `carregarBase`, `salvarBase` e a sincronia **saíram em `2026-11-03` (Fase 3.4)** |
 | `estoque/ExportarEmitte`, `clientes/ExportarClientesEmitte`, `financeiro/ExportarPeriodo` | produtos, clientes, movimentos do período | `salvarArquivo` (já no contrato); `marcarEnviadosEmitte` (base local). **As duas da Emitte estão desligadas desde `2026-10-29`** (comentadas); só o `ExportarPeriodo` segue em uso |
 | comprovante (ainda sem tela) | — | `imprimirComprovante` (já no contrato) |
 | `boletos/Boletos`, `boletos/JanelaBoleto` (`2026-10-23`) | boletos da loja (`listarBoletos`); avisos de vencimento no sino (tela 8.2) | `cadastrarBoleto`, `editarBoleto`, `marcarBoletoPago`, `desfazerPagamentoBoleto`, `excluirBoleto`: **no contrato desde `2026-11-02` (tela 6.1)** |
@@ -159,8 +159,8 @@ Para o back:
 - **Serviços fazem parte da ficha:** `concluirFicha` recebe e confere os
   serviços (nome, valor, perdas) junto com os itens. Histórico de serviços e
   perdas são leituras por período; nada mexe no estoque.
-- **Login e documento único são do piloto.** `carregarBase` e `salvarBase` saem
-  na 1.0; o login fica, porque o backup no Supabase usa a chave pública com
+- **Login e documento único são do piloto.** `carregarBase` e `salvarBase`
+  saíram em `2026-11-03` (Fase 3.4); o login fica, porque o backup no Supabase usa a chave pública com
   login (decisão de `2026-10-05`).
 - **Exportações** continuam gerando o arquivo na tela e salvando por
   `salvarArquivo`; `marcarEnviadosEmitte` vira operação.

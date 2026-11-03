@@ -31,6 +31,17 @@ componentes, CSS por componente).
 
 ## Feitas
 
+### `2026-11-03` — Saída da 0.1 (1.0, Fase 3.4)
+
+- **Contrato:** saem `carregarBase`, `salvarBase`, `DocumentoBase` e
+  `Gravacao`. Nenhuma tela grava mais a base inteira: cada gesto é a sua
+  operação. O login (`sessaoAtual`, `entrar`, `sair`) fica, para o backup.
+- **Na tela:** sai a sincronia do documento; o app abre direto nos operadores
+  (a "Primeira abertura" continua). Saem as telas de Notas fiscais (D8), com as
+  rotas e o item do menu, e o rodapé "Salvo às…", que volta no 3.5 como o
+  estado do backup. O formulário de e-mail e senha de `Entrar` chama
+  `api().entrar` e recebe `aoEntrar`; ninguém o mostra até o 3.5.
+
 ### `2026-11-03` — Busca do cabeçalho (1.0, tela 8.3)
 
 - **Contrato:** `buscar(termo)` devolve `ResultadoBusca`, três grupos

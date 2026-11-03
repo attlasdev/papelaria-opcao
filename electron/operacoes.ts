@@ -130,19 +130,6 @@ export const operacoes: Contrato = {
     }
   },
 
-  async carregarBase() {
-    try {
-      const { data, error, status } = await supabase()
-        .from('base_loja')
-        .select('conteudo, revisao, salvo_em')
-        .maybeSingle()
-      if (error) return falhou('carregarBase', error, status)
-      return ok(data ? { conteudo: data.conteudo, revisao: data.revisao, salvoEm: data.salvo_em } : null)
-    } catch (erro) {
-      return falhou('carregarBase', erro)
-    }
-  },
-
   async salvarArquivo(nomeSugerido, conteudo) {
     const nome = nomeSeguro(typeof nomeSugerido === 'string' ? nomeSugerido : '')
     const tipo = TIPOS_ARQUIVO[path.extname(nome).toLowerCase()]
@@ -178,19 +165,5 @@ export const operacoes: Contrato = {
     if (!config.ok) return config
     const bytes = bytesComprovante(linhasComprovante(conferido, config.dado.loja))
     return enviarCru(config.dado.impressora, `Venda ${conferido.numero}`, bytes)
-  },
-
-  async salvarBase(conteudo, revisaoEsperada) {
-    if (!conteudo || typeof conteudo !== 'object' || Array.isArray(conteudo)) return falha('validacao', 'Base inválida para gravar.')
-    if (!Number.isSafeInteger(revisaoEsperada) || revisaoEsperada < 0) return falha('validacao', 'Revisão inválida.')
-    try {
-      const { data, error, status } = await supabase()
-        .rpc('salvar_base', { p_conteudo: conteudo, p_revisao_esperada: revisaoEsperada })
-        .single<{ revisao: number; salvo_em: string }>()
-      if (error) return falhou('salvarBase', error, status)
-      return ok({ revisao: data.revisao, salvoEm: data.salvo_em })
-    } catch (erro) {
-      return falhou('salvarBase', erro)
-    }
   },
 }

@@ -56,8 +56,8 @@ Electron + electron-builder, Vite + React + TypeScript, Tailwind. Cliente de ban
   arquivo (`Memoria.md`, `2026-10-05`).
 
 A fronteira e a mesma nas duas (`window.api` tipado por `Contrato`). Na 1.0 o
-contrato passa a ter uma operacao por gesto do usuario, e as do documento
-(`carregarBase`, `salvarBase`) saem: ver `docs/contrato/inventario.md`.
+contrato passa a ter uma operacao por gesto do usuario; as do documento
+(`carregarBase`, `salvarBase`) sairam em `2026-11-03`: ver `docs/contrato/inventario.md`.
 
 Sem modulo nativo. Dependencia nativa obriga `electron-rebuild` e recompilacao por
 plataforma — nao adicionar sem discutir.

@@ -19,10 +19,10 @@ describe('[A6] log em arquivo', () => {
 
   it('grava cada linha com instante, nível e origem, inclusive a pilha do erro', () => {
     configurarLog(path.join(pasta, 'logs'))
-    log.erro('salvarBase', new Error('o banco recusou'))
+    log.erro('concluirFicha', new Error('o banco recusou'))
     log.info('inicio', 'versão 1.0.0')
     const texto = readFileSync(path.join(pasta, 'logs', 'app.log'), 'utf8')
-    expect(texto).toMatch(/^\d{4}-\d\d-\d\dT[\d:.]+Z ERRO \[salvarBase\] Error: o banco recusou\n\s+at /)
+    expect(texto).toMatch(/^\d{4}-\d\d-\d\dT[\d:.]+Z ERRO \[concluirFicha\] Error: o banco recusou\n\s+at /)
     expect(texto).toMatch(/INFO \[inicio\] versão 1\.0\.0\n$/)
   })
 

@@ -1,9 +1,6 @@
-import { falha, ok, type Contrato, type DocumentoBase } from '../../comum/contrato'
+import { falha, ok, type Contrato } from '../../comum/contrato'
 import { montarPainel } from './painel'
 import { simular, simularAssincrono } from './simular'
-import { criarSemente } from './base/semente'
-import { comFechamentosExemplo } from './base/cenario-caixa'
-import { hojeISO, minutoDoDia } from '../datas'
 import { criarMaquininhaDemonstracao } from '../../comum/maquininha-demonstracao'
 import { conferirComprovante, linhasComprovante, textoComprovante, type Loja } from '../../comum/comprovante'
 import { operadoresDaBase as operadores } from './operacoes/operadores'
@@ -41,27 +38,7 @@ const LOJA_EXEMPLO: Loja = {
  * back adiciona uma operacao ao contrato, o build daqui quebra ate o mock ganhar
  * uma resposta falsa para ela — e e assim que o front descobre que tem tela nova
  * para fazer, sem ninguem avisar por mensagem.
- *
- * O "servidor" falso guarda a base no localStorage, numa chave separada da copia
- * local do app. Na primeira vez ele responde com a amostra de 90 dias, para as
- * telas terem o que mostrar.
  */
-const CHAVE_SERVIDOR = 'papelaria-opcao:servidor-mock'
-
-function lerServidor(): DocumentoBase | null {
-  try {
-    const texto = localStorage.getItem(CHAVE_SERVIDOR)
-    return texto ? (JSON.parse(texto) as DocumentoBase) : null
-  } catch {
-    return null
-  }
-}
-
-function gravarServidor(documento: DocumentoBase) {
-  try { localStorage.setItem(CHAVE_SERVIDOR, JSON.stringify(documento)) }
-  catch { /* Sem armazenamento: o "servidor" vive só nesta janela. */ }
-}
-
 let sessao: { email: string } | null = { email: 'loja@exemplo.com' }
 const maquininha = criarMaquininhaDemonstracao()
 
@@ -75,19 +52,6 @@ const mock: Contrato = {
   sair: () => simular(() => {
     sessao = null
     return ok(null)
-  }),
-  carregarBase: () => simular(() => {
-    const guardado = lerServidor()
-    if (guardado) return ok(guardado)
-    const hoje = hojeISO()
-    return ok({ conteudo: comFechamentosExemplo(criarSemente(hoje, minutoDoDia()), hoje), revisao: 0, salvoEm: new Date().toISOString() })
-  }),
-  salvarBase: (conteudo, revisaoEsperada) => simular(() => {
-    const atual = lerServidor()?.revisao ?? 0
-    if (atual !== revisaoEsperada) return falha('conflito', 'Os dados foram alterados em outro lugar. Feche e abra o app para ver a versão mais nova.')
-    const gravacao = { revisao: atual + 1, salvoEm: new Date().toISOString() }
-    gravarServidor({ conteudo, ...gravacao })
-    return ok(gravacao)
   }),
   salvarArquivo: (nomeSugerido, conteudo) => simular(() => {
     // No navegador não há janela de salvar do sistema: vira um download.
