@@ -1,15 +1,7 @@
-import { dataCurta, dataHora } from '../formatar'
-import {
-  CATEGORIA_ESTORNO,
-  NOME_MEIO,
-  ladoFinanceiro,
-  linhasFinanceiroNoIntervalo,
-  movimentosOperacionaisFinanceiro,
-  resumoFinanceiroIntervalo,
-  type LinhaFinanceiro,
-} from '../mock/base/derivados'
+import type { LinhaFinanceira, MeioPagamento } from '../../comum/contrato'
+import { CATEGORIA_ESTORNO, linhasDoPeriodo, resumoFinanceiro } from '../../comum/regras/financeiro'
+import { dataCurta, dataHora, NOME_MEIO } from '../formatar'
 import { diasEntre, somarDias } from '../datas'
-import type { Meio } from '../mock/base/tipos'
 import { criarPlanilha, type Aba, type CelulaNova, type CelulaRica, type Estilo } from './planilha'
 
 /**
@@ -18,8 +10,9 @@ import { criarPlanilha, type Aba, type CelulaNova, type CelulaRica, type Estilo 
  * arquivo é o total dos cartões, estornos inclusive.
  *
  * Vai o período inteiro, em todos os meios (o filtro de meio da tabela não
- * vale aqui: arquivo parcial na contabilidade é armadilha). Adição e retirada
- * de dinheiro da gaveta não vão: não são receita nem despesa, são do Caixa.
+ * vale aqui: arquivo parcial na contabilidade é armadilha). Lê as linhas de
+ * `listarFinanceiroDoPeriodo`, as mesmas dos cartões; adição e retirada de
+ * dinheiro da gaveta não estão nelas: não são receita nem despesa, são do Caixa.
  *
  * Abas: Resumo (cartões e totais por meio e categoria), Por dia (ou Por mês,
  * em período longo) com barras, e Movimentos (uma linha por registro).
@@ -57,6 +50,8 @@ const corDoValor = (centavos: number) => (centavos > 0 ? COR.entrada : centavos 
 
 type Totais = { entradas: number; despesas: number }
 
+const horaEmSaoPaulo = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+
 /** Título, subtítulo e a faixa amarela da marca: as três primeiras linhas de cada aba. */
 function topo(titulo: string, subtitulo: string, colunas: number) {
   const ultima = String.fromCharCode(64 + colunas)
@@ -72,22 +67,18 @@ function topo(titulo: string, subtitulo: string, colunas: number) {
   }
 }
 
-export function planilhaFinanceiro(todas: LinhaFinanceiro[], de: string, ate: string, geradoEm = new Date().toISOString()) {
-  const linhas = movimentosOperacionaisFinanceiro(todas)
-  const resumo = resumoFinanceiroIntervalo(linhas, de, ate)
-  const doPeriodo = [...linhasFinanceiroNoIntervalo(linhas, de, ate)]
-    .sort((a, b) => a.data.localeCompare(b.data) || a.horario.localeCompare(b.horario))
-
-  // Pagamento de ficha desfeito ganha a linha `<id>-estorno`; lançamento manual, `estornoDe`.
-  const desfeitos = new Set(linhas.flatMap((l) => (l.estornoDe ? [l.estornoDe] : l.id.endsWith('-estorno') ? [l.id.slice(0, -'-estorno'.length)] : [])))
+export function planilhaFinanceiro(todas: LinhaFinanceira[], de: string, ate: string, geradoEm = new Date().toISOString()) {
+  // Do mais velho para o mais novo: a ordem de quem confere no papel.
+  const doPeriodo = linhasDoPeriodo(todas, { de, ate }).reverse()
+  const resumo = resumoFinanceiro(doPeriodo)
 
   // Cada coluna (entradas, despesas) soma com sinal: o estorno aparece negativo
   // no lado que ele abate, e a soma da coluna bate com o total do período.
-  const somar = (chave: (l: LinhaFinanceiro) => string) => {
+  const somar = (chave: (l: LinhaFinanceira) => string) => {
     const grupos = new Map<string, Totais>()
     for (const l of doPeriodo) {
       const g = grupos.get(chave(l)) ?? { entradas: 0, despesas: 0 }
-      if (ladoFinanceiro(l) === 'entrada') g.entradas += l.valor
+      if (l.lado === 'entrada') g.entradas += l.valor
       else g.despesas -= l.valor
       grupos.set(chave(l), g)
     }
@@ -145,7 +136,7 @@ export function planilhaFinanceiro(todas: LinhaFinanceiro[], de: string, ate: st
     ])
   }
   const porMeio = somar((l) => l.meio)
-  tabela('Por meio', (['dinheiro', 'pix', 'cartao'] as Meio[]).map((meio) => [NOME_MEIO[meio], porMeio.get(meio) ?? { entradas: 0, despesas: 0 }]))
+  tabela('Por meio', (['dinheiro', 'pix', 'cartao'] as MeioPagamento[]).map((meio) => [NOME_MEIO[meio], porMeio.get(meio) ?? { entradas: 0, despesas: 0 }]))
   tabela('Por categoria', [...somar((l) => l.categoria)].sort(([a], [b]) => a.localeCompare(b, 'pt-BR')))
 
   resumoLinhas.push([])
@@ -166,7 +157,7 @@ export function planilhaFinanceiro(todas: LinhaFinanceiro[], de: string, ate: st
   } else {
     for (let dia = de; dia <= ate; dia = somarDias(dia, 1)) chaves.push(dia)
   }
-  const porTempo = somar((l) => (porMes ? l.data.slice(0, 7) : l.data))
+  const porTempo = somar((l) => (porMes ? l.dia.slice(0, 7) : l.dia))
   const t = topo(porMes ? 'Por mês' : 'Por dia', `${porMes ? 'Cada mês' : 'Cada dia'} do período de ${periodo}, inclusive os sem movimento.`, 4)
   const tempoLinhas = t.linhas
   tempoLinhas.push([])
@@ -206,21 +197,21 @@ export function planilhaFinanceiro(todas: LinhaFinanceiro[], de: string, ate: st
     .map((texto) => ({ texto, estilo: cabecalho })))
   const selo = (texto: string, fundo: string, cor: string, base: Estilo): CelulaRica => ({ texto, estilo: { ...base, fundo, cor, negrito: true, alinhar: 'centro' } })
   doPeriodo.forEach((l, i) => {
-    const estornado = desfeitos.has(l.id)
+    const estornado = l.estornado
     const base: Estilo = { ...zebra(i), ...(estornado ? { italico: true, cor: COR.apagado } : {}) }
     const tipo = l.categoria === CATEGORIA_ESTORNO
       ? selo('Estorno', COR.neutroFundo, COR.neutroTexto, base)
       : l.valor > 0 ? selo('Entrada', COR.okFundo, COR.okTexto, base) : selo('Saída', COR.criticoFundo, COR.criticoTexto, base)
     const texto = (valor: string | undefined, alinhar?: Estilo['alinhar']): CelulaRica => ({ texto: valor ?? '', estilo: alinhar ? { ...base, alinhar } : base })
     movimentos.push([
-      { data: l.data, estilo: { ...base, alinhar: 'centro' } },
-      texto(l.horario, 'centro'),
+      { data: l.dia, estilo: { ...base, alinhar: 'centro' } },
+      texto(horaEmSaoPaulo.format(new Date(l.registradoEm)), 'centro'),
       texto(l.descricao),
       texto(l.categoria),
       tipo,
-      texto(l.meioRotulo),
-      texto(l.ficha ? `#${l.ficha}` : undefined, 'centro'),
-      texto(l.cliente),
+      texto(l.rotulo ?? NOME_MEIO[l.meio]),
+      texto(l.ficha ? `#${l.ficha.numero}` : undefined, 'centro'),
+      texto(l.cliente ?? undefined),
       texto(l.origem),
       { centavos: l.valor, estilo: { ...base, negrito: !estornado, ...(estornado ? {} : { cor: corDoValor(l.valor) }) } },
       texto(l.operador),

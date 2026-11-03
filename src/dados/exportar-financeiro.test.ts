@@ -1,13 +1,7 @@
 import { strFromU8, unzipSync } from 'fflate'
 import { describe, expect, it } from 'vitest'
-import {
-  CATEGORIA_ADICAO_CAIXA,
-  CATEGORIA_ESTORNO,
-  CATEGORIA_RETIRADA_CAIXA,
-  movimentosOperacionaisFinanceiro,
-  resumoFinanceiroIntervalo,
-  type LinhaFinanceiro,
-} from '../mock/base/derivados'
+import type { LinhaFinanceira } from '../../comum/contrato'
+import { CATEGORIA_ESTORNO, linhasDoPeriodo, resumoFinanceiro } from '../../comum/regras/financeiro'
 import { planilhaFinanceiro } from './exportar-financeiro'
 
 /** Lê de volta uma aba: valores ({ A1: 'Data', J6: '12.5' }) e fórmulas ({ B13: 'SUM(B10:B12)' }). */
@@ -38,25 +32,27 @@ function abaixoDe(valores: Record<string, string>, rotulo: string) {
   return ref ? valores[`${coluna}${Number(linha) + 1}`] : undefined
 }
 
-const linha = (dados: Partial<LinhaFinanceiro> & Pick<LinhaFinanceiro, 'id' | 'data' | 'valor' | 'categoria'>): LinhaFinanceiro => ({
-  horario: '10:00', descricao: dados.id, origem: 'Lançamento manual', meio: 'dinheiro', meioRotulo: 'Dinheiro', ...dados,
+type Dados = Partial<LinhaFinanceira> & Pick<LinhaFinanceira, 'id' | 'dia' | 'valor' | 'categoria' | 'lado'> & { hora?: string; ficha?: LinhaFinanceira['ficha'] }
+
+/** Uma linha como `listarFinanceiroDoPeriodo` devolve; `hora` é a de São Paulo. */
+const linha = ({ hora = '10:00', ...dados }: Dados): LinhaFinanceira => ({
+  registradoEm: `${dados.dia}T${String(Number(hora.slice(0, 2)) + 3).padStart(2, '0')}:${hora.slice(3)}:00.000Z`,
+  descricao: dados.id, origem: 'Lançamento manual', meio: 'dinheiro', rotulo: null, operador: 'Helena', ficha: null, cliente: null,
+  estornoDe: null, estornado: false, vendaEstornavel: false, lancamentoEstornavel: false, conferidoPor: null, aguardandoDona: false, ...dados,
 })
+const ficha = (numero: string) => ({ id: `f${numero}`, numero })
 
 // Período: 01/09 a 30/09.
-const linhas: LinhaFinanceiro[] = [
-  linha({ id: '1-0', data: '2026-09-01', horario: '09:00', valor: 10000, categoria: 'Venda', meio: 'pix', meioRotulo: 'Pix manual', ficha: '1', cliente: 'Ana' }),
-  linha({ id: '2-0', data: '2026-09-10', valor: 5000, categoria: 'Venda', ficha: '2', cliente: 'Não identificado' }),
-  linha({ id: '2-0-estorno', data: '2026-09-11', valor: -5000, categoria: CATEGORIA_ESTORNO, ficha: '2' }),
-  linha({ id: 'd1', data: '2026-09-15', valor: -3000, categoria: 'Despesa', meio: 'cartao', meioRotulo: 'Cartão' }),
-  linha({ id: 'd1-est', data: '2026-09-16', valor: 3000, categoria: CATEGORIA_ESTORNO, meio: 'cartao', meioRotulo: 'Cartão', estornoDe: 'd1' }),
-  linha({ id: 'd2', data: '2026-09-30', horario: '18:00', valor: -1500, categoria: 'Despesa' }),
-  // Gaveta: fica de fora, com o estorno.
-  linha({ id: 'g1', data: '2026-09-20', valor: 20000, categoria: CATEGORIA_ADICAO_CAIXA }),
-  linha({ id: 'g2', data: '2026-09-21', valor: -10000, categoria: CATEGORIA_RETIRADA_CAIXA }),
-  linha({ id: 'g2-est', data: '2026-09-22', valor: 10000, categoria: CATEGORIA_ESTORNO, estornoDe: 'g2' }),
+const linhas: LinhaFinanceira[] = [
+  linha({ id: '1-0', dia: '2026-09-01', hora: '09:00', valor: 10000, categoria: 'Venda', lado: 'entrada', meio: 'pix', rotulo: 'Pix manual', ficha: ficha('1'), cliente: 'Ana' }),
+  linha({ id: '2-0', dia: '2026-09-10', valor: 5000, categoria: 'Venda', lado: 'entrada', ficha: ficha('2'), cliente: 'Não identificado', estornado: true }),
+  linha({ id: '2-0-estorno', dia: '2026-09-11', valor: -5000, categoria: CATEGORIA_ESTORNO, lado: 'entrada', ficha: ficha('2'), estornoDe: '2-0' }),
+  linha({ id: 'd1', dia: '2026-09-15', valor: -3000, categoria: 'Despesa', lado: 'saida', meio: 'cartao', estornado: true }),
+  linha({ id: 'd1-est', dia: '2026-09-16', valor: 3000, categoria: CATEGORIA_ESTORNO, lado: 'saida', meio: 'cartao', estornoDe: 'd1' }),
+  linha({ id: 'd2', dia: '2026-09-30', hora: '18:00', valor: -1500, categoria: 'Despesa', lado: 'saida' }),
   // Fora do período.
-  linha({ id: '3-0', data: '2026-08-31', valor: 99900, categoria: 'Venda', ficha: '3' }),
-  linha({ id: '4-0', data: '2026-10-01', valor: 88800, categoria: 'Venda', ficha: '4' }),
+  linha({ id: '3-0', dia: '2026-08-31', valor: 99900, categoria: 'Venda', lado: 'entrada', ficha: ficha('3') }),
+  linha({ id: '4-0', dia: '2026-10-01', valor: 88800, categoria: 'Venda', lado: 'entrada', ficha: ficha('4') }),
 ]
 
 describe('[R-FINANCEIRO-06] planilha do período do Financeiro', () => {
@@ -66,7 +62,7 @@ describe('[R-FINANCEIRO-06] planilha do período do Financeiro', () => {
   const movimentos = lerAba(bytes, 3)
 
   it('os cartões do Resumo são os da tela, estornos inclusive', () => {
-    const tela = resumoFinanceiroIntervalo(movimentosOperacionaisFinanceiro(linhas), '2026-09-01', '2026-09-30')
+    const tela = resumoFinanceiro(linhasDoPeriodo(linhas, { de: '2026-09-01', ate: '2026-09-30' }))
     expect(tela).toMatchObject({ entradas: 10000, saidas: 1500, liquido: 8500 })
     expect(abaixoDe(resumo.valores, 'Entradas')).toBe('100')
     expect(abaixoDe(resumo.valores, 'Despesas')).toBe('15')
@@ -114,7 +110,7 @@ describe('[R-FINANCEIRO-06] planilha do período do Financeiro', () => {
     expect(strFromU8(unzipSync(ano.bytes)['xl/workbook.xml'])).toContain('name="Por mês"')
   })
 
-  it('leva só o período, do primeiro ao último dia, e deixa a gaveta de fora', () => {
+  it('leva só o período, do primeiro ao último dia, do mais velho ao mais novo', () => {
     expect(quantidade).toBe(6)
     const descricoes = Object.entries(movimentos.valores).filter(([r]) => /^C\d+$/.test(r) && Number(r.slice(1)) > 5).map(([, v]) => v)
     expect(descricoes).toEqual(['1-0', '2-0', '2-0-estorno', 'd1', 'd1-est', 'd2'])
@@ -126,6 +122,8 @@ describe('[R-FINANCEIRO-06] planilha do período do Financeiro', () => {
     expect(v.A5).toBe('Data')
     expect(v.A6).toBe(String(Date.UTC(2026, 8, 1) / 86_400_000 + 25_569))
     expect([v.E6, v.F6, v.G6, v.H6, v.J6]).toEqual(['Entrada', 'Pix manual', '#1', 'Ana', '100'])
+    // O horário é o de São Paulo; sem rótulo, o nome do meio.
+    expect([v.B6, v.B11, v.F7]).toEqual(['09:00', '18:00', 'Dinheiro'])
     expect([v.E7, v.L7]).toEqual(['Entrada', 'Estornado'])
     expect([v.E8, v.J8]).toEqual(['Estorno', '-50'])
     expect([v.E9, v.J9, v.L9]).toEqual(['Saída', '-30', 'Estornado'])
