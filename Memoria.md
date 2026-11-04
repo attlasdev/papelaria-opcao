@@ -14,6 +14,11 @@ Relato de sessão longo vai para `docs/historico/`.
 
 ## Onde estamos — `2026-10-21`
 
+**Pausa `2026-11-03` (férias do Agostinho):** a Fase 3 da 1.0 está no 3.6
+(feito e enviado). O próximo passo é o 3.7, a rodada final no Linux, com o
+plano já escrito no plano da 1.0 (`docs/superpowers/plans/2026-10-23-versao-1.0.md`,
+Fase 3, item 8), esperando o OK dele.
+
 **Rumo atual: a 1.0 foi aprovada pelo cliente em `2026-10-21`.** Antes de
 planejar a execução foi feita uma checagem completa do projeto (commit
 `000cb47`, v0.1.7): `docs/auditorias/2026-10-21-checagem-1.0.md`. Ela traz os
