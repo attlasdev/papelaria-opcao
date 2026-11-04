@@ -23,14 +23,15 @@ const numerados = new Set([...regras, ...bugs])
 
 const pendentes = todos(ler('docs/testes.md'), new RegExp(String.raw`^\| (${NUMERO}) \|`, 'gm'))
 
+// Os testes de tela (Playwright, `testes/tela/*.tela.ts`) contam igual: `npm run test:tela`.
 const arquivosDeTeste = ['src', 'electron', 'testes'].flatMap((pasta) =>
   readdirSync(path.join(RAIZ, pasta), { recursive: true, withFileTypes: true })
-    .filter((a) => a.isFile() && a.name.endsWith('.test.ts') && a.name !== 'cobertura.test.ts')
+    .filter((a) => a.isFile() && /\.(test|tela)\.ts$/.test(a.name) && a.name !== 'cobertura.test.ts')
     .map((a) => path.relative(RAIZ, path.join(a.parentPath, a.name))))
 
-// Só conta o número citado no nome de um describe/it, entre colchetes.
+// Só conta o número citado no nome de um describe/it/test, entre colchetes.
 const citados = new Set(arquivosDeTeste.flatMap((arquivo) =>
-  [...ler(arquivo).matchAll(/\b(?:describe|it)\(\s*['"`]([^'"`]*)['"`]/g)]
+  [...ler(arquivo).matchAll(/\b(?:describe|it|test)\(\s*['"`]([^'"`]*)['"`]/g)]
     .flatMap((m) => [...m[1].matchAll(new RegExp(String.raw`\[(${NUMERO})\]`, 'g'))].map((n) => n[1]))))
 
 const ordenar = (lista: Iterable<string>) => [...lista].sort()

@@ -13,6 +13,7 @@
     "dist:linux": "npm run build && electron-builder --linux",
     "dist:win": "npm run build && electron-builder --win",
     "test": "vitest run",
+    "test:tela": "playwright test",
     "test:regras": "vitest run -t \"\\[R-\"",
     "banco:foto": "node scripts/banco-teste.mjs foto",
     "banco:semear": "node scripts/banco-teste.mjs semear",
@@ -30,6 +31,7 @@
     "react-router": "^7.18.4"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "@tailwindcss/vite": "^4.3.1",
     "@types/node": "^26.0.1",
     "@types/react": "^19.2.17",

@@ -6,6 +6,10 @@ dist/
 dist-electron/
 release/
 
+# testes de tela (Playwright): resultado e rastro da ultima rodada
+test-results/
+playwright-report/
+
 # segredos — chave de banco NUNCA entra no repositorio.
 # Em uso normal ela vive em app.getPath("userData"), fora daqui.
 .env

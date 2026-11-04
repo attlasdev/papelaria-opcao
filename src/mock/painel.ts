@@ -6,9 +6,11 @@ import { controles } from './simular'
  * DOM puro de proposito, sem React e sem Tailwind: assim ele nunca se mistura com
  * os componentes de verdade e nao ha risco de sobrar no app empacotado. Este
  * arquivo so carrega junto com o mock, e o mock so carrega quando nao ha Electron.
+ * `?painel=nao` deixa a tela sem ele (testes de tela: o canto cobre a paginacao).
  */
 export function montarPainel() {
   const { CAUSAS, causaForcada, atrasoMs, params } = controles
+  if (params.get('painel') === 'nao') return
 
   const caixa = document.createElement('div')
   caixa.style.cssText = [
