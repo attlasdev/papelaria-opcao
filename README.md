@@ -18,6 +18,7 @@ npm run dev     # Vite na porta 5173 + Electron, com atualização automática d
 npm start       # build + Electron, ligado ao banco do conexao.json da máquina
 npm run build   # typecheck + build. Tem que passar antes de PR
 npm test        # testes da base local e dos cálculos
+npm run test:tela  # telas no navegador (Playwright); antes, uma vez: npx playwright install chromium
 ```
 
 O instalador Windows não é gerado aqui: o GitHub Actions o monta a cada tag

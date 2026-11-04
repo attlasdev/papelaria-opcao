@@ -1115,6 +1115,15 @@ pendência declarada (`docs/testes.md`, com o motivo). Bug corrigido entra com
 teste que falhava antes da correção. Testes em todo push (Ubuntu); teste de
 tela (Playwright) fica para a Fase 3 da 1.0.
 
+Como ficou o de tela (`2026-11-03`, Fase 3.6): `npm run test:tela`, em
+`testes/tela/*.tela.ts`, sobre o mock com o atraso ligado, nos dois tamanhos
+da `R-UI-09`, também em todo push. Duas armadilhas que valem para teste novo:
+**esperar o dado chegar** antes de medir ou clicar (a tela carregando tem uma
+linha só, e a paginação não diz quantas; sem esperar, o teste mede a
+carga e passa ou falha por sorte), e o **leitor de código** não se imita
+pelo teclado do Playwright (a suíte em paralelo passa dos 40 ms entre teclas e
+vira digitação): `lerCodigo` em `testes/tela/apoio.ts`.
+
 **Por quê:** a cobertura dependia de lembrar. A checagem de `2026-10-21` achou
 17 defeitos e só um ganhou teste; A1 e M1 foram corrigidos sem nenhum. Com o
 número, "esta regra tem teste?" vira pergunta que o código responde.

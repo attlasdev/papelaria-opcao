@@ -56,8 +56,8 @@ a revisão do contrato. A organização adaptada da Stack está em
   de executar trabalhos de Tailwind, GSAP, modelagem de domínio ou arquitetura.
 - `web-design-guidelines` fica em `.agents/skills/web-design-guidelines/` para
   revisão de acessibilidade e interação; o mapa está em `docs/organizacao.md`.
-- Antes de uma entrega de código, rode `npm test` e `npm run build` quando as
-  dependências estiverem instaladas. Não presuma que algo já foi validado.
+- Antes de uma entrega de código, rode `npm test`, `npm run test:tela` e
+  `npm run build` quando as dependências estiverem instaladas. Não presuma que algo já foi validado.
 
 ## Interface: como está montada
 
@@ -153,7 +153,9 @@ Regras para mexer na interface:
   acrescentar: ache a posição no PDF, inclua em `ICONES` de
   `recursos/design-system/componentes/icones/biblioteca/extrair_icones.py` e
   rode o script (`pip install pymupdf`). Não edite `desenhos.ts` à mão.
-- **Verificação antes de entregar:** `npm test` e `npm run build`; abrir as telas
+- **Verificação antes de entregar:** `npm test`, `npm run test:tela` (telas no
+  Chromium sobre o mock, em 1280x650 e 1920x1080; `testes/tela/`) e
+  `npm run build`; abrir as telas
   afetadas em `npm run dev` (prévia configurada em `.claude/launch.json`, porta
   5173) na largura de 1300 px e na mínima de 900 px, conferindo que nada
   transborda e que o console não tem erro. No navegador a tela usa o mock; no

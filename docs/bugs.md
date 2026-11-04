@@ -13,7 +13,7 @@ tem teste ou está nos pendentes de [`testes.md`](testes.md), com o motivo.
 
 **Regra de trabalho:** bug corrigido entra com um teste que **falhava antes da
 correção** (rodar sem a correção, ver falhar, corrigir). Defeito que só a tela
-mostra fica pendente até existir teste de tela (Fase 3 do plano da 1.0).
+mostra ganha teste de tela (`testes/tela/`, `npm run test:tela`).
 
 Cada entrada: o que quebrou, a causa, a situação e onde está o teste.
 
@@ -54,7 +54,8 @@ teste automático). **Falta:** CSP e ferramentas de desenvolvedor fora do
 instalador (Fase 4).
 
 ### M1 · Cadastro de produto: "Fornecedor" descartava o que se digitava
-O produto não guarda fornecedor. **Corrigido** na v0.1.8: o campo saiu.
+O produto não guarda fornecedor. **Corrigido** na v0.1.8: o campo saiu. Teste de
+tela em `testes/tela/estoque.tela.ts`.
 
 ### M2 · Janelas: o foco depende da identidade de `aoFechar`
 O foco pula a cada renderização da janela. **Aberto.**
@@ -88,11 +89,13 @@ Sai com a consulta paginada no banco da 1.0.
 
 ### B-001 · Clientes mostrava um cliente por página em 1280x720
 `2026-10-23`. A paginação calculava as linhas pela altura que sobrava. **Corrigido**
-(mínimo de 8 linhas, a página rola). Só a tela mostra.
+(mínimo de 8 linhas, a página rola). Teste de tela em `testes/tela/clientes.tela.ts`
+(desde `2026-11-03`), conferido falhando sem o mínimo.
 
 ### B-002 · Início: "Pagamento" passava por cima de "Valor total"
 `2026-10-23`, em 1280x720. Colunas largas demais para a tabela. **Corrigido**
-(colunas menores, texto com reticências). Só a tela mostra.
+(colunas menores, texto com reticências). Teste de tela em `testes/tela/inicio.tela.ts`
+(desde `2026-11-03`), conferido falhando sem as reticências.
 
 ### B-003 · Semente: recebimento de notinha no cartão sem maquininha
 `2026-10-27`. A semente da 1.0 gravava 16 recebimentos no cartão sem
