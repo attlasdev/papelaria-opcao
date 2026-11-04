@@ -8,6 +8,11 @@ Agostinho em `2026-10-27`.
 - **Uma suíte, `npm test`** (vitest, sem Electron). Roda no GitHub em **todo
   push** (`.github/workflows/testes.yml`) e de novo antes de cada versão
   (`release-win.yml`).
+- **Testes de tela, `npm run test:tela`** (Playwright, desde `2026-11-03`): as
+  telas no Chromium, sobre o mock com o atraso dele, o relógio parado em
+  27/10/2026 às 15h e cada teste em 1280x650 (a altura útil do monitor da
+  loja, `R-UI-09`) e 1920x1080. Sobe só o Vite, sem o Electron. Também rodam
+  em todo push. Uma vez por máquina: `npx playwright install chromium`.
 - **Regras têm número** (`R-ÁREA-NN`, em `Memoria.md`, "Regras de produto" e
   "Regras de interface"); item que não é regra começa com "Nota:". **Bugs têm número** (`A1`…`M11` da checagem,
   `B-NNN` depois; em [`bugs.md`](bugs.md)).
@@ -43,13 +48,13 @@ Agostinho em `2026-10-27`.
 | `testes/` | a cobertura e as regras de interface que dá para conferir lendo o código |
 | `testes/regras/` | as regras puras de `comum/regras/`, que os dois lados do contrato usam |
 | `testes/contrato/` | os testes de contrato da 1.0: cada cenário roda no mock e no SQLite (`testarContrato`), um arquivo por área |
+| `testes/tela/` | os testes de tela (`*.tela.ts`, Playwright): o que só a tela mostra; contam na cobertura como os outros |
 
 ## Pendentes
 
 Os motivos se repetem em quatro tipos:
 
-- **tela:** só a tela mostra; teste de tela (Playwright) na Fase 3 do plano da
-  1.0.
+- **tela:** só a tela mostra; o teste entra em `testes/tela/` (Playwright).
 - **contrato:** a regra vai para o back; o teste de contrato entra no percurso
   da tela indicada.
 - **aberto:** o bug ainda não foi corrigido; o teste entra com a correção.
@@ -59,25 +64,15 @@ Os motivos se repetem em quatro tipos:
 
 | Número | Tipo | Quando ganha teste |
 | --- | --- | --- |
-| R-VENDA-01 | tela | Fase 3 |
 | R-VENDA-03 | contrato | tela 4.1 |
-| R-VENDA-08 | tela | tela 2.1 / Fase 3 |
-| R-NOTINHA-04 | tela | Fase 3 |
-| R-FICHA-01 | tela | Fase 3 |
-| R-CLIENTE-08 | tela | Fase 3 |
-| R-ESTOQUE-03 | tela | tela 2.4 (bloco "Bipados") e Fase 3 (a gaveta da linha) |
-| R-FINANCEIRO-01 | tela | Fase 3 |
-| R-PAGAMENTO-01 | tela | Fase 3 |
 | R-UI-01 | revisão | — |
 | R-UI-02 | revisão | — |
 | R-UI-05 | revisão | — |
 | R-UI-06 | revisão | — |
 | R-UI-08 | revisão | — |
-| R-UI-09 | tela | Fase 3 (1280x720 e 1920x1080) |
 | A2 | 0.1 / estrutural | — |
 | A3 | aberto | com a correção, antes da fase 3 do comprovante |
 | A5 | 0.1 / estrutural | — |
-| M1 | tela | Fase 3 (o campo saiu) |
 | M2 | aberto | com a correção (teste de tela) |
 | M3 | 0.1 / estrutural | — |
 | M4 | 0.1 / estrutural | sai com os testes de contrato |
@@ -88,5 +83,3 @@ Os motivos se repetem em quatro tipos:
 | M9 | aberto | antes de ligar a exportação de clientes |
 | M10 | aberto | fase 3 do comprovante |
 | M11 | aberto | enquanto o piloto usar o Supabase como banco |
-| B-001 | tela | Fase 3 |
-| B-002 | tela | Fase 3 |

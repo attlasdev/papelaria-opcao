@@ -32,3 +32,9 @@ jobs:
       - run: npm run build
 
       - run: npm test
+
+      # Testes de tela (docs/testes.md): o Chromium do Playwright, com as
+      # dependencias do sistema, e as telas sobre o mock nos dois tamanhos.
+      - run: npx playwright install --with-deps chromium
+
+      - run: npm run test:tela
